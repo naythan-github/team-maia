@@ -1,7 +1,11 @@
-# Maia Commands
+# Maia - My AI Agent
+
+## Repository
+**GitHub**: https://github.com/naythan-orro/maia
+**Version Control**: Git repository at `/Users/naythandawe/git/`
 
 ## Overview
-Commands are sophisticated workflow orchestrations that leverage Maia's multi-agent system and advanced automation capabilities. They follow enterprise-grade design principles:
+Maia is a personal AI infrastructure system featuring sophisticated workflow orchestrations that leverage a multi-agent system and advanced automation capabilities. Commands follow enterprise-grade design principles:
 
 - **Single Responsibility**: Focused domain expertise
 - **Composable Architecture**: Seamless multi-agent orchestration  
