@@ -1,0 +1,111 @@
+{
+  "immutable_core": {
+    "description": "Core paths that should NEVER be moved or renamed",
+    "paths": [
+      "claude/context/core/identity.md",
+      "claude/context/core/systematic_thinking_protocol.md",
+      "claude/context/core/model_selection_strategy.md",
+      "claude/context/core/ufc_system.md",
+      "claude/context/core/smart_context_loading.md",
+      "claude/context/tools/available.md",
+      "claude/context/personal/profile.md",
+      "CLAUDE.md",
+      "SYSTEM_STATE.md"
+    ],
+    "protection_level": "absolute"
+  },
+  "protected_directories": {
+    "description": "Directories with high stability requirements",
+    "paths": [
+      "claude/context/core/",
+      "claude/context/tools/",
+      "claude/context/personal/",
+      "claude/hooks/"
+    ],
+    "protection_level": "high",
+    "allow_new_files": true,
+    "allow_content_edits": true,
+    "allow_moves": false,
+    "allow_renames": false
+  },
+  "managed_directories": {
+    "description": "Directories with controlled growth",
+    "paths": [
+      "claude/agents/",
+      "claude/tools/",
+      "claude/commands/"
+    ],
+    "protection_level": "medium",
+    "allow_new_files": true,
+    "allow_content_edits": true,
+    "allow_moves": true,
+    "require_semantic_naming": true
+  },
+  "extension_zones": {
+    "description": "Safe zones for experimentation and customization",
+    "paths": [
+      "claude/extensions/experimental/",
+      "claude/extensions/personal/",
+      "claude/extensions/archive/"
+    ],
+    "protection_level": "low",
+    "allow_new_files": true,
+    "allow_content_edits": true,
+    "allow_moves": true,
+    "allow_renames": true,
+    "cleanup_policy": "quarterly_review"
+  },
+  "naming_conventions": {
+    "prohibited_patterns": [
+      "_v[0-9]+",
+      "_new",
+      "_old",
+      "_temp",
+      "_updated",
+      "_final",
+      "_copy",
+      "_backup",
+      "test_*",
+      "tmp_*"
+    ],
+    "exceptions": [
+      "test_*.py",
+      "*_test.py",
+      "__init__.py",
+      "__pycache__"
+    ],
+    "timestamp_patterns": [
+      "_[0-9]{8}",
+      "_[0-9]{8}_[0-9]{6}"
+    ],
+    "allowed_timestamp_categories": [
+      "claude/data/",
+      "backups/",
+      "logs/"
+    ]
+  },
+  "violation_responses": {
+    "immutable_core_modification": {
+      "action": "block",
+      "message": "Core files are immutable. Use extension zones for customizations.",
+      "suggest_alternative": true
+    },
+    "naming_violation": {
+      "action": "warn",
+      "message": "File name violates semantic naming conventions.",
+      "suggest_alternative": true,
+      "block_on_commit": true
+    },
+    "unauthorized_move": {
+      "action": "block",
+      "message": "Protected directories do not allow file moves.",
+      "suggest_alternative": true
+    }
+  },
+  "metadata": {
+    "created": "2025-10-02",
+    "version": "1.0",
+    "anti_sprawl_phase": "1",
+    "last_updated": "2025-10-02"
+  }
+}
