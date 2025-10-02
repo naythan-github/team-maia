@@ -10,19 +10,46 @@ import json
 import requests
 from typing import Optional, List, Dict, Any
 
-API_KEY = os.getenv("TRELLO_API_KEY")
-API_TOKEN = os.getenv("TRELLO_API_TOKEN")
+try:
+    import keyring
+    KEYRING_AVAILABLE = True
+except ImportError:
+    KEYRING_AVAILABLE = False
+
 BASE_URL = "https://api.trello.com/1"
+
+def _get_credentials():
+    """Get credentials from keyring or environment variables"""
+    # Try keyring first (most secure)
+    if KEYRING_AVAILABLE:
+        api_key = keyring.get_password("trello", "api_key")
+        api_token = keyring.get_password("trello", "api_token")
+        if api_key and api_token:
+            return api_key, api_token
+
+    # Fallback to environment variables
+    api_key = os.getenv("TRELLO_API_KEY")
+    api_token = os.getenv("TRELLO_API_TOKEN")
+
+    return api_key, api_token
 
 class TrelloFast:
     """Fast Trello client for Claude Code"""
 
     def __init__(self, api_key: str = None, api_token: str = None):
-        self.api_key = api_key or API_KEY
-        self.api_token = api_token or API_TOKEN
+        if api_key and api_token:
+            self.api_key = api_key
+            self.api_token = api_token
+        else:
+            self.api_key, self.api_token = _get_credentials()
 
         if not self.api_key or not self.api_token:
-            raise ValueError("TRELLO_API_KEY and TRELLO_API_TOKEN must be set")
+            raise ValueError(
+                "Trello credentials not found. Set them using:\n"
+                "  keyring.set_password('trello', 'api_key', 'YOUR_KEY')\n"
+                "  keyring.set_password('trello', 'api_token', 'YOUR_TOKEN')\n"
+                "Or set environment variables TRELLO_API_KEY and TRELLO_API_TOKEN"
+            )
 
     def _request(self, method: str, endpoint: str, data: dict = None, params: dict = None) -> Any:
         """Make API request"""

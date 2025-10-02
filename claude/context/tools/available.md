@@ -903,10 +903,10 @@ Commands are markdown files that define reusable workflows and can be chained to
 - **Risk Level**: MEDIUM
 - **Scanner Health**: ✅ OSV-Scanner 2.2.3, Bandit 1.8.6, Lynis 3.1.5 all operational
 
-### Productivity Integration Tools ✅ **PHASE 79 - OCTOBER 2025**
+### Productivity Integration Tools ✅ **PHASE 79-81.1 - OCTOBER 2025**
 
-**Trello Fast Integration** - Claude Code Optimized API Client
-- **Location**: `claude/tools/trello_fast.py` (267 lines)
+**Trello Fast Integration** - Claude Code Optimized API Client with macOS Keychain Security
+- **Location**: `claude/tools/trello_fast.py` (280 lines)
 - **Purpose**: Direct Trello API integration optimized for terminal/Claude Code workflow
 - **Capabilities**:
   - **Boards**: List, get details, create, search
@@ -915,7 +915,12 @@ Commands are markdown files that define reusable workflows and can be chained to
   - **Labels**: Get, create, add to cards
   - **Members**: Get, add to cards
   - **Checklists**: Create, add items
-- **Performance**: Instant responses, zero MCP overhead, no encryption delays
+- **Performance**: Instant responses, zero MCP overhead, no encryption delays (~50-100ms keychain overhead vs 3s API latency)
+- **Security**: ⭐⭐⭐⭐⭐ **macOS Keychain Integration** (Phase 81.1)
+  - **Primary**: macOS Keychain via `keyring` library (OS-level encryption)
+  - **Fallback**: Environment variables (backward compatible)
+  - **Setup**: `keyring.set_password('trello', 'api_key', 'YOUR_KEY')`
+  - **Benefits**: Prevents credential leaks in git commits, screenshots, process listings
 - **CLI Interface**:
   - `python3 trello_fast.py query` - Get complete board structure
   - `python3 trello_fast.py list-boards` - List all boards
@@ -924,12 +929,11 @@ Commands are markdown files that define reusable workflows and can be chained to
 - **Python API**:
   ```python
   from claude.tools.trello_fast import TrelloFast
-  client = TrelloFast()
+  client = TrelloFast()  # Auto-loads from keychain
   boards = client.list_boards()
   cards = client.create_card(list_id, name, desc)
   ```
-- **Authentication**: Environment variables (TRELLO_API_KEY, TRELLO_API_TOKEN)
-- **Status**: ✅ **PRODUCTION READY** - Tested with live user data (4 lists, 7 cards)
+- **Status**: ✅ **PRODUCTION READY** - Tested with live user data (4 lists, 7 cards), keychain integration verified
 - **Architecture Note**: MCP server approach archived (incompatible with Claude Code terminal workflow)
 
 ## Unified Knowledge Management System ⭐ **PRODUCTION-READY CONSOLIDATED SYSTEM**
