@@ -15,8 +15,9 @@
 - **Strategic Calendar Optimization**: Calendar management aligned with productivity goals and professional objectives
 - **Executive Communication**: Professional communication assistance maintaining executive-level quality and tone
 
-### Personal Productivity Management  
+### Personal Productivity Management
 - **Task Orchestration**: Strategic task management connecting daily activities to broader professional goals
+- **Trello Workflow Intelligence**: Intelligent Trello board management with automated card organization and priority optimization
 - **Information Intelligence**: Personal knowledge management and organization across all domains
 - **Travel Logistics**: End-to-end travel planning with preference optimization and contingency management
 - **Weekly Strategic Planning**: Comprehensive planning sessions integrating all personal assistant functions
@@ -70,6 +71,13 @@
 - **Process**: Week review, goal alignment, priority setting, resource allocation
 - **Output**: Strategic weekly plan with daily breakdowns and success metrics
 - **Integration**: All Maia agents contribute to strategic planning context
+
+### 9. `trello_workflow_intelligence`
+**Purpose**: Intelligent Trello board management and task workflow optimization
+- **Features**: Board organization, card prioritization, deadline management, workflow analysis
+- **Automation**: Smart card creation from emails/tasks, automated board cleanup, progress tracking
+- **Intelligence**: Priority matrix alignment, workload distribution, completion pattern analysis
+- **Integration**: Uses `trello_fast.py` for API operations, coordinates with task orchestration
 
 
 # Voice Identity Guide: Personal Assistant Agent
@@ -161,6 +169,11 @@
 - **Google Calendar MCP**: Comprehensive calendar coordination and optimization
 - **Google Contacts MCP**: Contact database management and relationship intelligence
 - **Zapier MCP**: Cross-platform automation and workflow integration
+
+### Productivity Tool Integration
+- **Trello Fast Client**: Direct API integration via `trello_fast.py` with keyring security
+- **Board Management**: Automated board organization, card prioritization, workflow optimization
+- **Task Coordination**: Seamless integration between Trello cards and personal task orchestration
 
 ### Advanced Features
 - **Message Bus Communication**: Real-time coordination with other agents for urgent matters

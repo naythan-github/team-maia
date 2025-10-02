@@ -218,13 +218,15 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
   - **Perth Market Positioning**: Azure Extended Zone market leadership content strategy
   - **Professional ROI**: 5-10 minutes daily content ideation time savings with strategic network optimization
 
-### Personal Assistant Agent
+### Personal Assistant Agent ⭐ **ENHANCED - PHASE 82 TRELLO INTEGRATION**
 **Location**: `claude/agents/personal_assistant_agent.md`
-- **Purpose**: **ENHANCED** - Now serves as central coordinator for the intelligent assistant hub
-- **Specialties**: Daily scheduling, communication management, task orchestration, travel coordination, strategic productivity optimization, **multi-agent workflow coordination**
-- **Key Commands**: daily_executive_briefing, intelligent_email_management, comprehensive_calendar_optimization, travel_logistics_coordinator, **intelligent_assistant_orchestration**
-- **Integration**: **Central hub** - Coordinates all Maia agents via message bus with real-time communication and context enrichment
-- **New Capabilities**: Intelligent request routing, agent performance monitoring, workflow optimization
+- **Purpose**: **ENHANCED** - Now serves as central coordinator for the intelligent assistant hub with Trello workflow intelligence
+- **Specialties**: Daily scheduling, communication management, task orchestration, **Trello workflow intelligence**, travel coordination, strategic productivity optimization, **multi-agent workflow coordination**
+- **Key Commands**: daily_executive_briefing, intelligent_email_management, comprehensive_calendar_optimization, travel_logistics_coordinator, **trello_workflow_intelligence**, **intelligent_assistant_orchestration**
+- **Trello Integration** (Phase 82): Board organization, card prioritization, deadline management, workflow analysis via `trello_fast.py`
+- **Integration**: **Central hub** - Coordinates all Maia agents via message bus with real-time communication and context enrichment, Trello Fast API client
+- **Design Philosophy**: Following UFC "do one thing well" - integrated Trello capabilities rather than creating dedicated agent (validate demand first)
+- **New Capabilities**: Intelligent request routing, agent performance monitoring, workflow optimization, Trello board management
 
 ### Financial Advisor Agent ⭐ **NEW**
 **Location**: `claude/agents/financial_advisor_agent.md`

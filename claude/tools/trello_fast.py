@@ -267,7 +267,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description="Fast Trello CLI")
-    parser.add_argument("action", choices=["query", "create-card", "move-card", "list-boards"])
+    parser.add_argument("action", choices=["query", "create-card", "move-card", "list-boards", "get-boards", "boards"])
     parser.add_argument("--list-id", help="List ID")
     parser.add_argument("--card-id", help="Card ID")
     parser.add_argument("--name", help="Card/Board name")
@@ -282,7 +282,7 @@ def main():
         result = client.get_everything()
         print(json.dumps(result, indent=2))
 
-    elif args.action == "list-boards":
+    elif args.action in ["list-boards", "get-boards", "boards"]:
         boards = client.list_boards()
         for board in boards:
             print(f"{board['name']} - {board['url']}")
