@@ -28,10 +28,32 @@ These tools are always available for use:
 - **Safety**: High confidence thresholds with automatic fallback to full loading for uncertain requests
 - **Status**: ✅ ACTIVE - Integrated into standard Maia workflow via CLAUDE.md
 
-### Local LLM Stack - Western Models Only ⭐ **NEW - PHASE 74 PRIVACY-FOCUSED CONFIGURATION**
+### VTT Meeting Intelligence System ⭐ **NEW - PHASE 83 PRODUCTION READY**
+- **VTT Watcher**: Automated meeting transcript analysis with FOB templates
+  - **File**: `claude/tools/vtt_watcher.py` (459 lines)
+  - **Monitoring**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT`
+  - **Output**: `~/git/maia/claude/data/transcript_summaries/`
+  - **Auto-Start**: macOS LaunchAgent (com.maia.vtt-watcher) - survives reboots
+- **FOB Template System**: 6 meeting-type specific frameworks
+  - **Templates**: Standup, Client, Technical, Planning, Review, One-on-One
+  - **File**: `claude/data/meeting_fob_templates.json`
+  - **Sections**: Type-specific (e.g., Client: objectives, decisions, concerns, commercial impact, deliverables, next steps)
+- **Local LLM Intelligence**: CodeLlama 13B via Ollama
+  - **Capabilities**: Meeting type classification, speaker identification, action item extraction, key topics, executive summaries
+  - **Performance**: ~3.5 minutes for 240-word transcript (7 LLM calls per FOB template)
+  - **Cost**: 99.3% savings vs cloud LLMs, 100% local processing
+- **Management Commands**:
+  - Status: `bash ~/git/maia/claude/tools/vtt_watcher_status.sh`
+  - Disable: `launchctl unload ~/Library/LaunchAgents/com.maia.vtt-watcher.plist`
+  - Enable: `launchctl load ~/Library/LaunchAgents/com.maia.vtt-watcher.plist`
+  - Logs: `tail -f ~/git/maia/claude/data/logs/vtt_watcher.log`
+- **Business Value**: Executive-ready summaries, standardized formats, clear action tracking, stakeholder reporting
+- **Status**: ✅ PRODUCTION READY - Auto-starts on login, processes VTT files with FOB templates
+
+### Local LLM Stack - Western Models Only ⭐ **PHASE 74 PRIVACY-FOCUSED CONFIGURATION**
 - **Ollama Service**: Version 0.12.3 running as background service on 32GB RAM system
 - **Privacy Policy**: Western/trusted origins only (Meta, Google, Microsoft, Hugging Face) - No Chinese models
-- **Primary Model**: codellama:13b (7.4 GB) - Best balance for daily coding (Meta/USA)
+- **Primary Model**: codellama:13b (7.4 GB) - Best balance for daily coding (Meta/USA) - **Now used for VTT analysis**
 - **Fast Tasks**: codegemma:7b (5.0 GB) - Quick completions (Google/USA)
 - **Security Focus**: starcoder2:15b (9.1 GB) - Enterprise security patterns (Hugging Face/USA-EU)
 - **Maximum Quality**: codellama:70b (39 GB) - Architecture decisions, uses swap (Meta/USA)

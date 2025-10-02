@@ -1,0 +1,219 @@
+{
+  "standup": {
+    "name": "Daily Standup",
+    "description": "Quick team sync for progress updates and blocker identification",
+    "executive_summary_prompt": "Summarize in 2-3 bullets: team progress, key blockers, sprint health",
+    "sections": [
+      {
+        "id": "velocity_check",
+        "title": "🚀 Sprint Velocity",
+        "prompt": "Assess sprint progress: on track, at risk, or blocked. Include completion percentage if mentioned."
+      },
+      {
+        "id": "completed_work",
+        "title": "✅ Completed Work",
+        "prompt": "List what was completed since last standup, grouped by person"
+      },
+      {
+        "id": "in_progress",
+        "title": "🔄 In Progress",
+        "prompt": "List current work items, grouped by person with expected completion dates"
+      },
+      {
+        "id": "blockers",
+        "title": "🚨 Blockers & Risks",
+        "prompt": "List all blockers, dependencies, or risks mentioned. Include severity if discussed."
+      },
+      {
+        "id": "action_items",
+        "title": "📋 Action Items",
+        "prompt": "Extract action items with [PERSON]: task (deadline). Include all commitments made."
+      }
+    ]
+  },
+  "client": {
+    "name": "Client Meeting",
+    "description": "External stakeholder meetings requiring professional communication",
+    "executive_summary_prompt": "Summarize in 3-4 bullets: client objectives, decisions made, commercial impact, next steps",
+    "sections": [
+      {
+        "id": "client_objectives",
+        "title": "🎯 Client Objectives",
+        "prompt": "What is the client trying to achieve? What are their pain points or requirements?"
+      },
+      {
+        "id": "decisions_made",
+        "title": "✅ Decisions & Agreements",
+        "prompt": "List all decisions made and agreements reached. Include commercial or contractual commitments."
+      },
+      {
+        "id": "client_concerns",
+        "title": "⚠️ Client Concerns",
+        "prompt": "List any concerns, objections, or risks raised by the client"
+      },
+      {
+        "id": "commercial_impact",
+        "title": "💰 Commercial Impact",
+        "prompt": "Identify any financial implications: costs, revenue, budget changes, scope changes"
+      },
+      {
+        "id": "deliverables",
+        "title": "📦 Deliverables & Deadlines",
+        "prompt": "Extract all deliverables with owners and deadlines committed to the client"
+      },
+      {
+        "id": "next_steps",
+        "title": "➡️ Next Steps",
+        "prompt": "What are the immediate next actions for both internal team and client?"
+      }
+    ]
+  },
+  "technical": {
+    "name": "Technical Discussion",
+    "description": "Architecture, design, and technical problem-solving sessions",
+    "executive_summary_prompt": "Summarize in 3-4 bullets: technical problem, solution approach, architecture decisions, implementation plan",
+    "sections": [
+      {
+        "id": "problem_statement",
+        "title": "🔍 Problem Statement",
+        "prompt": "What is the technical problem or challenge being addressed?"
+      },
+      {
+        "id": "proposed_solutions",
+        "title": "💡 Proposed Solutions",
+        "prompt": "List all technical solutions or approaches discussed. Include pros/cons if mentioned."
+      },
+      {
+        "id": "architecture_decisions",
+        "title": "🏗️ Architecture Decisions",
+        "prompt": "Document architectural decisions made: technologies chosen, patterns adopted, trade-offs accepted"
+      },
+      {
+        "id": "technical_risks",
+        "title": "⚠️ Technical Risks",
+        "prompt": "Identify technical risks, complexity areas, or unknowns discussed"
+      },
+      {
+        "id": "implementation_plan",
+        "title": "📋 Implementation Plan",
+        "prompt": "Extract implementation steps, sequencing, and technical dependencies"
+      },
+      {
+        "id": "spike_work",
+        "title": "🔬 Spike Work & POCs",
+        "prompt": "List any proof-of-concept work, spikes, or research tasks needed before implementation"
+      }
+    ]
+  },
+  "planning": {
+    "name": "Planning Session",
+    "description": "Sprint planning, roadmap planning, or strategic planning meetings",
+    "executive_summary_prompt": "Summarize in 3-4 bullets: planning scope, capacity, priorities, risks",
+    "sections": [
+      {
+        "id": "planning_scope",
+        "title": "🎯 Planning Scope",
+        "prompt": "What timeframe or scope is being planned? Sprint, quarter, project phase?"
+      },
+      {
+        "id": "priorities",
+        "title": "⭐ Priorities",
+        "prompt": "List prioritized items or features in order. Include business justification if discussed."
+      },
+      {
+        "id": "capacity_allocation",
+        "title": "👥 Capacity & Allocation",
+        "prompt": "Document team capacity, resource allocation, or utilization discussed"
+      },
+      {
+        "id": "dependencies",
+        "title": "🔗 Dependencies",
+        "prompt": "List external dependencies, blockers, or prerequisites for planned work"
+      },
+      {
+        "id": "commitments",
+        "title": "✅ Commitments",
+        "prompt": "What is the team committing to deliver? Include acceptance criteria if mentioned."
+      },
+      {
+        "id": "risks_assumptions",
+        "title": "⚠️ Risks & Assumptions",
+        "prompt": "Document planning risks and key assumptions made"
+      }
+    ]
+  },
+  "review": {
+    "name": "Review/Retrospective",
+    "description": "Sprint reviews, demos, or team retrospectives",
+    "executive_summary_prompt": "Summarize in 3-4 bullets: what was delivered, what worked well, what needs improvement, action items",
+    "sections": [
+      {
+        "id": "delivered_work",
+        "title": "✅ Work Delivered",
+        "prompt": "List all completed work, features delivered, or demos shown"
+      },
+      {
+        "id": "wins_successes",
+        "title": "🎉 Wins & Successes",
+        "prompt": "What went well? What should the team continue doing?"
+      },
+      {
+        "id": "challenges",
+        "title": "📉 Challenges & Issues",
+        "prompt": "What didn't go well? What obstacles were encountered?"
+      },
+      {
+        "id": "lessons_learned",
+        "title": "💡 Lessons Learned",
+        "prompt": "Key insights or learnings from this period"
+      },
+      {
+        "id": "improvements",
+        "title": "🔧 Improvements",
+        "prompt": "What process or practice improvements are proposed?"
+      },
+      {
+        "id": "action_items",
+        "title": "📋 Action Items",
+        "prompt": "Extract improvement actions with [PERSON]: task (deadline)"
+      }
+    ]
+  },
+  "one_on_one": {
+    "name": "One-on-One",
+    "description": "Individual meetings, performance discussions, career conversations",
+    "executive_summary_prompt": "Summarize in 2-3 bullets: key discussion topics, decisions made, follow-up actions (keep confidential)",
+    "sections": [
+      {
+        "id": "discussion_topics",
+        "title": "💬 Discussion Topics",
+        "prompt": "What were the main topics discussed? (Career, performance, concerns, goals)"
+      },
+      {
+        "id": "feedback_given",
+        "title": "💭 Feedback Shared",
+        "prompt": "Summarize any feedback given (both directions). Keep constructive and factual."
+      },
+      {
+        "id": "career_development",
+        "title": "📈 Career Development",
+        "prompt": "Any career goals, skill development, or growth opportunities discussed?"
+      },
+      {
+        "id": "concerns_blockers",
+        "title": "⚠️ Concerns & Blockers",
+        "prompt": "Personal blockers, team concerns, or issues raised?"
+      },
+      {
+        "id": "commitments",
+        "title": "✅ Commitments",
+        "prompt": "What did each person commit to? Include manager and individual actions."
+      },
+      {
+        "id": "next_steps",
+        "title": "➡️ Next Steps",
+        "prompt": "What are the follow-up actions and next 1:1 focus areas?"
+      }
+    ]
+  }
+}
