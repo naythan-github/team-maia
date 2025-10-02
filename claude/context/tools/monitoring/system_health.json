@@ -1,0 +1,12 @@
+{
+  "overall_health": "healthy",
+  "active_agents": 1,
+  "system_load": {
+    "cpu_usage": 16.5,
+    "memory_usage": 76.5,
+    "disk_usage": 45.4
+  },
+  "conflicts_detected": 0,
+  "last_update": "2025-09-06T09:50:27.290532",
+  "alerts": []
+}

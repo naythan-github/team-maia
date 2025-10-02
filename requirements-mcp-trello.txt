@@ -1,0 +1,39 @@
+# Trello MCP Server - Security Hardened Dependencies
+# =====================================================
+# Install with: pip3 install -r requirements-mcp-trello.txt
+#
+# Security: All dependencies pinned with minimum secure versions
+# Verification: Run `pip3 install --require-hashes -r requirements-mcp-trello.txt` for hash verification
+
+# Core HTTP library (HTTPS with certificate verification)
+requests>=2.32.0,<3.0.0
+
+# MCP Protocol
+mcp>=1.0.0
+
+# Encryption (AES-256-GCM) - Updated to fix GHSA-79v4-65xg-pq4g and GHSA-h4gh-qq45-vh27
+cryptography>=44.0.1
+
+# OS Keychain integration
+keyring>=24.0.0,<26.0.0
+
+# Optional: Trello Python SDK (if using py-trello wrapper)
+# py-trello>=0.19.0
+
+# Development dependencies (testing, security scanning)
+# Uncomment for development
+
+# Testing
+# pytest>=7.4.0
+# pytest-asyncio>=0.21.0
+# pytest-cov>=4.1.0
+
+# Security scanning
+# bandit>=1.7.5  # SAST scanner
+# safety>=2.3.5  # Dependency vulnerability scanner
+# pip-audit>=2.6.0  # PyPI vulnerability scanner
+
+# Code quality
+# black>=23.7.0  # Code formatter
+# flake8>=6.1.0  # Linter
+# mypy>=1.5.0  # Type checker

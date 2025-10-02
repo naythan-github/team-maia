@@ -1,0 +1,29 @@
+{
+  "mcpServers": {
+    "m365-graph": {
+      "command": "python3",
+      "args": [
+        "/Users/naythandawe/git/maia/claude/tools/mcp/m365_graph_server.py"
+      ],
+      "env": {
+        "M365_TENANT_ID": "${M365_TENANT_ID}",
+        "M365_CLIENT_ID": "${M365_CLIENT_ID}",
+        "M365_READ_ONLY": "${M365_READ_ONLY:-true}"
+      },
+      "description": "Microsoft 365 integration using official Graph SDK",
+      "capabilities": [
+        "Outlook/Exchange email operations",
+        "Microsoft Teams channels and meetings",
+        "Calendar and scheduling",
+        "OneDrive file operations (planned)",
+        "SharePoint content (planned)"
+      ],
+      "security": {
+        "authentication": "Azure AD OAuth2",
+        "credential_storage": "AES-256 encrypted via mcp_env_manager",
+        "read_only_mode": true,
+        "audit_logging": true
+      }
+    }
+  }
+}

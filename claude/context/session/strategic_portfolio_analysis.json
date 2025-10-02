@@ -1,0 +1,329 @@
+{
+  "analysis_timestamp": "2025-09-10T23:51:53.092578",
+  "current_inventory": {
+    "total_tools": 306,
+    "by_type": {
+      "python_tool": 224,
+      "command": 51,
+      "agent": 21,
+      "fob": 10
+    },
+    "by_category": {
+      "dashboard": 107,
+      "data_processing": 23,
+      "monitoring": 99,
+      "job_processing": 24,
+      "testing": 8,
+      "optimization": 4,
+      "communication": 8,
+      "security": 1,
+      "misc": 1,
+      "agent_orchestration": 21,
+      "infrastructure": 10
+    },
+    "total_lines_of_code": 79473,
+    "total_size_kb": 3771.65234375
+  },
+  "consolidation_opportunities": {
+    "total_opportunities": 18,
+    "by_type": {
+      "similar_function": 7,
+      "unused_tools": 1,
+      "duplicate": 8,
+      "legacy_version": 2
+    },
+    "by_risk_level": {
+      "high": 7,
+      "medium": 8,
+      "low": 3
+    },
+    "potential_savings": {
+      "files_removed": 10,
+      "files_consolidated": 10,
+      "lines_saved": 5474,
+      "size_saved_kb": 237.3955078125
+    }
+  },
+  "projection": {
+    "current_count": 306,
+    "projected_final_count": 296,
+    "reduction_percentage": 3.2679738562091507,
+    "target_range": "185-195 tools",
+    "target_met": false
+  },
+  "detailed_opportunities": [
+    {
+      "category": "dashboard",
+      "tools": [
+        "presentation_generator",
+        "batch_job_scraper",
+        "job_dashboard_generator"
+      ],
+      "consolidation_type": "similar_function",
+      "potential_savings": {
+        "files_consolidated": 2,
+        "complexity_reduction": 11.9637
+      },
+      "risk_level": "high",
+      "recommendation": "Merge functionality into presentation_generator"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "maia_command_monitor",
+        "automated_job_monitor",
+        "m4_integration_manager"
+      ],
+      "consolidation_type": "similar_function",
+      "potential_savings": {
+        "files_consolidated": 2,
+        "complexity_reduction": 9.2418
+      },
+      "risk_level": "high",
+      "recommendation": "Merge functionality into maia_command_monitor"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "code_review_optimizer",
+        "pattern_detection_optimizer",
+        "data_processing_optimizer"
+      ],
+      "consolidation_type": "similar_function",
+      "potential_savings": {
+        "files_consolidated": 2,
+        "complexity_reduction": 12.2258
+      },
+      "risk_level": "high",
+      "recommendation": "Merge functionality into code_review_optimizer"
+    },
+    {
+      "category": "cleanup",
+      "tools": [
+        "validation_test_simple",
+        "test_parameter_validation"
+      ],
+      "consolidation_type": "unused_tools",
+      "potential_savings": {
+        "files_removed": 2,
+        "total_lines_saved": 116,
+        "total_size_saved_kb": 3.3916015625
+      },
+      "risk_level": "medium",
+      "recommendation": "Archive or remove after verification"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "react_dashboard_generator",
+        "react_dashboard_generator_legacy"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 1335,
+        "size_saved_kb": 50.1064453125
+      },
+      "risk_level": "low",
+      "recommendation": "Keep react_dashboard_generator, archive react_dashboard_generator_legacy"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "gmail_mass_contact_processor_optimized",
+        "gmail_mass_contact_processor"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 395,
+        "size_saved_kb": 20.5859375
+      },
+      "risk_level": "medium",
+      "recommendation": "Keep gmail_mass_contact_processor_optimized, archive gmail_mass_contact_processor"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "project_backlog_dashboard",
+        "project_backlog_dashboard"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 64,
+        "size_saved_kb": 1.9140625
+      },
+      "risk_level": "medium",
+      "recommendation": "Keep project_backlog_dashboard, archive project_backlog_dashboard"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "integration_test",
+        "integration_test"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 169,
+        "size_saved_kb": 7.9072265625
+      },
+      "risk_level": "medium",
+      "recommendation": "Keep integration_test, archive integration_test"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "contact_extraction_manager_optimized",
+        "contact_extraction_manager"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 473,
+        "size_saved_kb": 22.6259765625
+      },
+      "risk_level": "medium",
+      "recommendation": "Keep contact_extraction_manager_optimized, archive contact_extraction_manager"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "system_status_dashboard",
+        "system_status_dashboard"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 42,
+        "size_saved_kb": 1.744140625
+      },
+      "risk_level": "medium",
+      "recommendation": "Keep system_status_dashboard, archive system_status_dashboard"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "tool_usage_monitor_optimized",
+        "tool_usage_monitor"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 445,
+        "size_saved_kb": 19.9921875
+      },
+      "risk_level": "medium",
+      "recommendation": "Keep tool_usage_monitor_optimized, archive tool_usage_monitor"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "agent_monitor",
+        "agent_monitor"
+      ],
+      "consolidation_type": "duplicate",
+      "potential_savings": {
+        "files_removed": 1,
+        "lines_saved": 117,
+        "size_saved_kb": 4.431640625
+      },
+      "risk_level": "medium",
+      "recommendation": "Keep agent_monitor, archive agent_monitor"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "enhanced_agent_monitor",
+        "agent_monitor"
+      ],
+      "consolidation_type": "similar_function",
+      "potential_savings": {
+        "files_consolidated": 1,
+        "complexity_reduction": 4.158900000000001
+      },
+      "risk_level": "high",
+      "recommendation": "Merge functionality into enhanced_agent_monitor"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "react_dashboard_generator_legacy",
+        "react_dashboard_generator"
+      ],
+      "consolidation_type": "similar_function",
+      "potential_savings": {
+        "files_consolidated": 1,
+        "complexity_reduction": 2.0784000000000002
+      },
+      "risk_level": "high",
+      "recommendation": "Merge functionality into react_dashboard_generator_legacy"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "contact_extraction_manager_optimized",
+        "contact_extraction_manager"
+      ],
+      "consolidation_type": "similar_function",
+      "potential_savings": {
+        "files_consolidated": 1,
+        "complexity_reduction": 5.176900000000001
+      },
+      "risk_level": "high",
+      "recommendation": "Merge functionality into contact_extraction_manager_optimized"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "gmail_mass_contact_processor",
+        "gmail_mass_contact_processor_optimized"
+      ],
+      "consolidation_type": "similar_function",
+      "potential_savings": {
+        "files_consolidated": 1,
+        "complexity_reduction": 4.7694
+      },
+      "risk_level": "high",
+      "recommendation": "Merge functionality into gmail_mass_contact_processor"
+    },
+    {
+      "category": "dashboard",
+      "tools": [
+        "react_dashboard_generator_legacy"
+      ],
+      "consolidation_type": "legacy_version",
+      "potential_savings": {
+        "legacy_files_removed": 1,
+        "lines_saved": 1335,
+        "size_saved_kb": 50.1064453125
+      },
+      "risk_level": "low",
+      "recommendation": "Remove react_dashboard_generator_legacy, use react_dashboard_generator"
+    },
+    {
+      "category": "monitoring",
+      "tools": [
+        "intelligent_assistant_hub_legacy"
+      ],
+      "consolidation_type": "legacy_version",
+      "potential_savings": {
+        "legacy_files_removed": 1,
+        "lines_saved": 1099,
+        "size_saved_kb": 57.9814453125
+      },
+      "risk_level": "low",
+      "recommendation": "Remove intelligent_assistant_hub_legacy, use test_intelligent_assistant_hub"
+    }
+  ],
+  "recommendations": [
+    "\ud83c\udfaf HIGH PRIORITY: Remove 8 duplicate tool sets (low risk)",
+    "\ud83d\udcda MEDIUM PRIORITY: Archive 2 legacy versions (low risk)",
+    "\ud83d\udd27 Focus on dashboard category: 9 consolidation opportunities",
+    "\ud83d\udd27 Focus on monitoring category: 8 consolidation opportunities",
+    "\ud83d\udd27 Focus on cleanup category: 1 consolidation opportunities",
+    "\u2705 Start with low-risk consolidations to build confidence",
+    "\ud83e\uddea Test system functionality after each consolidation phase"
+  ]
+}

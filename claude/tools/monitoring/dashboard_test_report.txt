@@ -1,0 +1,72 @@
+🧪 Dashboard Test Suite Report
+==================================================
+
+📊 Summary: 1/6 dashboards working
+🔧 Platform Integration: http://127.0.0.1:8100
+⏰ Test Date: 2025-09-23 23:21:08
+
+🎯 Dashboard Test Results
+------------------------------
+
+❌ ai_business_intelligence_dashboard (Port 8054):
+   ✓ Startup: 3.01s
+   ✗ Health Check: Failed
+   ✗ Web Access: Failed
+   ✗ Content: No dashboard content
+   ✓ Shutdown: Success
+   🚨 Errors: Web access failed: HTTPConnectionPool(host='127.0.0.1', port=8054): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103db0dc0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+
+❌ dashboard_service_manager (Port 8053):
+   ✓ Startup: 3.01s
+   ✗ Health Check: Failed
+   ✗ Web Access: Failed
+   ✗ Content: No dashboard content
+   ✓ Shutdown: Success
+   🚨 Errors: Web access failed: HTTPConnectionPool(host='127.0.0.1', port=8053): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103dc2fd0>: Failed to establish a new connection: [Errno 61] Connection refused'))
+
+❌ executive_dashboard_redesigned (Port 8057):
+   ✓ Startup: 3.01s
+   ✗ Health Check: Failed
+   ✗ Web Access: Failed
+   ✗ Content: No dashboard content
+   ✓ Shutdown: Success
+   🚨 Errors: Web access failed: HTTPConnectionPool(host='127.0.0.1', port=8057): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103d19340>: Failed to establish a new connection: [Errno 61] Connection refused'))
+
+❌ insights_dashboard_generator (Port 8055):
+   ✓ Startup: 3.01s
+   ✗ Health Check: Failed
+   ✗ Web Access: Failed
+   ✗ Content: No dashboard content
+   ✓ Shutdown: Success
+   🚨 Errors: Web access failed: HTTPConnectionPool(host='127.0.0.1', port=8055): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103dca100>: Failed to establish a new connection: [Errno 61] Connection refused'))
+
+❌ security_operations_dashboard (Port 8056):
+   ✓ Startup: 3.01s
+   ✗ Health Check: Failed
+   ✗ Web Access: Failed
+   ✗ Content: No dashboard content
+   ✓ Shutdown: Success
+   🚨 Errors: Web access failed: HTTPConnectionPool(host='127.0.0.1', port=8056): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x103db0e50>: Failed to establish a new connection: [Errno 61] Connection refused'))
+
+✅ team_intelligence_dashboard (Port 8050):
+   ✓ Startup: 3.01s
+   ✓ Health Check: Passed
+   ✓ Web Access: 0.00s
+   ✓ Content: Dashboard detected
+   ✓ Shutdown: Success
+
+💡 Recommendations
+--------------------
+
+🔧 Dashboards needing attention:
+  - ai_business_intelligence_dashboard
+  - dashboard_service_manager
+  - executive_dashboard_redesigned
+  - insights_dashboard_generator
+  - security_operations_dashboard
+
+📈 Next Steps:
+  1. Fix failed dashboards based on error messages
+  2. Check missing dependencies
+  3. Verify environment variable support
+  4. Test individual dashboard files for syntax errors

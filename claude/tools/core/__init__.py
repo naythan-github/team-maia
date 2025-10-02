@@ -1,0 +1,1 @@
+"""Core path management utilities"""

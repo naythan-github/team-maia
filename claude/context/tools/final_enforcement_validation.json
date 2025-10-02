@@ -1,0 +1,42 @@
+{
+  "validation_timestamp": "2025-09-06T09:09:47.903752",
+  "overall_score": 91.30434782608695,
+  "detailed_results": {
+    "layer_1": {
+      "ufc_file_exists": true,
+      "ufc_content_complete": true,
+      "directory_structure": true
+    },
+    "layer_2": {
+      "hook_exists": true,
+      "hook_executable": true,
+      "hook_has_enforcement": true,
+      "hook_has_validation": true,
+      "hook_has_instructions": true
+    },
+    "layer_3": {
+      "claude_md_exists": true,
+      "mandatory_loading_alert": true,
+      "hydration_confirmation": true,
+      "success_template": true,
+      "degraded_template": true,
+      "response_format_emphasis": false
+    },
+    "layer_4": {
+      "symlink_tool_exists": true,
+      "symlinks_deployed": true,
+      "good_coverage": true
+    },
+    "integration": {
+      "all_context_files": true,
+      "orchestration_integration": true,
+      "advanced_commands_documented": true
+    },
+    "performance": {
+      "context_size_reasonable": false,
+      "hook_performance": true,
+      "reasonable_file_count": true
+    }
+  },
+  "ready_for_production": false
+}

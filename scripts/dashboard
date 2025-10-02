@@ -1,0 +1,48 @@
+#!/bin/bash
+# Maia Dashboard Launcher Script
+# Convenient access to AI Business Intelligence Dashboard
+
+MAIA_DIR="/Users/naythan/git/maia"
+DASHBOARD_MANAGER="$MAIA_DIR/claude/tools/dashboard_service_manager.py"
+
+case "$1" in
+    start)
+        echo "🚀 Starting Maia Dashboard..."
+        python3 "$DASHBOARD_MANAGER" start
+        ;;
+    stop)
+        echo "🛑 Stopping Maia Dashboard..."
+        python3 "$DASHBOARD_MANAGER" stop
+        ;;
+    restart)
+        echo "🔄 Restarting Maia Dashboard..."
+        python3 "$DASHBOARD_MANAGER" restart
+        ;;
+    status)
+        echo "📊 Dashboard Status:"
+        python3 "$DASHBOARD_MANAGER" status
+        ;;
+    logs)
+        echo "📋 Dashboard Logs:"
+        tail -f "$MAIA_DIR/claude/data/dashboard.log"
+        ;;
+    open)
+        echo "🌐 Opening Dashboard..."
+        open "http://127.0.0.1:8050"
+        ;;
+    *)
+        echo "Maia AI Business Intelligence Dashboard"
+        echo "Usage: $0 {start|stop|restart|status|logs|open}"
+        echo ""
+        echo "Commands:"
+        echo "  start   - Start dashboard service"
+        echo "  stop    - Stop dashboard service"
+        echo "  restart - Restart dashboard service"
+        echo "  status  - Show service status"
+        echo "  logs    - Show service logs"
+        echo "  open    - Open dashboard in browser"
+        echo ""
+        echo "Quick start: $0 start && $0 open"
+        exit 1
+        ;;
+esac

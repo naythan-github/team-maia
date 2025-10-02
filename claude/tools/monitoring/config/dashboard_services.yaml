@@ -1,0 +1,211 @@
+# Maia Dashboard Service Configuration Management
+# Phase 2: Architecture Standardization - Centralized YAML Configuration
+# Updated to reflect running services and enterprise patterns
+
+version: "2.0"
+last_updated: "2025-09-30T14:30:00Z"
+updated_by: "Maia Enterprise Architecture Agent"
+
+# Configuration Management Strategy
+# AI-Optimized Port Grouping with Zero Conflicts
+# Business Intelligence: 8050-8059
+# DevOps/Metrics: 8060-8069  
+# Governance/Security: 8070-8079
+# Analytics/External: 8080-8099
+
+services:
+  # Business Intelligence Group (8050-8059) - Currently Running
+  ai_business_intelligence_dashboard:
+    port: 8050  # Updated to match running service
+    health_endpoint: "/health"
+    framework: "dash"
+    category: "business"
+    description: "AI-powered business intelligence and analytics platform"
+    file_path: "claude/tools/monitoring/ai_business_intelligence_dashboard.py"
+    environment_vars:
+      MAIA_DASHBOARD_PORT: 8050
+    dependencies: []
+    auto_start: true
+    startup_order: 1
+    nginx_upstream: "ai_business_intelligence"
+    nginx_path: "/ai/"
+    
+  # DevOps/Metrics Group (8060-8069) - Currently Running  
+  dora_metrics_dashboard:
+    port: 8060  # Updated to match running service
+    health_endpoint: "/health"
+    framework: "dash"
+    category: "devops"
+    description: "DORA metrics and deployment performance tracking"
+    file_path: "claude/tools/monitoring/dora_metrics_dashboard.py"
+    environment_vars:
+      DASHBOARD_PORT: 8060
+    dependencies: []
+    auto_start: true
+    startup_order: 2
+    nginx_upstream: "dora_metrics"
+    nginx_path: "/dora/"
+
+  # Governance/Security Group (8070-8079) - Currently Running
+  governance_dashboard:
+    port: 8070  # Updated to match running service
+    health_endpoint: "/health"  # Updated to standardized endpoint
+    framework: "flask"
+    category: "governance"
+    description: "Repository governance and policy monitoring"
+    file_path: "claude/tools/governance/governance_dashboard.py"
+    environment_vars: {}
+    dependencies: []
+    auto_start: true
+    startup_order: 3
+    nginx_upstream: "governance_dashboard"
+    nginx_path: "/governance/"
+
+  # Service Discovery Hub - Currently Running
+  unified_dashboard_platform:
+    port: 8100
+    health_endpoint: "/health"
+    framework: "flask"
+    category: "hub"
+    description: "Central dashboard hub and service discovery"
+    file_path: "claude/tools/monitoring/unified_dashboard_platform.py"
+    environment_vars: {}
+    dependencies: []
+    auto_start: true
+    startup_order: 0
+    nginx_upstream: "dashboard_hub"
+    nginx_path: "/"
+
+  # Analytics Group (8080-8099) - Available for scaling
+  servicedesk_analytics_dashboard:
+    port: 5001  # External analytics on different port range
+    health_endpoint: "/api/health"
+    framework: "flask"
+    category: "analytics"
+    description: "ServiceDesk analytics and performance intelligence"
+    file_path: "projects/analytics/servicedesk_dashboard_local/app.py"
+    environment_vars: {}
+    dependencies: []
+    auto_start: false
+    startup_order: 4
+    nginx_upstream: "servicedesk_analytics"
+    nginx_path: "/analytics/"
+
+  # Reserved for future services
+  eia_executive_dashboard:
+    port: 8071
+    health_endpoint: "/health"
+    framework: "flask"
+    category: "executive"
+    description: "Executive intelligence and performance analytics"
+    file_path: "claude/tools/monitoring/eia_executive_dashboard.py"
+    environment_vars:
+      DASHBOARD_PORT: 8071
+    dependencies: ["ai_business_intelligence_dashboard"]
+    auto_start: false
+    startup_order: 5
+    nginx_upstream: "eia_executive"
+    nginx_path: "/executive/"
+
+# Global Configuration Management
+global:
+  host: "127.0.0.1"
+  environment: "development"
+  log_level: "INFO"
+  health_check_timeout: 30
+  startup_timeout: 60
+  max_retry_attempts: 3
+  base_path: "${MAIA_ROOT}"
+  python_executable: "python3"
+  config_validation: true
+  auto_discovery: true
+
+# Service Mesh Configuration (nginx)
+service_mesh:
+  enabled: true
+  proxy_port: 8080
+  config_file: "${MAIA_ROOT}/claude/config/nginx_setup.conf" 
+  health_aggregation: "/health/all"
+  individual_health_pattern: "/health/{service}"
+  upstreams:
+    dashboard_hub: "127.0.0.1:8100"
+    ai_business_intelligence: "127.0.0.1:8050"
+    dora_metrics: "127.0.0.1:8060"
+    governance_dashboard: "127.0.0.1:8070"
+
+# Central Hub Configuration
+hub:
+  name: "unified_dashboard_platform"
+  port: 8100
+  database: "${MAIA_ROOT}/claude/data/dashboard_registry.db"
+  discovery_path: "${MAIA_ROOT}/claude/tools/monitoring"
+  health_endpoint: "/health"
+  status_endpoint: "/api/dashboards"
+
+# Health Check Configuration
+health_checks:
+  enabled: true
+  interval_seconds: 30
+  timeout_seconds: 10
+  retry_attempts: 3
+  failure_threshold: 3
+  success_threshold: 1
+  endpoints:
+    - path: "/health"
+      method: "GET"
+      expected_status: [200]
+      required_fields: ["status", "service", "timestamp"]
+
+# Monitoring and Observability
+monitoring:
+  prometheus:
+    enabled: false
+    port: 9090
+    metrics_path: "/metrics"
+  logging:
+    level: "INFO"
+    format: "json"
+    rotation: "daily"
+    retention_days: 30
+  tracing:
+    enabled: false
+    service_name: "maia-dashboard-platform"
+
+# Security Configuration  
+security:
+  authentication:
+    enabled: false
+    type: "oauth2"
+  authorization:
+    enabled: false
+    rbac: true
+  tls:
+    enabled: false
+    cert_path: ""
+    key_path: ""
+  cors:
+    enabled: true
+    origins: ["http://localhost:*", "http://127.0.0.1:*"]
+
+# Deployment Configuration
+deployment:
+  mode: "development"  # development, staging, production
+  scaling:
+    auto_scale: false
+    min_instances: 1
+    max_instances: 3
+  persistence:
+    data_retention_days: 90
+    backup_enabled: false
+    backup_schedule: "0 2 * * *"  # Daily at 2 AM
+
+# Framework Standardization
+frameworks:
+  preferred_patterns:
+    business_dashboards: "dash"  # Reactive UI for business intelligence
+    system_dashboards: "flask"  # API-first for system operations
+    hybrid_dashboards: "dash_with_flask"  # Combined pattern
+  migration_strategy:
+    target_architecture: "dash_plus_flask"
+    migration_timeline: "Q1_2025"
+    backward_compatibility: true

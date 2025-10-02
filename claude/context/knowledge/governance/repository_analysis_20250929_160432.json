@@ -1,0 +1,150 @@
+{
+  "timestamp": "2025-09-29T16:04:32.112585",
+  "repo_path": "${MAIA_ROOT}",
+  "file_counts": {
+    "root_files": 43,
+    "claude_tools": 161,
+    "claude_agents": 37,
+    "claude_context": 126,
+    "archive_files": 963,
+    "total_files": 1932
+  },
+  "ufc_compliance": {
+    "ufc_system_exists": true,
+    "enforcement_hook_exists": true,
+    "context_enforcer_exists": true,
+    "ufc_system_accessible": true
+  },
+  "sprawl_indicators": [
+    {
+      "type": "root_sprawl",
+      "severity": "high",
+      "count": 43,
+      "description": "43 files in root directory (target: <20)"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive",
+      "description": "Archive directory outside archive/ folder: archive"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/archived_broken_files_20250911",
+      "description": "Archive directory outside archive/ folder: archived_broken_files_20250911"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/archived_confluence_methods_20250914",
+      "description": "Archive directory outside archive/ folder: archived_confluence_methods_20250914"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/consolidated_archive_20250911",
+      "description": "Archive directory outside archive/ folder: consolidated_archive_20250911"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/claude_tools_archive",
+      "description": "Archive directory outside archive/ folder: claude_tools_archive"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/tools_old",
+      "description": "Archive directory outside archive/ folder: tools_old"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/consolidated_contact_system_archive",
+      "description": "Archive directory outside archive/ folder: consolidated_contact_system_archive"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/backups",
+      "description": "Archive directory outside archive/ folder: backups"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/archived_broken_files_20250911/consolidated_contact_system_archive",
+      "description": "Archive directory outside archive/ folder: consolidated_contact_system_archive"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/tools_old/security/backups",
+      "description": "Archive directory outside archive/ folder: backups"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive/historical/2025/tools_old/mcp/archive",
+      "description": "Archive directory outside archive/ folder: archive"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/claude/backups",
+      "description": "Archive directory outside archive/ folder: backups"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/claude/context/session/archives",
+      "description": "Archive directory outside archive/ folder: archives"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/claude/data/governance_backups",
+      "description": "Archive directory outside archive/ folder: governance_backups"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/claude/data/career/backups-pre-cleanup",
+      "description": "Archive directory outside archive/ folder: backups-pre-cleanup"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/claude/backups/production/maia_backup_daily_20250913_161044",
+      "description": "Archive directory outside archive/ folder: maia_backup_daily_20250913_161044"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/projects/standalone/google_photos_migrator/archive",
+      "description": "Archive directory outside archive/ folder: archive"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/projects/standalone/google_photos_migrator/archive/extension_correction_tests/backups",
+      "description": "Archive directory outside archive/ folder: backups"
+    }
+  ],
+  "tool_analysis": {
+    "total_tools": 154,
+    "categories": {
+      "research": 8,
+      "core": 4,
+      "security": 33,
+      "business": 24,
+      "governance": 4,
+      "automation": 17,
+      "communication": 19,
+      "monitoring": 25,
+      "data": 20
+    },
+    "category_count": 9
+  },
+  "health_score": 0.0
+}

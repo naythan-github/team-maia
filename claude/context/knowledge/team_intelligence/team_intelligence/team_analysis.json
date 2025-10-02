@@ -1,0 +1,22 @@
+{
+  "team_size": 5,
+  "analysis_date": "2025-09-15T17:04:36.332507",
+  "experience_distribution": {
+    "Junior": 0,
+    "Mid": 0,
+    "Senior": 0,
+    "Unknown": 5
+  },
+  "skill_matrix": {},
+  "capability_gaps": [
+    "Low azure coverage (0%)",
+    "Low kubernetes coverage (0%)",
+    "Low terraform coverage (0%)",
+    "Low python coverage (0%)"
+  ],
+  "development_opportunities": [],
+  "collaboration_insights": [],
+  "recommendations": [
+    "Consider hiring more senior team members for mentorship"
+  ]
+}

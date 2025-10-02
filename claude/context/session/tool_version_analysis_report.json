@@ -1,0 +1,62 @@
+{
+  "summary": {
+    "total_tools": 402,
+    "active_tools": 254,
+    "already_archived": 148,
+    "broken_tools": 0,
+    "version_groups_found": 1,
+    "archival_candidates": 2,
+    "estimated_post_archival": 252
+  },
+  "domain_distribution": {
+    "research": 14,
+    "monitoring": 14,
+    "job_search": 14,
+    "security": 35,
+    "general": 106,
+    "communication": 12,
+    "cloud": 3,
+    "automation": 12,
+    "financial": 10,
+    "agent": 18,
+    "data": 16
+  },
+  "enhancement_distribution": {
+    "standard": 196,
+    "intelligent": 44,
+    "enhanced": 9,
+    "advanced": 4,
+    "basic": 1
+  },
+  "version_groups": [
+    {
+      "base_name": "server",
+      "total_versions": 3,
+      "recommended_active": "server",
+      "archive_candidates": [
+        "server",
+        "server"
+      ]
+    }
+  ],
+  "archival_plan": {
+    "strategy": "date_based_versioning",
+    "archive_directory": "claude/tools/archived/",
+    "structure": {
+      "2024/": "Tools last modified in 2024",
+      "2025/": "Tools last modified in 2025",
+      "legacy/": "Very old tools (pre-2024)"
+    },
+    "naming_convention": {
+      "pattern": "tool_name_v{version}.py",
+      "example": "research_tool_v1.py \u2192 archived/2024/research_tool_v1.py"
+    },
+    "implementation_steps": [
+      "1. Create archived/ directory structure",
+      "2. Move version group candidates to appropriate year directories",
+      "3. Rename remaining active tools with _v1, _v2 suffixes for clarity",
+      "4. Update tool discovery to prefer highest version numbers",
+      "5. Create archival manifest for tracking"
+    ]
+  }
+}

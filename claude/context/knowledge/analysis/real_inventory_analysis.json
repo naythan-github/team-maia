@@ -1,0 +1,177 @@
+{
+  "analysis_date": "2025-09-20",
+  "total_photos_analyzed": 3,
+  "total_bottles_identified": 18,
+  "confidence_notes": "High confidence identification using Claude Code vision",
+  "bottles": [
+    {
+      "photo": "IMG_1462.jpg",
+      "brand": "Cointreau",
+      "spirit_type": "Orange Liqueur",
+      "volume_ml": 750,
+      "abv": 40.0,
+      "confidence": 0.95,
+      "notes": "Clear amber bottle, distinctive label"
+    },
+    {
+      "photo": "IMG_1462.jpg", 
+      "brand": "Haku",
+      "spirit_type": "Vodka",
+      "volume_ml": 750,
+      "abv": 40.0,
+      "confidence": 0.95,
+      "notes": "Japanese vodka, clear bottle with black label"
+    },
+    {
+      "photo": "IMG_1462.jpg",
+      "brand": "Luxardo Maraschino",
+      "spirit_type": "Cherry Liqueur", 
+      "volume_ml": 750,
+      "abv": 32.0,
+      "confidence": 0.98,
+      "notes": "Distinctive green bottle with red wax cap"
+    },
+    {
+      "photo": "IMG_1462.jpg",
+      "brand": "Espolòn",
+      "spirit_type": "Tequila",
+      "volume_ml": 750,
+      "abv": 40.0,
+      "confidence": 0.95,
+      "notes": "Clear bottle with agave plant artwork"
+    },
+    {
+      "photo": "IMG_1462.jpg",
+      "brand": "Malfy",
+      "spirit_type": "Gin",
+      "volume_ml": 750,
+      "abv": 41.0,
+      "confidence": 0.93,
+      "notes": "Italian gin with blue circular label"
+    },
+    {
+      "photo": "IMG_1462.jpg",
+      "brand": "Licor 43",
+      "spirit_type": "Spanish Liqueur",
+      "volume_ml": 750,
+      "abv": 31.0,
+      "confidence": 0.95,
+      "notes": "Golden amber bottle, Spanish vanilla liqueur"
+    },
+    {
+      "photo": "IMG_1464.jpg",
+      "brand": "Frangelico",
+      "spirit_type": "Hazelnut Liqueur",
+      "volume_ml": 750,
+      "abv": 20.0,
+      "confidence": 0.98,
+      "notes": "Distinctive monk-shaped bottle"
+    },
+    {
+      "photo": "IMG_1464.jpg",
+      "brand": "Lillet Blanc",
+      "spirit_type": "French Aperitif",
+      "volume_ml": 750,
+      "abv": 17.0,
+      "confidence": 0.95,
+      "notes": "White aperitif wine, gold cap"
+    },
+    {
+      "photo": "IMG_1464.jpg",
+      "brand": "Chartreuse",
+      "spirit_type": "Herbal Liqueur",
+      "volume_ml": 700,
+      "abv": 55.0,
+      "confidence": 0.95,
+      "notes": "French monastery liqueur, green label"
+    },
+    {
+      "photo": "IMG_1464.jpg",
+      "brand": "Bartender's Cut",
+      "spirit_type": "Brandy",
+      "volume_ml": 750,
+      "abv": 40.0,
+      "confidence": 0.85,
+      "notes": "Dark bottle with black label"
+    },
+    {
+      "photo": "IMG_1464.jpg",
+      "brand": "Begin",
+      "spirit_type": "Gin",
+      "volume_ml": 700,
+      "abv": 45.0,
+      "confidence": 0.90,
+      "notes": "Australian gin with tree design"
+    },
+    {
+      "photo": "IMG_1465.jpg",
+      "brand": "De Kuyper Crème de Cacao",
+      "spirit_type": "Chocolate Liqueur",
+      "volume_ml": 700,
+      "abv": 24.0,
+      "confidence": 0.93,
+      "notes": "Clear chocolate liqueur"
+    },
+    {
+      "photo": "IMG_1465.jpg",
+      "brand": "Limoncello",
+      "spirit_type": "Lemon Liqueur",
+      "volume_ml": 500,
+      "abv": 28.0,
+      "confidence": 0.90,
+      "notes": "Italian lemon liqueur, frosted bottle"
+    },
+    {
+      "photo": "IMG_1465.jpg",
+      "brand": "PAMA",
+      "spirit_type": "Pomegranate Liqueur",
+      "volume_ml": 750,
+      "abv": 17.0,
+      "confidence": 0.93,
+      "notes": "Clear bottle with pomegranate design"
+    },
+    {
+      "photo": "IMG_1465.jpg",
+      "brand": "Lillet Rosé",
+      "spirit_type": "French Aperitif",
+      "volume_ml": 750,
+      "abv": 17.0,
+      "confidence": 0.92,
+      "notes": "Rosé aperitif wine"
+    },
+    {
+      "photo": "IMG_1465.jpg",
+      "brand": "Buffalo Trace",
+      "spirit_type": "Bourbon Whiskey",
+      "volume_ml": 750,
+      "abv": 45.0,
+      "confidence": 0.98,
+      "notes": "Kentucky straight bourbon"
+    },
+    {
+      "photo": "IMG_1465.jpg",
+      "brand": "Swan River",
+      "spirit_type": "Vanilla Vodka",
+      "volume_ml": 700,
+      "abv": 40.0,
+      "confidence": 0.88,
+      "notes": "Australian vanilla-flavored vodka"
+    }
+  ],
+  "summary_statistics": {
+    "total_volume_ml": 12550,
+    "total_volume_liters": 12.55,
+    "spirit_categories": {
+      "Liqueurs": 9,
+      "Vodka": 2,
+      "Gin": 2,
+      "Whiskey/Bourbon": 1,
+      "Tequila": 1,
+      "Brandy": 1,
+      "Aperitif": 2
+    },
+    "average_abv": 35.1,
+    "highest_abv": "Chartreuse (55%)",
+    "lowest_abv": "Lillet Blanc/Rosé, PAMA (17%)"
+  }
+}

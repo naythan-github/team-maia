@@ -1,0 +1,1905 @@
+{
+  "alert_classification": {
+    "total_tickets": 11372,
+    "system_alerts": "1385",
+    "user_incidents": "9987",
+    "system_alert_percentage": 12.179036229335209,
+    "user_incident_percentage": 87.82096377066479,
+    "breakdown": {
+      "user_incident": "9987",
+      "monitoring_alert": "896",
+      "security_alert": "275",
+      "performance_alert": "143",
+      "backup_alert": "64",
+      "system_alert": "7"
+    },
+    "avg_automation_score": 0.6423672177277524
+  },
+  "automation_opportunities": {
+    "high_potential": {
+      "count": 117,
+      "percentage": 1.0288427717200141,
+      "common_patterns": {
+        "failure": 85,
+        "patch": 85,
+        "notification": 84,
+        "automate": 84,
+        "deployment": 84,
+        "task": 84,
+        "fyna": 13,
+        "server": 12,
+        "millenni": 11,
+        "claro": 11
+      }
+    },
+    "medium_potential": {
+      "count": 218,
+      "percentage": 1.9169890960253253,
+      "common_patterns": {
+        "password": 86,
+        "reset": 86,
+        "patch": 36,
+        "failure": 32,
+        "notification": 32,
+        "automate": 32,
+        "deployment": 32,
+        "task": 32,
+        "disk": 22,
+        "2025": 21
+      }
+    },
+    "low_potential": {
+      "count": 11037,
+      "percentage": 97.05416813225466
+    },
+    "by_category": {
+      "Support/Helpdesk": {
+        "total_tickets": 11026,
+        "high_automation": 117,
+        "medium_automation": 218,
+        "low_automation": 10691,
+        "avg_score": 0.6558135316524578
+      },
+      "Project Management": {
+        "total_tickets": 51,
+        "high_automation": 0,
+        "medium_automation": 0,
+        "low_automation": 51,
+        "avg_score": 0.45098039215686275
+      },
+      "Project Engineering": {
+        "total_tickets": 178,
+        "high_automation": 0,
+        "medium_automation": 0,
+        "low_automation": 178,
+        "avg_score": 0.10674157303370786
+      },
+      "Pre-Sales/Quoting": {
+        "total_tickets": 60,
+        "high_automation": 0,
+        "medium_automation": 0,
+        "low_automation": 60,
+        "avg_score": 0.1
+      },
+      "Other - Non Chargeable": {
+        "total_tickets": 55,
+        "high_automation": 0,
+        "medium_automation": 0,
+        "low_automation": 55,
+        "avg_score": 0.41818181818181815
+      },
+      "Product Development": {
+        "total_tickets": 2,
+        "high_automation": 0,
+        "medium_automation": 0,
+        "low_automation": 2,
+        "avg_score": 1.5
+      }
+    }
+  },
+  "repetitive_patterns": {
+    "global_repetitive_titles": {
+      "alert for vic - melbourne head office - motion detected": 170,
+      "fired:sev4 azure monitor alert resourcehealthunhealthyalert on a": 130,
+      "support team: queue event - lost queue call 802": 73,
+      "scheduled on-site for mips": 66,
+      "scheduled on-site for nqphn": 66,
+      "remove licenses and offboard ": 46,
+      "alert 'cusf platform-hybridvmhighnetworkoutalert\u2019": 45,
+      "zenitas - tenancy split - alex": 40,
+      "new vulnerabilities notification from microsoft defender for end": 36,
+      "alert 'cusf platform-hybridvmhighnetworkinalert\u2019": 35,
+      "issue with outlook": 33,
+      "password reset": 32,
+      "task - nwr- secure remote access solution- project engineer (clo": 31,
+      "failure notification for automate patch deployment task-kd bus -": 28,
+      "failure notification for automate patch deployment task-millenni": 28,
+      "atenashami01 disk health.": 27,
+      "failure notification for automate patch deployment task-claro  -": 26,
+      "important notice: azure monitor alert resourcehealthunhealthyale": 21,
+      "issue with email": 20,
+      "isalbi signatures ": 20
+    },
+    "account_specific_patterns": {
+      "ORRO": {
+        "total_tickets": 696,
+        "repetitive_patterns": {
+          "new byod registration request": 8,
+          "sentinelone - rdpwinst.exe detected as malware on gamingpc": 3,
+          "quote toolexcel app version issue": 7,
+          "for cloud infrastructure": 3,
+          "new starter setup - oscar melchiorsen": 4,
+          "division attribute update": 4,
+          "support team: queue event - lost queue call 802": 18,
+          "re: issue with hotline numbers (phillip services pty ltd) - requ": 10,
+          "superloop portal - 502 bad gateway": 10,
+          "windows app user list for carriage &amp;amp;amp;amp;amp;amp;amp;": 3,
+          "ppm access": 4,
+          "follow-up certificate renewal status": 3,
+          "offboarding stefan olczak": 3,
+          "new starter setup - jessica prodanovic": 3,
+          "powerbi license": 3,
+          "purchase 3 visio plans 2 licenses": 4,
+          "new laptop for michael\tvillaflor": 3,
+          "executive leave calendar setup": 5,
+          "external sharing": 3,
+          "please read enabling mdm on all orro device": 3,
+          "new starter setup - mats weiss": 3,
+          "nqphn - access to otc": 4,
+          "electrical concern with monitor in melbourne office": 3,
+          "provide access overseas travel approval request for neha mehta o": 3,
+          "access to aaron eilsers email and calendar": 3,
+          "power bi sales reporting": 3,
+          "unusually sharepoint file deletion - sales site": 3,
+          "please order tls certificate for mail.orroorro.com": 3,
+          "fw security control validation - otr for rose quimque  orro": 3,
+          "re new submission from conversational form - lakmal test": 3
+        },
+        "repetitive_percentage": 19.396551724137932
+      },
+      "Winc Australia Pty Limited": {
+        "total_tickets": 36,
+        "repetitive_patterns": {
+          "winc ad risk mitigation - pm time": 6,
+          "winc - sso migration to entra id- meetings": 3,
+          "winc - sso migration to entra id- technical work": 5,
+          "we have a revised solution.\r\nadditional work is for 3 weeks (pm ": 4,
+          "winc - azure information protection meetings": 3,
+          "winc - sso migration to entra id- pm time": 3,
+          "winc - application control/whitelisting- meetings/comms with cli": 5,
+          "winc azure information protection - pmo time": 3
+        },
+        "repetitive_percentage": 88.88888888888889
+      },
+      "NorthWestern Roads Management": {
+        "total_tickets": 86,
+        "repetitive_patterns": {
+          "task - nwr - secure remote access solution- cloud design, deploy": 12,
+          "task - power bi": 5,
+          "task - nwr- secure remote access solution- project engineer (clo": 31,
+          "request: wm7 duo and vpn access ": 12,
+          "issue with vpn": 7,
+          "want cli version for linux": 3,
+          " [ 3666640 ] task - nwr- secure remote access solution- project ": 3
+        },
+        "repetitive_percentage": 84.88372093023256
+      },
+      "KDR Gold Coast Pty Ltd": {
+        "total_tickets": 353,
+        "repetitive_patterns": {
+          "user deletion": 8,
+          "candice jones - ict request user add and update form ": 5,
+          "kdr onsite 01.09.25": 3,
+          "rail live shortcut doesn&amp;#039;t open up": 3,
+          "kdr onsite - 10/09/2025": 9,
+          "password reset": 6,
+          "rails: scada kpi interface data missing": 3,
+          "onsite 11.08.2025": 6,
+          "vpn not working": 3,
+          "kristen wight - ict form updated ": 4,
+          "re: work pattern full time drivers_cas-127774-v7w9": 5,
+          "fw: payroll desktop micropay evo v9.4 sp2 release - 8th septembe": 4,
+          "kdr onsite 13.08.2025": 9,
+          "onsite ticket - 14.07.2025": 7,
+          "- computer is too slow and freeze all the time": 4,
+          "unable to connect to vpn": 3,
+          "office 365 password reset": 5,
+          "onsite ticket kdr - 16.07": 5,
+          "callback request": 3,
+          "kdr onsite - 17/08/2025": 10,
+          "rails": 5,
+          "kdr onsite 18.08": 3,
+          "leave calendar": 3,
+          "onsite - 20/08/2025": 10,
+          "issue": 5,
+          "onsite ticket kdr - 21.07.25": 7,
+          "vpn - username/password incorrect": 3,
+          "faid software installation": 5,
+          "onsite ticket kdr - 23.07.25": 7,
+          "rails software access": 4,
+          "outlook issue - status offline": 5,
+          "rails issues": 5,
+          "kdr onsite 28.08.25": 3,
+          "kdr onsite 27/08/2025": 9,
+          "kdr onsite 28.07.25": 4,
+          "kdr onsite 03/09/2025": 9,
+          "onsite ticket 30/07/2025": 7,
+          "kdr onsite 04.08.2025": 6,
+          "ict request user add and access form - kristen wight ": 4,
+          "onsite ticket 06/08/2025": 7,
+          "cannot send email from the sqe email account": 4,
+          "scheduled on-site for kdr": 3,
+          "papercut user deletion": 4,
+          "kdr onsite 08.09.25": 3
+        },
+        "repetitive_percentage": 65.15580736543909
+      },
+      "Zenitas": {
+        "total_tickets": 1602,
+        "repetitive_patterns": {
+          "laura&amp;amp;amp;#039;s laptops unable to be updated": 4,
+          "issues with laptop": 10,
+          "phishing emails sent to personal email addresses of employees": 3,
+          "new office printer": 11,
+          "setting up a laptop": 5,
+          "issue with email": 6,
+          "- scan bulk documents": 7,
+          "printer is not working": 4,
+          "no receiving emails": 4,
+          "zenitas - tenancy split - alex": 40,
+          "alylacare app has save button greyed out.": 3,
+          "assistance with adding email to outlook": 4,
+          "time and date on laptop not syncing ": 6,
+          "fw: your mailbox is full": 4,
+          "remove licenses and offboard ": 46,
+          "mailbox access": 3,
+          "re: microsoft teams": 4,
+          "activtrak access": 6,
+          "cannot log in": 3,
+          "need help with grant permissions for sharepoint site api access": 7,
+          "05016-nb: damaged device - multiple issues": 6,
+          "check and reboot vm": 6,
+          "ns account not visible": 3,
+          "re: cheltenham": 3,
+          "printer - scan to email / computer not working": 5,
+          "re: sonica shrestha/plena email": 4,
+          "ticket issue / orro portal": 3,
+          "laptop set up": 4,
+          "new laptop": 6,
+          "laptop replacement - ticket": 5,
+          "issue with device": 11,
+          "device configuration - 04015, 02911, 05516": 7,
+          "not all tickets created are visible": 3,
+          "collect 1 laptop, reset, config and return": 10,
+          "installation of acrobat pro and datto": 18,
+          "authenticator app not working": 5,
+          "fw: project remedy - grata al/lsl": 4,
+          "re: client portal access request": 3,
+          "printer issue": 3,
+          "distribution list addition": 3,
+          "unable to access teams": 5,
+          "re: meeting": 4,
+          "fw: tech 1 legacy access": 6,
+          "re: rosemary antonuccio ": 4,
+          "issue with printer": 14,
+          "please reactivate email account and associated apps for carlie f": 4,
+          "claro computers - sf web to lead form not working": 3,
+          "no internet at site": 3,
+          "au sharepoint page support ": 3,
+          "issue with the screen": 3,
+          "alayacare ": 5,
+          "laptop configuration": 12,
+          "company wide language change": 8,
+          "training platform access": 4,
+          "unable to login": 4,
+          "disposal of 4 not-working and damaged laptops": 4,
+          "new computer set up": 3,
+          "outlook - office access": 5,
+          "laptop internet connection": 4,
+          "collect 2 laptops, reset, config and return": 3,
+          "re: no access to share point": 5,
+          "outlook contact group issue": 3,
+          "t20250805.0018 - deploy api management service for az func apps": 8,
+          "laptop issue": 6,
+          "re: documents not opening (word/excel/wtar)": 3,
+          "fw: phishing scam - advice": 4,
+          "unable to sign in for email and work phone is not working": 5,
+          "unable to log on": 5,
+          "static ip setup": 6,
+          "re: offboard": 3,
+          "cannot connected to internet - bruce street dandenong": 10,
+          "storage space issue": 3,
+          "urgent overseas access required": 3,
+          "saved emails in msg format": 8,
+          "shared service email ms365 credentials": 3,
+          "phishing email to outside organisation": 3,
+          "access to ecase at arcare pimpama for anita kahu": 3,
+          "t20250715.0009 - reset and configure laptop 02219-nb for sandalw": 4,
+          "laptop sim stopped working": 3,
+          "issue with scanning to email": 3,
+          "reset and configure laptop 02668-nb ": 3,
+          "urgent email check": 5,
+          "jeniffer first opens mw word, she receives a message indicating ": 3,
+          "re: new laptop for jennifer morgan (ticket # 3863911)": 5,
+          "resetting": 4,
+          "access to email group to edit": 3,
+          "can not login": 6,
+          "password reset": 3,
+          "re: new joinee": 5,
+          "ns 17/09/2025 &amp;amp;amp;amp;gt; rebecca scott": 3,
+          "remove mfa enforcement policy for house users": 3,
+          "fiona dardenne": 5,
+          "issues saving emails into folders": 5,
+          "disposal of 1 not-working and damaged laptop": 3,
+          "sftp server upgrade v2 to v3": 5,
+          "new joiner - shariq ur-rehman": 3,
+          "ns 18/07/2025 &amp;amp;gt; naveen venkataramanappa": 3,
+          "request access to workxtra accounts": 4,
+          "sharepoint": 3,
+          "issue with tech1 software": 4,
+          "intake inbox access": 3,
+          "need grant permissions to enterprise application": 4,
+          "issue with email and monitor": 4,
+          "fw: bitlocker": 3,
+          "network speed slow after dropping device": 4,
+          "sharepoint folder for australian unity updates ": 4,
+          "issue with ms office": 5,
+          "no internet access on laptop": 3,
+          "it access to be revoked - kit yee kitty chan": 3,
+          "reset of devices": 6,
+          "teams messages not sending": 4,
+          "teams add in to outlook not working": 3,
+          "email accounts": 3,
+          "fw: alayacare access": 3,
+          "issue with sharepoint access": 5,
+          "unable to log in to computer": 3,
+          "create username/password generic user for house": 6,
+          "global address book is not updating correctly": 4,
+          "urgent: unable to access sharepoint": 3,
+          "fw: zenitas - device list - entra extracted on 20th august 2025": 3,
+          "- suddenly cannot access the sharepoint folders": 3,
+          "christine monterde - plena email": 3,
+          "laptop format for new staff": 9,
+          "urgent - o365 account reactivation": 3,
+          "- new starter - domain error": 4,
+          "decisions access": 7,
+          "- ms issue with authentication": 3,
+          "salesforce  sharepoint": 5,
+          "access to orro portal": 5,
+          "sharepoint site ": 3,
+          "device transfer - alyce wade": 3,
+          "dock no longer working": 4,
+          "account access": 3,
+          "fw: collecting data about your plena assets ": 3,
+          "set up laptop for ns": 6,
+          "set up email on personal apple device": 5,
+          "computer not working": 12,
+          "fw: delivery failure: recipient user name col (col@tac.vic.gov.a": 5,
+          "05016-nb: dropping device - multiple issues": 3,
+          "missing group email ": 5,
+          "re: access to sharepoint and plena health central": 3,
+          "reset and reconfigure a machine": 6,
+          "access inquiry": 3,
+          "login to new laptop": 3,
+          "assistance required &amp;amp;amp;amp;amp;amp;amp;amp;amp;amp;amp": 5,
+          "offboarding  reza ahmadi ": 3,
+          "no access to teams / sharepoint": 3,
+          "sharepoint access": 3,
+          "reset password": 4,
+          "it support request": 4,
+          "fw: laptop issues": 3,
+          "unable to edit sharepoint documents": 3,
+          "reset 3 devies": 4,
+          "re: ms teams - team and chat functions": 3,
+          "urgent - dp server not working": 3,
+          "add user access to dimple finance document drive": 3,
+          "it access to be revoked - carol verhoeven\t": 4,
+          "unable to login to house email": 4,
+          "re: access to vic/tas folders on sharepoint": 3,
+          "ns 08/09/2025 &amp;amp;amp;amp;gt; quang-khai derek doan": 3,
+          "ns 11/08/2025 &amp;amp;gt; kamal hossain": 3,
+          "re: ticket note new ticket note: t20250704.0160 - access to emai": 3,
+          "jennifer morgan": 3,
+          "unable to login with the password given for ns lisa williams": 3,
+          "tech 1 access support please": 3,
+          "julia bourne - laptop replacement": 3,
+          "issue with connecting to server": 3,
+          "ns 11/08/2025 &amp;amp;gt; mukesh chaudhary": 3
+        },
+        "repetitive_percentage": 51.56054931335831
+      },
+      "Orro Cloud": {
+        "total_tickets": 1672,
+        "repetitive_patterns": {
+          "fired:sev4 azure monitor alert resourcehealthunhealthyalert on a": 130,
+          "[orrocyber #312961] [microsoft sentinel][medium] 2565: significa": 6,
+          "ssl expiring in 3 days - unilodge australia pty ltd": 3,
+          "failure notification for automate patch deployment task-sgs - au": 9,
+          "new vulnerabilities notification from microsoft defender for end": 36,
+          "alert 'cusf platform-hybridvmhighnetworkoutalert\u2019": 45,
+          "alert 'cusf platform-hybridvmhighnetworkinalert\u2019": 35,
+          "sev3 azure monitor alert volume latency read - whephdc1 on wheph": 9,
+          "failure notification for automate patch deployment task-kd bus -": 27,
+          "failure notification for automate patch deployment task-nqphn - ": 10,
+          "failure notification for automate patch deployment task-bnphn - ": 12,
+          "alert for vic - melbourne head office - motion detected": 170,
+          "your one-time code": 10,
+          "sev0 azure monitor alert the virtual machine operational status ": 4,
+          "important notice: azure monitor alert resourcehealthunhealthyale": 21,
+          "failure notification for automate patch deployment task-kd corp ": 12,
+          "ssl expiring in 10 days - kd bus": 4,
+          "brett andruszkiewicz account in  kdbus ": 3,
+          "alert for ate - bayswater - uplink status changed": 3,
+          "report domain: pacificoptics.com submitter: google.com report-id": 15,
+          "backup image manager - inactivity": 4,
+          "alert &#039;cusf platform-hybridvmhighnetworkoutalert&rsquo;": 13,
+          "re: access to edit spreadsheets": 5,
+          "re: ticket note new ticket note: t20250630.0174 - access changes": 9,
+          "failure notification for automate patch deployment task-kdr gold": 13,
+          "failure notification for automate patch deployment task-millenni": 25,
+          "failure notification for automate patch deployment task-mips - a": 12,
+          "device authorization needed": 4,
+          "re: [ 2538449 ] ethernet access - 50m (csg)   ssg (service activ": 3,
+          "pacops - james hadfield - email bounce back": 3,
+          "sev3 azure monitor alert all data on this volume is safe and acc": 7,
+          "orro, discover trending activity in your organization": 9,
+          "training schedule alert": 4,
+          "sni3865961 - phone system down murray bridge": 5,
+          "alert &#039;cusf platform-hybridvmhighnetworkinalert&rsquo;": 10,
+          "alert for bundaberg - vpn connectivity changed": 16,
+          "case number 5144793182 - has been closed crm:0079501865118": 3,
+          "fired:sev4 azure monitor alert resourcehealthunhealthyalert on t": 11,
+          "alert for ate - clontarf - client ip conflict detected": 4,
+          "vulnerabilities have public disclosed exploit notification from ": 8,
+          "[orrocyber #309467] [microsoft sentinel][medium] 2426: possible ": 5,
+          "[orrocyber #310456] [microsoft sentinel][high] 2450: credential ": 3,
+          "one drive account suspicious activity": 3,
+          "action required: renew your microsoft subscriptions before they\u2019": 4,
+          "failure notification for automate patch deployment task-claro  -": 25,
+          "failure notification for automate patch deployment task-pacops -": 10,
+          "failure notification for automate patch deployment task-wyvern h": 9,
+          "support team: queue event - lost queue call 802": 54,
+          "kaseya vsa security notification - account modified": 10,
+          "re: 40033074 ? tim greenway- suspension of services - orro": 4,
+          "failure notification for automate patch deployment task-ai toppe": 5,
+          "[preview] report domain: pacificoptics.com submitter: enterprise": 3,
+          "failure notification for automate patch deployment task-isalbi -": 14,
+          "failure notification for automate patch deployment task-fyna foo": 5,
+          "request: wm7 duo and vpn access ": 5,
+          "[orrocyber #310557] sentinelone - office 365 successful brute fo": 3,
+          "read the weekly digest of licence requests for amk law": 4,
+          "ssl expiring in 10 days - primary health insights": 3,
+          "major update from message center": 12,
+          "not abt20250611.0139 - mailbox is fullle to pre... - trackingid#": 3,
+          "orro daily digest": 5,
+          "alert for azure - vpn connectivity changed": 4,
+          "connection to abs database server in chn zone": 4,
+          "it-10190 - deletion of &amp;quot;csrpsilverprodsyn_mpe&amp;quot;": 4,
+          "inc1978975 - unilodge - ticket logged - unable to receive calls ": 5,
+          "sev0 azure monitor alert windows server is consuming more than 5": 6,
+          "failure notification for automate patch deployment task-fpb - au": 5,
+          "alert 'cusf platform-hybridvmhighosdiskreadlatencyalert\u2019": 4,
+          "alert for ate - pooraka - uplink status changed": 3,
+          "notifications succeeded for isalbi.com.au batches": 4,
+          "failure notification for automate patch deployment task-playgrou": 6,
+          "phishing reports ready for pacific optics": 3,
+          "phishing reports ready for brisbane north phn": 3,
+          "sev3 azure monitor alert volume latency write - whephdc1 on whep": 6,
+          "sql server alert system: &#039;replication: agent failure&#039; ": 8,
+          "fw: your access to acrobat pro has changed": 4,
+          "alert 'cusf platform-hybridvmlowmemoryalert\u2019": 4,
+          "[orrocyber #317530] [microsoft sentinel][medium] 2694: multi-sta": 3,
+          "sev3 azure monitor alert the cluster detected network connectivi": 3,
+          "failure notification for automate patch deployment task-country ": 3,
+          "alert for ate - murray bridge - uplink status changed": 7,
+          "alert for ate - malaga-morley - uplink status changed": 3,
+          "how was your support experience recently?": 6,
+          "[orrocyber #319405] [microsoft sentinel][medium] 2753: multi-sta": 3,
+          "your granular admin relationship with nw computing expired": 4,
+          "fw: 40032880 williams, daryl": 5,
+          "ssl expiring in 10 days - ferguson plarre bakehouse": 5,
+          "zenitas - azure cost management access": 4,
+          "isalbi: azure resources review": 3,
+          "access to mailbox ": 3,
+          "password issues ": 4,
+          "account access": 6,
+          "[orrocyber #311991] [microsoft sentinel][low] 2522: sentinel tab": 3,
+          "microsoft 365 defender has detected a security threat": 5,
+          "1 ampac fslogix profile fileshare": 3,
+          "t20250724.0028 - emergency-router/firewall offline: keo-wls-wan:": 3,
+          "[orrocyber #318801] sentinelone - sparkonsoft_961140.exe detecte": 3,
+          "sign-in on a new device": 7,
+          "failure notification for automate patch deployment task-ssg - au": 3,
+          "ssl expiring in 10 days - wyvern health": 6,
+          "a vulnerability assessment scan has completed on your server &#0": 3,
+          "re: 40032937 ? ravech, mark - suspension of services": 8,
+          "action required: enable multifactor authentication for your tena": 4,
+          "bullhorn platform product updates": 3,
+          "important: an azure backup failure alert has been activated for ": 4,
+          "delete cisco duo and  vpn": 3,
+          "view your dynamics 365 customer voice usl invoice": 3
+        },
+        "repetitive_percentage": 66.80622009569377
+      },
+      "Isalbi": {
+        "total_tickets": 571,
+        "repetitive_patterns": {
+          "re: exclude reservation": 10,
+          "reassign adobe creative cloud license back to therese dahlstrom": 3,
+          "outlook issue in rdp": 3,
+          "temp profile in rdp server - rds 1 &amp;amp; 2": 10,
+          "isalbi signatures ": 20,
+          "signatures not showing isalbi image ": 4,
+          "outlook on pausembaxrds2 not worrking.": 6,
+          "issue with onedrive and vpn": 15,
+          "fw: server c drive showing blank - npausembaxubf1": 3,
+          "teams issue - mukesh thurairatnam": 6,
+          "air lock exception list": 3,
+          "disk space": 6,
+          "whitelist jabra-direct.exe application in airlock": 4,
+          "warning-auvik collector disconnected: auvik collector:": 3,
+          "add new user to edi users application list": 6,
+          "query regarding agent tracker": 10,
+          "isalbi: bitlocker not enabled": 6,
+          "avd 3cx configuration (bluetooth not available)": 5,
+          "ceva2 access to remote desk and printers": 16,
+          "please create 3 cx account for below users": 4,
+          "please upgrade zan-syd-lt67 to windows 11": 5,
+          "nw admin laps": 7,
+          "unable to save excel document - cannot restart": 4,
+          "jumbled images on pdf - stephanie walker": 8,
+          "mailbox archive - not provisioning": 4,
+          "request to create ax account for new user - jacqueline nagle": 3,
+          "install software on multiple devices": 12,
+          "outlook inside of remote server is not working ": 4,
+          "isalbi - db production servers - alert and monitoring": 4,
+          "please whitelist scribe app for all users at isalbi in airlock": 4,
+          "unable to access mailbox": 19,
+          "ca policies for remote worker": 14,
+          "avd 3cx": 3,
+          "wipe personal laptop": 6,
+          "request adobe acrobat pro": 4,
+          "request access to ax test environment ": 3,
+          "auspost.com.au - please add to the whilelist": 3,
+          "installation of ir runtime": 4,
+          "urgent request - onedrive files for helen hopkins and simon fras": 8,
+          "server disk space ": 4,
+          "request to initiate sso setup for below applications": 13,
+          "re: db2 replication failing ": 3,
+          "unable to launch outlook in remote server asking for admin crede": 7,
+          "re: can&amp;#039;t open my outlook in remote desktop": 4,
+          "please upgrade - isalbi-syd363 to win 11": 3,
+          "setup new user ": 5,
+          "it questions": 5,
+          "please reset these pcs": 5,
+          "quarantined email due to spf, dkim, and dmarc failure": 4,
+          "teams time zone issue": 4,
+          "fw: [the job failed.] sql server job system: &amp;amp;amp;amp;am": 3,
+          "avd issues reported": 10,
+          "avd issues remote control issues": 5,
+          "please upgrade isalbi-mel330 to windows 11": 4,
+          "install ms teams": 3,
+          "issue with teams camera and login to ax account": 5,
+          "c drive needs to be cleared and check pc issues": 3,
+          "multiple user experiencing issue logging onto rdp": 20,
+          "issue with outlook in remote server": 4,
+          "please assign adobe acrobat pro license to new starter karina al": 4,
+          "temp profile in rdp server - rds 1 & 2": 5,
+          "ip 23.95.85.234 has been blacklisted on pbx - isalbi.3cx.com.au": 3,
+          "unable to open outlook in rdp": 3,
+          "adobe creative cloud license query": 4,
+          "request to create ax and 3 cx accounts for below users": 4,
+          "access to pantone connect": 4,
+          "please install windows 11 on isalbi-mel316 pc": 4,
+          "request to insatll gs1 check digit for jessica sunderland": 7,
+          "remove ax and 3cx access for sheetal bali": 4,
+          "request to create ax account for new starter - jocelyn jactino": 3,
+          "ax not responding on both remote servers rds1 and rds2": 7,
+          "issue with 3cx": 3
+        },
+        "repetitive_percentage": 75.4816112084063
+      },
+      "Oculus": {
+        "total_tickets": 86,
+        "repetitive_patterns": {
+          "access to the remote server": 8,
+          "3cx- direct phone no": 3,
+          "oculus: rdp file": 6,
+          "fw: ticket update: t20250704.0132 - oculus : rdp for ben gordon": 7,
+          "computer is freezing": 19,
+          "oculus: return folder from archive": 6,
+          "issue installaing revit software": 15,
+          "bob earl: sending internal emails": 4,
+          "assistance to set up a new computer": 4,
+          "sharepoint - files deleted": 3
+        },
+        "repetitive_percentage": 87.20930232558139
+      },
+      "Wyvern Private Hospital": {
+        "total_tickets": 414,
+        "repetitive_patterns": {
+          "microsoft office access": 3,
+          "ns christine marks &amp;amp;gt; 01/09/2025": 3,
+          "re: junk email": 3,
+          "re: request for wireless casting access for cne&amp;amp;#039;s i": 3,
+          "mfp floor printer re-deployment": 4,
+          "unable to login to system": 3,
+          "- cannot logging to her system": 9,
+          "icu central monitor": 3,
+          "re: microsoft teams - pending tasks": 5,
+          "ns tomas stevens > 22/08/2025": 3,
+          "microsoft office": 3,
+          "email access": 4,
+          "access to recovery room": 4,
+          "ns katherine filippi > 29/08/2025": 3,
+          "phishing:07d979f7-effc-4185-b26b-08ddb203a466|hugopickeringc@out": 3
+        },
+        "repetitive_percentage": 13.526570048309178
+      },
+      "Primary Health Insights (PHI)": {
+        "total_tickets": 144,
+        "repetitive_patterns": {
+          "guestusers can&amp;amp;amp;#039;t read sharepoint lists": 3,
+          "setting up a workspace in phi powerbi": 4,
+          "otc accept button issues for phi users.": 3,
+          "urgent: polar set up changes required - update network rules and": 3,
+          "fw: connection to abs database server in chn zone": 3,
+          "authentication app issue-phi account in outlook": 3,
+          "phi tenant cross-tenant access settings  required": 3,
+          "urgent: vpn is down": 3,
+          "my account has lost access to lockbox": 3,
+          "create phi native account for james seviour": 5,
+          "it-9393 - csrp- csrp ingesting provider uploads but not processi": 3,
+          "fw: primary sense": 3,
+          "re: primary sense": 3,
+          "decom checkpoint": 6,
+          "re: [request # 2418] : emphn phi datamart load failed.": 3,
+          "assign power platform licenses and apps": 6,
+          "request for phi email account for new staff": 5,
+          "inactive guest users wqphn": 4
+        },
+        "repetitive_percentage": 45.83333333333333
+      },
+      "KD Bus": {
+        "total_tickets": 1189,
+        "repetitive_patterns": {
+          "gp rollover": 3,
+          "setup two new devices (clontarf)": 16,
+          "no internet at linksa - nuriootpa": 9,
+          "server gp data atesql01 backup time request": 7,
+          "bayswater workshop touchscreen - kdb-57yr6l3": 10,
+          "t20250724.0017 - pdf printing casues dll erroro": 4,
+          "partner ticket for 3906965": 6,
+          "new shared email": 4,
+          "fw: static ip address": 3,
+          "rtw distribution lists": 3,
+          "account is locked": 3,
+          "reset password": 3,
+          "purchasing of premiere pro under company admin": 20,
+          "email password has expired": 3,
+          "critical - no phones and some offices have no internet\r\n\r\ncall s": 3,
+          "issue with email": 11,
+          "access to email account": 5,
+          "tims installation": 4,
+          "atenashami01 disk health.": 27,
+          "format on sharepoint": 5,
+          "ups: battery near end of life. order replacement battery.": 4,
+          "sftp-ptipsdata.to.netbi": 7,
+          "providing access to a mailbox": 3,
+          "issue while accessing tims application , cannot able to import m": 4,
+          "connect export driver in the computer": 6,
+          "unable to print": 4,
+          "usb drop out": 5,
+          "remote access from nepal": 3,
+          "laptop locks up": 3,
+          "password reset": 13,
+          "teams request": 3,
+          "critical- access point offline: atenortap01": 3,
+          "outlook": 4,
+          "atenasnuri01 disk health.": 6,
+          "email box full": 8,
+          "new desktop set up": 3,
+          "alert for ate - willaston - uplink status changed": 9,
+          "atewxl432 - lock up": 6,
+          "purchasing of premiere pro for kd bus": 3,
+          "rds01 access - atewxl432": 5,
+          "load transequel on pc": 5,
+          "micro pay icon is missing": 4,
+          "access to shared point": 4,
+          "unsuccessful login to atewxd291 - awaiting onsite approval": 3,
+          "remote access on personal computer and set up a new work compute": 11,
+          "new user for kdbus - sally richardson": 8,
+          "t20250808.0009 - disk space is full and my laptop has slow down ": 4,
+          "kdb-bn91dk3: vpn issues wfh": 5,
+          "request for mfa reset": 3,
+          "workshop mechanic computer fault": 4,
+          "ns 01/09/2025 &amp;amp;gt; chloe mai": 4,
+          "alert for ate - queens wharf - uplink status changed": 4,
+          "issue with authenticator, not able to get into email": 3,
+          "no internet on desktop": 4,
+          "re: bob c and bob g not available at north lakes": 9,
+          "teams access": 4,
+          "tims performance as opening in desktop": 6,
+          "sign into account issue ": 3,
+          "bayswater workshop touchscreen": 4,
+          "t20250620.0155 incident  - fw: remote server not working again": 4,
+          "unable to log in": 4,
+          "transequel request": 3,
+          "pdf printing issue": 4,
+          "t20250814.0022 - teams app not opening and outlook error kirstie": 4,
+          "b0b - c wireless issue": 7,
+          "geraldton workshop touch screen requires password reset": 3,
+          "rds01 access": 6,
+          "southlink aldgate phone re-directing ": 4,
+          "set up laptop": 6,
+          "path transit wa - tech issue": 4,
+          "clontarf laptop reactivation": 9,
+          "critical issue not sure who can fix this one.": 5,
+          "login issues at terminal - mona vale": 4,
+          "fw: remote access": 3,
+          "kd bus: unable to login to microsoft": 7,
+          "remote desktop will not load profile": 3,
+          "t20250714.0029 - workshop touch tims not loading": 3,
+          "issue with tims and printer": 4,
+          "admin credentials to install wifi profile": 4,
+          "email distribution list": 3,
+          "fw: swim scheme quote": 5,
+          "mona vale duty office computer": 4,
+          "create 2x printer groups and associate printers": 7,
+          "locked out of computer": 4,
+          "ns 18/07/2025 &gt; jessie xu": 5,
+          "access to remote desktop and shared email": 3,
+          "distribution list": 6,
+          "no internet at henleybrook wa": 3,
+          "fw: for approval : for approval : orro pty ltd - sales invoice s": 7,
+          "connecting to a printer off site urgent": 6,
+          "issue with extending screen after update": 3,
+          "change account type of aldgate rosters": 3,
+          "internet down @ 51 truganina rd malaga wa": 6,
+          "sign on kiosk mona vale": 4,
+          "careers sa email": 3,
+          "issue with connecting to server": 3,
+          "anti virus pop ups": 4,
+          "t20250827.0018 - install tims": 3,
+          "account locked": 4,
+          "natasha chapman new laptop set up": 6,
+          "changing to optus - depot change north sydney, brookvale, mona v": 4,
+          "unable to login": 13,
+          "fw: signature change request for sandeep singh.": 3,
+          "re: adobe log in": 5,
+          "new laptop set up": 6,
+          "internet speed at malaga is slow": 3,
+          "download power bi desktop and windows activation error": 4,
+          "bob - c network not working": 4,
+          "fw: pa consultant remote access": 4,
+          "new pc setup": 4,
+          "fw: access support team | 67564745 - your case has been updated": 3,
+          "email signature": 3,
+          "issues with rdp access": 5,
+          "set up new computer": 4,
+          "issue with outlook and teams": 3,
+          "auto forward update ": 3,
+          "no internet at murray bridge": 7,
+          "reset user pw": 4,
+          "northern beaches - email outage ": 3,
+          "email not working ": 3,
+          "unable to receive internal &amp;amp; external emails": 3,
+          "ns 29/08/2025 &amp;amp;gt; daniel nock": 3,
+          "access outlook and teams on phone": 3,
+          "unable to remote for hastus software": 3,
+          "transfer of adobe premiere pro licence ": 7,
+          "fw: tap-107731 tims - wa - path": 3,
+          "account password reset": 3,
+          "ms project": 5,
+          "m drive access": 3,
+          "requesting for a pin number for his email address": 3,
+          "- secondary authentication needed - wfh": 6,
+          "0 bytes of c driver - urgent!!!": 8,
+          "t20250902.0020 - micropay stp reporting and stp update issue": 5,
+          "fw: eng-2327 re: new supplier accounts not integrated into mex": 9,
+          "unsuccessful login to atewxd291": 4,
+          "re: eng-2327 re: new supplier accounts not integrated into mex": 4,
+          "mfa reset issues": 3,
+          "change email": 4,
+          "request to remove my name from shared email address": 3,
+          "missing printer for duty officer": 4,
+          "h drive missing": 3,
+          "change user on computer id kdb-4lyjvv3": 4,
+          "add employees to email distribution": 6,
+          "ptips login:": 6,
+          "unable to back up in southlink micropay.": 3,
+          "fw: back up on micropay": 3,
+          "assistance required for setting up new laptop": 5,
+          "account reactivation": 3,
+          "new email - aldgate rosters": 3
+        },
+        "repetitive_percentage": 61.90075693860388
+      },
+      "AMPAC Debt Recovery Pty Ltd": {
+        "total_tickets": 115,
+        "repetitive_patterns": {
+          "- cannot logging to linda collins": 4,
+          "issue with the system": 4,
+          "new user - ampac perth - melani de guzman": 3,
+          "security vulnerability": 3,
+          "fw: urgent out of office request: joanne degenkolbe ampac debt r": 3,
+          "access to servers for additional vendor technician": 6,
+          "avd issues / setup": 5,
+          "emails bouncing due to spf": 7,
+          "users - access to 2nd outlook account ": 5,
+          "avd-profile cannot open the virtual disk": 6,
+          "admin creds for driver repair": 3,
+          "issue with avd": 6,
+          "in line images not loading in emails": 3,
+          "unable to access avd - no error": 3,
+          "unable to access the cloud": 3,
+          "avd - cannot logging to": 3,
+          "issue with desktop": 5,
+          "cannot logging to avd": 3,
+          "issue with laptop cannot open victual disk": 6
+        },
+        "repetitive_percentage": 70.43478260869566
+      },
+      "Medical Indemnity Protection Society": {
+        "total_tickets": 620,
+        "repetitive_patterns": {
+          "fw: pim: a privileged directory role was assigned outside of pim": 6,
+          "re: ticket # 1163562 / medicalindemnityprotect / anubis ransomwa": 4,
+          "notepad++ blocked": 6,
+          "medium - offboarding for luchienne ebrahim | ticket 1363761749": 3,
+          "isd-30: medium - add access - lisa horton | ticket 1362013453": 10,
+          "ns 04/08/2025 &amp;amp;amp;amp;amp;gt; heather nieuwonhoven": 5,
+          "fw: low - onboarding for danae mcaulay | ticket 1359632595": 5,
+          "medium - i need help with faulty equipment - barry leung | ticke": 4,
+          "re: action required: update resources that interact with microso": 3,
+          "scheduled on-site for mips": 66,
+          "clear log files in bulk issue": 5,
+          "fw: mike pop-up on start-up": 3,
+          "zscaler project - mandeep": 4,
+          "migration of legacy multifactor authentication (mfa) and self-se": 6,
+          "ns 11/08/2025 &amp;amp;amp;amp;amp;gt; tirantha de silva": 3,
+          "severity high: liquidfiles config assistance": 4,
+          "ns 04/08/2025 &amp;amp;amp;amp;amp;gt; pia harries": 7,
+          "quarterly export of azure server backups": 4,
+          "access to one-drive": 6,
+          "re: onbase access required": 3,
+          "issue with laptop": 3,
+          "3cx issues": 3,
+          "ns 18/08/2025 &amp;amp;amp;amp;amp;amp;gt; bhavesh bhudia": 3,
+          "bitlocker key required(device is stuck in a loop)": 5,
+          "unable to access onbase": 3,
+          "can&amp;amp;amp;amp;#039;t bastion to mips-prod-web02": 3,
+          "re: ticket # 1171666 / medicalindemnityprotect / critical and me": 3,
+          "re: p2: firefox installation allowed on mips laptops": 9,
+          "urgent - offboarding for sab singh | ticket 1362019215": 3,
+          "new prod and dev server accounts": 5,
+          "ns 17/07/2025 &amp;amp;amp;amp;gt; rob murtagh": 3,
+          "pure-prod-sql01 e drive expansion": 3,
+          "a. dhamapurkar | vpn issue": 4,
+          "file access issue": 3,
+          "severity medium: inactive account scripts": 3,
+          "interim temporary laptop": 3,
+          "mips-mel-file01 developers access for svn repository configurati": 3,
+          "unable to access microsoft office products in pure app06 &amp;am": 3,
+          "mips - azure monthly backup validation": 4,
+          "- touched pad is not working on her laptop": 5,
+          "ns 21/08/2025 &amp;amp;amp;amp;amp;gt; zoe cornwell": 3,
+          "fw: use of remote desktop": 4,
+          "velixo and acess request": 5,
+          "medium -  how do i print? - sarah butler | ticket 1364094741": 3,
+          "issue with 3cx": 4,
+          "my laptop has stopped connecting to my external monitors": 3,
+          "isd-428 | unlock workstation admin account": 3,
+          "fw: smtp2go": 7,
+          "cannot access the database - onbase": 6,
+          "windows account - request info": 3,
+          "ns 30/07/2025 &amp;amp;amp;amp;amp;gt; emily barratt": 6,
+          "laptop-pf5bhzpr requires bitlocker key (recovery)": 3,
+          "fw: microsoft 365 sign-in for multi-factor authentication  phish": 4,
+          "outlook not working": 3
+        },
+        "repetitive_percentage": 46.45161290322581
+      },
+      "Pacific Optics Pty Ltd": {
+        "total_tickets": 241,
+        "repetitive_patterns": {
+          "new secure share setup | p drive": 3,
+          "recovery of file": 3,
+          "fw: 3cx notification: lost queue call 8016": 4,
+          "issue with wi-fi": 3,
+          "personal laptop": 3,
+          "re: p1 - potential account compromise fw: pacificoptics july 202": 3,
+          "pac ops burleigh onsite - 11/09/2025": 12,
+          "when onsite thursday | ben coleman laptop setup": 5,
+          "james hadfield reported that the user clicked on a phishing emai": 3,
+          "masterdata - file - resorted ": 6,
+          "unable to connect to the dns server": 8,
+          "po-app01 | phocas sync schedule task failing": 9,
+          "re: priority2: place forwarding on emails ": 4,
+          "unknown error occurring from google search": 5,
+          "julie cattell&amp;#039;s | laptop windows 11": 4,
+          "airlock unblock by filename please.": 4,
+          "airlock otp code please": 3,
+          "pacops onsite - 16/09/2025": 7,
+          "fw: update": 3,
+          "laptop setup | burleigh": 5,
+          "outlook trouble": 3,
+          "missing contacts and emails | cindy": 6,
+          "issue with oulook": 3,
+          "can&amp;#039;t attach files to outlook email": 3,
+          "fw: system account successfully used the link to &amp;quot;isalb": 3,
+          "office updates disabled": 3,
+          "fw: trello pop up": 3,
+          "device blocked ": 3,
+          "trojan detected | po-lt-jamesh": 4
+        },
+        "repetitive_percentage": 53.11203319502075
+      },
+      "Darling Downs and West Moreton - DDWMPHN": {
+        "total_tickets": 12,
+        "repetitive_patterns": {
+          "powerbi workspace download issue": 3,
+          "limits to access ddwmdlprod001": 3
+        },
+        "repetitive_percentage": 50.0
+      },
+      "Zenitas - Plena Healthcare": {
+        "total_tickets": 50,
+        "repetitive_patterns": {
+          "need to setup the new laptop": 5,
+          "unable to open cirtix application": 3,
+          "support request &amp;ndash; unable to access outlook and teams": 4,
+          "printer issue": 9,
+          "laptop data transfer": 7,
+          "bitlocker": 4
+        },
+        "repetitive_percentage": 64.0
+      },
+      "Brisbane North Primary Health Network - BNPHN": {
+        "total_tickets": 697,
+        "repetitive_patterns": {
+          "- windows update failing": 3,
+          "assistance with team": 3,
+          "35 minute update this morning": 3,
+          "re: help with ms planner - my access to planners with ms teams a": 4,
+          "teams bg disappears very frequently ": 4,
+          "recover word doc saved in downloads": 3,
+          "confidential: access to a staff members inox/sent items": 3,
+          "keepass - not saving password": 7,
+          "whitelist the weblink below": 7,
+          "re: ticket update: t20250704.0115 - access to chilli": 3,
+          "fw: caps": 3,
+          "brisbane north phn new account set up - lisa smith": 3,
+          "sending calendar invitation to external client automatically": 6,
+          "re: out of sharepoint storage": 5,
+          "deleted document": 7,
+          "issue with outlook": 13,
+          "one touch portal": 3,
+          "email signature block update": 5,
+          "teams link in outlook not working": 4,
+          "help sync files": 4,
+          "outlook add-ins alert": 6,
+          "- email issues - ongoing": 3,
+          "sharepoint saving into c drive": 13,
+          "phi ticket": 6,
+          "fw: re: brisbane north phn/redbourne meeting agenda": 3,
+          "camera not working": 3,
+          "email signature preview - display": 3,
+          "create a shared folder": 4,
+          "creating outlook poll": 4,
+          "transferring phonecalls": 15,
+          "updated email signature not visible": 4,
+          "email signature": 9,
+          "cannot access document in email": 3,
+          "remove users": 4,
+          "email signature - update": 3,
+          "reset laptop - 5cg22100gm": 5,
+          "windows - application error": 6,
+          "ms outlook - calendar issues with time": 4,
+          "access for vanessa air": 4,
+          "new ticket request": 10,
+          "laptop retire": 3,
+          "fw: apple account suspended": 6,
+          "jayne mason-johnson &#039;send as&#039; ability from bnphn ceo c": 3,
+          "ms bookings - setup services - different weekly schedule": 4,
+          "bnphn client comms + meetings": 4,
+          "shared inbox - create ms list using shared mailbox": 3,
+          "assistance with software": 3,
+          "fw: updates to bp and md": 4,
+          "har 18/08/2025 7:00 am &amp;amp;amp;gt; helton serrao": 3,
+          "install adobe creative cloud": 3,
+          "mimecast for outlook error message - alana boulton brisbane nort": 8,
+          "update sharepoint access": 5,
+          "access to expire chillidb contacts": 3,
+          "devices are ready or not": 3,
+          "unable to connect with jabra headset": 8,
+          "fw: teams phone number": 3,
+          "new phn email signature": 3,
+          "bnphn - pmo time ": 3,
+          "error message when trying to open/save/share a document in secur": 3,
+          "unable to access": 5,
+          "re: phi permissions request": 3,
+          "papercut hive code": 3,
+          "request to update working days in email signature": 3,
+          "issue with headset": 5,
+          "judy csabai - new starter on monday": 3,
+          "new starter": 4,
+          "one drive issues": 3,
+          "fw: a message triggered content policies": 4,
+          "assistance with outlook": 4,
+          "- asking to changed the password for p4h-dwh01 and then said act": 6,
+          "device -p4h-5cg22100gj\r\n\r\npapercut hive code": 3,
+          "forward emails from redicase to mhsp inbox - from 4th august": 4,
+          "fw:  microsoft intune management error message - alana boulton b": 3,
+          "changing the name of the team folder on sharepoint": 4,
+          "issue with email": 3,
+          "update software": 3,
+          "email is frozen": 5,
+          "byod issues": 4,
+          "add project head to distribution list": 4,
+          "amendment to agm mailbox signature block": 4,
+          "issue with onedrive": 3,
+          "signature change needed": 3,
+          "exporting data from an email folder to an excel spreadsheet": 3,
+          "entra ad assessment": 3,
+          "downloads folder not emptying automatically": 3
+        },
+        "repetitive_percentage": 53.80200860832137
+      },
+      "Southern States Group": {
+        "total_tickets": 160,
+        "repetitive_patterns": {
+          "new barcode printers - require ip and added to printix": 8,
+          "divert calls": 9,
+          "admin to download program": 5,
+          "fw: unable to dial externally": 3,
+          "reception printer": 4,
+          "arial 11": 3,
+          "access to drives": 4,
+          "admin password": 3,
+          "headset": 7,
+          "photocopy / scanner setup. apeosport v c5576 nsw rail": 9,
+          "reset password": 3,
+          "access to folder": 4,
+          "add member to inbox": 3,
+          "share drive": 3,
+          "avd": 7,
+          "user": 4,
+          "fw: subject: access request for daniella": 3,
+          "no access to share folders after security update.": 3,
+          "user unable to connect to ethernet": 3,
+          "pc - printer": 3,
+          "outbox": 3
+        },
+        "repetitive_percentage": 58.75
+      },
+      "Fyna Foods Australia Pty Ltd": {
+        "total_tickets": 140,
+        "repetitive_patterns": {
+          "drive access": 10,
+          "fyna067 - user access": 7,
+          "bartender licence ticket #4007202": 13,
+          "vpn  is working /sap issue": 4,
+          "message ": 5,
+          "vpn": 6,
+          "[citysoft:0005384] fyna - sql server service down": 10,
+          "wizz fizz website": 6,
+          "fyna foods sap connection to qlik": 8,
+          "sap cannot attach pdf to email": 3,
+          "issue with receiving emails": 7,
+          "bartender licence ": 3,
+          "fw: boardroom camera app": 5,
+          "computer- urgent": 3,
+          "bundy clock not working": 3,
+          "sap server requiring windows password": 5
+        },
+        "repetitive_percentage": 70.0
+      },
+      "Keolis Downer": {
+        "total_tickets": 290,
+        "repetitive_patterns": {
+          "new email request please": 6,
+          "david franks laptop": 6,
+          "adobe install": 3,
+          "email signature": 5,
+          "nuriootpa starlink installation and ipsec tunnel setup": 5,
+          "fw: daily status report on aug 7, 2025, 10:09:47 am (group: ate)": 3,
+          "email address": 6,
+          "fw: messages": 3,
+          "loss of all emails pre 2023": 5,
+          "password reset": 4,
+          "fw: eng-2327 re: new supplier accounts not integrated into mex": 3,
+          "phone lines are not working": 3,
+          "out of disk space message": 3,
+          "kd corporate user changes - office 365": 3,
+          "max is having the issue, not able to drag the emails": 5,
+          "erin merrick called and advised account is locked out. call mobi": 4,
+          "unable to connect to tims": 4,
+          "fw: it systems request form.docx": 5,
+          "gp password reset": 3,
+          "email signuture ": 4,
+          "athina emails access": 3,
+          "fw: j drive - yarra files": 3,
+          "issue with one drive": 7,
+          "camera issues on the device.": 5,
+          "unable to access to email": 4,
+          "setup a j:drive on there pc to access the yarra claims documents": 3,
+          "foxit pdf reader &amp;amp;amp;amp;lt; 2025.2 multiple vulnerabil": 3,
+          "netextender": 3,
+          "ns 04/08/2025 &amp;amp;amp;gt; tom johns": 3,
+          "provide user mailbox delegation": 3,
+          "vpn connection": 3,
+          "- password changed request for ceo": 4,
+          "kb5063878: windows 11 version 24h2 / windows server 2025 securit": 3,
+          "kb5063709: windows 10 version 21h2 / windows 10 version 22h2 sec": 4,
+          "fw: ate - adobe premiere pro license x 1 for aditya singh": 3,
+          "google chrome &amp;amp;amp;lt; 139.0.7258.154 and microsoft edge": 3,
+          "security updates for microsoft office products c2r (august 2025)": 3,
+          "re: [ 3972722 ] orro pty ltd - sales invoice si139267": 3
+        },
+        "repetitive_percentage": 50.3448275862069
+      },
+      "North Queensland Land Council (NQLC)": {
+        "total_tickets": 186,
+        "repetitive_patterns": {
+          "re: all access to remote desktop family historian": 5,
+          "jasmin phillips requires adobe acrobat 2020": 5,
+          "loraine healy cannot use rdp": 4,
+          "fw: dynamic 365 licenses": 5,
+          "printer settings - stapling - w/ brilliant technologies": 3,
+          "teams phone system": 3,
+          "fw: new version of onenote": 4,
+          "annette king: printer issue - cloud": 4,
+          "fw: adobe outside of the cloud": 3,
+          "t20250710.0014 - i have accessed the new ticket system and i wan": 5,
+          "t20250707.0018 - ashley roszczenko  require adobe 2020 and elo o": 3,
+          "possible security of our ceo": 3,
+          "danny philippa cannot use elo from his desktop": 4,
+          "fw: elo access": 3,
+          "fw: [brilliant contract#4441 86] lfp scanning at nqlc": 4,
+          "fw: nqlc.au is due to expire in 30 days": 4,
+          "faulty charger - s/n: 5cg32527g3 hp: 5144917375 - crm:0105372000": 3,
+          "jasmine clubb lost all  files on remote desktop": 4,
+          "printer - auto deploy": 3,
+          "microsoft offering of the new outlook /over clasic": 3,
+          "rdp background refresh": 4,
+          "fw: ada away - phone diversions": 3,
+          "danny phillipa needs elo on his desktop": 5,
+          "fame access databases are locked": 3,
+          "account is hacked": 4,
+          "install adobe 2020 manage email": 3
+        },
+        "repetitive_percentage": 52.1505376344086
+      },
+      "PHI - North Western Melbourne - NWMPHN": {
+        "total_tickets": 17,
+        "repetitive_patterns": {
+          "request: new entra id user groups": 3,
+          "nwmphn:  script failure on azure vpn": 3
+        },
+        "repetitive_percentage": 35.294117647058826
+      },
+      "The Omnia Collective CorporateCo Pty Ltd": {
+        "total_tickets": 118,
+        "repetitive_patterns": {
+          "airblock of unfamiliar file": 3,
+          "locked out of computer": 3,
+          "re: ai decisions new starter - new laptop and new profile instal": 14,
+          "app install": 4,
+          "issuing syncing teams drive in windows explorer for parc": 11,
+          "microsoft api permissions": 5,
+          "whitelisting a path": 3,
+          "adobe acrobat crashing": 14,
+          "fw: fw: ticket note new ticket note: t20250702.0216 - new starte": 3,
+          "adobe creative cloud error": 3,
+          "microsoft app permissions": 9,
+          "re: omnia x parc drive": 3,
+          "microsoft app permissions - cob 28/08": 3,
+          "new omnia starter - anurag verma - vip": 3,
+          "lenovo autopilot set up": 4
+        },
+        "repetitive_percentage": 72.03389830508475
+      },
+      "RSEA Safety": {
+        "total_tickets": 8,
+        "repetitive_patterns": {
+          "presales - rsea azure managed services": 3,
+          "mailbox issues - paulp@rseasafety.com.au": 3
+        },
+        "repetitive_percentage": 75.0
+      },
+      "PJ Trading Pty Ltd": {
+        "total_tickets": 18,
+        "repetitive_patterns": {
+          "issues with outlook on mobile": 5,
+          "issue with printing": 10
+        },
+        "repetitive_percentage": 83.33333333333334
+      },
+      "WA Primary Health Alliance - WAPHA": {
+        "total_tickets": 71,
+        "repetitive_patterns": {
+          "[high priority] - deploy phi bau upgrades to: cesphn, emphn, and": 3,
+          "fw: wvphn - phi / chillidb vpn issue": 6,
+          "phocus licence renewal required": 4,
+          "it-11282 - 4030130 and 4034850 nsg configuration": 3,
+          "update phocus shared mailbox (auto replies) ": 4,
+          "remove account from phi tenancy ": 3,
+          "fw: creation of a native account": 5
+        },
+        "repetitive_percentage": 39.436619718309856
+      },
+      "Southern States Group (SSG)": {
+        "total_tickets": 73,
+        "repetitive_patterns": {
+          "email access": 4,
+          "access to shared drive": 3,
+          "it issues - daniella grech": 3,
+          "issue with outlook": 4,
+          "unable to login to avd": 3,
+          "internet issue": 8,
+          "network connectivity issues": 3,
+          "reception printer": 3
+        },
+        "repetitive_percentage": 42.465753424657535
+      },
+      "PHI - Brisbane North - BNPHN": {
+        "total_tickets": 33,
+        "repetitive_patterns": {
+          "unable to open ms word files": 7,
+          "primary sense comparing the pip qi report-10 measures and accred": 4,
+          "bnphn dataverse": 5
+        },
+        "repetitive_percentage": 48.484848484848484
+      },
+      "Northern Queensland Primary Health Network (NQPHN)": {
+        "total_tickets": 190,
+        "repetitive_patterns": {
+          "new user 01/09/2025 &amp;amp;gt; maira cappiello": 3,
+          "scheduled on-site for nqphn": 66,
+          "update to documents in new menu (word and powerpoint)": 4,
+          "fw: can&amp;amp;amp;#039;t connect to vpn - wfh": 3,
+          "new user 11/08/2025 &amp;amp;gt; sarah wanden": 3,
+          "request for convene to be updated to the latest version": 5,
+          "issue with driver update": 6,
+          "new user 18/08/2025 &amp;gt; edward longford": 3,
+          "vpn access": 4,
+          "otc portal access": 3
+        },
+        "repetitive_percentage": 52.63157894736842
+      },
+      "Moir Group": {
+        "total_tickets": 55,
+        "repetitive_patterns": {
+          "surface laptop died": 3,
+          "installation of bullhorn desktop application": 11,
+          "- out of office - message was wrong and need to changed": 3,
+          "update - automations potentially impacted by new release": 3,
+          "unable to log in to laptop": 4
+        },
+        "repetitive_percentage": 43.63636363636363
+      },
+      "AI Topper and Co Pty. Ltd.": {
+        "total_tickets": 74,
+        "repetitive_patterns": {
+          "favorites disappearing": 10,
+          "fw: missing folders/files - national hide processors": 10,
+          "- screens are not working": 3,
+          "surface pro setup": 3,
+          "issue with accessing a website": 12,
+          "need an access for tripit application": 11,
+          "website not working": 6,
+          "password reset - yesterday - it was fine but this morning it is ": 3
+        },
+        "repetitive_percentage": 78.37837837837837
+      },
+      "NW - KD Adelaide": {
+        "total_tickets": 11,
+        "repetitive_patterns": {
+          "delete mail enabled security group": 3
+        },
+        "repetitive_percentage": 27.27272727272727
+      },
+      "Ferguson Plarre Bakehouse": {
+        "total_tickets": 142,
+        "repetitive_patterns": {
+          "ferguson plarre bakehouses": 4,
+          "access to finance via remote desktop - praneeth wijekoon": 4,
+          "wifi underperforming": 3,
+          "fpb-000038: folder access and vpn": 16,
+          "ferguson plarre bakehouse: lap top set up": 5,
+          "fw: your archive mailbox is almost full.": 3,
+          "printer issues": 3,
+          "outlook issue when opening an email from outlook": 4,
+          "laptop setup - philip vassallo - do not action": 3,
+          "issue with laptop": 3,
+          "teams application channels are missing": 3,
+          "re: printer issues": 3,
+          "it set-up for isabella balkan - ferguson plarre bakehouses": 3,
+          "no access to rdp": 3,
+          "printer installation @11:10am": 4,
+          "email causing issues.": 6,
+          "issue with outlook": 5,
+          "repeated suspicious activity trying to access my account": 3
+        },
+        "repetitive_percentage": 54.929577464788736
+      },
+      "Country to Coast -  Primary Health Network, QLD PHN - CCQPHN": {
+        "total_tickets": 136,
+        "repetitive_patterns": {
+          "foxit pdf editor - please escalate": 7,
+          "issue with outlook": 3,
+          "apps for computer": 3,
+          "ns 01/09/2025 &amp;amp;gt; liz lowndes": 3,
+          "3cx - urgent escalation required": 4,
+          "whitelist applications": 5,
+          "scanner issues": 5,
+          "files not whitelisted": 5,
+          "c2c: justin thomas can not reply to emails": 3,
+          "alert for rockhampton - uplink status changed": 6,
+          "account locked": 3,
+          "airlock digital whitelisting": 3,
+          "rotate the password for the entra connect ad ds connector accoun": 5
+        },
+        "repetitive_percentage": 40.44117647058824
+      },
+      "Claro Aged Care and Disability Services": {
+        "total_tickets": 11,
+        "repetitive_patterns": {
+          "claro &amp; co. documentation": 6,
+          "email signature needs to be updated and pc needs to be connected": 3
+        },
+        "repetitive_percentage": 81.81818181818183
+      },
+      "Replicat": {
+        "total_tickets": 8,
+        "repetitive_patterns": {
+          "re: your onedrive is approaching the storage limit": 5
+        },
+        "repetitive_percentage": 62.5
+      },
+      "QLD Parliamentary Services": {
+        "total_tickets": 37,
+        "repetitive_patterns": {
+          "qld ps - in-tune mdm mam - ps - cloud - engineer": 20,
+          "task - qps -in tune mdm mam -ps -cloud engineer": 16
+        },
+        "repetitive_percentage": 97.2972972972973
+      },
+      "NW - Millennium Services Group Limited (MHT)": {
+        "total_tickets": 50,
+        "repetitive_patterns": {
+          "sharepoint capacity.- millennium ": 5,
+          "address microsoft visual c++ vulnerabilities i": 4,
+          "misd-30825 cctv being blocked": 3,
+          "issue with outlook": 4,
+          "fw: wi-fi  qld site - millennium": 6,
+          "re: m365 price list": 6,
+          "threat vulnerabilities - weekly report ": 3,
+          "failure notification for automate patch deployment task-millenni": 3
+        },
+        "repetitive_percentage": 68.0
+      },
+      "PHI - Adelaide Primary- APHN": {
+        "total_tickets": 25,
+        "repetitive_patterns": {
+          "issues with medication safety alert": 3,
+          "security group and subnet request": 3
+        },
+        "repetitive_percentage": 24.0
+      },
+      "Joseph Santamaria": {
+        "total_tickets": 17,
+        "repetitive_patterns": {
+          "- storage is max out and cannot operate": 15
+        },
+        "repetitive_percentage": 88.23529411764706
+      },
+      "Sisters of the Good Samaritan (SGS)": {
+        "total_tickets": 49,
+        "repetitive_patterns": {
+          "please remove spare e3 licenses from 365 admin portal": 3,
+          "we need a report for rds service login history.": 5,
+          "sgscc_missing folders_outlook application": 3,
+          "datto access": 5,
+          "global address book | please remove sgs finance council": 3,
+          "global address book | please remove glebe offices": 3,
+          "request to extend outlook resource scheduling limit": 3
+        },
+        "repetitive_percentage": 51.02040816326531
+      },
+      "PHI - Capital Health Network - CHNACT": {
+        "total_tickets": 19,
+        "repetitive_patterns": {
+          "ticket#1795361/chn/problem accessing pmhcol storage accounts in ": 4,
+          "add new owner member": 6
+        },
+        "repetitive_percentage": 52.63157894736842
+      },
+      "PHI - Brisbane South  - BSPHN": {
+        "total_tickets": 6,
+        "repetitive_patterns": {
+          "health assessments report": 3
+        },
+        "repetitive_percentage": 50.0
+      },
+      "Harvey Galleries": {
+        "total_tickets": 7,
+        "repetitive_patterns": {
+          "need to check if email address  is still active": 7
+        },
+        "repetitive_percentage": 100.0
+      },
+      "Millennium Services Group Ltd": {
+        "total_tickets": 47,
+        "repetitive_patterns": {
+          "re: reduce licenses.": 4,
+          "unable to connect to avd": 8,
+          "millennium query - dell firmware patching for all the windows cl": 3,
+          "avd sign issue": 8,
+          "gsa client patched as part of the manage engine": 3,
+          "millennium request - upgrade to standard sku public ip addresses": 3,
+          "p2 - restart sap server": 3,
+          "request restart router and access point by 6pm today": 3
+        },
+        "repetitive_percentage": 74.46808510638297
+      },
+      "Playgroup Victoria Inc": {
+        "total_tickets": 48,
+        "repetitive_patterns": {
+          "new it ticket removing avaya software from laptop": 5,
+          "new ticket": 5,
+          "retrieve a mailbox": 6,
+          "fw: adobe licenses.": 4
+        },
+        "repetitive_percentage": 41.66666666666667
+      },
+      "Trinity Spaces Pty Ltd": {
+        "total_tickets": 23,
+        "repetitive_patterns": {
+          "intercoms not working lvl 3 &amp; 4 trinity space, 235 queen st,": 3,
+          "intercom has stopped working for suite 407 trinity space | 235 q": 10,
+          "- intrenet issue - cannot connect": 6
+        },
+        "repetitive_percentage": 82.6086956521739
+      },
+      "Marlin Brands Pty Ltd": {
+        "total_tickets": 33,
+        "repetitive_patterns": {
+          "marlin brands: third party joining teams meeting are being promp": 3,
+          "unable to log in to laptop": 9,
+          "can you check if this is legit?": 3,
+          "password reset | james.hadfield@isalbi.com.au": 4,
+          "fw: working from overseas": 3,
+          "help with recorded teams meeting to be shared with other users": 3
+        },
+        "repetitive_percentage": 75.75757575757575
+      },
+      "Psychology Melbourne": {
+        "total_tickets": 49,
+        "repetitive_patterns": {
+          "login attempt unsuccessfully": 6,
+          "internet access: mac computers": 18,
+          "network issue": 6,
+          "issue with accessing email": 4,
+          "password change": 3
+        },
+        "repetitive_percentage": 75.51020408163265
+      },
+      "PHI - Country WA - WAPHA": {
+        "total_tickets": 74,
+        "repetitive_patterns": {
+          "it-9129 - purchase 1x d365 customer insights license - wapha": 7,
+          "it-11282 - priority: phi resource creation": 3,
+          "it-11151 - priority: group creation: wapha-iac-cicd-directoryrea": 3,
+          "it-9859 - james.clifford@proitconsulting.com.au access as a shar": 3,
+          "fw: dns register entries for phns to access primary sense schema": 3,
+          "it-10814 - edit access to phinsights gpddpc: daniel pillay": 4,
+          "ps hotfix release v2.42.2  is scheduled for production deploymen": 5,
+          "oncall dba can&amp;#039;t connect to phi to check ps databases": 3
+        },
+        "repetitive_percentage": 41.891891891891895
+      },
+      "List G Barristers": {
+        "total_tickets": 22,
+        "repetitive_patterns": {
+          "switchboard is not working": 5,
+          "dropbox access": 6
+        },
+        "repetitive_percentage": 50.0
+      },
+      "Pacific Optics": {
+        "total_tickets": 29,
+        "repetitive_patterns": {
+          "account set up": 3,
+          "issue with the headset": 7,
+          "t20250218.0183": 10,
+          "issue with wifi": 3
+        },
+        "repetitive_percentage": 79.3103448275862
+      },
+      "Amart Furniture": {
+        "total_tickets": 7,
+        "repetitive_patterns": {
+          "power automate flow - child flow has started without a trigger": 5
+        },
+        "repetitive_percentage": 71.42857142857143
+      },
+      "NW -  Australian Transit Enterprises Pty Ltd": {
+        "total_tickets": 20,
+        "repetitive_patterns": {
+          "tims - red hat linux azure - alex": 15
+        },
+        "repetitive_percentage": 75.0
+      },
+      "Doogue George Pty Ltd": {
+        "total_tickets": 26,
+        "repetitive_patterns": {
+          "assistance with adding numbers to 3cx": 9,
+          "assistance with 3cx": 16
+        },
+        "repetitive_percentage": 96.15384615384616
+      },
+      "Fenner Dunlop": {
+        "total_tickets": 7,
+        "repetitive_patterns": {
+          "re: sub1202527 - fenner dunlop exp 04-sep-2025": 3
+        },
+        "repetitive_percentage": 42.857142857142854
+      },
+      "PHI - Western Queensland - WQPHN": {
+        "total_tickets": 13,
+        "repetitive_patterns": {
+          "uploader outgoing email authentication failure": 3
+        },
+        "repetitive_percentage": 23.076923076923077
+      },
+      "Mark Ravech": {
+        "total_tickets": 7,
+        "repetitive_patterns": {
+          "re: 40032937 ? ravech, mark - suspension of services": 7
+        },
+        "repetitive_percentage": 100.0
+      },
+      "PHI - Central and Eastern Sydney - CESPHN": {
+        "total_tickets": 14,
+        "repetitive_patterns": {
+          "ssl certificate": 6,
+          "add cesphn-shared-prod-df as storage blob data reader for cesphn": 3
+        },
+        "repetitive_percentage": 64.28571428571429
+      },
+      "Cisco Systems Australia": {
+        "total_tickets": 11,
+        "repetitive_patterns": {
+          "duo snippet - duo iam": 3,
+          "esp: rejected: email rejected as cco id registration not complet": 3
+        },
+        "repetitive_percentage": 54.54545454545454
+      },
+      "Adelaide Primary Health Network - APHN": {
+        "total_tickets": 12,
+        "repetitive_patterns": {
+          "adelaide phn customer portal login details": 3
+        },
+        "repetitive_percentage": 25.0
+      },
+      "PHI - North Queensland - NQPHN": {
+        "total_tickets": 25,
+        "repetitive_patterns": {
+          "phishing email?": 3,
+          "nqphn vm retirement": 6
+        },
+        "repetitive_percentage": 36.0
+      },
+      "Introba Pty Ltd": {
+        "total_tickets": 10,
+        "repetitive_patterns": {
+          "issues with 3cx system": 8
+        },
+        "repetitive_percentage": 80.0
+      },
+      "UniLodge Australia Pty Ltd": {
+        "total_tickets": 23,
+        "repetitive_patterns": {
+          "unilodge defender alerts - parent ticket": 4,
+          "[superloop sc] re: 33 school st | create account": 3
+        },
+        "repetitive_percentage": 30.434782608695656
+      },
+      "PHI - Country to Coast - CCQPHN": {
+        "total_tickets": 12,
+        "repetitive_patterns": {
+          "re: cqwbsc-dw-prod-sqlhyperscale size": 3
+        },
+        "repetitive_percentage": 25.0
+      },
+      "Bouygues - Culcairn Solar Farm": {
+        "total_tickets": 10,
+        "repetitive_patterns": {
+          "re: [external] re: neoen occ jumphost access": 6,
+          "fw: [external] culcairn solar farm credentials and access": 3
+        },
+        "repetitive_percentage": 90.0
+      },
+      "PHI - Northern Sydney Health - NSPHN": {
+        "total_tickets": 6,
+        "repetitive_patterns": {
+          "fw: request to add a team member to t access the orro customer p": 3
+        },
+        "repetitive_percentage": 50.0
+      },
+      "PHI - South Western Sydney - SWSPHN": {
+        "total_tickets": 9,
+        "repetitive_patterns": {
+          "whitelist qlik cloud ip addresses for czcollabsilverprodsyn": 4
+        },
+        "repetitive_percentage": 44.44444444444444
+      },
+      "PHI - Western NSW - WNSWPHN": {
+        "total_tickets": 12,
+        "repetitive_patterns": {
+          "phi intranet access issue": 6
+        },
+        "repetitive_percentage": 50.0
+      },
+      "CleanCo": {
+        "total_tickets": 10,
+        "repetitive_patterns": {
+          "cleanco - hcs to webex di migration - meetings": 8
+        },
+        "repetitive_percentage": 80.0
+      },
+      "PHI - Australian Institute of Health and Welfare- AIHW": {
+        "total_tickets": 5,
+        "repetitive_patterns": {
+          "networking issue for newly established collaboration zone [sec=o": 3
+        },
+        "repetitive_percentage": 60.0
+      },
+      "Pitch This": {
+        "total_tickets": 7,
+        "repetitive_patterns": {
+          "pitchthis account": 7
+        },
+        "repetitive_percentage": 100.0
+      },
+      "WSO Co": {
+        "total_tickets": 6,
+        "repetitive_patterns": {
+          "re: *ext* re: urgent: activation code for duo security enrolment": 3
+        },
+        "repetitive_percentage": 50.0
+      },
+      "Bouygues - Culcairn Solar Farm - Onsite": {
+        "total_tickets": 5,
+        "repetitive_patterns": {
+          "reactive user account ": 5
+        },
+        "repetitive_percentage": 100.0
+      },
+      "GS1 Australia Ltd": {
+        "total_tickets": 5,
+        "repetitive_patterns": {
+          "gs1 - network switch replacement - pm time": 5
+        },
+        "repetitive_percentage": 100.0
+      },
+      "Phillip Services Pty Ltd": {
+        "total_tickets": 11,
+        "repetitive_patterns": {
+          "unable to call out": 10
+        },
+        "repetitive_percentage": 90.9090909090909
+      },
+      "The Omnia Collective": {
+        "total_tickets": 10,
+        "repetitive_patterns": {
+          "syncing omnia sharepoint": 4
+        },
+        "repetitive_percentage": 40.0
+      },
+      "PHI - Western Victoria - WVPHN": {
+        "total_tickets": 7,
+        "repetitive_patterns": {
+          "wvphn-self hosted ir is not running": 4,
+          "request to add members to the secure file uploader permissions g": 3
+        },
+        "repetitive_percentage": 100.0
+      },
+      "Healthy North Coast - (HNC)": {
+        "total_tickets": 5,
+        "repetitive_patterns": {
+          "access to virtual machine": 5
+        },
+        "repetitive_percentage": 100.0
+      },
+      "Railway and Transport Health Fund Limited": {
+        "total_tickets": 7,
+        "repetitive_patterns": {
+          "microsoft licensing - customer request": 3
+        },
+        "repetitive_percentage": 42.857142857142854
+      }
+    },
+    "temporal_patterns": {
+      "by_day_of_week": {
+        "backup_alert": {
+          "Friday": 12,
+          "Monday": 11,
+          "Saturday": 0,
+          "Sunday": 1,
+          "Thursday": 15,
+          "Tuesday": 13,
+          "Wednesday": 12
+        },
+        "monitoring_alert": {
+          "Friday": 169,
+          "Monday": 213,
+          "Saturday": 0,
+          "Sunday": 0,
+          "Thursday": 161,
+          "Tuesday": 178,
+          "Wednesday": 175
+        },
+        "performance_alert": {
+          "Friday": 13,
+          "Monday": 60,
+          "Saturday": 0,
+          "Sunday": 0,
+          "Thursday": 24,
+          "Tuesday": 28,
+          "Wednesday": 18
+        },
+        "security_alert": {
+          "Friday": 45,
+          "Monday": 53,
+          "Saturday": 0,
+          "Sunday": 0,
+          "Thursday": 54,
+          "Tuesday": 69,
+          "Wednesday": 54
+        },
+        "system_alert": {
+          "Friday": 0,
+          "Monday": 2,
+          "Saturday": 0,
+          "Sunday": 0,
+          "Thursday": 2,
+          "Tuesday": 2,
+          "Wednesday": 1
+        },
+        "user_incident": {
+          "Friday": 1694,
+          "Monday": 2168,
+          "Saturday": 8,
+          "Sunday": 8,
+          "Thursday": 1755,
+          "Tuesday": 2194,
+          "Wednesday": 2160
+        }
+      },
+      "by_hour": {}
+    },
+    "total_repetitive_tickets": 4069,
+    "repetitive_percentage": 35.780865283151606
+  },
+  "self_healing_potential": {
+    "service_restart": {
+      "count": 14,
+      "percentage": 0.12310939148786493,
+      "common_titles": {
+        "[CITYSOFT:0005384] FYNA - SQL Server service down": 10,
+        "Fw: ZF Services Australia Pty. Ltd. - Keolis Downer Northern Bea": 2,
+        "Customer Service Deployment Computer issue": 1,
+        "URGENT - DP Server not working": 1
+      }
+    },
+    "disk_cleanup": {
+      "count": 48,
+      "percentage": 0.4220893422441084,
+      "common_titles": {
+        "Disk space": 6,
+        "Server Disk Space ": 4,
+        "T20250808.0009 - Disk Space is full and my laptop has slow down ": 4,
+        "Failure Notification for Automate Patch Deployment task-KD Corp ": 3,
+        "Failure Notification for Automate Patch Deployment task-KD Bus -": 3,
+        "Out of Disk Space Message": 3,
+        "Alert 'WHE Production - Rauland-VMLowdataDiskSpaceAlert\u2019": 2,
+        "Alert 'AER-LZ-Corp-Navision-VMLowOSDiskSpaceAlert\u2019": 2,
+        "Critical disk space": 2,
+        "Alert &#039;WHE Production - Fujifilm-VMLowOSDiskSpaceAlert&rsqu": 2
+      }
+    },
+    "memory_management": {
+      "count": 1,
+      "percentage": 0.008793527963418923,
+      "common_titles": {
+        "AVD-profile cannot open the virtual disk": 1
+      }
+    },
+    "network_remediation": {
+      "count": 5,
+      "percentage": 0.04396763981709462,
+      "common_titles": {
+        "Issue with scanning to email": 1,
+        "Network Speed slow after Dropping Device": 1,
+        "Internet access: Mac computers": 1,
+        "No internet on the site": 1,
+        "Issue with setting up email": 1
+      }
+    }
+  },
+  "resolution_patterns": {
+    "quick_fixes": {
+      "count": 3380,
+      "percentage": 56.183510638297875,
+      "by_alert_type": {
+        "user_incident": {
+          "count": 2529,
+          "avg_hours": 0.2836022143139581,
+          "avg_automation_score": 0.4948596283115856
+        },
+        "monitoring_alert": {
+          "count": 660,
+          "avg_hours": 0.23049999999999998,
+          "avg_automation_score": 3.2113636363636364
+        },
+        "performance_alert": {
+          "count": 80,
+          "avg_hours": 0.258375,
+          "avg_automation_score": 2.0375
+        },
+        "backup_alert": {
+          "count": 24,
+          "avg_hours": 0.25125000000000003,
+          "avg_automation_score": 1.9583333333333333
+        },
+        "security_alert": {
+          "count": 86,
+          "avg_hours": 0.265,
+          "avg_automation_score": 2.3255813953488373
+        },
+        "system_alert": {
+          "count": 1,
+          "avg_hours": 0.16,
+          "avg_automation_score": 2.0
+        }
+      },
+      "avg_hours": 0.271896449704142
+    },
+    "routine_fixes": {
+      "count": 2236,
+      "percentage": 37.16755319148936,
+      "avg_hours": 0.9485196779964223
+    },
+    "complex_fixes": {
+      "count": 400,
+      "percentage": 6.648936170212766,
+      "avg_hours": 5.1473
+    },
+    "automation_correlation": {
+      "quick_fix_avg_score": 1.1192307692307693,
+      "routine_fix_avg_score": 0.41275183150183153,
+      "complex_fix_avg_score": 0.3835497415179401
+    }
+  },
+  "automation_recommendations": [
+    {
+      "priority": "Medium",
+      "category": "Pattern Automation",
+      "opportunity": "35.8% of tickets follow repetitive patterns",
+      "action": "Create automated workflows for most common repetitive issues",
+      "estimated_savings": "2441 tickets could be automated",
+      "timeline": "6-8 weeks"
+    },
+    {
+      "priority": "Medium",
+      "category": "Quick Fix Automation",
+      "opportunity": "3380 incidents resolved in under 30 minutes",
+      "action": "Automate routine quick fixes through self-service portals",
+      "estimated_savings": "1690 tickets could become self-service",
+      "timeline": "3-5 weeks"
+    }
+  ]
+}

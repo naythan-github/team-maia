@@ -1,0 +1,117 @@
+# Save State Command - Complete System Documentation & Git Integration
+
+## Overview
+Comprehensive system state preservation with mandatory documentation updates and git integration.
+
+## Execution Sequence
+
+### Phase 1: Documentation Updates (MANDATORY)
+1. **SYSTEM_STATE.md** - Update session context, phase, and recent changes
+2. **README.md** - Update core capabilities and system overview
+3. **claude/context/core/agents.md** - Update agent capabilities and enhancements
+4. **claude/context/tools/available.md** - Update tool inventory and new capabilities
+5. **claude/context/core/systematic_tool_checking.md** - Update tool discovery patterns if needed
+
+### Phase 2: Verification
+1. **Documentation Consistency Check** - Ensure all changes are reflected across files
+2. **System Status Validation** - Verify all documented capabilities match actual system state
+3. **Context Window Compatibility** - Ensure new context windows can operate correctly
+
+### Phase 3: Git Integration (MANDATORY)
+1. **Git Status Check** - Review all modified and new files
+2. **Git Add** - Stage all documentation updates and system changes
+3. **Git Commit** - Create descriptive commit with phase information
+4. **Git Push** - Push changes to remote repository
+
+### Phase 4: Implementation Tracking Integration ⭐ **NEW**
+1. **Active Implementations Check** - Preserve ongoing implementation contexts
+2. **Implementation Checkpoints** - Save current state of all active implementations
+3. **Universal Tracker Update** - Ensure implementation continuity across context resets
+
+### Phase 5: Completion Verification
+1. **Documentation Audit** - Confirm all system changes are documented
+2. **Git Status Verification** - Ensure clean working directory
+3. **Implementation Continuity** - Verify all implementations can be resumed
+4. **System State Summary** - Provide completion confirmation
+
+## Implementation Template
+
+```bash
+# Phase 1: Documentation Updates (handled by Maia)
+echo "📚 Updating system documentation..."
+
+# Phase 2: Verification (handled by Maia) 
+echo "🔍 Verifying documentation consistency..."
+
+# Phase 3: Git Integration
+echo "📝 Committing changes to git..."
+git add -A
+git commit -m "📚 SAVE STATE: [Phase/Session Description] - [Key Changes]
+
+🚀 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"
+git push origin main
+
+# Phase 4: Implementation Tracking Integration
+echo "🔄 Preserving implementation contexts..."
+python3 claude/tools/📊_data/universal_implementation_tracker.py list
+# Save checkpoints for all active implementations if needed
+
+# Phase 5: Completion
+echo "✅ Save state complete - All implementations preserved"
+```
+
+## Mandatory Documentation Files
+
+### Critical System Files (ALWAYS UPDATE)
+- `SYSTEM_STATE.md` - Current phase and session overview
+- `README.md` - Core capabilities and system summary
+- `claude/context/core/agents.md` - Agent capabilities
+- `claude/context/tools/available.md` - Tool inventory
+
+### Context Files (UPDATE IF MODIFIED)
+- `claude/context/core/identity.md` - System identity changes
+- `claude/context/core/model_selection_strategy.md` - LLM routing changes
+- `claude/context/core/systematic_tool_checking.md` - Tool discovery updates
+- `claude/context/core/command_orchestration.md` - Orchestration changes
+
+### Project-Specific Files (UPDATE IF RELEVANT)
+- Session summary files in `claude/data/`
+- Agent-specific documentation if enhanced
+- Command documentation if workflows changed
+
+## Quality Gates
+
+### Documentation Requirements
+- [ ] All system changes documented
+- [ ] Phase progression clearly marked
+- [ ] New capabilities accurately described
+- [ ] Production status clearly indicated
+- [ ] Integration points documented
+
+### Git Requirements  
+- [ ] All files staged with `git add -A`
+- [ ] Descriptive commit message with phase information
+- [ ] Claude Code attribution included
+- [ ] Push successful to remote repository
+- [ ] Working directory clean after completion
+
+## Error Handling
+
+### Documentation Failures
+- **Missing Updates**: Identify and update all relevant files
+- **Inconsistencies**: Reconcile conflicting information across files
+- **Context Gaps**: Ensure new context windows have complete guidance
+
+### Git Failures
+- **Staging Issues**: Resolve file conflicts or permissions
+- **Commit Failures**: Check git configuration and repository status
+- **Push Failures**: Verify remote connectivity and authentication
+
+## Success Criteria
+
+✅ **Complete Success**: All documentation updated, git commit/push successful, system state preserved
+⚠️ **Partial Success**: Documentation updated but git issues need resolution  
+❌ **Failure**: Missing documentation updates or unable to preserve state
+
+This command ensures systematic preservation of all system evolution and maintains continuity across context windows.

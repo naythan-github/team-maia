@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-09-29T18:24:49.905676",
+  "repo_path": "${MAIA_ROOT}",
+  "file_counts": {
+    "root_files": 9,
+    "claude_tools": 167,
+    "claude_agents": 38,
+    "claude_context": 130,
+    "archive_files": 1019,
+    "total_files": 1988
+  },
+  "ufc_compliance": {
+    "ufc_system_exists": true,
+    "enforcement_hook_exists": true,
+    "context_enforcer_exists": true,
+    "ufc_system_accessible": true
+  },
+  "sprawl_indicators": [
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/archive",
+      "description": "Archive directory outside archive/ folder: archive"
+    },
+    {
+      "type": "misplaced_archive",
+      "severity": "medium",
+      "path": "${MAIA_ROOT}/claude/data/governance_backups",
+      "description": "Archive directory outside archive/ folder: governance_backups"
+    }
+  ],
+  "tool_analysis": {
+    "total_tools": 160,
+    "categories": {
+      "research": 8,
+      "core": 6,
+      "security": 33,
+      "business": 24,
+      "governance": 8,
+      "automation": 17,
+      "communication": 19,
+      "monitoring": 25,
+      "data": 20
+    },
+    "category_count": 9
+  },
+  "health_score": 8.5
+}

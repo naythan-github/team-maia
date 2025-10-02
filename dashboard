@@ -1,0 +1,72 @@
+#!/bin/bash
+# Maia Dashboard Control Script
+# Quick access to dashboard operations
+
+export PATH="/Users/naythandawe/Library/Python/3.9/bin:$PATH"
+export MAIA_ROOT="/Users/naythandawe/git/maia"
+
+case "$1" in
+    start)
+        echo "🚀 Starting all Maia dashboards..."
+        ./launch_all_dashboards.sh
+        ;;
+    stop)
+        echo "🛑 Stopping all dashboards..."
+        pkill -f "streamlit run"
+        pkill -f "ai_business_intelligence_dashboard"
+        pkill -f "dora_metrics_dashboard"
+        pkill -f "governance_dashboard"
+        pkill -f "unified_dashboard_platform"
+        echo "✅ All dashboards stopped"
+        ;;
+    restart)
+        echo "🔄 Restarting dashboards..."
+        $0 stop
+        sleep 3
+        $0 start
+        ;;
+    status)
+        echo "📊 Dashboard Status:"
+        echo ""
+        pgrep -f "unified_dashboard_platform" > /dev/null && echo "✅ Unified Hub (8100): Running" || echo "❌ Unified Hub (8100): Stopped"
+        pgrep -f "ai_business_intelligence" > /dev/null && echo "✅ AI Business (8050): Running" || echo "❌ AI Business (8050): Stopped"
+        pgrep -f "dora_metrics" > /dev/null && echo "✅ DORA Metrics (8060): Running" || echo "❌ DORA Metrics (8060): Stopped"
+        pgrep -f "governance_dashboard" > /dev/null && echo "✅ Governance (8070): Running" || echo "❌ Governance (8070): Stopped"
+        pgrep -f "streamlit.*8504" > /dev/null && echo "✅ System Status (8504): Running" || echo "❌ System Status (8504): Stopped"
+        pgrep -f "streamlit.*8506" > /dev/null && echo "✅ Token Savings (8506): Running" || echo "❌ Token Savings (8506): Stopped"
+        pgrep -f "streamlit.*8505" > /dev/null && echo "✅ Performance (8505): Running" || echo "❌ Performance (8505): Stopped"
+        pgrep -f "streamlit.*8507" > /dev/null && echo "✅ Project Backlog (8507): Running" || echo "❌ Project Backlog (8507): Stopped"
+        ;;
+    open)
+        echo "🌐 Opening Unified Dashboard Hub..."
+        open http://localhost:8100
+        ;;
+    list)
+        echo "📋 Available Dashboards:"
+        echo ""
+        echo "  🏠 Unified Hub: http://localhost:8100"
+        echo "  💼 AI Business Intelligence: http://localhost:8050"
+        echo "  📈 DORA Metrics: http://localhost:8060"
+        echo "  🔒 Governance: http://localhost:8070"
+        echo "  🔍 System Status: http://localhost:8504"
+        echo "  💰 Token Savings: http://localhost:8506"
+        echo "  ⚡ Performance: http://localhost:8505"
+        echo "  📋 Project Backlog: http://localhost:8507"
+        echo "  🤖 Main Dashboard: http://localhost:8501"
+        ;;
+    *)
+        echo "Maia Dashboard Control"
+        echo ""
+        echo "Usage: ./dashboard [command]"
+        echo ""
+        echo "Commands:"
+        echo "  start    - Launch all dashboards"
+        echo "  stop     - Stop all dashboards"
+        echo "  restart  - Restart all dashboards"
+        echo "  status   - Show dashboard status"
+        echo "  open     - Open Unified Hub in browser"
+        echo "  list     - List all dashboard URLs"
+        echo ""
+        echo "Quick start: ./dashboard start && ./dashboard open"
+        ;;
+esac

@@ -1,0 +1,313 @@
+{
+  "timestamp": "2025-01-07",
+  "compliance_score": 0,
+  "violations": [
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/archived_broken_files_20250911/mcp/google_services_mcp",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/archived_broken_files_20250911/mcp/google_services_mcp/core",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/claude/tools/mcp",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/claude/tools/mcp/orchestration",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_violation",
+      "severity": "high",
+      "description": "Path exceeds 5-level nesting: tools/claude/tools/mcp/orchestration/coordinators (depth: 6)",
+      "recommendation": "Restructure to stay within 5 levels maximum"
+    },
+    {
+      "type": "nesting_violation",
+      "severity": "high",
+      "description": "Path exceeds 5-level nesting: tools/claude/tools/mcp/orchestration/config (depth: 6)",
+      "recommendation": "Restructure to stay within 5 levels maximum"
+    },
+    {
+      "type": "nesting_violation",
+      "severity": "high",
+      "description": "Path exceeds 5-level nesting: tools/claude/tools/mcp/orchestration/strategies (depth: 6)",
+      "recommendation": "Restructure to stay within 5 levels maximum"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/claude/context",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/claude/context/backlog",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/linkedin_mcp/__pycache__",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/google_services_mcp/maia_integration",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/google_services_mcp/core",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/google_services_mcp/core/__pycache__",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/google_services_mcp/config",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/google_services_mcp/workflows",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/google_services_mcp/__pycache__",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/google_services_mcp/services",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/google_services_mcp/services/calendar",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/google_services_mcp/services/contacts",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/google_services_mcp/services/workspace",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/google_services_mcp/services/__pycache__",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/google_services_mcp/services/drive",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 5-level nesting is justified: tools/mcp/google_services_mcp/services/gmail",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_violation",
+      "severity": "high",
+      "description": "Path exceeds 5-level nesting: tools/mcp/google_services_mcp/services/gmail/__pycache__ (depth: 6)",
+      "recommendation": "Restructure to stay within 5 levels maximum"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/orchestration/config",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    },
+    {
+      "type": "nesting_advisory",
+      "severity": "low",
+      "description": "Consider if 4-level nesting is justified: tools/mcp/orchestration/__pycache__",
+      "recommendation": "Evaluate if complexity warrants deep nesting or if restructuring is better"
+    }
+  ],
+  "recommendations": [],
+  "directory_structure": {
+    "required_directories": 11,
+    "missing_directories": 0,
+    "issues": []
+  },
+  "nesting_violations": [
+    {
+      "path": "tools/archived_broken_files_20250911/mcp/google_services_mcp",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/archived_broken_files_20250911/mcp/google_services_mcp/core",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/claude/tools/mcp",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/claude/tools/mcp/orchestration",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/claude/tools/mcp/orchestration/coordinators",
+      "depth": 6,
+      "violation": "Exceeds maximum 5-level nesting limit (depth: 6)"
+    },
+    {
+      "path": "tools/claude/tools/mcp/orchestration/config",
+      "depth": 6,
+      "violation": "Exceeds maximum 5-level nesting limit (depth: 6)"
+    },
+    {
+      "path": "tools/claude/tools/mcp/orchestration/strategies",
+      "depth": 6,
+      "violation": "Exceeds maximum 5-level nesting limit (depth: 6)"
+    },
+    {
+      "path": "tools/mcp/claude/context",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/claude/context/backlog",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/linkedin_mcp/__pycache__",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/maia_integration",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/core",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/core/__pycache__",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/config",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/workflows",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/__pycache__",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services/calendar",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services/contacts",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services/workspace",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services/__pycache__",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services/drive",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services/gmail",
+      "depth": 5,
+      "violation": "4+ level nesting may not be justified (depth: 5)"
+    },
+    {
+      "path": "tools/mcp/google_services_mcp/services/gmail/__pycache__",
+      "depth": 6,
+      "violation": "Exceeds maximum 5-level nesting limit (depth: 6)"
+    },
+    {
+      "path": "tools/mcp/orchestration/config",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    },
+    {
+      "path": "tools/mcp/orchestration/__pycache__",
+      "depth": 4,
+      "violation": "4+ level nesting may not be justified (depth: 4)"
+    }
+  ],
+  "file_organization": {
+    "issues_found": 0,
+    "issues": []
+  },
+  "critical_issues": [],
+  "context_separation": {
+    "violations": []
+  },
+  "mandatory_files": {
+    "required": 5,
+    "missing": 0,
+    "missing_files": []
+  }
+}

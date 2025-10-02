@@ -1,0 +1,10 @@
+#!/bin/bash
+# Direct Voice Input - Types directly where cursor is
+# Usage: ./voice_here
+
+echo "🎤 Direct Voice Input Ready"
+echo "Press Enter to record voice → auto-types in this conversation field"
+echo ""
+
+cd "$(dirname "$0")"
+python3 claude/tools/direct_voice_input.py

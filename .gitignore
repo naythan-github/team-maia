@@ -1,0 +1,63 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Secrets and credentials
+*.pem
+*.key
+credentials.json
+token.json
+.credentials/
+
+# Local data
+claude/data/context_state.json
+claude/data/*.db
+*.sqlite
+
+# Session and analysis artifacts (can get very large)
+claude/context/session/governance_analysis/dependency_scan_*.json
+
+# Temporary files
+tmp/
+temp/
+*.tmp

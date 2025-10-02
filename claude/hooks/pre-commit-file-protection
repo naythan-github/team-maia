@@ -1,0 +1,26 @@
+#!/bin/bash
+# Pre-commit hook to validate file lifecycle management
+# Part of Phase 1 Anti-Sprawl Implementation
+# Created: 2025-09-30
+
+# Run file lifecycle validation
+python3 claude/tools/file_lifecycle_manager.py pre-commit
+
+if [ $? -ne 0 ]; then
+    echo ""
+    echo "❌ Commit blocked due to file protection violations"
+    echo ""
+    echo "📖 Guidelines: claude/context/core/immutable_core_structure.md"
+    echo ""
+    echo "💡 Extension zones for safe changes:"
+    echo "   • claude/extensions/experimental/ - for development"
+    echo "   • claude/extensions/personal/ - for customizations"
+    echo "   • archive/ - for deprecated files"
+    echo ""
+    echo "🚨 Emergency bypass (ONLY for disaster recovery):"
+    echo "   touch claude/data/protection_bypass.flag"
+    echo "   (Remember to remove after emergency: rm claude/data/protection_bypass.flag)"
+    exit 1
+fi
+
+exit 0

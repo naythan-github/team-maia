@@ -1,0 +1,80 @@
+{
+  "audit_date": "2025-09-13T10:18:56.346560",
+  "components_audited": [
+    {
+      "component": "${MAIA_ROOT}/claude/agents/jobs_agent.md",
+      "compliance_score": 0.0,
+      "missing_elements": [
+        "Implementation Status",
+        "Design Decisions",
+        "Current State",
+        "Entry Point",
+        "Dependencies"
+      ],
+      "recommendations": [
+        "Add missing documentation elements",
+        "Document key design decisions with rationale",
+        "Include trade-off analysis for decisions"
+      ]
+    },
+    {
+      "component": "${MAIA_ROOT}/claude/agents/financial_advisor_agent.md",
+      "compliance_score": 0.0,
+      "missing_elements": [
+        "Implementation Status",
+        "Design Decisions",
+        "Current State",
+        "Entry Point",
+        "Dependencies"
+      ],
+      "recommendations": [
+        "Add missing documentation elements",
+        "Document key design decisions with rationale",
+        "Include trade-off analysis for decisions"
+      ]
+    },
+    {
+      "component": "${MAIA_ROOT}/claude/tools/intelligent_assistant_hub.py",
+      "compliance_score": 0.0,
+      "missing_elements": [
+        "Implementation Status",
+        "Design Decisions",
+        "Current State",
+        "Entry Point",
+        "Dependencies"
+      ],
+      "recommendations": [
+        "Add missing documentation elements",
+        "Document key design decisions with rationale",
+        "Include trade-off analysis for decisions"
+      ]
+    },
+    {
+      "component": "${MAIA_ROOT}/claude/commands/complete_application_pipeline.md",
+      "compliance_score": 0.0,
+      "missing_elements": [
+        "Implementation Status",
+        "Design Decisions",
+        "Current State",
+        "Entry Point",
+        "Dependencies"
+      ],
+      "recommendations": [
+        "Add missing documentation elements",
+        "Document key design decisions with rationale",
+        "Include trade-off analysis for decisions"
+      ]
+    }
+  ],
+  "overall_compliance": 0.0,
+  "critical_gaps": [
+    "claude/agents/jobs_agent.md: 0.0%",
+    "claude/agents/financial_advisor_agent.md: 0.0%",
+    "claude/tools/intelligent_assistant_hub.py: 0.0%",
+    "claude/commands/complete_application_pipeline.md: 0.0%"
+  ],
+  "recommendations": [
+    "Implement mandatory documentation review process",
+    "Priority focus on components with <60% compliance"
+  ]
+}

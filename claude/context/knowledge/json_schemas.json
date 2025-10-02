@@ -1,0 +1,152 @@
+{
+  "version": "2025-09-09",
+  "description": "JSON schema definitions for Maia data structures",
+  "schemas": {
+    "backlog_item": {
+      "type": "object",
+      "properties": {
+        "id": {"type": "string"},
+        "type": {"type": "string", "enum": ["recommendation", "todo", "task", "idea"]},
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "category": {"type": "string"},
+        "priority": {"type": "string", "enum": ["high", "medium", "low"]},
+        "context": {"type": "string"},
+        "estimated_effort": {"type": "string"},
+        "source": {"type": "string"},
+        "created_at": {"type": "string", "format": "date-time"},
+        "updated_at": {"type": "string", "format": "date-time"},
+        "completed_at": {"type": "string", "format": "date-time"},
+        "status": {"type": "string", "enum": ["active", "completed", "archived", "cancelled"]}
+      },
+      "required": ["id", "type", "title", "description", "category", "priority"]
+    },
+    "session_state": {
+      "type": "object",
+      "properties": {
+        "session_id": {"type": "string"},
+        "start_time": {"type": "string", "format": "date-time"},
+        "end_time": {"type": "string", "format": "date-time"},
+        "commands_executed": {"type": "array", "items": {"type": "string"}},
+        "tools_used": {"type": "array", "items": {"type": "string"}},
+        "agents_invoked": {"type": "array", "items": {"type": "string"}},
+        "context_changes": {"type": "array", "items": {"type": "object"}},
+        "performance_metrics": {
+          "type": "object",
+          "properties": {
+            "total_tokens": {"type": "number"},
+            "response_time_avg": {"type": "number"},
+            "success_rate": {"type": "number"}
+          }
+        },
+        "recommendations_generated": {"type": "array", "items": {"$ref": "#/schemas/backlog_item"}}
+      },
+      "required": ["session_id", "start_time"]
+    },
+    "security_scan_result": {
+      "type": "object",
+      "properties": {
+        "scan_id": {"type": "string"},
+        "scan_type": {"type": "string"},
+        "timestamp": {"type": "string", "format": "date-time"},
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "severity": {"type": "string", "enum": ["critical", "high", "medium", "low", "info"]},
+              "category": {"type": "string"},
+              "description": {"type": "string"},
+              "file_path": {"type": "string"},
+              "line_number": {"type": "number"},
+              "remediation": {"type": "string"}
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "properties": {
+            "total_findings": {"type": "number"},
+            "critical": {"type": "number"},
+            "high": {"type": "number"},
+            "medium": {"type": "number"},
+            "low": {"type": "number"},
+            "info": {"type": "number"}
+          }
+        }
+      },
+      "required": ["scan_id", "scan_type", "timestamp", "findings", "summary"]
+    },
+    "optimization_analysis": {
+      "type": "object",
+      "properties": {
+        "analysis_id": {"type": "string"},
+        "analysis_type": {"type": "string"},
+        "timestamp": {"type": "string", "format": "date-time"},
+        "baseline_metrics": {
+          "type": "object",
+          "properties": {
+            "weekly_tokens": {"type": "number"},
+            "processing_time": {"type": "number"},
+            "success_rate": {"type": "number"}
+          }
+        },
+        "optimizations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "optimization_name": {"type": "string"},
+              "description": {"type": "string"},
+              "token_savings": {"type": "number"},
+              "time_savings": {"type": "number"},
+              "implementation_status": {"type": "string", "enum": ["proposed", "implemented", "tested", "active"]}
+            }
+          }
+        },
+        "projected_savings": {
+          "type": "object",
+          "properties": {
+            "weekly_tokens": {"type": "number"},
+            "annual_cost_savings": {"type": "number"},
+            "performance_improvement": {"type": "number"}
+          }
+        }
+      },
+      "required": ["analysis_id", "analysis_type", "timestamp"]
+    },
+    "job_dashboard_data": {
+      "type": "object",
+      "properties": {
+        "generated_at": {"type": "string", "format": "date-time"},
+        "total_jobs": {"type": "number"},
+        "high_score_jobs": {"type": "number"},
+        "recent_jobs": {"type": "number"},
+        "companies": {"type": "array", "items": {"type": "string"}},
+        "locations": {"type": "array", "items": {"type": "string"}},
+        "salary_ranges": {"type": "array", "items": {"type": "object"}},
+        "score_distribution": {
+          "type": "object",
+          "properties": {
+            "excellent": {"type": "number"},
+            "good": {"type": "number"},
+            "average": {"type": "number"},
+            "below_average": {"type": "number"}
+          }
+        },
+        "trend_data": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": {"type": "string", "format": "date"},
+              "job_count": {"type": "number"},
+              "avg_score": {"type": "number"}
+            }
+          }
+        }
+      },
+      "required": ["generated_at", "total_jobs"]
+    }
+  }
+}

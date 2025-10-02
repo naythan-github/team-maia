@@ -1,0 +1,55 @@
+file_placement:
+  max_root_files: 20
+  forbidden_root_extensions:
+  - .tmp
+  - .log
+  - .backup
+  - .cache
+  - .pid
+  required_directories:
+  - claude/tools
+  - claude/agents
+  - claude/context
+  archive_patterns:
+  - '*archive*'
+  - '*backup*'
+  - '*old*'
+  - '*legacy*'
+  sensitive_patterns:
+  - password
+  - secret
+  - api_key
+  - token
+tool_organization:
+  max_tools_per_category: 50
+  required_categories:
+  - core
+  - automation
+  - research
+  - communication
+  - monitoring
+  - data
+  - security
+  - business
+  naming_conventions:
+    pattern: ^[a-z_][a-z0-9_]*\.py$
+    description: Lowercase with underscores only
+content_policies:
+  max_file_size_mb: 10
+  forbidden_patterns:
+  - password=
+  - secret=
+  - api_key=
+  required_headers:
+    python:
+    - '#!/usr/bin/env python3'
+    - '"""'
+quality_standards:
+  min_documentation_ratio: 0.2
+  max_complexity_score: 10
+  required_tests: false
+ml_settings:
+  violation_threshold: 0.7
+  pattern_detection_sensitivity: 0.8
+  adaptive_learning: true
+  retrain_frequency_days: 7

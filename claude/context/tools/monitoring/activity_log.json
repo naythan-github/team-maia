@@ -1,0 +1,91 @@
+{
+  "activities": [
+    {
+      "timestamp": "2025-09-06T09:50:05.104896",
+      "agent": "jobs_agent",
+      "event": "started",
+      "details": "Email processing batch"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:05.105197",
+      "agent": "jobs_agent",
+      "event": "progress_update",
+      "details": "10% - Scanning inbox for job emails"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:13.114375",
+      "agent": "jobs_agent",
+      "event": "progress_update",
+      "details": "25% - Extracting job posting details"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:21.117876",
+      "agent": "jobs_agent",
+      "event": "progress_update",
+      "details": "50% - Analyzing company information"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:29.120405",
+      "agent": "jobs_agent",
+      "event": "progress_update",
+      "details": "75% - Updating job database"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:37.127155",
+      "agent": "jobs_agent",
+      "event": "progress_update",
+      "details": "90% - Preparing response templates"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:45.134252",
+      "agent": "jobs_agent",
+      "event": "progress_update",
+      "details": "100% - Finalizing email batch"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:53.136418",
+      "agent": "jobs_agent",
+      "event": "completed",
+      "details": "Finalizing email batch"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:53.137344",
+      "agent": "linkedin_agent",
+      "event": "started",
+      "details": "Profile optimization"
+    },
+    {
+      "timestamp": "2025-09-06T09:50:53.137884",
+      "agent": "linkedin_agent",
+      "event": "progress_update",
+      "details": "20% - Analyzing current profile"
+    },
+    {
+      "timestamp": "2025-09-06T09:51:03.141790",
+      "agent": "linkedin_agent",
+      "event": "progress_update",
+      "details": "45% - Updating keywords and skills"
+    },
+    {
+      "timestamp": "2025-09-06T09:51:13.146999",
+      "agent": "linkedin_agent",
+      "event": "progress_update",
+      "details": "70% - Optimizing headline and summary"
+    },
+    {
+      "timestamp": "2025-09-06T09:51:23.153920",
+      "agent": "linkedin_agent",
+      "event": "progress_update",
+      "details": "100% - Publishing profile updates"
+    },
+    {
+      "timestamp": "2025-09-06T09:51:33.158927",
+      "agent": "linkedin_agent",
+      "event": "completed",
+      "details": "Publishing profile updates"
+    }
+  ],
+  "max_entries": 1000,
+  "retention_days": 30,
+  "last_cleanup": "2025-09-06T09:51:33.158945"
+}

@@ -1,0 +1,605 @@
+import os
+#!/usr/bin/env python3
+"""
+LinkedIn Insights Dashboard Generator
+====================================
+
+Automated generation of comprehensive LinkedIn network insights dashboards
+with visual analytics, trend analysis, and actionable intelligence reports.
+
+Features:
+- Interactive dashboard generation (Markdown + HTML)
+- Network visualization and analytics  
+- Career progression insights
+- Industry trend analysis
+- Actionable recommendations engine
+- Automated report scheduling
+"""
+
+import json
+import csv
+from typing import Dict, List, Any, Optional, Tuple
+from dataclasses import dataclass, asdict
+from datetime import datetime, timedelta
+from pathlib import Path
+import logging
+
+@dataclass
+class DashboardSection:
+    """Individual dashboard section with content and metadata"""
+    title: str
+    content: str
+    section_type: str  # 'summary', 'chart', 'table', 'recommendations'
+    priority: int = 1
+    last_updated: str = None
+    
+    def __post_init__(self):
+        if self.last_updated is None:
+            self.last_updated = datetime.now().isoformat()
+
+class LinkedInInsightsDashboard:
+    """Main dashboard generator for LinkedIn insights"""
+    
+    def __init__(self, data_sources: Dict[str, str] = None):
+        """Initialize with paths to data sources"""
+        self.setup_logging()
+        self.data_sources = data_sources or self._default_data_sources()
+        self.dashboard_sections = []
+        
+        # Load data
+        self.connections_data = self._load_connections_data()
+        self.scoring_data = self._load_scoring_data()
+        self.enrichment_data = self._load_enrichment_data()
+        
+    def setup_logging(self):
+        """Configure logging"""
+        self.logger = logging.getLogger('LinkedInDashboard')
+        if not self.logger.handlers:
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            ))
+            self.logger.addHandler(handler)
+            self.logger.setLevel(logging.INFO)
+            
+    def _default_data_sources(self) -> Dict[str, str]:
+        """Default data source paths"""
+        base_path = Path("~/Downloads/linkedin_data").expanduser()
+        return {
+            "connections_csv": str(base_path / "Connections.csv"),
+            "enriched_data": str(base_path / "enriched_connections.json"),
+            "scoring_results": str(base_path / "connection_scores.json")
+        }
+        
+    def _load_connections_data(self) -> List[Dict[str, Any]]:
+        """Load raw connections data"""
+        csv_path = Path(self.data_sources["connections_csv"])
+        if not csv_path.exists():
+            self.logger.warning(f"Connections CSV not found: {csv_path}")
+            return []
+            
+        connections = []
+        try:
+            with open(csv_path, 'r', encoding='utf-8') as f:
+                reader = csv.DictReader(f)
+                connections = list(reader)
+            self.logger.info(f"Loaded {len(connections)} raw connections")
+        except Exception as e:
+            self.logger.error(f"Error loading connections CSV: {e}")
+            
+        return connections
+        
+    def _load_enrichment_data(self) -> Dict[str, Any]:
+        """Load enriched connections data"""
+        json_path = Path(self.data_sources["enriched_data"])
+        if not json_path.exists():
+            self.logger.warning(f"Enriched data not found: {json_path}")
+            return {}
+            
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            self.logger.info("Loaded enriched connections data")
+            return data
+        except Exception as e:
+            self.logger.error(f"Error loading enriched data: {e}")
+            return {}
+            
+    def _load_scoring_data(self) -> Dict[str, Any]:
+        """Load connection scoring data"""
+        json_path = Path(self.data_sources["scoring_results"])
+        if not json_path.exists():
+            self.logger.warning(f"Scoring data not found: {json_path}")
+            return {}
+            
+        try:
+            with open(json_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            self.logger.info("Loaded connection scoring data")
+            return data
+        except Exception as e:
+            self.logger.error(f"Error loading scoring data: {e}")
+            return {}
+            
+    def generate_executive_summary(self) -> DashboardSection:
+        """Generate executive summary section"""
+        
+        total_connections = len(self.connections_data)
+        enrichment_data = self.enrichment_data.get('intelligence_report', {})
+        
+        # Key metrics from enrichment
+        email_coverage = enrichment_data.get('summary', {}).get('email_coverage', 'N/A')
+        high_value_connections = enrichment_data.get('high_value_connections', 0)
+        decision_makers = enrichment_data.get('decision_makers', 0)
+        
+        # Top industries
+        industries = enrichment_data.get('industry_breakdown', {})
+        top_industry = max(industries.items(), key=lambda x: x[1])[0] if industries else "Unknown"
+        
+        # Geographic spread
+        regions = enrichment_data.get('geographic_breakdown', {})
+        primary_region = max(regions.items(), key=lambda x: x[1])[0] if regions else "Unknown"
+        
+        summary_content = f"""
+## 📊 Network Overview
+
+**Total Professional Connections**: {total_connections:,}
+**Email Coverage**: {email_coverage}
+**High-Value Connections**: {high_value_connections}
+**Decision Makers**: {decision_makers}
+
+### Key Insights
+- **Primary Industry**: {top_industry} ({industries.get(top_industry, 0)} connections)
+- **Geographic Focus**: {primary_region} ({regions.get(primary_region, 0)} connections)
+- **Network Quality**: {"Strong" if high_value_connections > total_connections * 0.1 else "Developing"}
+- **Influence Level**: {"High" if decision_makers > total_connections * 0.15 else "Medium"}
+
+### Quick Stats
+- **Industries Represented**: {len(industries)}
+- **Geographic Regions**: {len(regions)}
+- **Companies Represented**: {len(enrichment_data.get('top_companies', []))}
+"""
+        
+        return DashboardSection(
+            title="Executive Summary",
+            content=summary_content,
+            section_type="summary",
+            priority=1
+        )
+        
+    def generate_industry_analysis(self) -> DashboardSection:
+        """Generate industry breakdown analysis"""
+        
+        industries = self.enrichment_data.get('intelligence_report', {}).get('industry_breakdown', {})
+        
+        if not industries:
+            return DashboardSection(
+                title="Industry Analysis",
+                content="*Industry data not available*",
+                section_type="chart",
+                priority=2
+            )
+            
+        # Sort industries by connection count
+        sorted_industries = sorted(industries.items(), key=lambda x: x[1], reverse=True)
+        total_connections = sum(industries.values())
+        
+        content = """
+## 🏭 Industry Distribution
+
+| Industry | Connections | Percentage | Opportunity Rating |
+|----------|-------------|------------|-------------------|
+"""
+        
+        # Opportunity ratings based on industry relevance for BRM roles
+        opportunity_ratings = {
+            "Technology": "🔥 Excellent",
+            "Financial Services": "🔥 Excellent", 
+            "Consulting": "⭐ Very Good",
+            "Healthcare": "✅ Good",
+            "Manufacturing": "✅ Good",
+            "Government": "📋 Moderate",
+            "Education": "📋 Moderate"
+        }
+        
+        for industry, count in sorted_industries[:10]:  # Top 10 industries
+            percentage = (count / total_connections) * 100
+            rating = opportunity_ratings.get(industry, "📋 Moderate")
+            content += f"| {industry} | {count} | {percentage:.1f}% | {rating} |\n"
+            
+        # Add industry insights
+        content += f"""
+
+### Industry Insights
+- **Most Connected**: {sorted_industries[0][0]} with {sorted_industries[0][1]} connections
+- **Growth Opportunities**: Focus on Technology and Financial Services networks
+- **Diversification**: {"Well-diversified" if len(sorted_industries) > 8 else "Consider expanding into new industries"}
+
+### Strategic Recommendations
+"""
+        
+        # Generate strategic recommendations
+        if industries.get("Technology", 0) > total_connections * 0.3:
+            content += "- ✅ **Strong tech network** - Leverage for tech transformation roles\n"
+        else:
+            content += "- 🎯 **Expand tech network** - Target technology leaders for future opportunities\n"
+            
+        if industries.get("Financial Services", 0) > total_connections * 0.15:
+            content += "- ✅ **Financial services presence** - Good for FinTech and banking opportunities\n"
+        else:
+            content += "- 🎯 **Build financial services network** - High-value sector for BRM roles\n"
+            
+        return DashboardSection(
+            title="Industry Analysis",
+            content=content,
+            section_type="chart",
+            priority=2
+        )
+        
+    def generate_seniority_analysis(self) -> DashboardSection:
+        """Generate seniority level analysis"""
+        
+        seniority_data = self.enrichment_data.get('intelligence_report', {}).get('seniority_breakdown', {})
+        
+        if not seniority_data:
+            return DashboardSection(
+                title="Seniority Analysis",
+                content="*Seniority data not available*",
+                section_type="chart",
+                priority=3
+            )
+            
+        total_connections = sum(seniority_data.values())
+        
+        content = """
+## 👔 Network Seniority Distribution
+
+| Seniority Level | Connections | Percentage | Influence Score |
+|-----------------|-------------|------------|----------------|
+"""
+        
+        # Influence scores for different seniority levels
+        influence_scores = {
+            "C-Suite": "🔥 Maximum",
+            "VP/SVP": "⭐ Very High",
+            "Director": "✅ High", 
+            "Manager": "📊 Medium",
+            "Senior IC": "📋 Medium-Low",
+            "Mid-Level": "📝 Low",
+            "Entry-Level": "🌱 Minimal"
+        }
+        
+        # Sort by seniority level importance
+        seniority_order = ["C-Suite", "VP/SVP", "Director", "Manager", "Senior IC", "Mid-Level", "Entry-Level"]
+        
+        for level in seniority_order:
+            if level in seniority_data:
+                count = seniority_data[level]
+                percentage = (count / total_connections) * 100
+                influence = influence_scores.get(level, "📋 Medium")
+                content += f"| {level} | {count} | {percentage:.1f}% | {influence} |\n"
+                
+        # Calculate influence metrics
+        senior_count = sum(seniority_data.get(level, 0) for level in ["C-Suite", "VP/SVP", "Director"])
+        senior_percentage = (senior_count / total_connections) * 100 if total_connections > 0 else 0
+        
+        content += f"""
+
+### Seniority Insights
+- **Senior Leadership**: {senior_count} connections ({senior_percentage:.1f}% of network)
+- **Decision Makers**: C-Suite + VP/SVP = {seniority_data.get('C-Suite', 0) + seniority_data.get('VP/SVP', 0)} connections
+- **Network Influence**: {"High" if senior_percentage > 30 else "Medium" if senior_percentage > 15 else "Developing"}
+
+### Recommendations
+"""
+        
+        if senior_percentage > 25:
+            content += "- ✅ **Strong senior network** - Excellent for executive-level opportunities\n"
+            content += "- 🎯 **Leverage influence** - Use senior connections for warm introductions\n"
+        else:
+            content += "- 🎯 **Build senior connections** - Target C-Suite and VP-level professionals\n"
+            content += "- 📈 **Strategic networking** - Attend executive-level industry events\n"
+            
+        return DashboardSection(
+            title="Seniority Analysis", 
+            content=content,
+            section_type="chart",
+            priority=3
+        )
+        
+    def generate_company_intelligence(self) -> DashboardSection:
+        """Generate company intelligence section"""
+        
+        companies_data = self.enrichment_data.get('intelligence_report', {}).get('top_companies', [])
+        
+        if not companies_data:
+            return DashboardSection(
+                title="Company Intelligence",
+                content="*Company data not available*", 
+                section_type="table",
+                priority=4
+            )
+            
+        content = """
+## 🏢 Top Company Connections
+
+| Company | Connections | Industry | Strategic Value |
+|---------|-------------|----------|----------------|
+"""
+        
+        # Strategic value assessment for different company types
+        strategic_values = {
+            # High-value companies for BRM roles
+            "microsoft": "🔥 Tier 1",
+            "google": "🔥 Tier 1", 
+            "amazon": "🔥 Tier 1",
+            "commonwealth bank": "⭐ Tier 1",
+            "westpac": "⭐ Tier 1",
+            "deloitte": "⭐ Tier 1",
+            "pwc": "⭐ Tier 1",
+            "accenture": "✅ Tier 2",
+            "telstra": "✅ Tier 2",
+            "bhp": "✅ Tier 2"
+        }
+        
+        for company, count in companies_data[:15]:  # Top 15 companies
+            company_lower = company.lower()
+            strategic_value = "📋 Tier 3"  # Default
+            
+            for key_company, value in strategic_values.items():
+                if key_company in company_lower:
+                    strategic_value = value
+                    break
+                    
+            # Estimate industry (simplified)
+            if any(tech in company_lower for tech in ["microsoft", "google", "amazon", "apple", "tech"]):
+                industry = "Technology"
+            elif any(bank in company_lower for bank in ["bank", "westpac", "anz", "commbank"]):
+                industry = "Financial"
+            elif any(consult in company_lower for consult in ["deloitte", "pwc", "kpmg", "accenture"]):
+                industry = "Consulting"
+            else:
+                industry = "Other"
+                
+            content += f"| {company} | {count} | {industry} | {strategic_value} |\n"
+            
+        content += """
+
+### Company Intelligence Insights
+- **Enterprise Connections**: Focus on Tier 1 companies for maximum opportunity value
+- **Industry Leaders**: Strong presence in key sectors indicates good market positioning  
+- **Network Leverage**: Use company connections for warm introductions and market intelligence
+
+### Target Company Strategy
+"""
+        
+        tier_1_count = sum(count for company, count in companies_data 
+                          if any(key in company.lower() for key in strategic_values.keys() 
+                               if strategic_values[key] == "🔥 Tier 1"))
+        
+        if tier_1_count > 10:
+            content += "- ✅ **Excellent enterprise network** - Strong positioning for senior roles\n"
+        else:
+            content += "- 🎯 **Expand enterprise connections** - Target Fortune 500 and ASX 200 companies\n"
+            
+        return DashboardSection(
+            title="Company Intelligence",
+            content=content,
+            section_type="table", 
+            priority=4
+        )
+        
+    def generate_actionable_recommendations(self) -> DashboardSection:
+        """Generate actionable recommendations"""
+        
+        # Analyze data to generate specific recommendations
+        recommendations = []
+        
+        # Based on enrichment data
+        enrichment = self.enrichment_data.get('intelligence_report', {})
+        total_connections = len(self.connections_data)
+        
+        # Email coverage recommendations
+        email_coverage_str = enrichment.get('summary', {}).get('email_coverage', '0%')
+        email_coverage = float(email_coverage_str.replace('%', '')) if email_coverage_str != 'N/A' else 0
+        
+        if email_coverage < 30:
+            recommendations.append({
+                "priority": "🔥 HIGH",
+                "category": "Data Quality",
+                "action": "Improve Email Coverage",
+                "description": f"Only {email_coverage:.1f}% of connections have email addresses. Request contact details from key connections.",
+                "timeline": "Next 2 weeks"
+            })
+            
+        # Industry diversification
+        industries = enrichment.get('industry_breakdown', {})
+        if len(industries) < 5:
+            recommendations.append({
+                "priority": "📊 MEDIUM",
+                "category": "Network Growth", 
+                "action": "Expand Industry Coverage",
+                "description": f"Currently connected to {len(industries)} industries. Target 8-10 industries for better opportunities.",
+                "timeline": "Next 3 months"
+            })
+            
+        # Senior connections
+        seniority = enrichment.get('seniority_breakdown', {})
+        senior_count = sum(seniority.get(level, 0) for level in ["C-Suite", "VP/SVP", "Director"])
+        senior_percentage = (senior_count / total_connections) * 100 if total_connections > 0 else 0
+        
+        if senior_percentage < 20:
+            recommendations.append({
+                "priority": "⭐ HIGH",
+                "category": "Network Quality",
+                "action": "Build Senior Executive Network", 
+                "description": f"Only {senior_percentage:.1f}% of network is senior-level. Target C-Suite and VP connections.",
+                "timeline": "Ongoing"
+            })
+            
+        # Geographic expansion
+        regions = enrichment.get('geographic_breakdown', {})
+        if len(regions) < 3:
+            recommendations.append({
+                "priority": "📋 LOW",
+                "category": "Geographic Reach",
+                "action": "Expand Geographic Network",
+                "description": f"Limited to {len(regions)} regions. Consider international connections for global opportunities.",
+                "timeline": "Next 6 months"
+            })
+            
+        # High-value connections
+        high_value = enrichment.get('high_value_connections', 0)
+        if high_value < total_connections * 0.15:
+            recommendations.append({
+                "priority": "🎯 MEDIUM", 
+                "category": "Network Quality",
+                "action": "Increase High-Value Connections",
+                "description": f"Only {high_value} high-value connections. Focus on quality over quantity.",
+                "timeline": "Next 3 months"
+            })
+            
+        # Generate content
+        content = """
+## 🎯 Actionable Recommendations
+
+### Priority Actions
+"""
+        
+        # Sort by priority
+        priority_order = {"🔥 HIGH": 1, "⭐ HIGH": 2, "🎯 MEDIUM": 3, "📊 MEDIUM": 4, "📋 LOW": 5}
+        recommendations.sort(key=lambda x: priority_order.get(x["priority"], 6))
+        
+        for rec in recommendations[:8]:  # Top 8 recommendations
+            content += f"""
+**{rec['priority']} - {rec['action']}**
+- *Category*: {rec['category']}
+- *Description*: {rec['description']}
+- *Timeline*: {rec['timeline']}
+"""
+            
+        content += """
+
+### Long-term Network Strategy
+1. **Quality Focus**: Prioritize connections with decision-making authority
+2. **Industry Alignment**: Build deeper networks in Technology and Financial Services
+3. **Geographic Expansion**: Consider Asia-Pacific connections for global opportunities
+4. **Relationship Nurturing**: Regular engagement with top-tier connections
+5. **Content Strategy**: Share insights to attract high-value connections
+
+### Measurement & Tracking
+- Monthly network quality assessment
+- Quarterly outreach campaign results
+- Annual strategic network review
+"""
+        
+        return DashboardSection(
+            title="Actionable Recommendations",
+            content=content,
+            section_type="recommendations", 
+            priority=5
+        )
+        
+    def generate_complete_dashboard(self) -> str:
+        """Generate complete LinkedIn insights dashboard"""
+        
+        self.logger.info("Generating complete LinkedIn insights dashboard...")
+        
+        # Generate all sections
+        sections = [
+            self.generate_executive_summary(),
+            self.generate_industry_analysis(),
+            self.generate_seniority_analysis(),
+            self.generate_company_intelligence(),
+            self.generate_actionable_recommendations()
+        ]
+        
+        # Sort sections by priority
+        sections.sort(key=lambda x: x.priority)
+        
+        # Build complete dashboard
+        dashboard_header = f"""# 🔗 LinkedIn Network Intelligence Dashboard
+
+*Generated on {datetime.now().strftime('%B %d, %Y at %I:%M %p')}*
+
+---
+"""
+        
+        dashboard_content = dashboard_header
+        
+        for section in sections:
+            dashboard_content += f"\n{section.content}\n\n---\n"
+            
+        # Add footer
+        dashboard_footer = f"""
+
+## 📋 Dashboard Information
+
+**Data Sources**: LinkedIn Export + Maia Enrichment Pipeline  
+**Last Updated**: {datetime.now().isoformat()}  
+**Analysis Version**: 1.0  
+**Next Refresh**: {(datetime.now() + timedelta(days=30)).strftime('%B %d, %Y')}
+
+---
+
+*This dashboard is automatically generated by Maia's LinkedIn Intelligence System*
+"""
+        
+        dashboard_content += dashboard_footer
+        
+        return dashboard_content
+        
+    def export_dashboard(self, output_path: str = None) -> str:
+        """Export dashboard to markdown file"""
+        
+        if output_path is None:
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            output_path = f"~/Downloads/linkedin_insights_dashboard_{timestamp}.md"
+            
+        output_path = Path(output_path).expanduser()
+        
+        # Generate and save dashboard
+        dashboard_content = self.generate_complete_dashboard()
+        
+        with open(output_path, 'w', encoding='utf-8') as f:
+            f.write(dashboard_content)
+            
+        self.logger.info(f"Dashboard exported to: {output_path}")
+        return str(output_path)
+
+# Main function for testing and demonstration
+def main():
+    """Demo the LinkedIn insights dashboard generator"""
+    print("📊 LinkedIn Insights Dashboard Generator")
+    print("=" * 50)
+    
+    # Initialize dashboard generator
+    generator = LinkedInInsightsDashboard()
+    
+    if not generator.connections_data:
+        print("⏳ LinkedIn data not available - generating demo dashboard structure")
+        print("\nDashboard Capabilities:")
+        print("✅ Executive Summary with key metrics")
+        print("✅ Industry distribution analysis") 
+        print("✅ Seniority level breakdown")
+        print("✅ Company intelligence insights")
+        print("✅ Actionable recommendations engine")
+        print("✅ Automated markdown export")
+        
+        # Generate demo dashboard structure
+        demo_output = generator.export_dashboard("~/Downloads/linkedin_dashboard_demo.md")
+        print(f"\n📋 Demo dashboard saved to: {demo_output}")
+        
+    else:
+        print("🚀 Generating LinkedIn insights dashboard...")
+        output_path = generator.export_dashboard()
+        
+        print(f"✅ Dashboard generated successfully!")
+        print(f"📂 Location: {output_path}")
+        print(f"📊 Sections: 5 comprehensive analysis sections")
+        print(f"🎯 Recommendations: Customized action plan included")
+        
+    print("\n✅ Dashboard generator ready for LinkedIn data import!")
+
+if __name__ == "__main__":
+    main()

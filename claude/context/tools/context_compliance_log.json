@@ -1,0 +1,57 @@
+{
+  "measurements": [
+    {
+      "timestamp": "2025-09-06T09:07:46.998831",
+      "compliance_rate": 100.0,
+      "accessible_files": 6,
+      "total_files": 6,
+      "file_statuses": {
+        "claude/context/ufc_system.md": {
+          "accessible": true,
+          "size": 1334,
+          "last_modified": 1757049195.9699645
+        },
+        "claude/context/core/identity.md": {
+          "accessible": true,
+          "size": 1204,
+          "last_modified": 1757055629.0851197
+        },
+        "claude/context/tools/available.md": {
+          "accessible": true,
+          "size": 2563,
+          "last_modified": 1757119407.5523312
+        },
+        "claude/context/core/agents.md": {
+          "accessible": true,
+          "size": 3002,
+          "last_modified": 1757119393.0804882
+        },
+        "claude/context/core/command_orchestration.md": {
+          "accessible": true,
+          "size": 6394,
+          "last_modified": 1757118958.458297
+        },
+        "claude/context/personal/profile.md": {
+          "accessible": true,
+          "size": 1417,
+          "last_modified": 1757054170.1173651
+        }
+      },
+      "enforcement_system": {
+        "layer_1_ufc": true,
+        "layer_2_hook": true,
+        "layer_3_visual": true,
+        "layer_4_symlinks": true,
+        "symlink_coverage": 0.5
+      },
+      "system_health": 100.0
+    }
+  ],
+  "baseline_established": true,
+  "enforcement_system_activated": "2025-09-06T09:07:46.998588",
+  "baseline": {
+    "compliance_rate": 100.0,
+    "timestamp": "2025-09-06T09:07:46.998831",
+    "note": "Baseline established with 4-layer enforcement system active"
+  }
+}

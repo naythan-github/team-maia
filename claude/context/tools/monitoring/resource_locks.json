@@ -1,0 +1,7 @@
+{
+  "file_locks": {},
+  "process_locks": {},
+  "api_locks": {},
+  "lock_timeout": 300,
+  "last_cleanup": null
+}

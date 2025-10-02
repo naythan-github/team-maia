@@ -1,0 +1,79 @@
+{
+  "test_timestamp": "2025-09-06T09:06:56.727414",
+  "system_health": {
+    "overall_health_percentage": 100.0,
+    "working_layers": 4,
+    "total_layers": 4
+  },
+  "context_accessibility": {
+    "accessibility_rate": 100.0,
+    "accessible_files": 6,
+    "total_files": 6,
+    "file_details": [
+      {
+        "path": "claude/context/ufc_system.md",
+        "accessible": true,
+        "size": 1334,
+        "lines": 35
+      },
+      {
+        "path": "claude/context/core/identity.md",
+        "accessible": true,
+        "size": 1204,
+        "lines": 33
+      },
+      {
+        "path": "claude/context/tools/available.md",
+        "accessible": true,
+        "size": 2563,
+        "lines": 63
+      },
+      {
+        "path": "claude/context/core/agents.md",
+        "accessible": true,
+        "size": 3002,
+        "lines": 60
+      },
+      {
+        "path": "claude/context/core/command_orchestration.md",
+        "accessible": true,
+        "size": 6394,
+        "lines": 216
+      },
+      {
+        "path": "claude/context/personal/profile.md",
+        "accessible": true,
+        "size": 1417,
+        "lines": 34
+      }
+    ]
+  },
+  "layer_status": {
+    "layer_1_ufc_foundation": true,
+    "layer_2_hook_system": true,
+    "layer_3_visual_alerts": true,
+    "layer_4_symlinks": true,
+    "overall_health": 100.0
+  },
+  "scenarios": [
+    {
+      "name": "Full Context Available",
+      "expected_behavior": "\u2705 Context loaded. Ready to assist as Maia.",
+      "accessibility_rate": 100.0,
+      "should_succeed": true
+    },
+    {
+      "name": "Missing One Context File",
+      "expected_behavior": "\u26a0\ufe0f  Context partially loaded. Operating in degraded mode.",
+      "accessibility_rate": 83.33333333333334,
+      "should_succeed": false
+    },
+    {
+      "name": "Fresh Repository Access",
+      "expected_behavior": "Context inheritance via symlinks",
+      "symlink_coverage": 0.3333333333333333,
+      "should_succeed": true
+    }
+  ],
+  "recommendations": []
+}

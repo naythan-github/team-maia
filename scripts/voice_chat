@@ -1,0 +1,10 @@
+#!/bin/bash
+# Voice Chat with Claude - Quick Launcher
+# Usage: ./voice_chat
+
+echo "🎤 Starting Voice-to-Claude Interface..."
+echo "This will let you speak to Claude using local Whisper transcription"
+echo ""
+
+cd "$(dirname "$0")"
+python3 claude/tools/voice_to_claude.py --interactive --model medium

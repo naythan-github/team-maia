@@ -1,0 +1,57 @@
+#!/bin/bash
+# Governance System Command Interface
+# Created by deploy_governance.py
+
+GOVERNANCE_ROOT="/Users/naythan/git/maia/claude/tools/governance"
+
+case "$1" in
+    "status")
+        echo "🏛️ Repository Governance System Status"
+        echo "="*50
+        python3 "$GOVERNANCE_ROOT/enhanced_policy_engine.py" health
+        ;;
+    "scan")
+        echo "🔍 Full Repository Compliance Scan"
+        python3 "$GOVERNANCE_ROOT/repository_analyzer.py"
+        python3 "$GOVERNANCE_ROOT/filesystem_monitor.py" scan
+        ;;
+    "dashboard")
+        echo "🚀 Starting Governance Dashboard..."
+        echo "📊 Available at: http://127.0.0.1:8070"
+        python3 "$GOVERNANCE_ROOT/governance_dashboard.py"
+        ;;
+    "policies")
+        case "$2" in
+            "train")
+                python3 "$GOVERNANCE_ROOT/enhanced_policy_engine.py" train
+                ;;
+            "check")
+                if [ -n "$3" ]; then
+                    python3 "$GOVERNANCE_ROOT/enhanced_policy_engine.py" evaluate "$3"
+                else
+                    echo "Usage: governance policies check <file>"
+                fi
+                ;;
+            *)
+                echo "Usage: governance policies {train|check <file>}"
+                ;;
+        esac
+        ;;
+    "recommendations")
+        python3 "$GOVERNANCE_ROOT/enhanced_policy_engine.py" recommendations
+        ;;
+    "fix")
+        python3 "$GOVERNANCE_ROOT/remediation_engine.py" fix
+        ;;
+    *)
+        echo "Repository Governance System Commands:"
+        echo ""
+        echo "  governance status          - System health check"
+        echo "  governance scan            - Full compliance scan"
+        echo "  governance dashboard       - Launch web dashboard"
+        echo "  governance policies train  - Train ML models"
+        echo "  governance policies check <file> - Check file"
+        echo "  governance recommendations - Get ML recommendations"
+        echo "  governance fix             - Apply automated fixes"
+        ;;
+esac
