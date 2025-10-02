@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 
 class FileLifecycleManager:
-    def __init__(self, base_path: str = str(Path(__file__).resolve().parents[4] if "claude/tools" in str(__file__) else Path.cwd())):
+    def __init__(self, base_path: str = str(Path(__file__).resolve().parents[2] if "claude/tools" in str(__file__) else Path.cwd())):
         self.base_path = Path(base_path)
         self.config_file = self.base_path / "claude/data/immutable_paths.json"
         self.bypass_flag = self.base_path / "claude/data/protection_bypass.flag"

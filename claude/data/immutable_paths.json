@@ -1,7 +1,7 @@
 {
   "immutable_core": {
     "description": "Core paths that should NEVER be moved or renamed",
-    "paths": [
+    "absolute_immutability": [
       "claude/context/core/identity.md",
       "claude/context/core/systematic_thinking_protocol.md",
       "claude/context/core/model_selection_strategy.md",
@@ -12,34 +12,17 @@
       "CLAUDE.md",
       "SYSTEM_STATE.md"
     ],
-    "protection_level": "absolute"
-  },
-  "protected_directories": {
-    "description": "Directories with high stability requirements",
-    "paths": [
+    "high_immutability": [
       "claude/context/core/",
       "claude/context/tools/",
       "claude/context/personal/",
       "claude/hooks/"
     ],
-    "protection_level": "high",
-    "allow_new_files": true,
-    "allow_content_edits": true,
-    "allow_moves": false,
-    "allow_renames": false
-  },
-  "managed_directories": {
-    "description": "Directories with controlled growth",
-    "paths": [
+    "medium_immutability": [
       "claude/agents/",
       "claude/tools/",
       "claude/commands/"
-    ],
-    "protection_level": "medium",
-    "allow_new_files": true,
-    "allow_content_edits": true,
-    "allow_moves": true,
-    "require_semantic_naming": true
+    ]
   },
   "extension_zones": {
     "description": "Safe zones for experimentation and customization",

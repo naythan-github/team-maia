@@ -219,19 +219,22 @@ class MacOSMailBridge:
 
         return messages
 
-    def get_message_content(self, message_id: str) -> Dict[str, Any]:
+    def get_message_content(self, message_id: str, account: str = "Exchange") -> Dict[str, Any]:
         """
         Get full content of a specific message
 
         Args:
             message_id: Message ID from search_messages()
+            account: Account name (default: Exchange)
 
         Returns:
             Dictionary with complete message details
         """
         script = f'''
         tell application "Mail"
-            set msg to first message whose id is {message_id}
+            set targetAccount to account "{account}"
+            set targetMailbox to mailbox "Inbox" of targetAccount
+            set msg to (first message of targetMailbox whose id is {message_id})
 
             set msgSubject to subject of msg
             set msgSender to sender of msg

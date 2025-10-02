@@ -24,18 +24,31 @@ class TrelloFast:
         if not self.api_key or not self.api_token:
             raise ValueError("TRELLO_API_KEY and TRELLO_API_TOKEN must be set")
 
-    def _request(self, method: str, endpoint: str, data: dict = None) -> Any:
+    def _request(self, method: str, endpoint: str, data: dict = None, params: dict = None) -> Any:
         """Make API request"""
         url = f"{BASE_URL}/{endpoint}"
-        params = {"key": self.api_key, "token": self.api_token}
+        request_params = {"key": self.api_key, "token": self.api_token}
 
-        response = requests.request(
-            method=method,
-            url=url,
-            params=params,
-            json=data,
-            timeout=10
-        )
+        # Add additional params if provided
+        if params:
+            request_params.update(params)
+
+        # Use json for POST/PUT, params for GET
+        if method in ["POST", "PUT"]:
+            response = requests.request(
+                method=method,
+                url=url,
+                params=request_params,
+                json=data,
+                timeout=10
+            )
+        else:
+            response = requests.request(
+                method=method,
+                url=url,
+                params=request_params,
+                timeout=10
+            )
         response.raise_for_status()
         return response.json() if response.content else {}
 
@@ -55,14 +68,14 @@ class TrelloFast:
 
     def search_boards(self, query: str) -> List[Dict]:
         """Search boards by name"""
-        result = self._request("GET", "search", {"query": query, "modelTypes": "boards"})
+        result = self._request("GET", "search", params={"query": query, "modelTypes": "boards"})
         return result.get("boards", [])
 
     # ==================== List Operations ====================
 
     def get_lists(self, board_id: str, filter: str = "open") -> List[Dict]:
         """Get lists on a board"""
-        return self._request("GET", f"boards/{board_id}/lists", {"filter": filter})
+        return self._request("GET", f"boards/{board_id}/lists", params={"filter": filter})
 
     def create_list(self, board_id: str, name: str, pos: str = "bottom") -> Dict:
         """Create new list"""
@@ -80,7 +93,7 @@ class TrelloFast:
 
     def get_cards(self, list_id: str, filter: str = "open") -> List[Dict]:
         """Get cards in a list"""
-        return self._request("GET", f"lists/{list_id}/cards", {"filter": filter})
+        return self._request("GET", f"lists/{list_id}/cards", params={"filter": filter})
 
     def get_card(self, card_id: str) -> Dict:
         """Get card details"""

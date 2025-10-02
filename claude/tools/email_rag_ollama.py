@@ -1,0 +1,243 @@
+#!/usr/bin/env python3
+"""
+Email RAG System - Ollama Local Embeddings
+
+Uses Ollama's nomic-embed-text for 100% local email semantic search.
+Zero external dependencies, complete privacy for Orro Group data.
+
+Author: Maia System
+Created: 2025-10-02 (Phase 80)
+"""
+
+import os
+import sys
+import json
+import hashlib
+import requests
+from pathlib import Path
+from typing import List, Dict, Optional, Any
+from datetime import datetime
+
+MAIA_ROOT = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(MAIA_ROOT))
+
+try:
+    import chromadb
+    from chromadb.config import Settings
+except ImportError:
+    print("❌ Missing chromadb. Install: pip3 install chromadb")
+    sys.exit(1)
+
+from claude.tools.macos_mail_bridge import MacOSMailBridge
+
+
+class EmailRAGOllama:
+    """Email RAG with Ollama local embeddings"""
+
+    def __init__(self, db_path: Optional[str] = None, embedding_model: str = "nomic-embed-text"):
+        """Initialize with Ollama embeddings"""
+        self.db_path = db_path or os.path.expanduser("~/.maia/email_rag_ollama")
+        os.makedirs(self.db_path, exist_ok=True)
+
+        self.embedding_model = embedding_model
+        self.ollama_url = "http://localhost:11434"
+
+        # Initialize ChromaDB
+        self.client = chromadb.PersistentClient(
+            path=self.db_path,
+            settings=Settings(anonymized_telemetry=False)
+        )
+
+        self.collection = self.client.get_or_create_collection(
+            name="emails_ollama",
+            metadata={"description": "Emails with Ollama embeddings"}
+        )
+
+        self.mail_bridge = MacOSMailBridge()
+
+        self.index_state_file = os.path.join(self.db_path, "index_state.json")
+        self.index_state = self._load_index_state()
+
+        print(f"✅ Email RAG initialized with {embedding_model}")
+
+    def _load_index_state(self) -> Dict[str, Any]:
+        """Load index state"""
+        if os.path.exists(self.index_state_file):
+            with open(self.index_state_file, 'r') as f:
+                return json.load(f)
+        return {"indexed_emails": {}, "last_index_time": None}
+
+    def _save_index_state(self):
+        """Save index state"""
+        with open(self.index_state_file, 'w') as f:
+            json.dump(self.index_state, f, indent=2)
+
+    def _email_hash(self, message: Dict[str, Any]) -> str:
+        """Generate email hash"""
+        key = f"{message['id']}:{message['subject']}:{message['date']}"
+        return hashlib.md5(key.encode()).hexdigest()
+
+    def _get_embedding(self, text: str) -> List[float]:
+        """Get embedding from Ollama"""
+        response = requests.post(
+            f"{self.ollama_url}/api/embed",
+            json={"model": self.embedding_model, "input": text},
+            timeout=30
+        )
+        response.raise_for_status()
+        return response.json()["embeddings"][0]
+
+    def index_inbox(self, limit: Optional[int] = None, force: bool = False) -> Dict[str, int]:
+        """Index emails with Ollama embeddings"""
+        print("📧 Retrieving inbox messages...")
+        messages = self.mail_bridge.get_inbox_messages(limit=limit or 1000)
+
+        stats = {"total": len(messages), "new": 0, "skipped": 0, "errors": 0}
+
+        documents = []
+        metadatas = []
+        ids = []
+        embeddings = []
+
+        for i, msg in enumerate(messages, 1):
+            msg_hash = self._email_hash(msg)
+
+            if not force and msg_hash in self.index_state["indexed_emails"]:
+                stats["skipped"] += 1
+                continue
+
+            try:
+                content = self.mail_bridge.get_message_content(msg['id'])
+                doc_text = f"{content['subject']}\n\n{content['content'][:2000]}"  # Limit content
+
+                print(f"  [{i}/{len(messages)}] Embedding: {content['subject'][:50]}...")
+                embedding = self._get_embedding(doc_text)
+
+                metadata = {
+                    "message_id": msg['id'],
+                    "subject": content['subject'][:500],
+                    "sender": content['from'][:200],
+                    "date": content['date'],
+                    "read": str(content['read']),
+                    "mailbox": "Inbox"
+                }
+
+                documents.append(doc_text)
+                metadatas.append(metadata)
+                ids.append(msg_hash)
+                embeddings.append(embedding)
+
+                stats["new"] += 1
+
+            except Exception as e:
+                print(f"  ⚠️  Error: {e}")
+                stats["errors"] += 1
+                continue
+
+        if documents:
+            print(f"\n💾 Storing {len(documents)} emails in vector database...")
+            self.collection.add(
+                documents=documents,
+                metadatas=metadatas,
+                ids=ids,
+                embeddings=embeddings
+            )
+
+            for msg_id in ids:
+                self.index_state["indexed_emails"][msg_id] = datetime.now().isoformat()
+
+            self.index_state["last_index_time"] = datetime.now().isoformat()
+            self._save_index_state()
+
+        return stats
+
+    def semantic_search(
+        self,
+        query: str,
+        n_results: int = 10,
+        sender_filter: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """Semantic search with Ollama embeddings"""
+        query_embedding = self._get_embedding(query)
+
+        where_filter = {}
+        if sender_filter:
+            where_filter["sender"] = {"$contains": sender_filter}
+
+        results = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=n_results,
+            where=where_filter if where_filter else None
+        )
+
+        matches = []
+        for i in range(len(results['ids'][0])):
+            matches.append({
+                "subject": results['metadatas'][0][i]['subject'],
+                "sender": results['metadatas'][0][i]['sender'],
+                "date": results['metadatas'][0][i]['date'],
+                "relevance": 1 - results['distances'][0][i],
+                "preview": results['documents'][0][i][:200] + "...",
+                "message_id": results['metadatas'][0][i]['message_id']
+            })
+
+        return matches
+
+    def get_stats(self) -> Dict[str, Any]:
+        """Get stats"""
+        return {
+            "total_indexed": len(self.index_state["indexed_emails"]),
+            "last_index_time": self.index_state.get("last_index_time"),
+            "collection_count": self.collection.count(),
+            "embedding_model": self.embedding_model,
+            "db_path": self.db_path
+        }
+
+
+def main():
+    """Demo Email RAG with Ollama"""
+    print("🧠 Email RAG System - Ollama Local Embeddings\n")
+
+    try:
+        rag = EmailRAGOllama()
+
+        print("📊 Current Status:")
+        stats = rag.get_stats()
+        for key, value in stats.items():
+            print(f"   • {key}: {value}")
+
+        print("\n" + "="*60)
+        print("📥 Indexing Inbox (limit 20 for demo)...")
+        print("="*60)
+
+        index_stats = rag.index_inbox(limit=20)
+        print(f"\n✅ Indexing Complete:")
+        print(f"   • Total: {index_stats['total']}")
+        print(f"   • New: {index_stats['new']}")
+        print(f"   • Skipped: {index_stats['skipped']}")
+        print(f"   • Errors: {index_stats['errors']}")
+
+        if index_stats['new'] > 0:
+            print("\n" + "="*60)
+            print("🔍 Demo Search: 'Claude AI'")
+            print("="*60)
+
+            results = rag.semantic_search("Claude AI", n_results=3)
+            for i, r in enumerate(results, 1):
+                print(f"\n{i}. {r['subject'][:60]}")
+                print(f"   From: {r['sender']}")
+                print(f"   Relevance: {r['relevance']:.2%}")
+
+        print("\n✅ Email RAG System Operational!")
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    exit(main())
