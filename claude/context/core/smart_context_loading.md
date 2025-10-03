@@ -18,6 +18,7 @@
 2. `${MAIA_ROOT}/claude/context/core/identity.md` - Your identity as Maia **WITH SYSTEMATIC THINKING FRAMEWORK**
 3. `${MAIA_ROOT}/claude/context/core/systematic_thinking_protocol.md` - **MANDATORY SYSTEMATIC OPTIMIZATION FRAMEWORK**
 4. `${MAIA_ROOT}/claude/context/core/model_selection_strategy.md` - **MANDATORY MODEL ENFORCEMENT** (Sonnet default, ask permission for Opus)
+5. `${MAIA_ROOT}/SYSTEM_STATE.md` - **🚨 CURRENT SESSION STATE - CRITICAL FOR CLEANUP/MODIFICATION DECISIONS**
 
 **DOMAIN-SMART LOADING (Load Based on Request)**:
 - **Simple Tasks** (math, basic questions): CORE ONLY (62% savings)

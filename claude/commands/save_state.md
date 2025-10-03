@@ -17,6 +17,35 @@ Comprehensive system state preservation with mandatory documentation updates and
 2. **System Status Validation** - Verify all documented capabilities match actual system state
 3. **Context Window Compatibility** - Ensure new context windows can operate correctly
 
+### Phase 2.5: Anti-Sprawl Validation ⭐ **NEW - PHASE 81**
+1. **Experimental Directory Check** - Flag files in experimental/ that should be graduated or archived
+2. **Production Sprawl Detection** - Identify duplicate/versioned files in production directories
+3. **Naming Convention Audit** - Check for prohibited patterns (_v1, _new, timestamps, etc.)
+4. **Graduation Review** - Verify new production files have documentation updates
+5. **User Confirmation** - If violations found, ask user to resolve before commit
+
+**Validation Script**:
+```bash
+# Check for sprawl before committing
+echo "🔍 Running anti-sprawl validation..."
+
+# Check experimental directory age
+find claude/extensions/experimental -type f -mtime +7 | while read file; do
+    echo "⚠️  Old experimental file: $file (>7 days - graduate or archive?)"
+done
+
+# Check for version indicators in production
+find claude/tools claude/agents claude/commands -type f \
+    -name "*_v[0-9]*" -o -name "*_new*" -o -name "*_old*" | while read file; do
+    echo "❌ Naming violation: $file (version indicators in production)"
+done
+
+# Check for multiple similar files (potential duplicates)
+# (pattern matching for similar names)
+
+echo "✅ Anti-sprawl validation complete"
+```
+
 ### Phase 3: Git Integration (MANDATORY)
 1. **Git Status Check** - Review all modified and new files
 2. **Git Add** - Stage all documentation updates and system changes
@@ -32,7 +61,8 @@ Comprehensive system state preservation with mandatory documentation updates and
 1. **Documentation Audit** - Confirm all system changes are documented
 2. **Git Status Verification** - Ensure clean working directory
 3. **Implementation Continuity** - Verify all implementations can be resumed
-4. **System State Summary** - Provide completion confirmation
+4. **Anti-Sprawl Confirmation** - No violations committed
+5. **System State Summary** - Provide completion confirmation
 
 ## Implementation Template
 
@@ -89,7 +119,14 @@ echo "✅ Save state complete - All implementations preserved"
 - [ ] Production status clearly indicated
 - [ ] Integration points documented
 
-### Git Requirements  
+### Anti-Sprawl Requirements ⭐ **NEW**
+- [ ] No experimental files >7 days old without decision
+- [ ] No naming violations in production directories
+- [ ] New production files have SYSTEM_STATE.md updates
+- [ ] No duplicate/versioned files uncommitted
+- [ ] Graduation path clear for any experimental work
+
+### Git Requirements
 - [ ] All files staged with `git add -A`
 - [ ] Descriptive commit message with phase information
 - [ ] Claude Code attribution included
