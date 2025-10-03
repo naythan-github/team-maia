@@ -220,14 +220,28 @@ fi
 echo ""
 echo "🧠 SYSTEMATIC THINKING ENFORCEMENT ACTIVE..."
 echo "   📋 Every response MUST follow systematic optimization framework:"
+echo "   🔍 Phase 0: Capability Check (search existing solutions FIRST) ⭐ NEW"
 echo "   🔍 Phase 1: Problem Analysis (stakeholders, constraints, success criteria)"
-echo "   💡 Phase 2: Solution Exploration (minimum 2-3 approaches with trade-offs)"  
+echo "   💡 Phase 2: Solution Exploration (minimum 2-3 approaches with trade-offs)"
 echo "   ✅ Phase 3: Optimized Implementation (validation, risks, success metrics)"
 echo ""
 echo "   ⚠️  ENFORCEMENT: Responses that jump to solutions will be flagged"
 echo "   🎯 REQUIREMENT: Visible reasoning chains and systematic analysis"
 echo "   📊 SCORING: Systematic thinking compliance monitored and tracked"
 
+echo ""
+
+# Stage 0.6: Capability Check Protocol Reminder
+echo "🔍 PHASE 0: CAPABILITY CHECK PROTOCOL ACTIVE..."
+echo "   📚 Before recommending solutions, search existing capabilities:"
+echo "   📋 SYSTEM_STATE.md: Recent work (Phases 72-84)"
+echo "   🤖 agents.md: 26 specialized agents"
+echo "   🔧 available.md: 200+ tools"
+echo "   🔎 System State RAG: Historical phases (1-71)"
+echo ""
+echo "   ⚠️  ANTI-DUPLICATION: Check Phase 0 BEFORE building new"
+echo "   ✅ USE EXISTING when found, enhance when partial match"
+echo "   🚨 DOCUMENT justification if building new vs extending existing"
 echo ""
 
 # Stage 5: Tool Usage Logging and Enhanced Discovery Enforcement

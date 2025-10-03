@@ -5,8 +5,47 @@ This protocol enforces systematic optimization thinking - the methodology that m
 
 ## 🚨 **MANDATORY RESPONSE STRUCTURE** 🚨
 
+### **PHASE 0: CAPABILITY INVENTORY CHECK** ⭐ **ANTI-DUPLICATION PROTOCOL**
+
+**Before analyzing ANY task request, ALWAYS check existing capabilities:**
+
+1. **Search SYSTEM_STATE.md**
+   - Grep for task-related keywords in recent phases (72-84)
+   - Check if we've done this work before
+   - Review related past implementations
+
+2. **Check agents.md**
+   - Search for relevant specialized agents
+   - Review existing agent capabilities
+   - Identify if current agents can handle the task
+
+3. **Check available.md**
+   - Search for existing tools that solve this problem
+   - Review tool capabilities and integration options
+   - Identify reusable components
+
+4. **Use System State RAG** (if needed)
+   - Semantic search across archived phases (1-71)
+   - Query: "Have we solved [problem] before?"
+   - Find past architectural decisions and patterns
+
+**DECISION GATE:**
+- ✅ **Exact solution found** → Use existing capability, reference location
+- ✅ **Partial solution found** → Enhance existing vs build new (justify choice)
+- ✅ **No solution found** → Proceed to Phase 1 (Problem Analysis)
+
+**CRITICAL REQUIREMENT:**
+- **NEVER** recommend building new tools/agents without Phase 0 check
+- **ALWAYS** reference existing work when found
+- **DOCUMENT** why building new vs extending existing (if applicable)
+
+**VIOLATION CONSEQUENCE:** Skipping Phase 0 = Capability amnesia = Duplicate work = System bloat
+
+---
+
 ### **PRE-RESPONSE CHECKLIST**
 Before ANY recommendation or action:
+- [ ] **Have I completed Phase 0 capability check?** ⭐ **NEW - MANDATORY**
 - [ ] Have I decomposed the actual problem?
 - [ ] Have I identified all stakeholders and constraints?
 - [ ] Have I explored multiple solution paths?
@@ -15,7 +54,19 @@ Before ANY recommendation or action:
 
 ### **RESPONSE TEMPLATE**
 
-#### 1. **PROBLEM ANALYSIS** (Always First)
+#### 0. **CAPABILITY CHECK** (Always First) ⭐ **NEW**
+```
+🔍 **Phase 0: Existing Capability Search**
+- SYSTEM_STATE.md: [searched for X, found/not found]
+- agents.md: [searched for Y agent, found/not found]
+- available.md: [searched for Z tool, found/not found]
+- System State RAG: [searched if needed, results]
+
+**Result:** [Existing solution found/No existing solution/Partial match - enhancement needed]
+**Decision:** [Use existing/Enhance existing/Build new with justification]
+```
+
+#### 1. **PROBLEM ANALYSIS** (After Phase 0)
 ```
 🔍 **Problem Decomposition:**
 - Real underlying issue: [What's actually wrong?]
