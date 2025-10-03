@@ -628,6 +628,17 @@ Commands are markdown files that define reusable workflows and can be chained to
 
 ### System Maintenance & Documentation
 - **save_state** ⭐ **NEW - STANDARDIZED WORKFLOW** - Complete system state preservation: documentation updates + git commit/push automation
+- **system_state_archiver** ⭐ **NEW - PHASE 87** - Automated SYSTEM_STATE.md archiving preventing token overflow
+  - **File**: `claude/tools/system_state_archiver.py`
+  - **Threshold**: 1000 lines (configurable), archives when exceeded
+  - **Preservation**: Keeps 15 most recent phases in main file
+  - **Safety**: Atomic operations with timestamped backups to `~/.maia/backups/system_state/`
+  - **RAG Integration**: Auto-triggers reindexing after archiving
+  - **Automation**: Weekly LaunchAgent (Sundays 2am) - `com.maia.system-state-archiver`
+  - **Commands**:
+    - `python3 claude/tools/system_state_archiver.py --status` - Check current stats
+    - `python3 claude/tools/system_state_archiver.py --now` - Force archive
+    - `python3 claude/tools/system_state_archiver.py --dry-run` - Preview changes
 - **design_decision_audit** - Systematic audit and improvement of design decision documentation across Maia ecosystem
 - **comprehensive_save_state** - Legacy enhanced save state (superseded by standardized save_state command)
 - **documentation_validator** - Automated compliance checking for documentation standards with quality issue detection
