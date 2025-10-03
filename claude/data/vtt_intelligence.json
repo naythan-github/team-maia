@@ -1,0 +1,344 @@
+{
+  "meetings": {
+    "Intune_Dicker_AWA_summary": {
+      "file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Intune_Dicker_AWA_summary.md",
+      "processed_at": "2025-10-03T19:22:47.165869",
+      "results": {
+        "action_items": [
+          {
+            "owner": "Martin",
+            "action": "Draft formal e-waste/Shredex terms and conditions",
+            "deadline": "Next week",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164605",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Martin",
+            "action": "Create shared Excel task tracker for AWA/Dicker/Intune work",
+            "deadline": "Immediate",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164611",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Martin",
+            "action": "Take AWA network request to network team (documented process exists)",
+            "deadline": "Next week",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164613",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Provide subcategory list to Mariel for customer spreadsheet update",
+            "deadline": "Next week",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164614",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Get services team to audit Intune deployments via Lighthouse",
+            "deadline": "Next week",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164615",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Address SDM boundary issues in fortnightly meeting (blameless)",
+            "deadline": "Next fortnightly meeting",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164616",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Meeting with Richard to discuss out-of-scope work systemic issues",
+            "deadline": "Scheduled",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164617",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Provide Intune deployment status report",
+            "deadline": "Next week",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164619",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Harpreet",
+            "action": "Validate field service scenarios with Amrit",
+            "deadline": "Monday",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164620",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Harpreet",
+            "action": "Test field service process with Hamish",
+            "deadline": "Next week",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164621",
+            "source": "vtt_summary"
+          },
+          {
+            "owner": "Services Team",
+            "action": "Report any continued SDM pressure for out-of-scope work",
+            "deadline": "Next 2 weeks",
+            "status": "pending",
+            "created_at": "2025-10-03T19:22:47.164622",
+            "source": "vtt_summary"
+          }
+        ],
+        "decisions": [
+          {
+            "title": "Field Services",
+            "description": "Transition to outsourced model (AWA/Dicker Data) rather than building internal capability",
+            "decided_at": "2025-10-03T19:22:47.164725",
+            "source": "vtt_summary"
+          },
+          {
+            "title": "Intune Onboarding",
+            "description": "Significant project scope ($50K-$500K per customer depending on size) - defer until pod structure established",
+            "decided_at": "2025-10-03T19:22:47.164727",
+            "source": "vtt_summary"
+          },
+          {
+            "title": "Contract Management",
+            "description": "Future integration between contract management system and OTC ticket system to automate chargeable/non-chargeable determination",
+            "decided_at": "2025-10-03T19:22:47.164728",
+            "source": "vtt_summary"
+          },
+          {
+            "title": "Provisioning Workflow",
+            "description": "Dicker Data handles Intune pre-registration, AWA handles on-site deployment, Service Desk coordinates",
+            "decided_at": "2025-10-03T19:22:47.164728",
+            "source": "vtt_summary"
+          }
+        ],
+        "contacts": [
+          "Naythan Dawe",
+          "Harpreet",
+          "Naythan",
+          "Harpreet Kaur",
+          "Monday",
+          "Services Team",
+          "Immediate",
+          "Scheduled",
+          "Martin Dunn",
+          "Martin"
+        ],
+        "meetings_mentioned": [
+          {
+            "reference": "Wednesday meeting with",
+            "extracted_at": "2025-10-03T19:22:47.165309"
+          },
+          {
+            "reference": "fortnightly meeting",
+            "extracted_at": "2025-10-03T19:22:47.165460"
+          },
+          {
+            "reference": "fortnightly meeting",
+            "extracted_at": "2025-10-03T19:22:47.165461"
+          },
+          {
+            "reference": "Meeting with Richard to",
+            "extracted_at": "2025-10-03T19:22:47.165792"
+          },
+          {
+            "reference": "Meeting with Richard to",
+            "extracted_at": "2025-10-03T19:22:47.165802"
+          },
+          {
+            "reference": "meeting with Hamish",
+            "extracted_at": "2025-10-03T19:22:47.165805"
+          }
+        ],
+        "summary_text": "This meeting addressed critical vendor coordination and revenue leakage issues around field services and device provisioning. The team agreed to establish Shredex for e-waste with cost-plus pricing, transition to outsourced field services via AWA to improve billing and ticket hygiene, and set clear boundaries with SDMs who pressure engineers to perform out-of-scope work. A customer Intune deployment audit is underway to support Dicker Data vendor negotiations, though major Intune onboarding projects are deferred until the pod structure is established due to their complexity and cost ($50K-$500K per customer)."
+      }
+    }
+  },
+  "action_items": [
+    {
+      "owner": "Martin",
+      "action": "Draft formal e-waste/Shredex terms and conditions",
+      "deadline": "Next week",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164605",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Martin",
+      "action": "Create shared Excel task tracker for AWA/Dicker/Intune work",
+      "deadline": "Immediate",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164611",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Martin",
+      "action": "Take AWA network request to network team (documented process exists)",
+      "deadline": "Next week",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164613",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Provide subcategory list to Mariel for customer spreadsheet update",
+      "deadline": "Next week",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164614",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Get services team to audit Intune deployments via Lighthouse",
+      "deadline": "Next week",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164615",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Address SDM boundary issues in fortnightly meeting (blameless)",
+      "deadline": "Next fortnightly meeting",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164616",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Meeting with Richard to discuss out-of-scope work systemic issues",
+      "deadline": "Scheduled",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164617",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Provide Intune deployment status report",
+      "deadline": "Next week",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164619",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Harpreet",
+      "action": "Validate field service scenarios with Amrit",
+      "deadline": "Monday",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164620",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Harpreet",
+      "action": "Test field service process with Hamish",
+      "deadline": "Next week",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164621",
+      "source": "vtt_summary"
+    },
+    {
+      "owner": "Services Team",
+      "action": "Report any continued SDM pressure for out-of-scope work",
+      "deadline": "Next 2 weeks",
+      "status": "pending",
+      "created_at": "2025-10-03T19:22:47.164622",
+      "source": "vtt_summary"
+    }
+  ],
+  "decisions": [
+    {
+      "title": "Field Services",
+      "description": "Transition to outsourced model (AWA/Dicker Data) rather than building internal capability",
+      "decided_at": "2025-10-03T19:22:47.164725",
+      "source": "vtt_summary"
+    },
+    {
+      "title": "Intune Onboarding",
+      "description": "Significant project scope ($50K-$500K per customer depending on size) - defer until pod structure established",
+      "decided_at": "2025-10-03T19:22:47.164727",
+      "source": "vtt_summary"
+    },
+    {
+      "title": "Contract Management",
+      "description": "Future integration between contract management system and OTC ticket system to automate chargeable/non-chargeable determination",
+      "decided_at": "2025-10-03T19:22:47.164728",
+      "source": "vtt_summary"
+    },
+    {
+      "title": "Provisioning Workflow",
+      "description": "Dicker Data handles Intune pre-registration, AWA handles on-site deployment, Service Desk coordinates",
+      "decided_at": "2025-10-03T19:22:47.164728",
+      "source": "vtt_summary"
+    }
+  ],
+  "contacts": {
+    "Naythan Dawe": {
+      "first_seen": "2025-10-03T19:22:47.165871",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Harpreet": {
+      "first_seen": "2025-10-03T19:22:47.165872",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Naythan": {
+      "first_seen": "2025-10-03T19:22:47.165872",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Harpreet Kaur": {
+      "first_seen": "2025-10-03T19:22:47.165873",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Monday": {
+      "first_seen": "2025-10-03T19:22:47.165874",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Services Team": {
+      "first_seen": "2025-10-03T19:22:47.165874",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Immediate": {
+      "first_seen": "2025-10-03T19:22:47.165875",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Scheduled": {
+      "first_seen": "2025-10-03T19:22:47.165876",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Martin Dunn": {
+      "first_seen": "2025-10-03T19:22:47.165876",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    },
+    "Martin": {
+      "first_seen": "2025-10-03T19:22:47.165877",
+      "meetings": [
+        "Intune_Dicker_AWA_summary"
+      ]
+    }
+  },
+  "last_processed": "2025-10-03T19:22:47.165878"
+}

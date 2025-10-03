@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 class AutomatedDailyBriefing:
     """Automated daily briefing with email delivery."""
 
-    def __init__(self, delivery_email: str = "naythan.general@icloud.com"):
+    def __init__(self, delivery_email: str = "naythan.dawe@orro.group"):
         """
         Initialize automated briefing system.
 
@@ -239,12 +239,12 @@ class AutomatedDailyBriefing:
 
             logger.info(f"Email briefing saved to {email_file}")
 
-            # Send via Mail.app using Exchange account
+            # Create draft email in Mail.app (avoids Exchange send crash)
             try:
                 # Initialize mail bridge (from morning briefing)
                 mail_bridge = self.morning_briefing.mail_bridge
 
-                success = mail_bridge.send_email(
+                success = mail_bridge.create_draft_email(
                     to=self.delivery_email,
                     subject=f"Daily Briefing - {briefing['date']}",
                     body=html_content,
@@ -253,14 +253,15 @@ class AutomatedDailyBriefing:
                 )
 
                 if success:
-                    logger.info(f"✅ Email sent successfully to {self.delivery_email}")
+                    logger.info(f"✅ Draft email created - Mail.app window opened")
+                    logger.info(f"📧 Ready to send to {self.delivery_email} (just click Send)")
                 else:
-                    logger.warning(f"⚠️  Email sending status unclear, check {email_file}")
+                    logger.warning(f"⚠️  Draft creation status unclear, check {email_file}")
 
                 return success
 
             except Exception as e:
-                logger.error(f"Failed to send via Mail.app: {e}")
+                logger.error(f"Failed to create draft via Mail.app: {e}")
                 logger.info(f"Briefing saved to {email_file} for manual sending")
                 return False
 

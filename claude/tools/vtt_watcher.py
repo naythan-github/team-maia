@@ -373,6 +373,9 @@ class VTTFileHandler(FileSystemEventHandler):
             # Mark as processed
             self._save_processed_file(str(file_path))
 
+            # 🚀 NEW: Trigger VTT Intelligence Pipeline
+            self._trigger_intelligence_pipeline(summary_file)
+
             # Send notification (optional)
             self._send_notification(file_path.name, summary_file)
 
@@ -503,6 +506,34 @@ class VTTFileHandler(FileSystemEventHandler):
 *Location: {SUMMARY_OUTPUT_DIR}*
 """
         return summary
+
+    def _trigger_intelligence_pipeline(self, summary_file: Path):
+        """Trigger VTT intelligence pipeline for action extraction and integration"""
+        try:
+            logger.info(f"🚀 Triggering intelligence pipeline for {summary_file.name}")
+
+            # Import and run pipeline
+            sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+            from claude.tools.vtt_intelligence_pipeline import VTTIntelligencePipeline
+
+            # Initialize pipeline with defaults
+            pipeline = VTTIntelligencePipeline(
+                owner="Naythan",
+                trello_board="68de069e996bf03442ae5eea"  # Your "My Trello board"
+            )
+
+            # Process with full intelligence extraction
+            results = pipeline.process_summary_complete(
+                summary_file,
+                push_to_trello=True,  # Auto-create Trello cards
+                index_to_rag=True     # Index to meeting RAG
+            )
+
+            logger.info(f"✅ Intelligence pipeline complete: {results.get('status', 'success')}")
+
+        except Exception as e:
+            logger.error(f"Intelligence pipeline failed: {e}", exc_info=True)
+            # Don't block VTT processing if intelligence fails
 
     def _send_notification(self, filename: str, summary_file: Path):
         """Send macOS notification"""

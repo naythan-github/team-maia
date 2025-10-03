@@ -122,6 +122,10 @@ class TrelloFast:
         """Get cards in a list"""
         return self._request("GET", f"lists/{list_id}/cards", params={"filter": filter})
 
+    def get_cards_on_list(self, list_id: str, filter: str = "open") -> List[Dict]:
+        """Alias for get_cards - for compatibility"""
+        return self.get_cards(list_id, filter)
+
     def get_card(self, card_id: str) -> Dict:
         """Get card details"""
         return self._request("GET", f"cards/{card_id}")
@@ -133,7 +137,8 @@ class TrelloFast:
         desc: str = "",
         pos: str = "bottom",
         labels: List[str] = None,
-        members: List[str] = None
+        members: List[str] = None,
+        due: str = None
     ) -> Dict:
         """Create new card"""
         data = {
@@ -147,6 +152,8 @@ class TrelloFast:
             data["idLabels"] = labels
         if members:
             data["idMembers"] = members
+        if due:
+            data["due"] = due
 
         return self._request("POST", "cards", data)
 

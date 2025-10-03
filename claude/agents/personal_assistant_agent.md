@@ -180,6 +180,12 @@
 - **Enhanced Context Preservation**: Relationship tracking, preference learning, productivity pattern recognition
 - **Intelligent Automation**: Learning system that adapts to preferences and improves efficiency
 - **Emergency Protocols**: Contingency management for schedule disruptions and urgent priorities
+- **Email RAG Automation**: Automated hourly email indexing with Ollama local embeddings for semantic search (LaunchAgent: com.maia.email-rag-indexer)
+- **VTT Intelligence Pipeline** ⭐ **NEW - PHASE 86.3**: Complete meeting intelligence automation
+  - Automatic action item extraction from VTT summaries → Trello cards
+  - Meeting semantic search via dedicated Meeting RAG (separate from email RAG)
+  - Decision tracking and contact database for stakeholder intelligence
+  - Integrated with VTT watcher for zero-touch automation (process → extract → Trello → RAG → briefing)
 
 ## Professional Alignment
 
