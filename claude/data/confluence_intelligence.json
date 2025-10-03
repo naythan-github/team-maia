@@ -1,0 +1,947 @@
+{
+  "pages": {
+    "Thoughts_and_notes_3113484297": {
+      "file": "/Users/naythandawe/git/maia/claude/data/confluence_summaries/Thoughts_and_notes_3113484297.md",
+      "url": "https://vivoemc.atlassian.net/wiki/spaces/Orro/pages/3113484297/Thoughts+and+notes",
+      "processed_at": "2025-10-03T20:51:04.384267",
+      "results": {
+        "action_items": [
+          {
+            "action": "Service desk tickets with no comments - data review needed",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381459",
+            "status": "pending"
+          },
+          {
+            "action": "Annual check done by HR",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381603",
+            "status": "pending"
+          },
+          {
+            "action": "Team meetings to be setup",
+            "category": "setup",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381613",
+            "status": "pending"
+          },
+          {
+            "action": "Review and send JDs",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381665",
+            "status": "pending"
+          },
+          {
+            "action": "Follow up on Wintel JD",
+            "category": "follow-up",
+            "priority": "medium",
+            "created_at": "2025-10-03T20:51:04.381668",
+            "status": "pending"
+          },
+          {
+            "action": "Check servicedesk tickets with no comments",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381675",
+            "status": "pending"
+          },
+          {
+            "action": "Follow up on AI in OTC post impact on Cloud",
+            "category": "follow-up",
+            "priority": "medium",
+            "created_at": "2025-10-03T20:51:04.381678",
+            "status": "pending"
+          },
+          {
+            "action": "Follow up on Jaqi's email about Networks OTC improvements",
+            "category": "follow-up",
+            "priority": "medium",
+            "created_at": "2025-10-03T20:51:04.381680",
+            "status": "pending"
+          },
+          {
+            "action": "Review current user journey for support",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381683",
+            "status": "pending"
+          },
+          {
+            "action": "Review escalation process",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381685",
+            "status": "pending"
+          },
+          {
+            "action": "Review links Foran sent",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381687",
+            "status": "pending"
+          },
+          {
+            "action": "Setup time with Mariele for financial numbers review",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381690",
+            "status": "pending"
+          },
+          {
+            "action": "Order laptop",
+            "category": "procurement",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381695",
+            "status": "pending"
+          },
+          {
+            "action": "Confirm Super payments",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381698",
+            "status": "pending"
+          },
+          {
+            "action": "Confirm teams chats",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381700",
+            "status": "pending"
+          },
+          {
+            "action": "Holidays confirmation",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381706",
+            "status": "pending"
+          },
+          {
+            "action": "Mariele: Financial review",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381842",
+            "status": "pending"
+          },
+          {
+            "action": "Foran: Sent links for review",
+            "category": "review",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381848",
+            "status": "pending"
+          }
+        ],
+        "questions": [
+          {
+            "question": "- Who has had training so far?",
+            "category": "team",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381881",
+            "status": "unanswered"
+          },
+          {
+            "question": "- What training have they had?",
+            "category": "general",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381883",
+            "status": "unanswered"
+          },
+          {
+            "question": "- AI in OTC post - how does it impact Cloud?",
+            "category": "process",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381886",
+            "status": "unanswered"
+          },
+          {
+            "question": "- Auvik: moving, who is using it?",
+            "category": "team",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381890",
+            "status": "unanswered"
+          },
+          {
+            "question": "21. Cloud team in Philippines?",
+            "category": "team",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381893",
+            "status": "unanswered"
+          },
+          {
+            "question": "22. Plans for Philippines expansion?",
+            "category": "general",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381895",
+            "status": "unanswered"
+          },
+          {
+            "question": "- Converting to EA?",
+            "category": "general",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381898",
+            "status": "unanswered"
+          },
+          {
+            "question": "- Workload tracking - what do we do now?",
+            "category": "general",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381900",
+            "status": "unanswered"
+          },
+          {
+            "question": "- Which Service Catalogues to be aware of?",
+            "category": "general",
+            "priority": "low",
+            "created_at": "2025-10-03T20:51:04.381903",
+            "status": "unanswered"
+          }
+        ],
+        "strategic_initiatives": [
+          {
+            "initiative": "### 3. OTC (One Touch Cloud) Training & Operations",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381932",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Who has had training so far?",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381934",
+            "status": "identified"
+          },
+          {
+            "initiative": "- What training have they had?",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381935",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Service catalogues awareness",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381943",
+            "status": "identified"
+          },
+          {
+            "initiative": "### 5. Team Structure & Hiring",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381945",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Sponsorships for hiring",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381949",
+            "status": "identified"
+          },
+          {
+            "initiative": "**OKRs and KPIs**:",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381963",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Engagement was 30%, now about 60%",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381967",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Need to increase engagement",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381969",
+            "status": "identified"
+          },
+          {
+            "initiative": "### 7. Process & Culture",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381972",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Balanced Score Card",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381973",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Jaqi: ITIL training - careful deployment",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381974",
+            "status": "identified"
+          },
+          {
+            "initiative": "- No retros at the moment (no agile, no scrums)",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381975",
+            "status": "identified"
+          },
+          {
+            "initiative": "- **Pod Strategy**:",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381977",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Minimize ticket flicking between pods",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381980",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Pods: try to resolve within pod",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381981",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Change control, internal CAB: when, who, customer relation",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.381987",
+            "status": "identified"
+          },
+          {
+            "initiative": "12. Training records",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382006",
+            "status": "identified"
+          },
+          {
+            "initiative": "13. Retros/knowledge sharing platform",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382007",
+            "status": "identified"
+          },
+          {
+            "initiative": "17. Culture building initiatives",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382010",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Which Service Catalogues to be aware of?",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382025",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Retros implementation",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382030",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Retro training",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382034",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Blameless culture education",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382035",
+            "status": "identified"
+          },
+          {
+            "initiative": "- Jaqi: ITIL training, OTC improvements",
+            "category": "strategic",
+            "created_at": "2025-10-03T20:51:04.382046",
+            "status": "identified"
+          }
+        ],
+        "decisions_needed": [
+          {
+            "decision": "- Confluence: budget approval needed",
+            "urgency": "high",
+            "created_at": "2025-10-03T20:51:04.382078",
+            "status": "pending"
+          },
+          {
+            "decision": "2. Confirm Super payments",
+            "urgency": "high",
+            "created_at": "2025-10-03T20:51:04.382116",
+            "status": "pending"
+          },
+          {
+            "decision": "3. Confirm teams chats",
+            "urgency": "high",
+            "created_at": "2025-10-03T20:51:04.382117",
+            "status": "pending"
+          },
+          {
+            "decision": "5. Holidays confirmation",
+            "urgency": "high",
+            "created_at": "2025-10-03T20:51:04.382119",
+            "status": "pending"
+          },
+          {
+            "decision": "- Converting to EA?",
+            "urgency": "medium",
+            "created_at": "2025-10-03T20:51:04.382134",
+            "status": "pending"
+          },
+          {
+            "decision": "- Workload tracking - what do we do now?",
+            "urgency": "medium",
+            "created_at": "2025-10-03T20:51:04.382136",
+            "status": "pending"
+          },
+          {
+            "decision": "- AI budget for expenses",
+            "urgency": "high",
+            "created_at": "2025-10-03T20:51:04.382141",
+            "status": "pending"
+          }
+        ],
+        "team_members": [
+          "Jono",
+          "Auvik",
+          "Anna Bruen",
+          "Service Hub",
+          "Trevor",
+          "Pods",
+          "Argos",
+          "Reporting",
+          "Dion",
+          "Management System",
+          "Project Orchestration",
+          "Foran",
+          "Hamish Ridland",
+          "Nigel",
+          "Confluence",
+          "Confluence Page",
+          "Nerdio",
+          "Mariele",
+          "Jaqi",
+          "Mandeep",
+          "One Touch",
+          "Probe",
+          "Devicie"
+        ],
+        "tools_systems": [
+          "engagement",
+          "fix",
+          "Systems",
+          "hiring",
+          "References",
+          "licensing",
+          "recommendation",
+          "some",
+          "relation",
+          "reporting",
+          "handling",
+          "review",
+          "needed",
+          "CAB",
+          "Card",
+          "Foran",
+          "education",
+          "IT Glue",
+          "matrix",
+          "tenancy",
+          "report",
+          "Confluence",
+          "Nerdio",
+          "OneNote",
+          "Bruen",
+          "Probe",
+          "Jono",
+          "sharing",
+          "mandatory",
+          "channel",
+          "updated",
+          "plans",
+          "clarification",
+          "Pods",
+          "ticketing",
+          "Argos",
+          "Culture",
+          "with",
+          "integration",
+          "ideas",
+          "Dion",
+          "log",
+          "tracking",
+          "proper",
+          "comments",
+          "support",
+          "deployment",
+          "Mariele",
+          "Jaqi",
+          "Mandeep",
+          "engine",
+          "team",
+          "seniority",
+          "focus",
+          "Devicie",
+          "Follow",
+          "Tools",
+          "differently",
+          "Auvik",
+          "Hiring",
+          "Kasaya",
+          "migration",
+          "Touch",
+          "monitoring",
+          "OTC",
+          "targets",
+          "training",
+          "planning",
+          "availability",
+          "answers",
+          "Orchestration",
+          "customers",
+          "Jira",
+          "Reporting",
+          "Notes",
+          "pods",
+          "VPN",
+          "codes",
+          "implementation",
+          "frequency",
+          "probs",
+          "Required",
+          "protect",
+          "JDs",
+          "concerns",
+          "Items",
+          "pathways",
+          "agreement",
+          "updates",
+          "Ridland",
+          "identification",
+          "CRM",
+          "https",
+          "automation",
+          "gaps",
+          "Trevor",
+          "management",
+          "framework",
+          "Operations",
+          "Management",
+          "practice",
+          "them",
+          "Innovation",
+          "Hub",
+          "Other",
+          "resolved",
+          "patching",
+          "RMM",
+          "Nigel",
+          "WAFA",
+          "follow",
+          "improvements",
+          "post",
+          "partner",
+          "Page",
+          "Issues"
+        ],
+        "key_themes": [
+          "Confluence Page: Thoughts and notes",
+          "Overview",
+          "1. SDM & Customer Service Issues",
+          "2. Service Desk Operations",
+          "3. OTC (One Touch Cloud) Training & Operations",
+          "4. Documentation & Tools",
+          "5. Team Structure & Hiring",
+          "6. Meeting Notes - Hamish Meeting",
+          "7. Process & Culture",
+          "8. Infrastructure & Systems"
+        ]
+      }
+    }
+  },
+  "action_items": [
+    {
+      "action": "Service desk tickets with no comments - data review needed",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381459",
+      "status": "pending"
+    },
+    {
+      "action": "Annual check done by HR",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381603",
+      "status": "pending"
+    },
+    {
+      "action": "Team meetings to be setup",
+      "category": "setup",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381613",
+      "status": "pending"
+    },
+    {
+      "action": "Review and send JDs",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381665",
+      "status": "pending"
+    },
+    {
+      "action": "Follow up on Wintel JD",
+      "category": "follow-up",
+      "priority": "medium",
+      "created_at": "2025-10-03T20:51:04.381668",
+      "status": "pending"
+    },
+    {
+      "action": "Check servicedesk tickets with no comments",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381675",
+      "status": "pending"
+    },
+    {
+      "action": "Follow up on AI in OTC post impact on Cloud",
+      "category": "follow-up",
+      "priority": "medium",
+      "created_at": "2025-10-03T20:51:04.381678",
+      "status": "pending"
+    },
+    {
+      "action": "Follow up on Jaqi's email about Networks OTC improvements",
+      "category": "follow-up",
+      "priority": "medium",
+      "created_at": "2025-10-03T20:51:04.381680",
+      "status": "pending"
+    },
+    {
+      "action": "Review current user journey for support",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381683",
+      "status": "pending"
+    },
+    {
+      "action": "Review escalation process",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381685",
+      "status": "pending"
+    },
+    {
+      "action": "Review links Foran sent",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381687",
+      "status": "pending"
+    },
+    {
+      "action": "Setup time with Mariele for financial numbers review",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381690",
+      "status": "pending"
+    },
+    {
+      "action": "Order laptop",
+      "category": "procurement",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381695",
+      "status": "pending"
+    },
+    {
+      "action": "Confirm Super payments",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381698",
+      "status": "pending"
+    },
+    {
+      "action": "Confirm teams chats",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381700",
+      "status": "pending"
+    },
+    {
+      "action": "Holidays confirmation",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381706",
+      "status": "pending"
+    },
+    {
+      "action": "Mariele: Financial review",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381842",
+      "status": "pending"
+    },
+    {
+      "action": "Foran: Sent links for review",
+      "category": "review",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381848",
+      "status": "pending"
+    }
+  ],
+  "questions": [
+    {
+      "question": "- Who has had training so far?",
+      "category": "team",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381881",
+      "status": "unanswered"
+    },
+    {
+      "question": "- What training have they had?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381883",
+      "status": "unanswered"
+    },
+    {
+      "question": "- AI in OTC post - how does it impact Cloud?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381886",
+      "status": "unanswered"
+    },
+    {
+      "question": "- Auvik: moving, who is using it?",
+      "category": "team",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381890",
+      "status": "unanswered"
+    },
+    {
+      "question": "21. Cloud team in Philippines?",
+      "category": "team",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381893",
+      "status": "unanswered"
+    },
+    {
+      "question": "22. Plans for Philippines expansion?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381895",
+      "status": "unanswered"
+    },
+    {
+      "question": "- Converting to EA?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381898",
+      "status": "unanswered"
+    },
+    {
+      "question": "- Workload tracking - what do we do now?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381900",
+      "status": "unanswered"
+    },
+    {
+      "question": "- Which Service Catalogues to be aware of?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-03T20:51:04.381903",
+      "status": "unanswered"
+    }
+  ],
+  "strategic_initiatives": [
+    {
+      "initiative": "### 3. OTC (One Touch Cloud) Training & Operations",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381932",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Who has had training so far?",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381934",
+      "status": "identified"
+    },
+    {
+      "initiative": "- What training have they had?",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381935",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Service catalogues awareness",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381943",
+      "status": "identified"
+    },
+    {
+      "initiative": "### 5. Team Structure & Hiring",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381945",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Sponsorships for hiring",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381949",
+      "status": "identified"
+    },
+    {
+      "initiative": "**OKRs and KPIs**:",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381963",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Engagement was 30%, now about 60%",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381967",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Need to increase engagement",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381969",
+      "status": "identified"
+    },
+    {
+      "initiative": "### 7. Process & Culture",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381972",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Balanced Score Card",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381973",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Jaqi: ITIL training - careful deployment",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381974",
+      "status": "identified"
+    },
+    {
+      "initiative": "- No retros at the moment (no agile, no scrums)",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381975",
+      "status": "identified"
+    },
+    {
+      "initiative": "- **Pod Strategy**:",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381977",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Minimize ticket flicking between pods",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381980",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Pods: try to resolve within pod",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381981",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Change control, internal CAB: when, who, customer relation",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.381987",
+      "status": "identified"
+    },
+    {
+      "initiative": "12. Training records",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382006",
+      "status": "identified"
+    },
+    {
+      "initiative": "13. Retros/knowledge sharing platform",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382007",
+      "status": "identified"
+    },
+    {
+      "initiative": "17. Culture building initiatives",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382010",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Which Service Catalogues to be aware of?",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382025",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Retros implementation",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382030",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Retro training",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382034",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Blameless culture education",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382035",
+      "status": "identified"
+    },
+    {
+      "initiative": "- Jaqi: ITIL training, OTC improvements",
+      "category": "strategic",
+      "created_at": "2025-10-03T20:51:04.382046",
+      "status": "identified"
+    }
+  ],
+  "decisions_needed": [
+    {
+      "decision": "- Confluence: budget approval needed",
+      "urgency": "high",
+      "created_at": "2025-10-03T20:51:04.382078",
+      "status": "pending"
+    },
+    {
+      "decision": "2. Confirm Super payments",
+      "urgency": "high",
+      "created_at": "2025-10-03T20:51:04.382116",
+      "status": "pending"
+    },
+    {
+      "decision": "3. Confirm teams chats",
+      "urgency": "high",
+      "created_at": "2025-10-03T20:51:04.382117",
+      "status": "pending"
+    },
+    {
+      "decision": "5. Holidays confirmation",
+      "urgency": "high",
+      "created_at": "2025-10-03T20:51:04.382119",
+      "status": "pending"
+    },
+    {
+      "decision": "- Converting to EA?",
+      "urgency": "medium",
+      "created_at": "2025-10-03T20:51:04.382134",
+      "status": "pending"
+    },
+    {
+      "decision": "- Workload tracking - what do we do now?",
+      "urgency": "medium",
+      "created_at": "2025-10-03T20:51:04.382136",
+      "status": "pending"
+    },
+    {
+      "decision": "- AI budget for expenses",
+      "urgency": "high",
+      "created_at": "2025-10-03T20:51:04.382141",
+      "status": "pending"
+    }
+  ],
+  "team_members": [],
+  "tools_systems": [],
+  "last_processed": "2025-10-03T20:51:04.384269"
+}

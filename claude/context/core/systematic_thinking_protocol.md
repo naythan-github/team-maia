@@ -67,16 +67,29 @@ python3 claude/tools/capability_checker.py --json "task description"
 
 ### **PRE-RESPONSE CHECKLIST**
 Before ANY recommendation or action:
-- [ ] **Have I completed Phase 0 capability check?** ⭐ **NEW - MANDATORY**
-- [ ] Have I decomposed the actual problem?
-- [ ] Have I identified all stakeholders and constraints?
-- [ ] Have I explored multiple solution paths?
-- [ ] Have I analyzed second/third-order consequences?
-- [ ] Have I considered implementation complexity and risks?
+- [ ] **Am I already in EXECUTION MODE?** ⭐ **CHECK FIRST** - If YES, skip to implementation
+- [ ] **Have I completed Phase 0 capability check?** ⭐ **NEW - MANDATORY** (Only in DISCOVERY MODE)
+- [ ] Have I decomposed the actual problem? (Only in DISCOVERY MODE)
+- [ ] Have I identified all stakeholders and constraints? (Only in DISCOVERY MODE)
+- [ ] Have I explored multiple solution paths? (Only in DISCOVERY MODE)
+- [ ] Have I analyzed second/third-order consequences? (Only in DISCOVERY MODE)
+- [ ] Have I considered implementation complexity and risks? (Only in DISCOVERY MODE)
 
 ### **RESPONSE TEMPLATE**
 
-#### 0. **CAPABILITY CHECK** (Always First) ⭐ **NEW**
+### **🚨 MODE CHECK (ALWAYS FIRST)** 🚨
+```
+**Context Check:**
+- User has approved a plan/approach? [YES/NO]
+- User said "do it", "yes", "proceed", "fix X", "implement Y"? [YES/NO]
+- Currently executing within agreed scope? [YES/NO]
+
+**MODE DECISION:**
+- If ANY YES above → **EXECUTION MODE** → Skip to implementation
+- If ALL NO above → **DISCOVERY MODE** → Complete Phase 0-3 analysis
+```
+
+#### 0. **CAPABILITY CHECK** (DISCOVERY MODE Only) ⭐ **NEW**
 ```
 🔍 **Phase 0: Existing Capability Search**
 - SYSTEM_STATE.md: [searched for X, found/not found]
@@ -88,7 +101,7 @@ Before ANY recommendation or action:
 **Decision:** [Use existing/Enhance existing/Build new with justification]
 ```
 
-#### 1. **PROBLEM ANALYSIS** (After Phase 0)
+#### 1. **PROBLEM ANALYSIS** (DISCOVERY MODE Only)
 ```
 🔍 **Problem Decomposition:**
 - Real underlying issue: [What's actually wrong?]
@@ -98,13 +111,13 @@ Before ANY recommendation or action:
 - Hidden complexity: [What am I missing?]
 ```
 
-#### 2. **SOLUTION EXPLORATION**
+#### 2. **SOLUTION EXPLORATION** (DISCOVERY MODE Only)
 ```
 💡 **Solution Options Analysis:**
 
 **Option A: [Approach]**
 - Pros: [Benefits and advantages]
-- Cons: [Risks and limitations] 
+- Cons: [Risks and limitations]
 - Implementation: [Complexity and effort]
 - Failure modes: [What could go wrong?]
 
@@ -126,8 +139,8 @@ Before ANY recommendation or action:
 ```
 
 **EXECUTION STATE MACHINE** (See identity.md Phase 3):
-- **DISCOVERY MODE**: Present this analysis, wait for user agreement
-- **EXECUTION MODE**: Once user agrees (says "yes", "option B", "do it"), execute autonomously without further permission requests
+- **DISCOVERY MODE**: Present Phase 0-3 analysis, wait for user agreement
+- **EXECUTION MODE**: User approved plan → Execute autonomously, NO permission requests, NO re-analysis of approved scope
 
 ## **ENFORCEMENT MECHANISMS**
 

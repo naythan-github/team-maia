@@ -1,0 +1,76 @@
+{
+  "date": "Friday, October 03, 2025",
+  "generated_at": "2025-10-03T20:56:56.510467",
+  "sections": {
+    "priorities": [
+      "\ud83d\udcc5 Provide subcategory list to Mariel for customer spreadsheet update (Due: Next week)",
+      "\ud83d\udcc5 Get services team to audit Intune deployments via Lighthouse (Due: Next week)"
+    ],
+    "decisions": [
+      {
+        "decision": "- Confluence: budget approval needed",
+        "urgency": "high",
+        "created_at": "2025-10-03T20:51:04.382078",
+        "status": "pending"
+      },
+      {
+        "decision": "2. Confirm Super payments",
+        "urgency": "high",
+        "created_at": "2025-10-03T20:51:04.382116",
+        "status": "pending"
+      },
+      {
+        "decision": "3. Confirm teams chats",
+        "urgency": "high",
+        "created_at": "2025-10-03T20:51:04.382117",
+        "status": "pending"
+      },
+      {
+        "decision": "- Converting to EA?",
+        "urgency": "medium",
+        "created_at": "2025-10-03T20:51:04.382134",
+        "status": "pending"
+      },
+      {
+        "decision": "- Workload tracking - what do we do now?",
+        "urgency": "medium",
+        "created_at": "2025-10-03T20:51:04.382136",
+        "status": "pending"
+      }
+    ],
+    "questions": [
+      "- Who has had training so far?",
+      "- What training have they had?",
+      "- AI in OTC post - how does it impact Cloud?",
+      "- Auvik: moving, who is using it?",
+      "21. Cloud team in Philippines?"
+    ],
+    "strategic": {
+      "total_initiatives": 25,
+      "key_initiatives": [
+        "### 3. OTC (One Touch Cloud) Training & Operations",
+        "- Who has had training so far?",
+        "- What training have they had?"
+      ],
+      "status": "Active planning phase"
+    },
+    "team": {
+      "new_starters": [
+        "Trevor - Wintel Engineer (starting next week)"
+      ],
+      "key_contacts": [
+        "Hamish",
+        "Mariele",
+        "MV (Michael Villaflor)"
+      ],
+      "team_health": "Engagement improving: 30% \u2192 60%"
+    },
+    "meeting_actions": [
+      "Provide subcategory list to Mariel for customer spreadsheet update (from meeting)",
+      "Get services team to audit Intune deployments via Lighthouse (from meeting)",
+      "Address SDM boundary issues in fortnightly meeting (blameless) (from meeting)",
+      "Meeting with Richard to discuss out-of-scope work systemic issues (from meeting)",
+      "Provide Intune deployment status report (from meeting)"
+    ]
+  }
+}
