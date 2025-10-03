@@ -74,10 +74,25 @@ class AntiSprawlValidator:
         """Check for naming convention violations in production directories"""
         violations = []
 
-        # Prohibited patterns from config
-        patterns = [
-            '_v[0-9]', '_new', '_old', '_temp', '_updated', '_final',
-            '_copy', '_backup', '_test'
+        # Prohibited patterns - version/temporal indicators, not semantic words
+        # Note: 'validator', 'backup', 'manager' are SEMANTIC (describe function) - not violations
+        patterns = {
+            '_v[0-9]': r'_v\d+',  # Version indicators: file_v1.py, file_v2.py
+            '_new': '_new',        # Temporal: new_feature.py, feature_new.py
+            '_old': '_old',        # Temporal: old_feature.py, feature_old.py
+            '_updated': '_updated', # Temporal: feature_updated.py
+            '_final': '_final',    # Temporal: feature_final.py
+            '_copy': '_copy',      # Duplicates: feature_copy.py
+        }
+
+        # Semantic exceptions - these words describe FUNCTION, not version/state
+        semantic_words = [
+            'validator', 'validation',  # Validates something
+            'backup', 'backups',        # Handles backups
+            'manager', 'management',    # Manages something
+            'test', 'testing',          # Test harness/framework (not temp test files)
+            'template', 'templates',    # Template system (not temporary)
+            'temp', 'temporary'         # If part of semantic name (temporary_storage.py)
         ]
 
         for prod_dir in self.production_dirs:
@@ -88,15 +103,26 @@ class AntiSprawlValidator:
                 filename = file_path.stem
 
                 # Check each prohibited pattern
-                for pattern in patterns:
-                    if pattern.replace('[0-9]', '') in filename:
-                        violations.append({
-                            'file': str(file_path.relative_to(self.maia_root)),
-                            'pattern': pattern,
-                            'type': 'error',
-                            'message': f'Naming violation: contains "{pattern}" in production directory'
-                        })
-                        break
+                for pattern_name, pattern in patterns.items():
+                    # Only flag if it's a clear version/temporal indicator
+                    # Not if it's part of a semantic word
+                    if pattern_name in filename:
+                        # Check if it's actually a semantic word being used correctly
+                        is_semantic = False
+                        for semantic in semantic_words:
+                            if semantic in filename:
+                                is_semantic = True
+                                break
+
+                        # Only flag if NOT semantic and pattern matches
+                        if not is_semantic:
+                            violations.append({
+                                'file': str(file_path.relative_to(self.maia_root)),
+                                'pattern': pattern_name,
+                                'type': 'error',
+                                'message': f'Naming violation: contains "{pattern_name}" (version/temporal indicator)'
+                            })
+                            break
 
         return violations
 
