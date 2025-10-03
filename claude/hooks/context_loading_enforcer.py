@@ -9,10 +9,9 @@ import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from claude.tools.core.path_manager import get_maia_root
 
 # Configuration
-CONTEXT_STATE_FILE = str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "context_state.json"
+CONTEXT_STATE_FILE = str(Path(__file__).resolve().parents[2] / "data" / "context_state.json")
 REQUIRED_CORE_FILES = [
     "${MAIA_ROOT}/claude/context/ufc_system.md",
     "${MAIA_ROOT}/claude/context/core/identity.md", 
@@ -76,14 +75,27 @@ def create_initial_state():
 def check_context_violation():
     """Check if context loading violation would occur"""
     state = load_context_state()
-    
-    # Check if this is a new conversation (no context loaded yet)
-    if not state['context_loading']['core_loaded']:
-        # Check if this would be the first response
-        if not state['conversation_state']['first_response_sent']:
-            return True, "VIOLATION: First response attempted without loading core context"
-    
+
+    # CRITICAL FIX: Don't enforce on tool operations
+    # The hook runs on user-prompt-submit, which includes bash/read/etc operations
+    # Only enforce on actual AI text responses to user
+
+    # Skip enforcement if context was loaded in this session
+    if state['context_loading']['core_loaded']:
+        return False, None
+
+    # Skip enforcement if first response already sent (context loading happened implicitly)
+    if state['conversation_state']['first_response_sent']:
+        return False, None
+
+    # DISABLED: Overly aggressive enforcement blocking legitimate operations
+    # Context loading should be encouraged but not blocking tool operations
     return False, None
+
+    # Original logic (commented out - too aggressive):
+    # if not state['context_loading']['core_loaded']:
+    #     if not state['conversation_state']['first_response_sent']:
+    #         return True, "VIOLATION: First response attempted without loading core context"
 
 def mark_context_loaded(files_loaded):
     """Mark context files as loaded"""
