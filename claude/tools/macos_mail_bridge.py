@@ -397,6 +397,84 @@ class MacOSMailBridge:
 
         return messages
 
+    def send_email(
+        self,
+        to: str,
+        subject: str,
+        body: str,
+        html: bool = True,
+        account: str = "Exchange"
+    ) -> bool:
+        """
+        Send email via Mail.app using Exchange account
+
+        Args:
+            to: Recipient email address
+            subject: Email subject
+            body: Email body (HTML or plain text)
+            html: If True, send as HTML; if False, plain text
+            account: Account name to send from (default "Exchange")
+
+        Returns:
+            True if sent successfully
+
+        Raises:
+            RuntimeError: If sending fails
+        """
+        # Escape quotes for AppleScript (double escape for shell)
+        safe_subject = subject.replace('\\', '\\\\').replace('"', '\\"')
+        safe_to = to.replace('\\', '\\\\').replace('"', '\\"')
+
+        # For HTML, save to temp file to avoid shell escaping issues
+        import tempfile
+        if html:
+            with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False) as f:
+                f.write(body)
+                html_file = f.name
+
+            script = f'''
+            tell application "Mail"
+                set theAccount to first account whose name is "{account}"
+                set htmlContent to read (POSIX file "{html_file}") as «class utf8»
+                set newMessage to make new outgoing message with properties {{subject:"{safe_subject}", sender:theAccount}}
+
+                tell newMessage
+                    make new to recipient with properties {{address:"{safe_to}"}}
+                    set html content to htmlContent
+                    send
+                end tell
+
+                return "sent"
+            end tell
+            '''
+        else:
+            safe_body = body.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
+            script = f'''
+            tell application "Mail"
+                set theAccount to first account whose name is "{account}"
+                set newMessage to make new outgoing message with properties {{subject:"{safe_subject}", content:"{safe_body}", sender:theAccount}}
+
+                tell newMessage
+                    make new to recipient with properties {{address:"{safe_to}"}}
+                    send
+                end tell
+
+                return "sent"
+            end tell
+            '''
+
+        try:
+            result = self._execute_applescript(script)
+
+            # Clean up temp file if created
+            if html:
+                import os
+                os.unlink(html_file)
+
+            return "sent" in result.lower()
+        except Exception as e:
+            raise RuntimeError(f"Failed to send email: {str(e)}")
+
 
 def main():
     """Test the Mail.app bridge functionality"""

@@ -1,0 +1,63 @@
+{
+  "pending": [
+    {
+      "id": 1,
+      "source": "email",
+      "source_id": "81",
+      "title": "Canceled: Claude Usage and Reporting Review",
+      "description": "From: Jono Pryor | Orro <jono.pryor@orro.group>",
+      "owner": "me",
+      "due_date": null,
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-10-03T09:35:02.094615",
+      "updated_at": "2025-10-03T09:35:02.094615",
+      "metadata": "{\"from\": \"Jono Pryor | Orro <jono.pryor@orro.group>\", \"date\": \"\"}"
+    },
+    {
+      "id": 2,
+      "source": "email",
+      "source_id": "77",
+      "title": "Verify your new Autotask user account",
+      "description": "From: helpdesk@nwcomputing.com.au",
+      "owner": "me",
+      "due_date": null,
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-10-03T09:35:02.094615",
+      "updated_at": "2025-10-03T09:35:02.094615",
+      "metadata": "{\"from\": \"helpdesk@nwcomputing.com.au\", \"date\": \"\"}"
+    }
+  ],
+  "waiting_on_me": [
+    {
+      "id": 1,
+      "source": "email",
+      "source_id": "81",
+      "title": "Canceled: Claude Usage and Reporting Review",
+      "description": "From: Jono Pryor | Orro <jono.pryor@orro.group>",
+      "owner": "me",
+      "due_date": null,
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-10-03T09:35:02.094615",
+      "updated_at": "2025-10-03T09:35:02.094615",
+      "metadata": "{\"from\": \"Jono Pryor | Orro <jono.pryor@orro.group>\", \"date\": \"\"}"
+    },
+    {
+      "id": 2,
+      "source": "email",
+      "source_id": "77",
+      "title": "Verify your new Autotask user account",
+      "description": "From: helpdesk@nwcomputing.com.au",
+      "owner": "me",
+      "due_date": null,
+      "status": "pending",
+      "priority": "medium",
+      "created_at": "2025-10-03T09:35:02.094615",
+      "updated_at": "2025-10-03T09:35:02.094615",
+      "metadata": "{\"from\": \"helpdesk@nwcomputing.com.au\", \"date\": \"\"}"
+    }
+  ],
+  "generated_at": "2025-10-03T09:35:02.096739"
+}

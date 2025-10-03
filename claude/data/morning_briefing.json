@@ -1,0 +1,87 @@
+{
+  "generated_at": "2025-10-03T08:57:34.250430",
+  "calendar": {
+    "today_count": 0,
+    "today_events": [],
+    "upcoming_count": 0,
+    "upcoming_events": [],
+    "has_events_today": false
+  },
+  "email": {
+    "unread_count": 20,
+    "recent_count": 10,
+    "recent_messages": [
+      {
+        "subject": "Re: IT Helpdesk, Onsite Engineer Absences",
+        "from": "Richard Srinivasan | Orro <richard.srinivasan@orro.group>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "FW: IT Helpdesk, Onsite Engineer Absences",
+        "from": "Con Alexakis | Orro <con.alexakis@orro.group>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "Secure link to log in to Claude.ai |  2025-10-02 16:40:29",
+        "from": "Anthropic <no-reply-ONXRK9zwfPV96oIu4-mTMw@mail.anthropic.com>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "New application authorised in your Trello account",
+        "from": "Trello <do-not-reply@trello.com>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "Secure link to log in to Claude.ai |  2025-10-02 15:39:55",
+        "from": "Anthropic <no-reply-7DmgkW9r0NWopWcgUHEJ-Q@mail.anthropic.com>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "Canceled: Claude Usage and Reporting Review",
+        "from": "Jono Pryor | Orro <jono.pryor@orro.group>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "Verifying it's you",
+        "from": "Atlassian <noreply+2d3907f@id.atlassian.com>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "You've got Premium!",
+        "from": "Trello <no-reply@trello.com>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "Verify your email for Trello",
+        "from": "Trello <noreply+9277cb6@id.atlassian.com>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      },
+      {
+        "subject": "FW: RE- Cloud Telephony",
+        "from": "Martin Dunn | Orro <martin.dunn@orro.group>",
+        "date": "",
+        "contact_found": false,
+        "contact_info": null
+      }
+    ]
+  },
+  "meeting_prep": []
+}
