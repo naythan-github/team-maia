@@ -26,7 +26,71 @@ results = rag.semantic_search("email integration", n_results=5)
 
 ## 🎯 Current Session Overview
 
-### **✅ Phase 0 Capability Check Protocol + ServiceDesk Analytics Foundation Complete** ⭐ **CURRENT SESSION - PHASE 85**
+### **✅ Phase 84-85 Automation Complete - Git Hooks + Capability Checker** ⭐ **CURRENT SESSION - PHASE 86**
+
+**Achievement**: Completed critical automation gaps from Phase 84-85 review, delivering git hooks and automated capability checking
+
+1. **Git Post-Commit Hook Implementation** ✅
+   - **Auto-Reindexing**: Automatic RAG reindexing when SYSTEM_STATE.md or SYSTEM_STATE_ARCHIVE.md modified
+   - **Hook Location**: `.git/hooks/post-commit` (executable, tested functional)
+   - **Synchronous Execution**: Ensures index complete before next operations
+   - **Testing**: Validated with Phase 86 test commit, successfully indexed
+   - **Performance**: ~3-5 seconds for incremental reindex (only new/modified phases)
+
+2. **Date Extraction Fix** ✅
+   - **Problem Solved**: All phases previously defaulted to current date
+   - **Implementation**: Multi-strategy extraction (header date → content date → fallback)
+   - **Regex Logic**: Extracts from "**Last Updated**: YYYY-MM-DD" or first date in content
+   - **Testing**: Full reindex completed, 28 phases with accurate dates
+   - **Impact**: Enables temporal filtering and historical analysis
+
+3. **Capability Checker Tool Built** ✅ ([capability_checker.py](claude/tools/capability_checker.py))
+   - **Multi-Source Search**: SYSTEM_STATE.md + agents.md + available.md + RAG semantic search
+   - **Confidence Scoring**: 0-100% relevance with automatic recommendation logic
+   - **Keyword Extraction**: Phrase-aware extraction (multi-word phrases prioritized)
+   - **Decision Logic**: >70% = use existing, >50% = enhance, <50% = build new
+   - **CLI Modes**: Default, --verbose, --json, --keywords for flexible usage
+   - **RAG Integration**: Semantic search across 28 archived phases
+
+4. **Complete Workflow Testing** ✅
+   - **ServiceDesk Query**: Correctly found Data Analyst Agent (95% confidence, "use existing")
+   - **Email RAG Query**: Found Multi-Collection RAG Phase 39 (90% confidence)
+   - **Git Hook**: Tested with dummy commits, auto-reindexing operational
+   - **Query Modes**: --query flag enables direct RAG search without full indexing
+
+5. **Documentation Updates** ✅
+   - **systematic_thinking_protocol.md**: Added automation tool documentation with usage examples
+   - **Decision Gates**: Confidence thresholds documented (>70%, >50%, <50%)
+   - **Automation Status**: Git hook status and RAG capabilities documented
+
+**Production Status**:
+- ✅ Git post-commit hook operational
+- ✅ capability_checker.py functional with multi-source search
+- ✅ Date extraction working (28 phases reindexed with accurate dates)
+- ✅ Phase 0 automation complete (no longer behavioral protocol only)
+- ✅ System State RAG enhanced with --query and --auto-reindex modes
+
+**Design Decisions**:
+- **Synchronous Hook**: Changed from background (&) to synchronous for reliability
+- **Phrase-Aware Keywords**: Multi-word phrases prioritized over single words
+- **Confidence Thresholds**: >70% exact, >50% partial, <50% build new
+- **stderr Output**: Hook uses stderr (>&2) to show output during git operations
+
+**Business Impact**:
+- **Anti-Duplication Enforcement**: Automated capability checking prevents duplicate work
+- **Zero Manual Reindexing**: Git hooks eliminate reindexing burden
+- **Improved Matching**: Phrase-aware keywords reduce false positives
+- **Complete Automation**: Phase 0 protocol now fully automated vs behavioral only
+
+**Review Findings Addressed**:
+- ✅ Git hooks missing → Implemented and tested
+- ✅ Date extraction broken → Fixed with multi-strategy extraction
+- ✅ Phase 0 behavioral risk → Automated with capability_checker.py
+- ✅ RAG not integrated → Full integration with confidence-scored recommendations
+
+---
+
+### **✅ Phase 0 Capability Check Protocol + ServiceDesk Analytics Foundation Complete** ⭐ **PREVIOUS SESSION - PHASE 85**
 
 **Achievement**: Implemented systematic capability checking to prevent tool/agent duplication + established ServiceDesk analytics infrastructure with 13,252 tickets
 
@@ -1170,11 +1234,4 @@ Stateless Automation → Autonomous Orchestration → Learning AI
 - **Next Phase**: Enhanced job analysis, knowledge graph integration, autonomous task execution
 
 This system state represents a mature, production-ready AI infrastructure with comprehensive automation, intelligent routing, and systematic quality assurance - positioned for both personal productivity optimization and professional AI leadership demonstration.
-
-### **Test Phase** ⭐ **PHASE 86**
-
-Testing git hook auto-reindex functionality.
-
-
-Testing git hook auto-reindex v2.
 

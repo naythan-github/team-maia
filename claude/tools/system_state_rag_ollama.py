@@ -96,8 +96,24 @@ class SystemStateRAGOllama:
             phase_num = match.group(2).strip()
             phase_content = match.group(3).strip()
 
-            # Extract date from header or default to current
-            date = datetime.now().strftime('%Y-%m-%d')
+            # Extract date from phase content or SYSTEM_STATE.md header
+            date = None
+
+            # Try 1: Look for "**Last Updated**: YYYY-MM-DD" in header section before this phase
+            header_section = content[:match.start()]
+            last_header_date = re.findall(r'\*\*Last Updated\*\*:\s*(\d{4}-\d{2}-\d{2})', header_section)
+            if last_header_date:
+                date = last_header_date[-1]  # Most recent date before this phase
+
+            # Try 2: Look for date in phase content itself
+            if not date:
+                content_date = re.search(r'(\d{4}-\d{2}-\d{2})', phase_content[:500])
+                if content_date:
+                    date = content_date.group(1)
+
+            # Fallback: Current date (for new phases)
+            if not date:
+                date = datetime.now().strftime('%Y-%m-%d')
 
             phases.append({
                 'number': phase_num,
@@ -223,6 +239,43 @@ class SystemStateRAGOllama:
 
 def main():
     """Demo System State RAG with Ollama"""
+    import argparse
+
+    parser = argparse.ArgumentParser(description='System State RAG - Semantic Search')
+    parser.add_argument('--auto-reindex', action='store_true',
+                       help='Auto-reindex mode (silent, triggered by git hook)')
+    parser.add_argument('--query', type=str,
+                       help='Search query for semantic search')
+    args = parser.parse_args()
+
+    # Auto-reindex mode (silent, git hook triggered)
+    if args.auto_reindex:
+        try:
+            rag = SystemStateRAGOllama()
+            index_stats = rag.index_phases()
+            if index_stats['new'] > 0:
+                print(f"✅ RAG auto-reindex: {index_stats['new']} new phases indexed")
+            return 0
+        except Exception as e:
+            print(f"⚠️  RAG auto-reindex error: {e}")
+            return 1
+
+    # Query mode
+    if args.query:
+        try:
+            rag = SystemStateRAGOllama()
+            results = rag.semantic_search(args.query, n_results=5)
+            print(f"\n🔍 Search: '{args.query}'\n")
+            for i, r in enumerate(results, 1):
+                print(f"{i}. Phase {r['phase']}: {r['title'][:60]}")
+                print(f"   Relevance: {r['relevance']:.1%} | Date: {r['date']}")
+                print(f"   Preview: {r['preview'][:100]}\n")
+            return 0
+        except Exception as e:
+            print(f"❌ Search error: {e}")
+            return 1
+
+    # Demo mode (default)
     print("🧠 System State RAG - Ollama Local Embeddings\n")
 
     try:

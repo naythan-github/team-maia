@@ -25,21 +25,43 @@ This protocol enforces systematic optimization thinking - the methodology that m
    - Identify reusable components
 
 4. **Use System State RAG** (if needed)
-   - Semantic search across archived phases (1-71)
+   - Semantic search across archived phases (1-73)
    - Query: "Have we solved [problem] before?"
    - Find past architectural decisions and patterns
 
+**AUTOMATED TOOL** ⭐ **NEW - PHASE 85 COMPLETE**:
+```bash
+# Automated Phase 0 capability checking
+python3 claude/tools/capability_checker.py "task description"
+
+# Verbose output with details
+python3 claude/tools/capability_checker.py --verbose "task description"
+
+# JSON output for programmatic use
+python3 claude/tools/capability_checker.py --json "task description"
+```
+
+**Features**:
+- ✅ Multi-source search (SYSTEM_STATE.md, agents.md, available.md, RAG)
+- ✅ Confidence-scored matches (0-100%)
+- ✅ Automatic recommendation (use existing/enhance/build new)
+- ✅ Phrase-aware keyword extraction
+- ✅ RAG semantic search for archived phases
+
 **DECISION GATE:**
-- ✅ **Exact solution found** → Use existing capability, reference location
-- ✅ **Partial solution found** → Enhance existing vs build new (justify choice)
-- ✅ **No solution found** → Proceed to Phase 1 (Problem Analysis)
+- ✅ **Exact solution found** (>70% confidence) → Use existing capability, reference location
+- ✅ **Partial solution found** (>50% confidence) → Enhance existing vs build new (justify choice)
+- ✅ **No solution found** (<50% confidence) → Proceed to Phase 1 (Problem Analysis)
 
 **CRITICAL REQUIREMENT:**
 - **NEVER** recommend building new tools/agents without Phase 0 check
 - **ALWAYS** reference existing work when found
 - **DOCUMENT** why building new vs extending existing (if applicable)
+- **USE** `capability_checker.py` to automate search process
 
 **VIOLATION CONSEQUENCE:** Skipping Phase 0 = Capability amnesia = Duplicate work = System bloat
+
+**AUTOMATION STATUS**: Git post-commit hook auto-reindexes RAG when SYSTEM_STATE.md changes
 
 ---
 
