@@ -68,6 +68,14 @@ class AutomationHealthMonitor:
                 "log_file": MAIA_ROOT / "claude" / "data" / "logs" / "vtt_watcher.log",
                 "error_log": MAIA_ROOT / "claude" / "data" / "logs" / "vtt_watcher_error.log",
                 "critical": True
+            },
+            "com.maia.email-question-monitor": {
+                "name": "Email Question Monitor",
+                "frequency": "6-hourly",
+                "expected_time": None,
+                "log_file": self.log_dir / "email_question_monitor.log",
+                "error_log": self.log_dir / "email_question_monitor.error.log",
+                "critical": False
             }
         }
 
@@ -121,14 +129,39 @@ class AutomationHealthMonitor:
             # Check for actual errors (not just the word "error" in success messages)
             error_lines = [line for line in lines if any(word in line.lower() for word in ['error', 'exception', 'failed', 'traceback'])]
             # Filter out false positives
-            actual_errors = [line for line in error_lines if not any(fp in line.lower() for fp in ['✅', 'operational', 'no error'])]
-            has_errors = len(actual_errors) > 0
+            false_positive_patterns = [
+                '✅', 'operational', 'no error',
+                'errors: 0', '• errors: 0',  # Success metrics
+                'skipped: 0', 'new: 0'  # Status reports
+            ]
+            actual_errors = [line for line in error_lines if not any(fp in line.lower() for fp in false_positive_patterns)]
+
+            # Only consider errors from last 6 hours as active (not stale)
+            # BUT: if the log file itself hasn't been written to in 12+ hours,
+            # don't flag old errors (automation likely just hasn't run)
+            recent_actual_errors = []
+            cutoff_time = datetime.now() - timedelta(hours=6)
+
+            if age_hours < 12:  # Log file recently updated
+                for line in actual_errors:
+                    # Try to extract timestamp from line (format: 2025-10-03 10:09:36,510)
+                    try:
+                        timestamp_str = line[:23]  # First 23 chars should be timestamp
+                        error_time = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S,%f')
+                        if error_time > cutoff_time:
+                            recent_actual_errors.append(line)
+                    except:
+                        # If can't parse timestamp, include it to be safe
+                        recent_actual_errors.append(line)
+            # else: log file is stale (>12h), so ignore old errors
+
+            has_errors = len(recent_actual_errors) > 0
 
             return {
                 "has_errors": has_errors,
                 "last_run": mtime.isoformat(),
                 "age_hours": age_hours,
-                "recent_errors": [line.strip() for line in actual_errors][-5:]
+                "recent_errors": [line.strip() for line in recent_actual_errors][-5:]
             }
         except Exception as e:
             return {

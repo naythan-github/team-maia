@@ -153,7 +153,7 @@ class MacOSCalendarBridge:
                                    theLocation & "|||" & ¬
                                    theDescription & "|||" & ¬
                                    (allday event of evt as string)
-                    set end of eventList to eventInfo
+                    set end of eventList to eventInfo & "###EVENTSEP###"
                 end repeat
             end repeat
             return eventList
@@ -167,7 +167,12 @@ class MacOSCalendarBridge:
 
         events = []
         if output:
-            for line in output.split(', '):
+            # Split by unique event separator instead of comma
+            event_strings = output.split('###EVENTSEP###, ')
+            for line in event_strings:
+                line = line.replace('###EVENTSEP###', '').strip()
+                if not line:
+                    continue
                 try:
                     parts = line.split('|||')
                     if len(parts) >= 7:
@@ -218,13 +223,18 @@ class MacOSCalendarBridge:
             repeat with cal in (calendars {script_filter})
                 set calEvents to (every event of cal whose start date ≥ startOfToday and start date ≤ endOfToday)
                 repeat with evt in calEvents
-                    set eventInfo to (summary of evt) & "|" & ¬
-                                   (start date of evt as string) & "|" & ¬
-                                   (end date of evt as string) & "|" & ¬
-                                   (name of cal) & "|" & ¬
-                                   (location of evt) & "|" & ¬
+                    set theLocation to ""
+                    try
+                        set theLocation to location of evt
+                    end try
+
+                    set eventInfo to (summary of evt) & "|||" & ¬
+                                   (start date of evt as string) & "|||" & ¬
+                                   (end date of evt as string) & "|||" & ¬
+                                   (name of cal) & "|||" & ¬
+                                   theLocation & "|||" & ¬
                                    (allday event of evt as string)
-                    set end of eventList to eventInfo
+                    set end of eventList to eventInfo & "###EVENTSEP###"
                 end repeat
             end repeat
             return eventList
@@ -238,9 +248,14 @@ class MacOSCalendarBridge:
 
         events = []
         if output:
-            for line in output.split(', '):
+            # Split by unique event separator
+            event_strings = output.split('###EVENTSEP###, ')
+            for line in event_strings:
+                line = line.replace('###EVENTSEP###', '').strip()
+                if not line:
+                    continue
                 try:
-                    parts = line.split('|')
+                    parts = line.split('|||')
                     if len(parts) >= 6:
                         events.append({
                             'summary': parts[0],
