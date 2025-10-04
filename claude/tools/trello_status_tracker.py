@@ -96,8 +96,24 @@ class TrelloStatusTracker:
 
             for card in cards:
                 card_name = card['name']
+                card_id = card['id']
                 is_completed = card.get('dueComplete', False) or list_name.lower() in ['done', 'completed']
                 due_date = card.get('due')
+
+                # Auto-complete cards in "Done" list
+                if list_name.lower() == 'done' and not card.get('closed', False):
+                    completion_time = datetime.now().isoformat()
+                    try:
+                        # Update card: set due date to completion time, mark complete, archive
+                        self.trello.update_card(
+                            card_id=card_id,
+                            due=completion_time,
+                            dueComplete=True
+                        )
+                        self.trello.archive_card(card_id)
+                        print(f"    📦 Auto-completed and archived: {card_name[:60]}")
+                    except Exception as e:
+                        print(f"    ⚠️  Failed to auto-complete {card_name[:40]}: {e}")
 
                 # Try to match with VTT actions
                 for meeting_key, meeting in vtt_intel.get("meetings", {}).items():
@@ -116,8 +132,10 @@ class TrelloStatusTracker:
                                 # Check overdue
                                 if due_date:
                                     from dateutil import parser
+                                    import pytz
                                     due_dt = parser.parse(due_date)
-                                    if due_dt < datetime.now() and not is_completed:
+                                    now = datetime.now(pytz.UTC) if due_dt.tzinfo else datetime.now()
+                                    if due_dt < now and not is_completed:
                                         updates["vtt_actions"]["overdue"] += 1
                                         metrics["overdue_alerts"].append({
                                             "action": card_name,

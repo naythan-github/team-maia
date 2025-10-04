@@ -1,0 +1,23 @@
+{
+  "tracking_started": "2025-10-04T08:47:53.525389",
+  "weekly_completion": [
+    {
+      "week_of": "2025-10-04",
+      "synced_at": "2025-10-04T08:48:16.485122",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 3,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 3,
+      "total_pending": 23,
+      "total_overdue": 0
+    }
+  ],
+  "overdue_alerts": []
+}
