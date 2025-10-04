@@ -47,6 +47,9 @@ class ExecutiveCommandDashboard:
             # Refresh interval
             dcc.Interval(id='interval-component', interval=30*1000, n_intervals=0),
 
+            # Automation Health Status Banner
+            html.Div(id='health-banner', style={'marginBottom': 20}),
+
             # Top KPIs
             html.Div(id='kpi-cards', style={'marginBottom': 30}),
 
@@ -94,7 +97,8 @@ class ExecutiveCommandDashboard:
         """Setup dashboard callbacks"""
 
         @self.app.callback(
-            [Output('kpi-cards', 'children'),
+            [Output('health-banner', 'children'),
+             Output('kpi-cards', 'children'),
              Output('strategic-view', 'children'),
              Output('operational-view', 'children'),
              Output('decisions-view', 'children'),
@@ -102,6 +106,9 @@ class ExecutiveCommandDashboard:
             [Input('interval-component', 'n_intervals')]
         )
         def update_dashboard(n):
+            # Get automation health status
+            health_status = self._get_health_status()
+            health_banner = self._create_health_banner(health_status)
             # Get data
             confluence_summary = self.confluence_intel.get_executive_summary()
             vtt_actions = self.vtt_intel.get_pending_actions_for_owner("Naythan")
@@ -174,7 +181,55 @@ class ExecutiveCommandDashboard:
                 ])
             ])
 
-            return kpis, strategic, operational, decisions_view, questions_view
+            return health_banner, kpis, strategic, operational, decisions_view, questions_view
+
+    def _get_health_status(self) -> dict:
+        """Get automation health status"""
+        health_file = Path.home() / ".maia" / "automation_health.json"
+        if health_file.exists():
+            with open(health_file) as f:
+                return json.load(f)
+        return {"overall_status": "unknown", "alerts": []}
+
+    def _create_health_banner(self, health_status: dict):
+        """Create health status banner"""
+        status = health_status.get('overall_status', 'unknown')
+        alerts = health_status.get('alerts', [])
+
+        status_config = {
+            "healthy": {"color": "#27ae60", "emoji": "✅", "text": "All Systems Operational"},
+            "degraded": {"color": "#f39c12", "emoji": "⚠️", "text": "Some Systems Have Issues"},
+            "critical": {"color": "#e74c3c", "emoji": "🔴", "text": "CRITICAL: System Failures"},
+            "unknown": {"color": "#95a5a6", "emoji": "❓", "text": "Status Unknown"}
+        }
+
+        config = status_config.get(status, status_config["unknown"])
+
+        banner_content = [
+            html.Div([
+                html.Span(f"{config['emoji']} {config['text']}",
+                         style={'fontSize': 18, 'fontWeight': 'bold', 'color': 'white'}),
+                html.Span(f" | Last checked: {health_status.get('checked_at', 'Never')[:19]}",
+                         style={'fontSize': 12, 'color': '#ecf0f1', 'marginLeft': 20})
+            ], style={'padding': 15, 'backgroundColor': config['color'],
+                     'borderRadius': 8, 'textAlign': 'center'})
+        ]
+
+        # Show critical alerts
+        critical_alerts = [a for a in alerts if a.get('severity') in ['CRITICAL', 'ERROR']]
+        if critical_alerts:
+            alert_list = html.Div([
+                html.Div("⚠️ ACTIVE ALERTS:",
+                        style={'fontWeight': 'bold', 'marginBottom': 10, 'color': '#e74c3c'}),
+                html.Ul([
+                    html.Li(f"[{a['severity']}] {a.get('automation', a.get('data_file', 'System'))}: {a['issue'][:100]}",
+                           style={'fontSize': 12, 'marginBottom': 5, 'color': '#c0392b'})
+                    for a in critical_alerts[:5]
+                ], style={'marginBottom': 0})
+            ], style={'padding': 15, 'backgroundColor': '#fadbd8', 'borderRadius': 8, 'marginTop': 10})
+            banner_content.append(alert_list)
+
+        return html.Div(banner_content)
 
     def _create_kpi_card(self, title: str, value: int, color: str):
         """Create KPI card"""

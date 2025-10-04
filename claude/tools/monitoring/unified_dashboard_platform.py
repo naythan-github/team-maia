@@ -293,25 +293,33 @@ class DashboardRegistry:
             with sqlite3.connect(self.registry_db) as conn:
                 conn.row_factory = sqlite3.Row
                 row = conn.execute("SELECT host, port, health_endpoint FROM dashboards WHERE name = ?", (name,)).fetchone()
-                
+
                 if not row:
                     return False
-                    
+
                 url = f"http://{row['host']}:{row['port']}{row['health_endpoint']}"
                 response = requests.get(url, timeout=5)
-                
+
                 healthy = response.status_code == 200
-                
-                # Update health check time
+
+                # Update health check time AND status
                 conn.execute("""
-                    UPDATE dashboards 
-                    SET last_health_check = ?
+                    UPDATE dashboards
+                    SET last_health_check = ?, status = ?
                     WHERE name = ?
-                """, (datetime.now().isoformat(), name))
-                
+                """, (datetime.now().isoformat(), 'running' if healthy else 'stopped', name))
+                conn.commit()
+
                 return healthy
-                
+
         except Exception:
+            # Update status to stopped on health check failure
+            try:
+                with sqlite3.connect(self.registry_db) as conn:
+                    conn.execute("UPDATE dashboards SET status = 'stopped' WHERE name = ?", (name,))
+                    conn.commit()
+            except:
+                pass
             return False
 
 class DashboardHub:
@@ -598,7 +606,7 @@ DASHBOARD_HUB_TEMPLATE = '''
 
                 <div class="actions-cell">
                     {% if dashboard.is_healthy %}
-                        <a href="/dashboard/{{ dashboard.name }}" class="btn btn-primary">Open</a>
+                        <a href="/dashboard/{{ dashboard.name }}" target="_blank" class="btn btn-primary">Open</a>
                         <button onclick="stopDashboard('{{ dashboard.name }}')" class="btn btn-danger">Stop</button>
                     {% else %}
                         <button onclick="startDashboard('{{ dashboard.name }}')" class="btn btn-success">Start</button>
@@ -837,10 +845,10 @@ class UnifiedDashboardPlatform:
     def initialize(self):
         """Initialize the platform"""
         logger.info("🚀 Initializing Unified Dashboard Platform")
-        
-        # Discover and register existing dashboards
-        discovered = self.registry.discover_dashboards()
-        logger.info(f"📊 Discovered {len(discovered)} dashboards")
+
+        # Skip auto-discovery - registry manually maintained
+        # discovered = self.registry.discover_dashboards()
+        logger.info(f"📊 Using manually configured registry")
         
         # Auto-start dashboards marked for auto-start
         for dashboard in self.registry.get_all_dashboards():

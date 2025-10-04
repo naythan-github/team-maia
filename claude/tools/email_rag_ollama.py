@@ -183,6 +183,45 @@ class EmailRAGOllama:
 
         return matches
 
+    def get_recent_emails(self, n: int = 10) -> List[Dict[str, Any]]:
+        """
+        Get most recent emails by actual date parsing (not alphabetical sorting)
+        Returns list of email metadata sorted by date (newest first)
+        """
+        from dateutil import parser as date_parser
+
+        results = self.collection.get(include=['metadatas'])
+
+        if not results['ids']:
+            return []
+
+        # Parse dates and create sortable list
+        emails_with_dates = []
+        for i, metadata in enumerate(results['metadatas']):
+            try:
+                # Parse the date string to datetime
+                date_str = metadata.get('date', '')
+                parsed_date = date_parser.parse(date_str)
+                emails_with_dates.append((parsed_date, metadata))
+            except Exception:
+                # If parsing fails, use epoch (oldest possible)
+                emails_with_dates.append((datetime.min, metadata))
+
+        # Sort by parsed date (newest first)
+        emails_with_dates.sort(key=lambda x: x[0], reverse=True)
+
+        # Return top N
+        return [
+            {
+                'subject': meta.get('subject', 'No subject'),
+                'sender': meta.get('sender', 'Unknown'),
+                'date': meta.get('date', 'Unknown'),
+                'message_id': meta.get('message_id', ''),
+                'read': meta.get('read', 'Unknown')
+            }
+            for _, meta in emails_with_dates[:n]
+        ]
+
     def get_stats(self) -> Dict[str, Any]:
         """Get stats"""
         return {
@@ -195,7 +234,7 @@ class EmailRAGOllama:
 
 
 def main():
-    """Demo Email RAG with Ollama"""
+    """Production Email RAG with Ollama - Full Inbox Indexing"""
     print("🧠 Email RAG System - Ollama Local Embeddings\n")
 
     try:
@@ -207,10 +246,10 @@ def main():
             print(f"   • {key}: {value}")
 
         print("\n" + "="*60)
-        print("📥 Indexing Inbox (limit 20 for demo)...")
+        print("📥 Indexing Full Inbox (all unindexed emails)...")
         print("="*60)
 
-        index_stats = rag.index_inbox(limit=20)
+        index_stats = rag.index_inbox(limit=None)
         print(f"\n✅ Indexing Complete:")
         print(f"   • Total: {index_stats['total']}")
         print(f"   • New: {index_stats['new']}")

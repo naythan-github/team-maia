@@ -94,7 +94,12 @@ class VTTIntelligenceProcessor:
             "results": results
         }
 
-        # Update global lists
+        # Update global lists with source file metadata
+        for action in results["action_items"]:
+            action["source_file"] = str(summary_file)
+        for decision in results["decisions"]:
+            decision["source_file"] = str(summary_file)
+
         self.intelligence["action_items"].extend(results["action_items"])
         self.intelligence["decisions"].extend(results["decisions"])
 
@@ -262,9 +267,26 @@ class VTTIntelligenceProcessor:
 
         trello_cards = []
         for action in actions:
+            # Get source file from action metadata
+            source_file = action.get('source_file', 'Unknown')
+            meeting_name = Path(source_file).stem.replace('_summary', '') if source_file != 'Unknown' else 'Unknown'
+
+            # Create enhanced description with source link
+            desc = f"""**Owner**: {action['owner']}
+**Deadline**: {action['deadline']}
+**Source Meeting**: {meeting_name}
+**Source File**: `{source_file}`
+**Created**: {action['created_at']}
+
+---
+📄 **Source Context**: Check the source file above for full meeting context, decisions, and related action items.
+
+🔍 **Ask Maia**: "What was discussed in {meeting_name}?" or "Show me context for this action"
+"""
+
             trello_cards.append({
                 "name": action["action"][:255],  # Trello name limit
-                "desc": f"**Owner**: {action['owner']}\n**Deadline**: {action['deadline']}\n**Source**: VTT Meeting Summary\n**Created**: {action['created_at']}",
+                "desc": desc,
                 "due": self._parse_deadline_to_iso(action["deadline"]),
                 "labels": ["meeting-action"]
             })

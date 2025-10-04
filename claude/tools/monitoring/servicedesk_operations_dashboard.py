@@ -44,9 +44,9 @@ class ServiceDeskDashboard:
                     "status": "healthy",
                     "service": "servicedesk_operations_dashboard",
                     "version": "1.0.0",
-                    "total_tickets": metrics['total_tickets'],
-                    "fcr_rate": metrics['fcr_rate'],
-                    "automation_potential": metrics['automation_count'],
+                    "total_tickets": int(metrics['total_tickets']),
+                    "fcr_rate": float(metrics['fcr_rate']),
+                    "automation_potential": int(metrics['automation_count']),
                     "timestamp": datetime.now().isoformat()
                 })
             except Exception as e:

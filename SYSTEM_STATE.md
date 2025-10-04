@@ -47,7 +47,109 @@ results = rag.semantic_search("email integration", n_results=5)
 
 ## 🎯 Current Session Overview
 
-### **✅ Execution Mode Enforcement Enhanced** ⭐ **CURRENT SESSION - PHASE 87**
+### **✅ Email RAG Production Fixes** ⭐ **CURRENT SESSION - PHASE 87.2**
+
+**Achievement**: Fixed Email RAG indexing and search issues for production use
+
+**Problems Identified**:
+1. **Demo limit in production**: Hardcoded `limit=20` meant only 20 emails processed per hour
+2. **Broken date sorting**: String comparison of dates ("Wednesday" > "Friday") returned wrong "most recent" email
+3. **Missing get_recent_emails() method**: No proper way to retrieve chronologically sorted emails
+
+**Fixes Implemented**:
+
+1. **Removed Demo Limit** (`email_rag_ollama.py`)
+   - Changed from `index_inbox(limit=20)` to `index_inbox(limit=None)`
+   - Now processes full inbox (all unindexed emails)
+   - Updated docstring from "Demo" to "Production"
+
+2. **Added get_recent_emails() Method**
+   - Proper date parsing with `dateutil.parser`
+   - Chronological sorting (newest first)
+   - Returns clean email metadata list
+   - Usage: `rag.get_recent_emails(n=5)`
+
+3. **Verified System Working**
+   - Most recent email correctly identified: Bitdefender (Oct 3, 6:27 PM)
+   - 348 emails indexed total
+   - Hourly LaunchAgent running correctly
+   - RAG searches work across full history
+
+**Testing Results**:
+```
+✅ Most recent email: Bitdefender Endpoint Security Tools installation
+   From: noreply-gzc@info.bitdefender.com
+   Date: Friday, 3 October 2025 at 6:27:25 pm
+   Status: Unread
+```
+
+**Files Modified**:
+- `claude/tools/email_rag_ollama.py`: Removed limit, added get_recent_emails() method
+
+**Impact**: Email RAG now production-ready with full inbox indexing and proper chronological queries
+
+---
+
+### **✅ Automated SYSTEM_STATE Archiving System** ⭐ **PHASE 87.1**
+
+**Achievement**: Production-ready automated archiving system preventing SYSTEM_STATE.md token overflow
+
+**Problem Solved**:
+- SYSTEM_STATE.md grew to 1,409 lines (26K tokens) exceeding Read tool limits
+- Manual archiving required intervention and could be forgotten
+- RAG needed manual reindexing after archiving operations
+
+**Solution Implemented**:
+1. **system_state_archiver.py** - Automated archiving tool
+   - Threshold detection (1000 lines configurable)
+   - Phase boundary preservation (keeps complete phase blocks)
+   - Atomic file operations with automatic backups
+   - RAG reindexing trigger after archiving
+   - Dry-run mode for safe testing
+   - Keeps 15 most recent phases in main file
+
+2. **LaunchAgent Automation** - `com.maia.system-state-archiver`
+   - Weekly execution (Sundays 2am)
+   - Background process (low priority)
+   - Automatic logging to `~/.maia/logs/`
+   - Only archives when threshold exceeded
+
+3. **Backup System**
+   - Timestamped backups before modifications: `~/.maia/backups/system_state/`
+   - Git history preservation in both files
+   - Safe rollback capability
+
+**First Run Results**:
+- Archived: Phases 0-37 (36 phases, 453 lines)
+- Kept: Phases 38-86 (15 most recent phases)
+- New main file: 976 lines (under 1000 threshold)
+- Archive file: 1,323 lines (29 total archived phases)
+- RAG: Reindexed automatically, searches work across both files
+
+**Manual Commands**:
+```bash
+# Check status
+python3 claude/tools/system_state_archiver.py --status
+
+# Force archive now
+python3 claude/tools/system_state_archiver.py --now
+
+# Preview changes
+python3 claude/tools/system_state_archiver.py --dry-run
+```
+
+**Files Created**:
+- `claude/tools/system_state_archiver.py`
+- `~/Library/LaunchAgents/com.maia.system-state-archiver.plist`
+
+**Integration Points**:
+- Post-commit hook: RAG reindexes when SYSTEM_STATE files change
+- Save state workflow: Can trigger manual archiving check
+- Future enhancement: Critical threshold (>1200 lines) could trigger immediate archiving
+
+---
+
+### **✅ Execution Mode Enforcement Enhanced** ⭐ **PHASE 87.0**
 
 **Problem Solved**: User frustrated with constant permission requests - system was entering nested discovery loops even within EXECUTION MODE
 
