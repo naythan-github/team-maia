@@ -76,6 +76,14 @@ class AutomationHealthMonitor:
                 "log_file": self.log_dir / "email_question_monitor.log",
                 "error_log": self.log_dir / "email_question_monitor.error.log",
                 "critical": False
+            },
+            "com.maia.email-vtt-extractor": {
+                "name": "Email VTT Extractor",
+                "frequency": "hourly",
+                "expected_time": None,
+                "log_file": self.log_dir / "email_vtt_extractor.log",
+                "error_log": self.log_dir / "email_vtt_extractor.error.log",
+                "critical": False
             }
         }
 
