@@ -28,9 +28,11 @@ class SystemStateIndexGenerator:
         if system_state_path is None:
             maia_root = Path(__file__).resolve().parent.parent.parent
             self.system_state_path = maia_root / "SYSTEM_STATE.md"
+            self.archive_path = maia_root / "SYSTEM_STATE_ARCHIVE.md"
             self.index_path = maia_root / "SYSTEM_STATE_INDEX.json"
         else:
             self.system_state_path = Path(system_state_path)
+            self.archive_path = self.system_state_path.parent / "SYSTEM_STATE_ARCHIVE.md"
             self.index_path = self.system_state_path.parent / "SYSTEM_STATE_INDEX.json"
 
     def extract_phase_number(self, header: str) -> Optional[int]:
@@ -167,9 +169,12 @@ class SystemStateIndexGenerator:
 
         return metrics
 
-    def parse_phases(self) -> Dict[int, Dict]:
-        """Parse all phases from SYSTEM_STATE.md"""
-        content = self.system_state_path.read_text()
+    def parse_phases_from_file(self, file_path: Path, source: str) -> Dict[int, Dict]:
+        """Parse all phases from a given file"""
+        if not file_path.exists():
+            return {}
+
+        content = file_path.read_text()
         lines = content.splitlines()
 
         phase_pattern = re.compile(r'^###\s+\*\*✅\s*(.+?)\s*\*\*\s+⭐\s+\*\*.*PHASE\s+(\d+)', re.IGNORECASE)
@@ -186,11 +191,13 @@ class SystemStateIndexGenerator:
                 # Save previous phase
                 if current_phase_num is not None:
                     phase_text = '\n'.join(current_phase_content)
-                    phases[current_phase_num] = self.parse_phase_content(
+                    phase_data = self.parse_phase_content(
                         current_phase_num,
                         current_phase_title,
                         phase_text
                     )
+                    phase_data['source'] = source  # Mark which file this came from
+                    phases[current_phase_num] = phase_data
 
                 # Start new phase
                 current_phase_title = match.group(1).strip()
@@ -200,11 +207,13 @@ class SystemStateIndexGenerator:
             elif line.strip() == '---' and current_phase_num is not None:
                 # End of phase
                 phase_text = '\n'.join(current_phase_content)
-                phases[current_phase_num] = self.parse_phase_content(
+                phase_data = self.parse_phase_content(
                     current_phase_num,
                     current_phase_title,
                     phase_text
                 )
+                phase_data['source'] = source
+                phases[current_phase_num] = phase_data
                 current_phase_num = None
                 current_phase_title = None
                 current_phase_content = []
@@ -215,11 +224,27 @@ class SystemStateIndexGenerator:
         # Don't forget last phase if no closing ---
         if current_phase_num is not None:
             phase_text = '\n'.join(current_phase_content)
-            phases[current_phase_num] = self.parse_phase_content(
+            phase_data = self.parse_phase_content(
                 current_phase_num,
                 current_phase_title,
                 phase_text
             )
+            phase_data['source'] = source
+            phases[current_phase_num] = phase_data
+
+        return phases
+
+    def parse_phases(self) -> Dict[int, Dict]:
+        """Parse all phases from both SYSTEM_STATE.md and SYSTEM_STATE_ARCHIVE.md"""
+        phases = {}
+
+        # Parse current phases
+        current_phases = self.parse_phases_from_file(self.system_state_path, 'current')
+        phases.update(current_phases)
+
+        # Parse archived phases
+        archived_phases = self.parse_phases_from_file(self.archive_path, 'archived')
+        phases.update(archived_phases)
 
         return phases
 
@@ -262,10 +287,14 @@ class SystemStateIndexGenerator:
 
     def generate_index(self) -> Dict:
         """Generate complete index structure"""
-        print("📊 Parsing SYSTEM_STATE.md...")
+        print("📊 Parsing SYSTEM_STATE.md and SYSTEM_STATE_ARCHIVE.md...")
         phases = self.parse_phases()
 
-        print(f"✅ Found {len(phases)} phases")
+        # Count current vs archived
+        current_count = sum(1 for p in phases.values() if p.get('source') == 'current')
+        archived_count = sum(1 for p in phases.values() if p.get('source') == 'archived')
+
+        print(f"✅ Found {len(phases)} total phases ({current_count} current, {archived_count} archived)")
 
         print("🔍 Building search index...")
         search_index = self.build_search_index(phases)
@@ -277,8 +306,10 @@ class SystemStateIndexGenerator:
 
         index_data = {
             'metadata': {
-                'generated_from': str(self.system_state_path),
+                'generated_from': [str(self.system_state_path), str(self.archive_path)],
                 'total_phases': len(phases),
+                'current_phases': current_count,
+                'archived_phases': archived_count,
                 'phase_numbers': sorted(phases.keys()),
                 'total_keywords': len(search_index)
             },
