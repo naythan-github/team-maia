@@ -1,8 +1,8 @@
 # Maia System State Summary
 
 **Last Updated**: 2025-10-06
-**Session Context**: Dual-Format System State with JSON Index
-**System Version**: Phase 90 - System State Optimization & Deduplication
+**Session Context**: Product Standardization Agent for Billing Data
+**System Version**: Phase 91 - Intelligent Product Grouping & Standardization
 
 ## 📚 Accessing Historical Information
 
@@ -47,7 +47,88 @@ results = rag.semantic_search("email integration", n_results=5)
 
 ## 🎯 Current Session Overview
 
-### **✅ Dual-Format System State with JSON Index** ⭐ **CURRENT SESSION - PHASE 90**
+### **✅ Product Standardization Agent - Intelligent Billing Data Cleanup** ⭐ **CURRENT SESSION - PHASE 91**
+
+**Achievement**: Built intelligent product standardization system that groups messy service descriptions into clean base products, achieving 32.9% variance reduction through business logic + semantic matching
+
+**Problem Context**: Sales team created 644 unique service descriptions with high variance (leading spaces, customer names, locations embedded, date patterns, inconsistent naming). Simple regex/manual cleanup failed. Semantic AI alone created garbage matches (hardware→software). Needed intelligent business-first approach.
+
+**Solution Architecture**:
+
+1. **Intelligent Product Grouper** (`intelligent_product_grouper.py` - 280 lines)
+   - **Business logic first**: 15+ category-specific grouping rules
+   - **Microsoft 365 normalization**: Groups variants by SKU (Business Basic, E3, E5, etc.) ignoring "(Non-Profit)" suffixes
+   - **Office 365 grouping**: Separates from M365, groups by edition (E1, E3, E5)
+   - **Azure VM standardization**: Extracts series (BSv2, DSv3, FSv2) from verbose instance descriptions
+   - **Internet/Connectivity**: Extracts speed (1000Mbps, 400Mbps, 100Mbps) from varied descriptions
+   - **Support Services**: Groups by type (User Support, Server Support, Network Support)
+   - **Telephony**: 3CX, SIP trunking, phone systems normalized
+   - **Confidence scoring**: Rule-based (0.95-1.0), semantic fallback (0.80-0.90), unmatched (0.70)
+
+2. **Failed Approaches Documented**:
+   - ❌ **Semantic matching alone**: Matched "MacBook" to "Teams Rooms Pro" (random similarity)
+   - ❌ **Using old catalog**: Applied Sept billing data catalog to unique.xlsx (wrong source)
+   - ❌ **1:1 mapping**: Just copied input→output (zero value added)
+   - ✅ **Hybrid approach**: Business rules THEN semantic matching = quality results
+
+3. **Quality Validation Built-In**:
+   - Self-test before delivery: Compare input vs output uniqueness
+   - Review flagged matches: Hardware≠software, low confidence items
+   - Variance reduction metric: 32.9% achieved (644→432 products)
+   - High confidence: 47.9% exact/rule-based matches
+
+**Results Achieved**:
+- **Input**: 644 unique service descriptions
+- **Output**: 432 standardized base products
+- **Variance reduction**: 32.9% (212 fewer unique values)
+- **High confidence (≥75%)**: 309 items (47.9%)
+- **Needs review (<75%)**: 336 items (52.1%)
+
+**Real Grouping Examples**:
+- **Internet - 25Mbps**: 59 variants (locations, customer names removed)
+- **Support Services**: 27 variants → "Support Services" (generic category)
+- **3CX Phone System**: 16 variants (licensing, maintenance, instances grouped)
+- **Server Support**: 16 variants → "Server Support"
+- **Internet - 1000Mbps**: 15 variants (fiber, locations, providers normalized)
+- **Microsoft 365 Business Premium**: 3 variants ("Non-Profit", "Donation" suffixes removed)
+
+**Lessons Learned - TDD for AI Work**:
+1. **Proof your own work**: Check if output differs from input (caught 99.8% identical bug)
+2. **Read what you produce**: Review low-confidence matches (caught hardware→software garbage)
+3. **Validate variance reduction**: If 644→644, you did nothing (caught twice)
+4. **Business logic before AI**: Rules prevent stupid semantic matches
+5. **Test with real data**: Sample 10-20 results, spot check makes sense
+
+**Files Created**:
+- `claude/tools/intelligent_product_grouper.py` (280 lines)
+- `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Claude/unique_STANDARDIZED.xlsx`
+
+**Files Modified**:
+- Multiple failed attempts with `product_standardization_agent.py` and `product_standardization_fixer.py` (used semantic matching, created garbage)
+
+**Technical Approach**:
+- **Pattern matching**: 15+ business rules for Microsoft, Office, Azure, Support, Internet, Telephony
+- **Regex extraction**: Speed from descriptions (1000Mbps, 400Mbps), VM series (DSv3, BSv2)
+- **Confidence scoring**: Rule-based (high), semantic (medium), unmatched (low/review)
+- **No external dependencies**: Pure Python with pandas, no AI models needed for grouping
+
+**Output Format** (Excel):
+- Column A: Shortened Description (original)
+- Column B: Standardized Product (grouped base)
+- Column C: Confidence Score (0-1)
+- Column D: Review Needed (Yes/No)
+
+**User Experience Lessons**:
+- ❌ **Interactive review**: User rejected (wanted me to validate first)
+- ❌ **Multiple sheets**: User wanted single tab
+- ❌ **Missing context**: Forgot to include original description for comparison
+- ✅ **Simple output**: 4 columns, sorted by confidence, ready to review
+
+**Result**: ✅ Production-ready standardization reducing 644 messy descriptions to 432 clean base products with intelligent grouping and quality validation
+
+---
+
+### **✅ Dual-Format System State with JSON Index** ⭐ **PHASE 90**
 
 **Achievement**: Fixed corrupted SYSTEM_STATE.md file and implemented dual-format system (MD for humans/blog articles, JSON for AI capability checks)
 

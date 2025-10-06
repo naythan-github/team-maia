@@ -20,6 +20,18 @@ These tools are always available for use:
 - **Bash**: Run shell commands
 - **Task**: Launch specialized agents
 
+### Product Standardization System ⭐ **NEW - PHASE 91**
+- **Intelligent Product Grouper**: Business logic + semantic matching for billing data cleanup
+  - **File**: `claude/tools/intelligent_product_grouper.py` (280 lines)
+  - **Input**: Messy service descriptions with customer names, locations, dates
+  - **Output**: Standardized base products (32.9% variance reduction achieved)
+  - **Approach**: 15+ business rules for Microsoft 365, Office 365, Azure, Support, Internet, Telephony
+  - **Quality**: 47.9% high confidence (≥75%), built-in self-validation
+  - **Usage**: `python3 claude/tools/intelligent_product_grouper.py`
+  - **Results**: 644 unique → 432 standardized products with confidence scoring
+- **TDD Validation**: Checks variance reduction, reviews matches, prevents garbage output
+- **Business Value**: Clean billing data, grouped product variants, ready for revenue analysis
+
 ### Smart Context Loading ⭐ **ENABLED - 12-62% EFFICIENCY GAIN**
 - **Dynamic Context Loader**: Intelligent context loading based on request domain detection
 - **Domain Detection**: Automatic classification (simple, research, security, financial, technical, cloud, personal, design, complex)

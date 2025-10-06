@@ -92,6 +92,14 @@ class AutomationHealthMonitor:
                 "log_file": self.log_dir / "weekly_backlog_review.log",
                 "error_log": self.log_dir / "weekly_backlog_review.error.log",
                 "critical": False
+            },
+            "com.maia.downloads-vtt-mover": {
+                "name": "Downloads VTT Mover",
+                "frequency": "continuous",
+                "expected_time": None,
+                "log_file": MAIA_ROOT / "claude" / "data" / "logs" / "downloads_vtt_mover.log",
+                "error_log": MAIA_ROOT / "claude" / "data" / "logs" / "downloads_vtt_mover_stderr.log",
+                "critical": True
             }
         }
 
