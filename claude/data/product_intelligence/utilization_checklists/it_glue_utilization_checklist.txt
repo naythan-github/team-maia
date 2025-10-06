@@ -1,0 +1,107 @@
+================================================================================
+UTILIZATION CHECKLIST: IT Glue
+================================================================================
+Vendor: IT Glue (Kaseya)
+Category: IT Documentation Platform
+Total Features: 31
+
+INSTRUCTIONS:
+Review each feature and mark if currently used/configured at Orro:
+  [ ] = Not using/configured
+  [x] = Currently using/configured
+  [?] = Unsure/needs investigation
+
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Documentation Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Structured documentation framework
+      Organized framework for consistent IT documentation
+  [ ] Relationship mapping
+      Link related items for easy information retrieval
+  [ ] Templates
+      Standardized templates for consistent documentation
+  [ ] Version control
+      Track changes and revert to previous versions
+  [ ] Unlimited organizations
+      Document unlimited client organizations
+  [ ] Unlimited documentation
+      No limits on documentation volume
+  [ ] Unlimited client accounts
+      Manage unlimited client accounts
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Password Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Integrated password management
+      Built-in secure password storage and management
+  [ ] Immutable audit trail
+      Complete audit log of all password access and changes
+  [ ] Automated password rotation [Select/Enterprise]
+      One-click password rotation for Microsoft Entra ID, Microsoft 365, Active Directory
+  [ ] Offline password access
+      Access passwords when offline
+  [ ] Multi-factor authentication
+      MFA support for enhanced security
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Security & Compliance
+────────────────────────────────────────────────────────────────────────────────
+  [ ] SOC 2 compliance
+      SOC 2 certified for security and compliance
+  [ ] Access control
+      Granular access control for users and teams
+  [ ] IP Access Control [Select/Enterprise]
+      Restrict access by IP address
+  [ ] GeoLocation access control [Select/Enterprise]
+      Restrict access by geographic location
+  [ ] Domain and SSL tracking
+      Track domain registrations and SSL certificates
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Automation & AI
+────────────────────────────────────────────────────────────────────────────────
+  [ ] AI-powered SOP Generator [Select/Enterprise]
+      Automatically captures every click, keystroke and action for SOP creation
+  [ ] Network Glue [Add-on]
+      Automate network discovery, documentation, and diagramming including Active Directory
+  [ ] Cross-account migration service [Enterprise]
+      Automated migration of documentation across accounts
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Client Collaboration
+────────────────────────────────────────────────────────────────────────────────
+  [ ] MyGlue [Add-on]
+      Secure client portal for password management and collaboration
+  [ ] Client password management [MyGlue Add-on]
+      Clients can securely store and manage their own passwords
+  [ ] Centralized company policy hub [MyGlue Add-on]
+      Share policies and documentation with clients
+  [ ] MyGlue mobile app [MyGlue Add-on]
+      Mobile access for client collaboration
+  [ ] MyGlue SSO [MyGlue Add-on]
+      Single sign-on for client portal
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Integration Ecosystem
+────────────────────────────────────────────────────────────────────────────────
+  [ ] 60+ native integrations
+      Extensive integration ecosystem for IT tools
+  [ ] PSA integration
+      Autotask PSA, ConnectWise PSA integrations
+  [ ] RMM integration
+      Datto RMM and other RMM platform integrations
+  [ ] Microsoft integration
+      Microsoft Intune, Azure AD, Active Directory
+  [ ] REST API
+      Built-in REST APIs for custom integrations
+  [ ] Automated data synchronization
+      Auto-sync with PSA, RMM, and ITSM tools
+
+================================================================================
+NEXT STEPS:
+1. Review each feature above with technical team
+2. Mark features currently in use
+3. Identify high-value unused features
+4. Create adoption roadmap for underutilized capabilities
+================================================================================

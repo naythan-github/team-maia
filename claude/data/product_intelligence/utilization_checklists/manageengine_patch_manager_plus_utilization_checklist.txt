@@ -1,0 +1,103 @@
+================================================================================
+UTILIZATION CHECKLIST: ManageEngine Patch Manager Plus
+================================================================================
+Vendor: ManageEngine (Zoho Corporation)
+Category: Patch Management
+Total Features: 27
+
+INSTRUCTIONS:
+Review each feature and mark if currently used/configured at Orro:
+  [ ] = Not using/configured
+  [x] = Currently using/configured
+  [?] = Unsure/needs investigation
+
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Patch Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Automated patch deployment
+      Automatic scanning, testing, and deployment of patches
+  [ ] Real-time patch detection
+      Scan and detect missing patches in real-time
+  [ ] Patch testing
+      Test patches before full deployment
+  [ ] Patch compliance tracking
+      Monitor patch compliance status across endpoints
+  [ ] Patch rollback
+      Ability to decline or roll back problematic patches
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Platform Support
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Windows patching
+      Complete Windows OS patch management
+  [ ] macOS patching
+      macOS operating system patch management
+  [ ] Linux distribution support
+      Support for Red Hat, SUSE, Ubuntu, CentOS, Pardus, Oracle, Rocky Linux, Debian
+  [ ] Third-party application patching
+      850+ third-party applications including Adobe, Java, MS Office, Skype, Chrome, Teams
+  [ ] Driver and BIOS updates [Enterprise]
+      Patch security updates, drivers, and BIOS firmware
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Deployment & Automation
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Customizable deployment policies
+      Create custom patch deployment schedules and policies
+  [ ] Automated lifecycle
+      Fully automated patch detection to deployment workflow
+  [ ] Self-Service Portal [Professional/Enterprise]
+      End-user self-service portal for patch installation
+  [ ] Remote patch management
+      Patch remote offices, WAN, and work-from-home endpoints
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Vulnerability Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Vulnerability scanning [Enterprise]
+      Identify vulnerabilities with detailed CVE information
+  [ ] Tenable.io integration [Enterprise]
+      Integration with Tenable vulnerability scanner
+  [ ] Cross-platform scanning [Enterprise]
+      Scan Windows, macOS, and third-party applications
+  [ ] CVE remediation tracking [Enterprise]
+      Track remediation of specific CVE vulnerabilities
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Reporting & Compliance
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Compliance reporting
+      Detailed audit and compliance reports
+  [ ] Advanced analytics
+      Real-time analytics on patch status and trends
+  [ ] Real-time audits
+      Continuous compliance auditing
+  [ ] Centralized dashboard
+      Single dashboard for all patch management activities
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Mobile & Remote Access
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Mobile app
+      Mobile application for patch monitoring and management
+  [ ] Work-from-home support
+      Remote system patching for distributed workforce
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Integration & Deployment
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Cloud console
+      Cloud-based management console
+  [ ] On-premises deployment
+      On-premises server installation option
+  [ ] Service desk integration [Enterprise]
+      Integration with security and service desk platforms
+
+================================================================================
+NEXT STEPS:
+1. Review each feature above with technical team
+2. Mark features currently in use
+3. Identify high-value unused features
+4. Create adoption roadmap for underutilized capabilities
+================================================================================

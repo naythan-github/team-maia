@@ -1,0 +1,287 @@
+{
+  "product_name": "IT Glue",
+  "vendor": "IT Glue (Kaseya)",
+  "website": "https://www.itglue.com/",
+  "last_updated": "2025-10-06",
+  "category": "IT Documentation Platform",
+  "primary_focus": "Structured IT documentation and password management for MSPs",
+  "target_market": ["MSP", "IT Service Providers", "Enterprise IT"],
+  "capabilities": {
+    "Documentation Management": {
+      "description": "Structured documentation framework with relationship mapping",
+      "features": [
+        {
+          "name": "Structured documentation framework",
+          "description": "Organized framework for consistent IT documentation",
+          "tier": "All"
+        },
+        {
+          "name": "Relationship mapping",
+          "description": "Link related items for easy information retrieval",
+          "tier": "All"
+        },
+        {
+          "name": "Templates",
+          "description": "Standardized templates for consistent documentation",
+          "tier": "All"
+        },
+        {
+          "name": "Version control",
+          "description": "Track changes and revert to previous versions",
+          "tier": "All"
+        },
+        {
+          "name": "Unlimited organizations",
+          "description": "Document unlimited client organizations",
+          "tier": "All"
+        },
+        {
+          "name": "Unlimited documentation",
+          "description": "No limits on documentation volume",
+          "tier": "All"
+        },
+        {
+          "name": "Unlimited client accounts",
+          "description": "Manage unlimited client accounts",
+          "tier": "All"
+        }
+      ]
+    },
+    "Password Management": {
+      "description": "Secure password management with automation and audit capabilities",
+      "features": [
+        {
+          "name": "Integrated password management",
+          "description": "Built-in secure password storage and management",
+          "tier": "All"
+        },
+        {
+          "name": "Immutable audit trail",
+          "description": "Complete audit log of all password access and changes",
+          "tier": "All"
+        },
+        {
+          "name": "Automated password rotation",
+          "description": "One-click password rotation for Microsoft Entra ID, Microsoft 365, Active Directory",
+          "tier": "Select/Enterprise"
+        },
+        {
+          "name": "Offline password access",
+          "description": "Access passwords when offline",
+          "tier": "All"
+        },
+        {
+          "name": "Multi-factor authentication",
+          "description": "MFA support for enhanced security",
+          "tier": "All"
+        }
+      ]
+    },
+    "Security & Compliance": {
+      "description": "Enterprise-grade security with compliance certifications",
+      "features": [
+        {
+          "name": "SOC 2 compliance",
+          "description": "SOC 2 certified for security and compliance",
+          "tier": "All"
+        },
+        {
+          "name": "Access control",
+          "description": "Granular access control for users and teams",
+          "tier": "All"
+        },
+        {
+          "name": "IP Access Control",
+          "description": "Restrict access by IP address",
+          "tier": "Select/Enterprise"
+        },
+        {
+          "name": "GeoLocation access control",
+          "description": "Restrict access by geographic location",
+          "tier": "Select/Enterprise"
+        },
+        {
+          "name": "Domain and SSL tracking",
+          "description": "Track domain registrations and SSL certificates",
+          "tier": "All"
+        }
+      ]
+    },
+    "Automation & AI": {
+      "description": "AI-powered automation for documentation efficiency",
+      "features": [
+        {
+          "name": "AI-powered SOP Generator",
+          "description": "Automatically captures every click, keystroke and action for SOP creation",
+          "tier": "Select/Enterprise"
+        },
+        {
+          "name": "Network Glue",
+          "description": "Automate network discovery, documentation, and diagramming including Active Directory",
+          "tier": "Add-on"
+        },
+        {
+          "name": "Cross-account migration service",
+          "description": "Automated migration of documentation across accounts",
+          "tier": "Enterprise"
+        }
+      ]
+    },
+    "Client Collaboration": {
+      "description": "Client-facing portal for secure collaboration",
+      "features": [
+        {
+          "name": "MyGlue",
+          "description": "Secure client portal for password management and collaboration",
+          "tier": "Add-on"
+        },
+        {
+          "name": "Client password management",
+          "description": "Clients can securely store and manage their own passwords",
+          "tier": "MyGlue Add-on"
+        },
+        {
+          "name": "Centralized company policy hub",
+          "description": "Share policies and documentation with clients",
+          "tier": "MyGlue Add-on"
+        },
+        {
+          "name": "MyGlue mobile app",
+          "description": "Mobile access for client collaboration",
+          "tier": "MyGlue Add-on"
+        },
+        {
+          "name": "MyGlue SSO",
+          "description": "Single sign-on for client portal",
+          "tier": "MyGlue Add-on"
+        }
+      ]
+    },
+    "Integration Ecosystem": {
+      "description": "60+ native integrations with PSA, RMM, and IT tools",
+      "features": [
+        {
+          "name": "60+ native integrations",
+          "description": "Extensive integration ecosystem for IT tools",
+          "tier": "All"
+        },
+        {
+          "name": "PSA integration",
+          "description": "Autotask PSA, ConnectWise PSA integrations",
+          "tier": "All"
+        },
+        {
+          "name": "RMM integration",
+          "description": "Datto RMM and other RMM platform integrations",
+          "tier": "All"
+        },
+        {
+          "name": "Microsoft integration",
+          "description": "Microsoft Intune, Azure AD, Active Directory",
+          "tier": "All"
+        },
+        {
+          "name": "REST API",
+          "description": "Built-in REST APIs for custom integrations",
+          "tier": "All"
+        },
+        {
+          "name": "Automated data synchronization",
+          "description": "Auto-sync with PSA, RMM, and ITSM tools",
+          "tier": "All"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "model": "Per user per month (minimum 5 users)",
+    "tiers": [
+      {
+        "name": "Basic Plan",
+        "price": "$29 per user per month (5 user minimum)",
+        "features": [
+          "Core documentation features",
+          "Unlimited organizations",
+          "Unlimited documentation",
+          "Unlimited client accounts",
+          "Password management",
+          "Version control",
+          "60+ integrations"
+        ]
+      },
+      {
+        "name": "Select Plan",
+        "price": "$36 per user per month (5 user minimum)",
+        "features": [
+          "All Basic features",
+          "Automated password rotation",
+          "AI-powered SOP Generator",
+          "IP Access Control",
+          "GeoLocation access control",
+          "Advanced security features"
+        ]
+      },
+      {
+        "name": "Enterprise Plan",
+        "price": "$44 per user per month (contact for details)",
+        "features": [
+          "All Select features",
+          "Cross-account migration service",
+          "Enterprise-grade support",
+          "Advanced customization"
+        ]
+      }
+    ],
+    "notes": "Minimum 5 users required. Pricing based on 36-month term (12/24 month terms available at higher rates). One-time activation fee applies. Monthly billing renews on signup anniversary. Add-ons: Network Glue and MyGlue priced separately."
+  },
+  "integrations": {
+    "primary": ["Microsoft Intune", "Azure AD", "Active Directory"],
+    "psa": ["Autotask PSA", "ConnectWise PSA"],
+    "rmm": ["Datto RMM"],
+    "backup": ["Spanning Backup"],
+    "networking": ["Datto Networking"],
+    "diagramming": ["Lucidchart"],
+    "warranty": ["Warranty Master"],
+    "api": "REST APIs for custom integrations"
+  },
+  "differentiators": [
+    "Specialized IT documentation platform (not RMM or patch management)",
+    "Structured documentation with relationship mapping (unique approach)",
+    "Integrated password management with automated rotation",
+    "AI-powered SOP Generator (captures clicks/keystrokes automatically)",
+    "Network Glue for automated network discovery and diagramming",
+    "SOC 2 compliance with immutable audit trail",
+    "60+ native integrations with PSA/RMM/ITSM tools",
+    "MyGlue client collaboration portal",
+    "50% reduction in time wasted looking for information",
+    "30%+ efficiency gains reported by users",
+    "~90% user recommendation rate",
+    "Popular among MSPs for multi-tenant documentation"
+  ],
+  "platform_support": {
+    "operating_systems": ["Web-based (platform agnostic)"],
+    "deployment_model": "Cloud-based SaaS",
+    "supported_integrations": "60+ native integrations"
+  },
+  "user_feedback_highlights": {
+    "strengths": [
+      "Structured framework ensures consistency across teams",
+      "Relationship mapping makes information retrieval fast",
+      "Integrated password management eliminates need for separate tools",
+      "50%+ time savings in documentation search and retrieval",
+      "30%+ efficiency gains after implementation",
+      "Strong MSP focus with multi-tenant architecture",
+      "Excellent integration ecosystem with PSA/RMM tools"
+    ]
+  },
+  "add_ons": {
+    "Network Glue": {
+      "description": "Automate network discovery, documentation, and diagramming",
+      "features": ["Network device detection", "Active Directory discovery", "Automated network diagrams"]
+    },
+    "MyGlue": {
+      "description": "Client collaboration portal",
+      "features": ["Client password management", "Document sharing", "Policy hub", "Mobile app", "SSO"]
+    }
+  }
+}

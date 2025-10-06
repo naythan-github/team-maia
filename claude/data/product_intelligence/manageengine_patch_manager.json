@@ -1,0 +1,243 @@
+{
+  "product_name": "ManageEngine Patch Manager Plus",
+  "vendor": "ManageEngine (Zoho Corporation)",
+  "website": "https://www.manageengine.com/patch-management/",
+  "last_updated": "2025-10-06",
+  "category": "Patch Management",
+  "primary_focus": "Multi-platform automated patch management",
+  "target_market": ["Enterprise IT", "MSP", "SMB"],
+  "capabilities": {
+    "Patch Management": {
+      "description": "Comprehensive automated patch management across multiple platforms",
+      "features": [
+        {
+          "name": "Automated patch deployment",
+          "description": "Automatic scanning, testing, and deployment of patches",
+          "tier": "All"
+        },
+        {
+          "name": "Real-time patch detection",
+          "description": "Scan and detect missing patches in real-time",
+          "tier": "All"
+        },
+        {
+          "name": "Patch testing",
+          "description": "Test patches before full deployment",
+          "tier": "All"
+        },
+        {
+          "name": "Patch compliance tracking",
+          "description": "Monitor patch compliance status across endpoints",
+          "tier": "All"
+        },
+        {
+          "name": "Patch rollback",
+          "description": "Ability to decline or roll back problematic patches",
+          "tier": "All"
+        }
+      ]
+    },
+    "Platform Support": {
+      "description": "Multi-platform support including Windows, macOS, Linux, and third-party applications",
+      "features": [
+        {
+          "name": "Windows patching",
+          "description": "Complete Windows OS patch management",
+          "tier": "All"
+        },
+        {
+          "name": "macOS patching",
+          "description": "macOS operating system patch management",
+          "tier": "All"
+        },
+        {
+          "name": "Linux distribution support",
+          "description": "Support for Red Hat, SUSE, Ubuntu, CentOS, Pardus, Oracle, Rocky Linux, Debian",
+          "tier": "All"
+        },
+        {
+          "name": "Third-party application patching",
+          "description": "850+ third-party applications including Adobe, Java, MS Office, Skype, Chrome, Teams",
+          "tier": "All"
+        },
+        {
+          "name": "Driver and BIOS updates",
+          "description": "Patch security updates, drivers, and BIOS firmware",
+          "tier": "Enterprise"
+        }
+      ]
+    },
+    "Deployment & Automation": {
+      "description": "Flexible deployment policies and automation workflows",
+      "features": [
+        {
+          "name": "Customizable deployment policies",
+          "description": "Create custom patch deployment schedules and policies",
+          "tier": "All"
+        },
+        {
+          "name": "Automated lifecycle",
+          "description": "Fully automated patch detection to deployment workflow",
+          "tier": "All"
+        },
+        {
+          "name": "Self-Service Portal",
+          "description": "End-user self-service portal for patch installation",
+          "tier": "Professional/Enterprise"
+        },
+        {
+          "name": "Remote patch management",
+          "description": "Patch remote offices, WAN, and work-from-home endpoints",
+          "tier": "All"
+        }
+      ]
+    },
+    "Vulnerability Management": {
+      "description": "Integrated vulnerability scanning and remediation",
+      "features": [
+        {
+          "name": "Vulnerability scanning",
+          "description": "Identify vulnerabilities with detailed CVE information",
+          "tier": "Enterprise"
+        },
+        {
+          "name": "Tenable.io integration",
+          "description": "Integration with Tenable vulnerability scanner",
+          "tier": "Enterprise"
+        },
+        {
+          "name": "Cross-platform scanning",
+          "description": "Scan Windows, macOS, and third-party applications",
+          "tier": "Enterprise"
+        },
+        {
+          "name": "CVE remediation tracking",
+          "description": "Track remediation of specific CVE vulnerabilities",
+          "tier": "Enterprise"
+        }
+      ]
+    },
+    "Reporting & Compliance": {
+      "description": "Comprehensive compliance reporting and audit capabilities",
+      "features": [
+        {
+          "name": "Compliance reporting",
+          "description": "Detailed audit and compliance reports",
+          "tier": "All"
+        },
+        {
+          "name": "Advanced analytics",
+          "description": "Real-time analytics on patch status and trends",
+          "tier": "All"
+        },
+        {
+          "name": "Real-time audits",
+          "description": "Continuous compliance auditing",
+          "tier": "All"
+        },
+        {
+          "name": "Centralized dashboard",
+          "description": "Single dashboard for all patch management activities",
+          "tier": "All"
+        }
+      ]
+    },
+    "Mobile & Remote Access": {
+      "description": "Mobile app and remote management capabilities",
+      "features": [
+        {
+          "name": "Mobile app",
+          "description": "Mobile application for patch monitoring and management",
+          "tier": "All"
+        },
+        {
+          "name": "Work-from-home support",
+          "description": "Remote system patching for distributed workforce",
+          "tier": "All"
+        }
+      ]
+    },
+    "Integration & Deployment": {
+      "description": "Cloud and on-premises deployment with service desk integrations",
+      "features": [
+        {
+          "name": "Cloud console",
+          "description": "Cloud-based management console",
+          "tier": "All"
+        },
+        {
+          "name": "On-premises deployment",
+          "description": "On-premises server installation option",
+          "tier": "All"
+        },
+        {
+          "name": "Service desk integration",
+          "description": "Integration with security and service desk platforms",
+          "tier": "Enterprise"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "model": "Per endpoint per year",
+    "tiers": [
+      {
+        "name": "Free Edition",
+        "price": "$0 (up to 25 endpoints)",
+        "features": ["Basic patch management", "Windows/macOS/Linux support", "Third-party patching"]
+      },
+      {
+        "name": "Professional Edition",
+        "price": "$245-$345 per year (pricing varies by endpoints and technicians)",
+        "features": ["All Free features", "Self-Service Portal", "Advanced reporting", "Professional support"]
+      },
+      {
+        "name": "Enterprise Edition",
+        "price": "$345-$445 per year (pricing varies by endpoints and technicians)",
+        "features": ["All Professional features", "Vulnerability scanning", "Tenable integration", "Driver/BIOS patching", "Service desk integration", "Enterprise support"]
+      }
+    ],
+    "notes": "Free for 25 endpoints. 4 pricing editions total from $245 to $445. Users praise cost-effectiveness and value for money. Free trial available."
+  },
+  "integrations": {
+    "primary": [],
+    "psa": [],
+    "rmm": [],
+    "security": ["Tenable.io"],
+    "service_desk": ["Integration with service desk platforms"],
+    "api": "Not specified"
+  },
+  "differentiators": [
+    "Multi-platform support (Windows, macOS, Linux)",
+    "850+ third-party application support",
+    "Free edition for up to 25 endpoints",
+    "Extremely cost-effective ($245-$445/year for unlimited endpoints)",
+    "Vulnerability scanning with CVE tracking (Enterprise)",
+    "Driver and BIOS patching capabilities",
+    "Self-Service Portal for end users",
+    "Mobile app for remote management",
+    "Both cloud and on-premises deployment options",
+    "Tenable.io integration for vulnerability management",
+    "Users praise 'excellent value for money'",
+    "Can integrate into existing solutions without budget impact"
+  ],
+  "platform_support": {
+    "operating_systems": [
+      "Windows",
+      "macOS",
+      "Linux (Red Hat, SUSE, Ubuntu, CentOS, Pardus, Oracle, Rocky Linux, Debian)"
+    ],
+    "deployment_model": "Cloud or On-premises",
+    "supported_applications": "850+ third-party applications"
+  },
+  "user_feedback_highlights": {
+    "strengths": [
+      "Automated patch deployment reduces vulnerabilities and saves time",
+      "Extensive third-party patching capabilities",
+      "Easy to use with centralized management",
+      "Effective vulnerability scanning with detailed CVE information",
+      "Excellent value for money",
+      "Free option for small environments (up to 50 devices mentioned by users)"
+    ]
+  }
+}

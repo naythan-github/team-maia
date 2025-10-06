@@ -1,0 +1,107 @@
+================================================================================
+UTILIZATION CHECKLIST: Datto RMM
+================================================================================
+Vendor: Datto (Kaseya)
+Category: Remote Monitoring and Management (RMM)
+Total Features: 29
+
+INSTRUCTIONS:
+Review each feature and mark if currently used/configured at Orro:
+  [ ] = Not using/configured
+  [x] = Currently using/configured
+  [?] = Unsure/needs investigation
+
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Remote Monitoring
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Discovery and asset management
+      Automated discovery and tracking of all endpoint assets
+  [ ] Device monitoring
+      Real-time monitoring of endpoint health and performance
+  [ ] Network topology mapping
+      Visual network mapping and monitoring
+  [ ] Real-time alerts
+      Proactive alerting on system issues and thresholds
+  [ ] Endpoint health tracking
+      Continuous monitoring of endpoint status
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Remote Access & Control
+────────────────────────────────────────────────────────────────────────────────
+  [ ] HTML5 web-based remote control
+      Browser-based remote access without client installation
+  [ ] Remote support
+      Fully integrated remote support within single interface
+  [ ] Session recordings
+      Record remote sessions for compliance and training
+  [ ] End-user initiated remote access
+      Users can initiate support sessions
+  [ ] Built-in user chat
+      Chat functionality during remote sessions
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Patch Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Automated patch management
+      Fully automated patching for operating systems and applications
+  [ ] Real-time patch deployments
+      Immediate patch deployment with automated reboots
+  [ ] Third-party application patching
+      Patch management for non-Microsoft applications
+  [ ] Fully integrated experience
+      Patch management integrated within RMM console
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Automation & Scripting
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Automated monitoring
+      Automated monitoring policies and responses
+  [ ] Custom scripts and policies
+      Create and deploy custom automation scripts
+  [ ] Webhooks
+      Workflow automation via webhooks
+  [ ] Routine task automation
+      Streamline routine tasks and reduce human error
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Security Features
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Native ransomware detection
+      Built-in ransomware detection and alerting
+  [ ] Mandatory 2FA
+      Two-factor authentication required for all users
+  [ ] Agent encryption
+      Encrypted communication between agents and platform
+  [ ] Encrypted credential storage
+      Secure storage of credentials and sensitive data
+  [ ] Penetration testing
+      Routine penetration testing and infrastructure hardening
+  [ ] BSIMM security evaluation
+      Top 20% ranking in security maturity assessment
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Reporting & Analytics
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Detailed reporting
+      Comprehensive reports on endpoint status and performance
+  [ ] Insightful reporting
+      Analytics-driven insights for MSP decision-making
+  [ ] Multi-tenant view
+      Consolidated reporting across multiple client tenants
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Microsoft 365 Integration
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Native Microsoft 365 integration
+      Unique native M365 user management (rare in RMM platforms)
+  [ ] Microsoft 365 management module
+      Dedicated module for M365 administration
+
+================================================================================
+NEXT STEPS:
+1. Review each feature above with technical team
+2. Mark features currently in use
+3. Identify high-value unused features
+4. Create adoption roadmap for underutilized capabilities
+================================================================================

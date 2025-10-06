@@ -1,0 +1,79 @@
+================================================================================
+UTILIZATION CHECKLIST: Patch My PC
+================================================================================
+Vendor: Patch My PC
+Category: Patch Management & Application Lifecycle Automation
+Total Features: 19
+
+INSTRUCTIONS:
+Review each feature and mark if currently used/configured at Orro:
+  [ ] = Not using/configured
+  [x] = Currently using/configured
+  [?] = Unsure/needs investigation
+
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Patch Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Automatic patch deployment
+      Seamless automated patching for third-party applications
+  [ ] Automatic scans
+      Continuous scanning for missing patches and updates
+  [ ] Third-party application support
+      Extensive catalog for Chrome, Adobe PDF, Firefox, and hundreds more
+  [ ] Real-time deployments
+      Immediate patch deployment with automated reboots
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Application Lifecycle Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Automated application lifecycle
+      Complete automation from packaging to updates
+  [ ] Custom app publishing [Enterprise Plus/Premium]
+      Publish custom applications to Intune or MECM
+  [ ] Extensive software catalog
+      Out-of-the-box support for hundreds of applications
+  [ ] Streamlined rollouts
+      Accelerated application deployment workflows
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Integration & Deployment
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Microsoft Intune integration
+      Native Intune integration rated 4.9/5 by users
+  [ ] SCCM/ConfigMgr integration
+      Seamless SCCM integration for enterprise deployments
+  [ ] Cloud portal connectivity [Enterprise Plus/Premium]
+      Connect to cloud portal for custom app setup
+  [ ] Unified endpoint management
+      Streamlined approach across Intune and SCCM
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Customization & Scripting
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Custom pre-install scripts [Enterprise Plus/Premium]
+      Execute custom scripts before application installation
+  [ ] Custom post-install scripts [Enterprise Plus/Premium]
+      Execute custom scripts after application installation
+  [ ] Disable built-in updaters [Enterprise Plus/Premium]
+      Disable application built-in updaters for centralized control
+  [ ] Advanced automation workflows [Enterprise Plus/Premium]
+      Custom automation for complex deployment scenarios
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Reporting & Analytics
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Patch compliance reports
+      Track patch status across all managed endpoints
+  [ ] Application deployment analytics
+      Monitor application rollout success and failures
+  [ ] Endpoint tracking
+      Centralized endpoint tracking and reporting
+
+================================================================================
+NEXT STEPS:
+1. Review each feature above with technical team
+2. Mark features currently in use
+3. Identify high-value unused features
+4. Create adoption roadmap for underutilized capabilities
+================================================================================

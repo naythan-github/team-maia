@@ -1,0 +1,1028 @@
+{
+  "analysis_date": "2025-10-06",
+  "model": "paraphrase-MiniLM-L6-v2",
+  "threshold": 0.65,
+  "total_overlaps": 68,
+  "overlaps": [
+    {
+      "similarity": 0.9682237505912781,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Real-time deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.9094021320343018,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch compliance tracking",
+        "description": "Monitor patch compliance status across endpoints"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Patch compliance reports",
+        "description": "Track patch status across all managed endpoints"
+      }
+    },
+    {
+      "similarity": 0.8951355218887329,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.8854861855506897,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.8684507608413696,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.8659573793411255,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.8544220924377441,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.8314023613929749,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.8312124013900757,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.8277596235275269,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.8266280293464661,
+      "feature1": {
+        "product": "Patch My PC",
+        "capability": "Integration & Deployment",
+        "name": "Microsoft Intune integration",
+        "description": "Native Intune integration rated 4.9/5 by users"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Endpoint Management",
+        "name": "Microsoft Intune integration",
+        "description": "Deep integration with Microsoft Intune platform"
+      }
+    },
+    {
+      "similarity": 0.818833589553833,
+      "feature1": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.8072395920753479,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Real-time deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.7721405625343323,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Reporting & Compliance",
+        "name": "Real-time audits",
+        "description": "Continuous compliance auditing"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Compliance & Reporting",
+        "name": "Simplified audit preparation",
+        "description": "Clear reporting for compliance audits"
+      }
+    },
+    {
+      "similarity": 0.7578126192092896,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.7535681128501892,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Reporting & Compliance",
+        "name": "Compliance reporting",
+        "description": "Detailed audit and compliance reports"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Compliance & Reporting",
+        "name": "Simplified audit preparation",
+        "description": "Clear reporting for compliance audits"
+      }
+    },
+    {
+      "similarity": 0.7495224475860596,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      }
+    },
+    {
+      "similarity": 0.7456891536712646,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Platform Support",
+        "name": "Windows patching",
+        "description": "Complete Windows OS patch management"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.7451395988464355,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Real-time deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.7447106838226318,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.7416517734527588,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Automated lifecycle",
+        "description": "Fully automated patch detection to deployment workflow"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Real-time deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.7409488558769226,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Customizable deployment policies",
+        "description": "Create custom patch deployment schedules and policies"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Real-time deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.7408682107925415,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Platform Support",
+        "name": "macOS patching",
+        "description": "macOS operating system patch management"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.7344282269477844,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Customizable deployment policies",
+        "description": "Create custom patch deployment schedules and policies"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.7333657741546631,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Automated lifecycle",
+        "description": "Fully automated patch detection to deployment workflow"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.7330238223075867,
+      "feature1": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Real-time deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.7282992601394653,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Platform Support",
+        "name": "Windows patching",
+        "description": "Complete Windows OS patch management"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      }
+    },
+    {
+      "similarity": 0.7180570960044861,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Patch compliance reports",
+        "description": "Track patch status across all managed endpoints"
+      }
+    },
+    {
+      "similarity": 0.7167232632637024,
+      "feature1": {
+        "product": "Devicie",
+        "capability": "Endpoint Management",
+        "name": "Microsoft Intune integration",
+        "description": "Deep integration with Microsoft Intune platform"
+      },
+      "feature2": {
+        "product": "IT Glue",
+        "capability": "Integration Ecosystem",
+        "name": "Microsoft integration",
+        "description": "Microsoft Intune, Azure AD, Active Directory"
+      }
+    },
+    {
+      "similarity": 0.7164565920829773,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Customizable deployment policies",
+        "description": "Create custom patch deployment schedules and policies"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.7161585688591003,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Automated lifecycle",
+        "description": "Fully automated patch detection to deployment workflow"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.7122172117233276,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Automated lifecycle",
+        "description": "Fully automated patch detection to deployment workflow"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.710130512714386,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Real-time patch detection",
+        "description": "Scan and detect missing patches in real-time"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic scans",
+        "description": "Continuous scanning for missing patches and updates"
+      }
+    },
+    {
+      "similarity": 0.7035189270973206,
+      "feature1": {
+        "product": "Patch My PC",
+        "capability": "Integration & Deployment",
+        "name": "Unified endpoint management",
+        "description": "Streamlined approach across Intune and SCCM"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Endpoint Management",
+        "name": "Endpoint automation",
+        "description": "Automated endpoint management workflows"
+      }
+    },
+    {
+      "similarity": 0.7020407319068909,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Microsoft 365 Integration",
+        "name": "Microsoft 365 management module",
+        "description": "Dedicated module for M365 administration"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Endpoint Management",
+        "name": "Microsoft 365 environment focus",
+        "description": "Optimized for Microsoft 365 ecosystem"
+      }
+    },
+    {
+      "similarity": 0.7002338171005249,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Automated lifecycle",
+        "description": "Fully automated patch detection to deployment workflow"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.6957563757896423,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Remote Monitoring",
+        "name": "Endpoint health tracking",
+        "description": "Continuous monitoring of endpoint status"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Endpoint tracking",
+        "description": "Centralized endpoint tracking and reporting"
+      }
+    },
+    {
+      "similarity": 0.6915004849433899,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch testing",
+        "description": "Test patches before full deployment"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.6913929581642151,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch compliance tracking",
+        "description": "Monitor patch compliance status across endpoints"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.6910650134086609,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch testing",
+        "description": "Test patches before full deployment"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      }
+    },
+    {
+      "similarity": 0.6877238154411316,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Real-time patch detection",
+        "description": "Scan and detect missing patches in real-time"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.6866042613983154,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Platform Support",
+        "name": "macOS patching",
+        "description": "macOS operating system patch management"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      }
+    },
+    {
+      "similarity": 0.684889018535614,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch rollback",
+        "description": "Ability to decline or roll back problematic patches"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      }
+    },
+    {
+      "similarity": 0.6829858422279358,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Real-time patch detection",
+        "description": "Scan and detect missing patches in real-time"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.6823810935020447,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch testing",
+        "description": "Test patches before full deployment"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Real-time patch deployments",
+        "description": "Immediate patch deployment with automated reboots"
+      }
+    },
+    {
+      "similarity": 0.6817533373832703,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Reporting & Compliance",
+        "name": "Advanced analytics",
+        "description": "Real-time analytics on patch status and trends"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Patch compliance reports",
+        "description": "Track patch status across all managed endpoints"
+      }
+    },
+    {
+      "similarity": 0.681200385093689,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch rollback",
+        "description": "Ability to decline or roll back problematic patches"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.6807830333709717,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic scans",
+        "description": "Continuous scanning for missing patches and updates"
+      }
+    },
+    {
+      "similarity": 0.6763982772827148,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Real-time patch detection",
+        "description": "Scan and detect missing patches in real-time"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.674159824848175,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch testing",
+        "description": "Test patches before full deployment"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Patch compliance reports",
+        "description": "Track patch status across all managed endpoints"
+      }
+    },
+    {
+      "similarity": 0.6729631423950195,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Platform Support",
+        "name": "Third-party application patching",
+        "description": "850+ third-party applications including Adobe, Java, MS Office, Skype, Chrome, Teams"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Third-party application patching",
+        "description": "Patch management for non-Microsoft applications"
+      }
+    },
+    {
+      "similarity": 0.6716750264167786,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch rollback",
+        "description": "Ability to decline or roll back problematic patches"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.6707245111465454,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Reporting & Compliance",
+        "name": "Centralized dashboard",
+        "description": "Single dashboard for all patch management activities"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.6702209711074829,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Mobile & Remote Access",
+        "name": "Mobile app",
+        "description": "Mobile application for patch monitoring and management"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.669218897819519,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Remote patch management",
+        "description": "Patch remote offices, WAN, and work-from-home endpoints"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.6675856709480286,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch testing",
+        "description": "Test patches before full deployment"
+      },
+      "feature2": {
+        "product": "Datto RMM",
+        "capability": "Patch Management",
+        "name": "Automated patch management",
+        "description": "Fully automated patching for operating systems and applications"
+      }
+    },
+    {
+      "similarity": 0.6636171340942383,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Remote patch management",
+        "description": "Patch remote offices, WAN, and work-from-home endpoints"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Patch compliance reports",
+        "description": "Track patch status across all managed endpoints"
+      }
+    },
+    {
+      "similarity": 0.6612480878829956,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Automated patch deployment",
+        "description": "Automatic scanning, testing, and deployment of patches"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Patch compliance reports",
+        "description": "Track patch status across all managed endpoints"
+      }
+    },
+    {
+      "similarity": 0.6603361368179321,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Platform Support",
+        "name": "Windows patching",
+        "description": "Complete Windows OS patch management"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.6598847508430481,
+      "feature1": {
+        "product": "Patch My PC",
+        "capability": "Application Lifecycle Management",
+        "name": "Automated application lifecycle",
+        "description": "Complete automation from packaging to updates"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Centralized app packaging",
+        "description": "Streamlined application deployment across endpoints"
+      }
+    },
+    {
+      "similarity": 0.6598789095878601,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Automation & Scripting",
+        "name": "Webhooks",
+        "description": "Workflow automation via webhooks"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Customization & Scripting",
+        "name": "Advanced automation workflows",
+        "description": "Custom automation for complex deployment scenarios"
+      }
+    },
+    {
+      "similarity": 0.6597002148628235,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Reporting & Compliance",
+        "name": "Centralized dashboard",
+        "description": "Single dashboard for all patch management activities"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Patch Management",
+        "name": "Automatic patch deployment",
+        "description": "Seamless automated patching for third-party applications"
+      }
+    },
+    {
+      "similarity": 0.6588706374168396,
+      "feature1": {
+        "product": "Datto RMM",
+        "capability": "Security Features",
+        "name": "Encrypted credential storage",
+        "description": "Secure storage of credentials and sensitive data"
+      },
+      "feature2": {
+        "product": "IT Glue",
+        "capability": "Password Management",
+        "name": "Integrated password management",
+        "description": "Built-in secure password storage and management"
+      }
+    },
+    {
+      "similarity": 0.6560990214347839,
+      "feature1": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Endpoint tracking",
+        "description": "Centralized endpoint tracking and reporting"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Endpoint Management",
+        "name": "Endpoint automation",
+        "description": "Automated endpoint management workflows"
+      }
+    },
+    {
+      "similarity": 0.6541911959648132,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch compliance tracking",
+        "description": "Monitor patch compliance status across endpoints"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Compliance & Reporting",
+        "name": "Real-time compliance monitoring",
+        "description": "Continuous compliance status tracking"
+      }
+    },
+    {
+      "similarity": 0.6540490984916687,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Deployment & Automation",
+        "name": "Customizable deployment policies",
+        "description": "Create custom patch deployment schedules and policies"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    },
+    {
+      "similarity": 0.6540048122406006,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Reporting & Compliance",
+        "name": "Centralized dashboard",
+        "description": "Single dashboard for all patch management activities"
+      },
+      "feature2": {
+        "product": "Patch My PC",
+        "capability": "Reporting & Analytics",
+        "name": "Patch compliance reports",
+        "description": "Track patch status across all managed endpoints"
+      }
+    },
+    {
+      "similarity": 0.6525672674179077,
+      "feature1": {
+        "product": "ManageEngine Patch Manager Plus",
+        "capability": "Patch Management",
+        "name": "Patch testing",
+        "description": "Test patches before full deployment"
+      },
+      "feature2": {
+        "product": "Devicie",
+        "capability": "Application Management",
+        "name": "Automated application patching",
+        "description": "Automatic updates for deployed applications"
+      }
+    }
+  ]
+}

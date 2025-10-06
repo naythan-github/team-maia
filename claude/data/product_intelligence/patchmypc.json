@@ -1,0 +1,173 @@
+{
+  "product_name": "Patch My PC",
+  "vendor": "Patch My PC",
+  "website": "https://patchmypc.com/",
+  "last_updated": "2025-10-06",
+  "category": "Patch Management & Application Lifecycle Automation",
+  "primary_focus": "Third-party application patching for SCCM/Intune",
+  "target_market": ["MSP", "Enterprise IT", "SCCM/Intune Users"],
+  "capabilities": {
+    "Patch Management": {
+      "description": "Automated patch deployment for operating systems and third-party applications",
+      "features": [
+        {
+          "name": "Automatic patch deployment",
+          "description": "Seamless automated patching for third-party applications",
+          "tier": "All"
+        },
+        {
+          "name": "Automatic scans",
+          "description": "Continuous scanning for missing patches and updates",
+          "tier": "All"
+        },
+        {
+          "name": "Third-party application support",
+          "description": "Extensive catalog for Chrome, Adobe PDF, Firefox, and hundreds more",
+          "tier": "All"
+        },
+        {
+          "name": "Real-time deployments",
+          "description": "Immediate patch deployment with automated reboots",
+          "tier": "All"
+        }
+      ]
+    },
+    "Application Lifecycle Management": {
+      "description": "Automated application packaging, deployment, and updates",
+      "features": [
+        {
+          "name": "Automated application lifecycle",
+          "description": "Complete automation from packaging to updates",
+          "tier": "All"
+        },
+        {
+          "name": "Custom app publishing",
+          "description": "Publish custom applications to Intune or MECM",
+          "tier": "Enterprise Plus/Premium"
+        },
+        {
+          "name": "Extensive software catalog",
+          "description": "Out-of-the-box support for hundreds of applications",
+          "tier": "All"
+        },
+        {
+          "name": "Streamlined rollouts",
+          "description": "Accelerated application deployment workflows",
+          "tier": "All"
+        }
+      ]
+    },
+    "Integration & Deployment": {
+      "description": "Deep integration with Microsoft endpoint management platforms",
+      "features": [
+        {
+          "name": "Microsoft Intune integration",
+          "description": "Native Intune integration rated 4.9/5 by users",
+          "tier": "All"
+        },
+        {
+          "name": "SCCM/ConfigMgr integration",
+          "description": "Seamless SCCM integration for enterprise deployments",
+          "tier": "All"
+        },
+        {
+          "name": "Cloud portal connectivity",
+          "description": "Connect to cloud portal for custom app setup",
+          "tier": "Enterprise Plus/Premium"
+        },
+        {
+          "name": "Unified endpoint management",
+          "description": "Streamlined approach across Intune and SCCM",
+          "tier": "All"
+        }
+      ]
+    },
+    "Customization & Scripting": {
+      "description": "Advanced customization capabilities for enterprise workflows",
+      "features": [
+        {
+          "name": "Custom pre-install scripts",
+          "description": "Execute custom scripts before application installation",
+          "tier": "Enterprise Plus/Premium"
+        },
+        {
+          "name": "Custom post-install scripts",
+          "description": "Execute custom scripts after application installation",
+          "tier": "Enterprise Plus/Premium"
+        },
+        {
+          "name": "Disable built-in updaters",
+          "description": "Disable application built-in updaters for centralized control",
+          "tier": "Enterprise Plus/Premium"
+        },
+        {
+          "name": "Advanced automation workflows",
+          "description": "Custom automation for complex deployment scenarios",
+          "tier": "Enterprise Plus/Premium"
+        }
+      ]
+    },
+    "Reporting & Analytics": {
+      "description": "Patch compliance reporting and deployment tracking",
+      "features": [
+        {
+          "name": "Patch compliance reports",
+          "description": "Track patch status across all managed endpoints",
+          "tier": "All"
+        },
+        {
+          "name": "Application deployment analytics",
+          "description": "Monitor application rollout success and failures",
+          "tier": "All"
+        },
+        {
+          "name": "Endpoint tracking",
+          "description": "Centralized endpoint tracking and reporting",
+          "tier": "All"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "model": "Per endpoint per year",
+    "tiers": [
+      {
+        "name": "Enterprise Patch",
+        "price": "$2.00 per endpoint per year",
+        "features": ["Basic patch management", "Intune/SCCM integration", "Extensive software catalog"]
+      },
+      {
+        "name": "Enterprise Plus",
+        "price": "$3.50 per endpoint per year",
+        "features": ["All Enterprise Patch features", "Custom pre/post-install scripts", "Custom app publishing", "Disable built-in updaters"]
+      },
+      {
+        "name": "Enterprise Premium",
+        "price": "$5.00 per endpoint per year",
+        "features": ["All Enterprise Plus features", "Advanced automation", "Priority support"]
+      }
+    ],
+    "notes": "Free trial available. Pricing considered highly competitive by users."
+  },
+  "integrations": {
+    "primary": ["Microsoft Intune", "Microsoft SCCM/ConfigMgr"],
+    "psa": [],
+    "rmm": [],
+    "api": "Cloud portal for custom app publishing"
+  },
+  "differentiators": [
+    "Specialized third-party patch management (not full RMM)",
+    "Extensive out-of-box software catalog (hundreds of applications)",
+    "Industry-leading Intune/SCCM integration (4.9/5 rating)",
+    "Custom pre/post-install scripting capabilities",
+    "Extremely competitive pricing ($2-5/endpoint/year)",
+    "Disable built-in updaters for centralized control",
+    "Fully integrated patch management experience within existing tools",
+    "High user satisfaction with 'price is really low for service provided'"
+  ],
+  "platform_support": {
+    "operating_systems": ["Windows", "macOS (via Intune)"],
+    "deployment_model": "Cloud + On-premises (via SCCM/Intune)",
+    "supported_applications": "850+ third-party applications"
+  }
+}

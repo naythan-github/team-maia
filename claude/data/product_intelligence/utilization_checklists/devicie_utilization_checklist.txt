@@ -1,0 +1,71 @@
+================================================================================
+UTILIZATION CHECKLIST: Devicie
+================================================================================
+Vendor: Devicie
+Category: Endpoint Management & Automation
+Total Features: 15
+
+INSTRUCTIONS:
+Review each feature and mark if currently used/configured at Orro:
+  [ ] = Not using/configured
+  [x] = Currently using/configured
+  [?] = Unsure/needs investigation
+
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Tenant Configuration
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Cloud-native tenant deployment
+      Automated Microsoft 365 tenant configuration
+  [ ] Scalable configuration templates
+      Configured once, scaled everywhere across multiple tenants
+  [ ] Zero trust-aligned configurations
+      Security best practices baked into configurations
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Application Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Centralized app packaging
+      Streamlined application deployment across endpoints
+  [ ] Automated application patching
+      Automatic updates for deployed applications
+  [ ] Faster onboarding
+      Reduced time to deploy applications to new devices
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Compliance & Reporting
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Real-time compliance monitoring
+      Continuous compliance status tracking
+  [ ] Simplified audit preparation
+      Clear reporting for compliance audits
+  [ ] Audit readiness improvement
+      3.5x improvement in audit readiness metrics
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Automation & Support
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Support ticket reduction
+      70% reduction in support tickets through automation
+  [ ] Time savings
+      100+ hours saved per tech monthly
+  [ ] Best practice automation
+      Informed and opinionated configurations based on industry best practices
+
+────────────────────────────────────────────────────────────────────────────────
+📦 Endpoint Management
+────────────────────────────────────────────────────────────────────────────────
+  [ ] Microsoft Intune integration
+      Deep integration with Microsoft Intune platform
+  [ ] Endpoint automation
+      Automated endpoint management workflows
+  [ ] Microsoft 365 environment focus
+      Optimized for Microsoft 365 ecosystem
+
+================================================================================
+NEXT STEPS:
+1. Review each feature above with technical team
+2. Mark features currently in use
+3. Identify high-value unused features
+4. Create adoption roadmap for underutilized capabilities
+================================================================================

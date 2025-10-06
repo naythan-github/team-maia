@@ -1,0 +1,162 @@
+================================================================================
+INTELLIGENT FEATURE OVERLAP ANALYSIS
+Model: paraphrase-MiniLM-L6-v2 (optimized for paraphrase detection)
+Semantic Similarity Threshold: 65%
+================================================================================
+
+🔍 Found 68 feature overlaps across products:
+
+================================================================================
+🔴 HIGH SIMILARITY (≥85%): 7 overlaps
+   ⚠️  These are likely DUPLICATE capabilities - strong consolidation candidates
+================================================================================
+
+1. 96.8% Match:
+   • Datto RMM: "Real-time patch deployments"
+     → Immediate patch deployment with automated reboots
+   • Patch My PC: "Real-time deployments"
+     → Immediate patch deployment with automated reboots
+
+2. 90.9% Match:
+   • ManageEngine Patch Manager Plus: "Patch compliance tracking"
+     → Monitor patch compliance status across endpoints
+   • Patch My PC: "Patch compliance reports"
+     → Track patch status across all managed endpoints
+
+3. 89.5% Match:
+   • ManageEngine Patch Manager Plus: "Automated patch deployment"
+     → Automatic scanning, testing, and deployment of patches
+   • Patch My PC: "Automatic patch deployment"
+     → Seamless automated patching for third-party applications
+
+4. 88.5% Match:
+   • Datto RMM: "Automated patch management"
+     → Fully automated patching for operating systems and applications
+   • Patch My PC: "Automatic patch deployment"
+     → Seamless automated patching for third-party applications
+
+5. 86.8% Match:
+   • Datto RMM: "Real-time patch deployments"
+     → Immediate patch deployment with automated reboots
+   • Patch My PC: "Automatic patch deployment"
+     → Seamless automated patching for third-party applications
+
+6. 86.6% Match:
+   • ManageEngine Patch Manager Plus: "Automated patch deployment"
+     → Automatic scanning, testing, and deployment of patches
+   • Datto RMM: "Automated patch management"
+     → Fully automated patching for operating systems and applications
+
+7. 85.4% Match:
+   • ManageEngine Patch Manager Plus: "Automated patch deployment"
+     → Automatic scanning, testing, and deployment of patches
+   • Datto RMM: "Real-time patch deployments"
+     → Immediate patch deployment with automated reboots
+
+================================================================================
+🟡 MEDIUM SIMILARITY (75-85%): 9 overlaps
+   ⚠️  Likely overlapping with minor differences - review for consolidation
+================================================================================
+
+1. 83.1% Match:
+   • ManageEngine Patch Manager Plus: "Automated patch deployment"
+   • Devicie: "Automated application patching"
+
+2. 83.1% Match:
+   • Datto RMM: "Third-party application patching"
+   • Patch My PC: "Automatic patch deployment"
+
+3. 82.8% Match:
+   • Datto RMM: "Automated patch management"
+   • Devicie: "Automated application patching"
+
+4. 82.7% Match:
+   • Patch My PC: "Microsoft Intune integration"
+   • Devicie: "Microsoft Intune integration"
+
+5. 81.9% Match:
+   • Patch My PC: "Automatic patch deployment"
+   • Devicie: "Automated application patching"
+
+6. 80.7% Match:
+   • ManageEngine Patch Manager Plus: "Automated patch deployment"
+   • Patch My PC: "Real-time deployments"
+
+7. 77.2% Match:
+   • ManageEngine Patch Manager Plus: "Real-time audits"
+   • Devicie: "Simplified audit preparation"
+
+8. 75.8% Match:
+   • Datto RMM: "Third-party application patching"
+   • Devicie: "Automated application patching"
+
+9. 75.4% Match:
+   • ManageEngine Patch Manager Plus: "Compliance reporting"
+   • Devicie: "Simplified audit preparation"
+
+================================================================================
+OVERLAP BY PRODUCT PAIR
+================================================================================
+
+📦 Datto RMM ↔ ManageEngine Patch Manager Plus
+   21 overlapping features
+   Average similarity: 71.4%
+   • 86.6%: Automated patch deployment ≈ Automated patch management
+   • 85.4%: Automated patch deployment ≈ Real-time patch deployments
+   • 75.0%: Automated patch deployment ≈ Third-party application patching
+
+📦 ManageEngine Patch Manager Plus ↔ Patch My PC
+   19 overlapping features
+   Average similarity: 71.7%
+   • 90.9%: Patch compliance tracking ≈ Patch compliance reports
+   • 89.5%: Automated patch deployment ≈ Automatic patch deployment
+   • 80.7%: Automated patch deployment ≈ Real-time deployments
+
+📦 Datto RMM ↔ Patch My PC
+   8 overlapping features
+   Average similarity: 79.7%
+   • 96.8%: Real-time patch deployments ≈ Real-time deployments
+   • 88.5%: Automated patch management ≈ Automatic patch deployment
+   • 86.8%: Real-time patch deployments ≈ Automatic patch deployment
+
+📦 Devicie ↔ ManageEngine Patch Manager Plus
+   8 overlapping features
+   Average similarity: 71.5%
+   • 83.1%: Automated patch deployment ≈ Automated application patching
+   • 77.2%: Real-time audits ≈ Simplified audit preparation
+   • 75.4%: Compliance reporting ≈ Simplified audit preparation
+
+📦 Devicie ↔ Patch My PC
+   6 overlapping features
+   Average similarity: 73.3%
+   • 82.7%: Microsoft Intune integration ≈ Microsoft Intune integration
+   • 81.9%: Automatic patch deployment ≈ Automated application patching
+   • 73.3%: Real-time deployments ≈ Automated application patching
+
+📦 Datto RMM ↔ Devicie
+   4 overlapping features
+   Average similarity: 75.8%
+   • 82.8%: Automated patch management ≈ Automated application patching
+   • 75.8%: Third-party application patching ≈ Automated application patching
+   • 74.5%: Real-time patch deployments ≈ Automated application patching
+
+📦 Devicie ↔ IT Glue
+   1 overlapping features
+   Average similarity: 71.7%
+   • 71.7%: Microsoft Intune integration ≈ Microsoft integration
+
+📦 Datto RMM ↔ IT Glue
+   1 overlapping features
+   Average similarity: 65.9%
+   • 65.9%: Encrypted credential storage ≈ Integrated password management
+
+================================================================================
+SUMMARY STATISTICS
+================================================================================
+
+Total overlapping feature pairs: 68
+  • High overlap (≥85%): 7
+  • Medium overlap (75-85%): 9
+  • Moderate overlap (65-75%): 52
+
+Product pairs with overlaps: 8

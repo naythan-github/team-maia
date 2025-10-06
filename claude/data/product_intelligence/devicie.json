@@ -1,0 +1,145 @@
+{
+  "product_name": "Devicie",
+  "vendor": "Devicie",
+  "website": "https://devicie.com/",
+  "last_updated": "2025-10-06",
+  "category": "Endpoint Management & Automation",
+  "primary_focus": "Microsoft Intune Deployment & Automation",
+  "target_market": ["MSP", "Enterprise IT", "Microsoft 365 Customers"],
+  "capabilities": {
+    "Tenant Configuration": {
+      "description": "Rapid cloud-native tenant setup with scalable configurations",
+      "features": [
+        {
+          "name": "Cloud-native tenant deployment",
+          "description": "Automated Microsoft 365 tenant configuration",
+          "tier": "All"
+        },
+        {
+          "name": "Scalable configuration templates",
+          "description": "Configured once, scaled everywhere across multiple tenants",
+          "tier": "All"
+        },
+        {
+          "name": "Zero trust-aligned configurations",
+          "description": "Security best practices baked into configurations",
+          "tier": "All"
+        }
+      ]
+    },
+    "Application Management": {
+      "description": "Centralized app packaging and automated patching",
+      "features": [
+        {
+          "name": "Centralized app packaging",
+          "description": "Streamlined application deployment across endpoints",
+          "tier": "All"
+        },
+        {
+          "name": "Automated application patching",
+          "description": "Automatic updates for deployed applications",
+          "tier": "All"
+        },
+        {
+          "name": "Faster onboarding",
+          "description": "Reduced time to deploy applications to new devices",
+          "tier": "All"
+        }
+      ]
+    },
+    "Compliance & Reporting": {
+      "description": "Real-time compliance monitoring and audit preparation",
+      "features": [
+        {
+          "name": "Real-time compliance monitoring",
+          "description": "Continuous compliance status tracking",
+          "tier": "All"
+        },
+        {
+          "name": "Simplified audit preparation",
+          "description": "Clear reporting for compliance audits",
+          "tier": "All"
+        },
+        {
+          "name": "Audit readiness improvement",
+          "description": "3.5x improvement in audit readiness metrics",
+          "tier": "All"
+        }
+      ]
+    },
+    "Automation & Support": {
+      "description": "Intelligent automation reducing manual intervention",
+      "features": [
+        {
+          "name": "Support ticket reduction",
+          "description": "70% reduction in support tickets through automation",
+          "tier": "All"
+        },
+        {
+          "name": "Time savings",
+          "description": "100+ hours saved per tech monthly",
+          "tier": "All"
+        },
+        {
+          "name": "Best practice automation",
+          "description": "Informed and opinionated configurations based on industry best practices",
+          "tier": "All"
+        }
+      ]
+    },
+    "Endpoint Management": {
+      "description": "Microsoft Intune-based endpoint control and monitoring",
+      "features": [
+        {
+          "name": "Microsoft Intune integration",
+          "description": "Deep integration with Microsoft Intune platform",
+          "tier": "All"
+        },
+        {
+          "name": "Endpoint automation",
+          "description": "Automated endpoint management workflows",
+          "tier": "All"
+        },
+        {
+          "name": "Microsoft 365 environment focus",
+          "description": "Optimized for Microsoft 365 ecosystem",
+          "tier": "All"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "model": "Not publicly available",
+    "tiers": [],
+    "notes": "Contact vendor for pricing information"
+  },
+  "integrations": {
+    "primary": ["Microsoft Intune", "Microsoft 365"],
+    "psa": [],
+    "rmm": [],
+    "api": "Not specified"
+  },
+  "certifications": [
+    "GDPR Compliant",
+    "SOC Compliant",
+    "Microsoft-certified"
+  ],
+  "differentiators": [
+    "Specialized Microsoft Intune automation platform (not generic RMM)",
+    "Zero trust-aligned configurations built-in",
+    "70% support ticket reduction through intelligent automation",
+    "100+ hours saved per tech monthly",
+    "3.5x improvement in audit readiness",
+    "Configured once, scaled everywhere model for MSPs",
+    "Best practice configurations baked in (opinionated approach)"
+  ],
+  "key_metrics": {
+    "support_ticket_reduction": "70%",
+    "time_savings_per_tech": "100+ hours/month",
+    "audit_readiness_improvement": "3.5x"
+  },
+  "platform_support": {
+    "operating_systems": ["Windows (via Intune)", "macOS (via Intune)", "iOS/Android (via Intune)"],
+    "deployment_model": "Cloud-native"
+  }
+}

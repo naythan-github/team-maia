@@ -1,0 +1,241 @@
+{
+  "product_name": "Datto RMM",
+  "vendor": "Datto (Kaseya)",
+  "website": "https://www.datto.com/products/rmm/",
+  "last_updated": "2025-10-06",
+  "category": "Remote Monitoring and Management (RMM)",
+  "primary_focus": "Comprehensive RMM for MSPs",
+  "target_market": ["MSP", "IT Service Providers"],
+  "capabilities": {
+    "Remote Monitoring": {
+      "description": "Comprehensive endpoint and network monitoring for MSP environments",
+      "features": [
+        {
+          "name": "Discovery and asset management",
+          "description": "Automated discovery and tracking of all endpoint assets",
+          "tier": "All"
+        },
+        {
+          "name": "Device monitoring",
+          "description": "Real-time monitoring of endpoint health and performance",
+          "tier": "All"
+        },
+        {
+          "name": "Network topology mapping",
+          "description": "Visual network mapping and monitoring",
+          "tier": "All"
+        },
+        {
+          "name": "Real-time alerts",
+          "description": "Proactive alerting on system issues and thresholds",
+          "tier": "All"
+        },
+        {
+          "name": "Endpoint health tracking",
+          "description": "Continuous monitoring of endpoint status",
+          "tier": "All"
+        }
+      ]
+    },
+    "Remote Access & Control": {
+      "description": "Built-in remote access and support capabilities",
+      "features": [
+        {
+          "name": "HTML5 web-based remote control",
+          "description": "Browser-based remote access without client installation",
+          "tier": "All"
+        },
+        {
+          "name": "Remote support",
+          "description": "Fully integrated remote support within single interface",
+          "tier": "All"
+        },
+        {
+          "name": "Session recordings",
+          "description": "Record remote sessions for compliance and training",
+          "tier": "All"
+        },
+        {
+          "name": "End-user initiated remote access",
+          "description": "Users can initiate support sessions",
+          "tier": "All"
+        },
+        {
+          "name": "Built-in user chat",
+          "description": "Chat functionality during remote sessions",
+          "tier": "All"
+        }
+      ]
+    },
+    "Patch Management": {
+      "description": "Automated patch management for OS and third-party applications",
+      "features": [
+        {
+          "name": "Automated patch management",
+          "description": "Fully automated patching for operating systems and applications",
+          "tier": "All"
+        },
+        {
+          "name": "Real-time patch deployments",
+          "description": "Immediate patch deployment with automated reboots",
+          "tier": "All"
+        },
+        {
+          "name": "Third-party application patching",
+          "description": "Patch management for non-Microsoft applications",
+          "tier": "All"
+        },
+        {
+          "name": "Fully integrated experience",
+          "description": "Patch management integrated within RMM console",
+          "tier": "All"
+        }
+      ]
+    },
+    "Automation & Scripting": {
+      "description": "Robust automation capabilities for routine task management",
+      "features": [
+        {
+          "name": "Automated monitoring",
+          "description": "Automated monitoring policies and responses",
+          "tier": "All"
+        },
+        {
+          "name": "Custom scripts and policies",
+          "description": "Create and deploy custom automation scripts",
+          "tier": "All"
+        },
+        {
+          "name": "Webhooks",
+          "description": "Workflow automation via webhooks",
+          "tier": "All"
+        },
+        {
+          "name": "Routine task automation",
+          "description": "Streamline routine tasks and reduce human error",
+          "tier": "All"
+        }
+      ]
+    },
+    "Security Features": {
+      "description": "Security-first design with native protection capabilities",
+      "features": [
+        {
+          "name": "Native ransomware detection",
+          "description": "Built-in ransomware detection and alerting",
+          "tier": "All"
+        },
+        {
+          "name": "Mandatory 2FA",
+          "description": "Two-factor authentication required for all users",
+          "tier": "All"
+        },
+        {
+          "name": "Agent encryption",
+          "description": "Encrypted communication between agents and platform",
+          "tier": "All"
+        },
+        {
+          "name": "Encrypted credential storage",
+          "description": "Secure storage of credentials and sensitive data",
+          "tier": "All"
+        },
+        {
+          "name": "Penetration testing",
+          "description": "Routine penetration testing and infrastructure hardening",
+          "tier": "All"
+        },
+        {
+          "name": "BSIMM security evaluation",
+          "description": "Top 20% ranking in security maturity assessment",
+          "tier": "All"
+        }
+      ]
+    },
+    "Reporting & Analytics": {
+      "description": "Detailed reporting and insightful analytics for MSP operations",
+      "features": [
+        {
+          "name": "Detailed reporting",
+          "description": "Comprehensive reports on endpoint status and performance",
+          "tier": "All"
+        },
+        {
+          "name": "Insightful reporting",
+          "description": "Analytics-driven insights for MSP decision-making",
+          "tier": "All"
+        },
+        {
+          "name": "Multi-tenant view",
+          "description": "Consolidated reporting across multiple client tenants",
+          "tier": "All"
+        }
+      ]
+    },
+    "Microsoft 365 Integration": {
+      "description": "Native Microsoft 365 management capabilities",
+      "features": [
+        {
+          "name": "Native Microsoft 365 integration",
+          "description": "Unique native M365 user management (rare in RMM platforms)",
+          "tier": "All"
+        },
+        {
+          "name": "Microsoft 365 management module",
+          "description": "Dedicated module for M365 administration",
+          "tier": "All"
+        }
+      ]
+    }
+  },
+  "pricing": {
+    "model": "Per endpoint with term commitments",
+    "tiers": [],
+    "notes": "License model requires 1, 3, or 5 year terms. Add-on services (e.g., AV) require minimum 1-year commitment with specific license count. Specific pricing not publicly disclosed - contact vendor for quote."
+  },
+  "integrations": {
+    "primary": ["Microsoft 365"],
+    "psa": ["ConnectWise Manage", "Autotask PSA"],
+    "rmm": [],
+    "documentation": ["IT Glue"],
+    "other": [
+      "Password Boss",
+      "OpsGenie",
+      "ScalePad Lifecycle Manager",
+      "Passportal",
+      "BrightGauge",
+      "Datto SIRIS",
+      "Datto Continuity",
+      "Datto Networking"
+    ],
+    "api": "Yes - webhooks and API integrations available"
+  },
+  "differentiators": [
+    "Full-featured RMM platform (not specialized tool)",
+    "Security-first design (BSIMM top 20%, mandatory 2FA)",
+    "Native Microsoft 365 integration (rare feature in RMM)",
+    "99.99% uptime SLA",
+    "24/7/365 expert support",
+    "HTML5 web-based remote control (no client installation)",
+    "Native ransomware detection built-in",
+    "Monthly innovative feature releases",
+    "Multi-tenant architecture for MSPs",
+    "Session recording for compliance",
+    "Top-rated RMM in G2 Summer 2025 across US, Canada, Australia",
+    "89% user satisfaction rating based on 809 reviews"
+  ],
+  "platform_support": {
+    "operating_systems": ["Windows", "macOS", "Linux"],
+    "deployment_model": "Cloud-based (99.99% availability)",
+    "supported_applications": "Third-party application patching included"
+  },
+  "support": {
+    "availability": "24/7/365",
+    "sla": "99.99% uptime"
+  },
+  "recognition": {
+    "g2_summer_2025": "Top-rated RMM globally (US, Canada, Australia, ANZ)",
+    "user_satisfaction": "89% (809 reviews from 4 review sites)",
+    "segment_rankings": "Leading solution for small-business, mid-market, and enterprise"
+  }
+}
