@@ -40,10 +40,19 @@ class CapabilityChecker:
     def __init__(self):
         self.maia_root = MAIA_ROOT
         self.system_state_path = self.maia_root / "SYSTEM_STATE.md"
+        self.system_state_index_path = self.maia_root / "SYSTEM_STATE_INDEX.json"
         self.agents_path = self.maia_root / "claude" / "context" / "core" / "agents.md"
         self.available_path = self.maia_root / "claude" / "context" / "tools" / "available.md"
 
-        # Initialize RAG for historical search
+        # Load JSON index for fast searching
+        self.index_data = None
+        if self.system_state_index_path.exists():
+            try:
+                self.index_data = json.loads(self.system_state_index_path.read_text())
+            except Exception as e:
+                print(f"⚠️  Could not load SYSTEM_STATE_INDEX.json: {e}")
+
+        # Initialize RAG for historical search (fallback for archived phases)
         try:
             self.rag = SystemStateRAGOllama()
         except Exception as e:
@@ -98,9 +107,47 @@ class CapabilityChecker:
         return phrase_keywords + word_keywords[:3]
 
     def _search_system_state(self, keywords: List[str]) -> List[CapabilityMatch]:
-        """Search SYSTEM_STATE.md for matching capabilities"""
+        """Search SYSTEM_STATE using JSON index first, fall back to MD if needed"""
         matches = []
 
+        # FAST PATH: Use JSON index if available
+        if self.index_data:
+            search_index = self.index_data.get('search_index', {})
+            phases_data = self.index_data.get('phases', {})
+
+            phase_scores = {}  # phase_num -> score
+
+            for keyword in keywords:
+                keyword_lower = keyword.lower()
+
+                # Check search index for exact matches
+                if keyword_lower in search_index:
+                    for phase_num in search_index[keyword_lower]:
+                        phase_scores[str(phase_num)] = phase_scores.get(str(phase_num), 0) + 0.3
+
+                # Check partial matches in all phase keywords
+                for phase_num, phase_data in phases_data.items():
+                    for phase_keyword in phase_data.get('keywords', []):
+                        if keyword_lower in phase_keyword.lower():
+                            phase_scores[phase_num] = phase_scores.get(phase_num, 0) + 0.15
+
+            # Convert scores to matches
+            for phase_num, score in sorted(phase_scores.items(), key=lambda x: x[1], reverse=True)[:5]:
+                phase_data = phases_data[phase_num]
+                confidence = min(score, 0.95)
+
+                matches.append(CapabilityMatch(
+                    source='system_state',
+                    type='exact' if confidence >= 0.7 else 'partial',
+                    confidence=confidence,
+                    location=f"Phase {phase_num}",
+                    description=phase_data['title'],
+                    details=f"Keywords: {', '.join(phase_data['keywords'][:5])}... | Capabilities: {len(phase_data['capabilities'])} | Files: {len(phase_data['files']['created'])}"
+                ))
+
+            return matches[:3]
+
+        # SLOW PATH: Fall back to MD parsing if JSON not available
         if not self.system_state_path.exists():
             return matches
 

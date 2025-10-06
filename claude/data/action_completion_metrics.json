@@ -3,40 +3,6 @@
   "weekly_completion": [
     {
       "week_of": "2025-10-04",
-      "synced_at": "2025-10-04T08:48:16.485122",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 0
-      },
-      "confluence": {
-        "completed": 3,
-        "pending": 18,
-        "overdue": 0
-      },
-      "total_completed": 3,
-      "total_pending": 23,
-      "total_overdue": 0
-    },
-    {
-      "week_of": "2025-10-04",
-      "synced_at": "2025-10-04T09:23:29.762574",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 0
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 18,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 23,
-      "total_overdue": 0
-    },
-    {
-      "week_of": "2025-10-04",
       "synced_at": "2025-10-04T13:23:36.794458",
       "vtt": {
         "completed": 0,
@@ -123,6 +89,108 @@
     {
       "week_of": "2025-10-05",
       "synced_at": "2025-10-05T09:24:23.040048",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 23,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-05",
+      "synced_at": "2025-10-05T13:24:30.306424",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 23,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-05",
+      "synced_at": "2025-10-05T17:24:38.939439",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 23,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-05",
+      "synced_at": "2025-10-05T21:24:45.385441",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 23,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-06",
+      "synced_at": "2025-10-06T01:24:54.398104",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 23,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-06",
+      "synced_at": "2025-10-06T05:25:03.233623",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 23,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-06",
+      "synced_at": "2025-10-06T10:17:12.416027",
       "vtt": {
         "completed": 0,
         "pending": 5,

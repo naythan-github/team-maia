@@ -45,8 +45,8 @@ class SystemStateArchiver:
 
         lines = self.system_state_path.read_text().splitlines()
 
-        # Count phases - look for phase markers
-        phase_pattern = re.compile(r'^###?\s+.*Phase\s+\d+', re.IGNORECASE)
+        # Count phases - look for actual phase markers (not historical references)
+        phase_pattern = re.compile(r'^###\s+\*\*✅.*\*\*\s+⭐\s+\*\*.*PHASE\s+\d+', re.IGNORECASE)
         phases = [i for i, line in enumerate(lines) if phase_pattern.search(line)]
 
         archive_lines = 0
@@ -70,15 +70,21 @@ class SystemStateArchiver:
         """
         Parse content into phases with start/end line numbers
         Returns: List of (start_line, end_line, phase_title)
+
+        Phase format: ### **✅ [Title]** ⭐ **[SESSION] - PHASE XX**
+        Sections separated by --- markers
         """
         lines = content.splitlines()
-        phase_pattern = re.compile(r'^###?\s+.*Phase\s+(\d+)', re.IGNORECASE)
+
+        # Match actual phase markers at end of title
+        phase_pattern = re.compile(r'^###\s+\*\*✅.*\*\*\s+⭐\s+\*\*.*PHASE\s+(\d+)', re.IGNORECASE)
 
         phases = []
         current_phase_start = None
         current_phase_title = None
 
         for i, line in enumerate(lines):
+            # Check for phase header
             match = phase_pattern.search(line)
             if match:
                 # Save previous phase if exists
@@ -87,16 +93,22 @@ class SystemStateArchiver:
 
                 current_phase_start = i
                 current_phase_title = line.strip()
+            # Check for section separator (end of phase)
+            elif line.strip() == '---' and current_phase_start is not None:
+                # Phase ends at separator line
+                phases.append((current_phase_start, i, current_phase_title))
+                current_phase_start = None
+                current_phase_title = None
 
-        # Add last phase
+        # Add last phase if no closing separator
         if current_phase_start is not None:
             phases.append((current_phase_start, len(lines) - 1, current_phase_title))
 
         return phases
 
     def extract_phase_number(self, phase_title: str) -> Optional[int]:
-        """Extract numeric phase number from title"""
-        match = re.search(r'Phase\s+(\d+)', phase_title, re.IGNORECASE)
+        """Extract numeric phase number from title (at end after PHASE keyword)"""
+        match = re.search(r'PHASE\s+(\d+)', phase_title, re.IGNORECASE)
         return int(match.group(1)) if match else None
 
     def create_backup(self) -> Path:
@@ -124,24 +136,40 @@ class SystemStateArchiver:
         if not phases:
             return {'status': 'error', 'message': 'No phases found in SYSTEM_STATE.md'}
 
-        # Sort phases by number
-        phases_with_numbers = []
+        # Group phases by number (handle multiple subsections per phase)
+        phase_groups = {}
         for start, end, title in phases:
             phase_num = self.extract_phase_number(title)
             if phase_num is not None:
-                phases_with_numbers.append((phase_num, start, end, title))
+                if phase_num not in phase_groups:
+                    phase_groups[phase_num] = []
+                phase_groups[phase_num].append((start, end, title))
 
-        phases_with_numbers.sort(key=lambda x: x[0])
+        # Get unique phase numbers sorted
+        unique_phases = sorted(phase_groups.keys())
 
-        if len(phases_with_numbers) <= self.keep_recent_phases:
+        if len(unique_phases) <= self.keep_recent_phases:
             return {
                 'status': 'skipped',
-                'message': f'Only {len(phases_with_numbers)} phases found, keeping all'
+                'message': f'Only {len(unique_phases)} unique phases found, keeping all'
             }
 
-        # Determine which phases to archive
-        phases_to_archive = phases_with_numbers[:-self.keep_recent_phases]
-        phases_to_keep = phases_with_numbers[-self.keep_recent_phases:]
+        # Determine which phase NUMBERS to archive (not individual sections)
+        phase_nums_to_archive = unique_phases[:-self.keep_recent_phases]
+        phase_nums_to_keep = unique_phases[-self.keep_recent_phases:]
+
+        # Flatten groups back to individual sections for archiving
+        phases_to_archive = []
+        for phase_num in phase_nums_to_archive:
+            phases_to_archive.extend([(phase_num, s, e, t) for s, e, t in phase_groups[phase_num]])
+
+        phases_to_keep = []
+        for phase_num in phase_nums_to_keep:
+            phases_to_keep.extend([(phase_num, s, e, t) for s, e, t in phase_groups[phase_num]])
+
+        # Sort by line number for contiguous extraction
+        phases_to_archive.sort(key=lambda x: x[1])
+        phases_to_keep.sort(key=lambda x: x[1])
 
         if not phases_to_archive:
             return {'status': 'skipped', 'message': 'No phases to archive'}
