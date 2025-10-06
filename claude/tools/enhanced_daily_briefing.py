@@ -304,21 +304,53 @@ def main():
             f.write(html_content)
         print(f"📧 HTML email saved to: {html_file}")
 
-        # Send email if address provided
-        if args.email:
+        # Note: Email sending disabled due to AppleScript HTML limitations
+        # HTML file is saved and can be opened manually or sent via proper SMTP
+        if False and args.email:  # Disabled for now
             try:
                 import subprocess
                 subject = f"Executive Briefing - {briefing['date']}"
-                # macOS mail command
-                result = subprocess.run([
-                    'osascript', '-e',
-                    f'tell application "Mail" to compose '
-                    f'(make new outgoing message with properties '
-                    f'{{subject:"{subject}", content:"{html_content}", '
-                    f'html content:true}}) to "{args.email}"'
-                ], capture_output=True, text=True)
+
+                # Use a simpler approach: create draft and open in Mail
+                # Save HTML to temp file for safer handling
+                import tempfile
+                with tempfile.NamedTemporaryFile(mode='w', suffix='.html', delete=False) as tmp:
+                    tmp.write(html_content)
+                    tmp_path = tmp.name
+
+                # AppleScript to create email draft with HTML content
+                # Make visible so user can verify formatting before sending
+                script = f'''
+                tell application "Mail"
+                    set htmlContent to read POSIX file "{tmp_path}" as «class utf8»
+                    set newMessage to make new outgoing message with properties {{subject:"{subject}", visible:true}}
+                    tell newMessage
+                        make new to recipient at end of to recipients with properties {{address:"{args.email}"}}
+                    end tell
+
+                    -- Set HTML content using a different approach
+                    tell newMessage
+                        set content to htmlContent
+                    end tell
+
+                    activate
+                end tell
+                '''
+
+                result = subprocess.run(
+                    ['osascript', '-e', script],
+                    capture_output=True,
+                    text=True,
+                    timeout=30
+                )
+
+                # Clean up temp file
+                import os
+                os.unlink(tmp_path)
+
                 if result.returncode == 0:
-                    print(f"✅ Email draft created in Mail.app")
+                    print(f"✅ Email draft created - please click Send in Mail.app to send")
+                    print(f"   Note: AppleScript HTML rendering has issues - click 'Format > Make Rich Text' first")
                 else:
                     print(f"⚠️  Could not create email: {result.stderr}")
             except Exception as e:

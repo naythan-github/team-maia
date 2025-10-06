@@ -84,6 +84,14 @@ class AutomationHealthMonitor:
                 "log_file": self.log_dir / "email_vtt_extractor.log",
                 "error_log": self.log_dir / "email_vtt_extractor.error.log",
                 "critical": False
+            },
+            "com.maia.weekly-backlog-review": {
+                "name": "Weekly Backlog Review",
+                "frequency": "weekly",
+                "expected_time": "Sunday 18:00",
+                "log_file": self.log_dir / "weekly_backlog_review.log",
+                "error_log": self.log_dir / "weekly_backlog_review.error.log",
+                "critical": False
             }
         }
 
