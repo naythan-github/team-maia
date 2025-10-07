@@ -89,8 +89,16 @@ class EmailRAGOllama:
 
     def index_inbox(self, limit: Optional[int] = None, force: bool = False) -> Dict[str, int]:
         """Index emails with Ollama embeddings"""
-        print("📧 Retrieving inbox messages...")
-        messages = self.mail_bridge.get_inbox_messages(limit=limit or 1000)
+        # If not forcing full index, only fetch recent emails (last 50)
+        # RAG will skip already-indexed emails automatically
+        if force:
+            fetch_limit = limit or 1000
+            print(f"📧 Retrieving inbox messages (full scan, limit={fetch_limit})...")
+        else:
+            fetch_limit = 50  # Only check last 50 emails for new ones (hourly runs)
+            print(f"📧 Retrieving last {fetch_limit} inbox messages for new emails...")
+
+        messages = self.mail_bridge.get_inbox_messages(limit=fetch_limit)
 
         stats = {"total": len(messages), "new": 0, "skipped": 0, "errors": 0}
 
@@ -182,6 +190,129 @@ class EmailRAGOllama:
             })
 
         return matches
+
+    def search_by_sender(
+        self,
+        sender_email: str,
+        n_results: Optional[int] = None,
+        date_filter: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Search emails by sender email address using metadata filtering (100% accuracy)
+
+        Args:
+            sender_email: Email address or partial match (e.g., "con.alexakis" or "con.alexakis@orro.group")
+            n_results: Max results (None = all matching emails)
+            date_filter: Optional date string to filter by (e.g., "7 October 2025")
+
+        Returns:
+            List of matching emails sorted by date (newest first)
+        """
+        from dateutil import parser as date_parser
+
+        # Get all emails and filter by sender
+        results = self.collection.get(include=['metadatas', 'documents'])
+
+        if not results['ids']:
+            return []
+
+        # Filter by sender
+        matching_emails = []
+        for i, metadata in enumerate(results['metadatas']):
+            sender = metadata.get('sender', '').lower()
+            if sender_email.lower() in sender:
+                # Optional date filter
+                if date_filter:
+                    if date_filter not in metadata.get('date', ''):
+                        continue
+
+                try:
+                    parsed_date = date_parser.parse(metadata.get('date', ''))
+                except Exception:
+                    parsed_date = datetime.min
+
+                matching_emails.append({
+                    'subject': metadata.get('subject', 'No subject'),
+                    'sender': metadata.get('sender', 'Unknown'),
+                    'date': metadata.get('date', 'Unknown'),
+                    'message_id': metadata.get('message_id', ''),
+                    'read': metadata.get('read', 'Unknown'),
+                    'content': results['documents'][i] if i < len(results['documents']) else '',
+                    '_sort_date': parsed_date
+                })
+
+        # Sort by date (newest first)
+        matching_emails.sort(key=lambda x: x['_sort_date'], reverse=True)
+
+        # Remove sort helper
+        for email in matching_emails:
+            del email['_sort_date']
+
+        # Apply limit
+        if n_results:
+            matching_emails = matching_emails[:n_results]
+
+        return matching_emails
+
+    def smart_search(
+        self,
+        query: str,
+        sender_filter: Optional[str] = None,
+        date_filter: Optional[str] = None,
+        n_results: int = 10
+    ) -> List[Dict[str, Any]]:
+        """
+        Hybrid search: metadata filtering + semantic search
+
+        Args:
+            query: Search query (e.g., "comms room audit")
+            sender_filter: Optional sender email/name filter
+            date_filter: Optional date string filter
+            n_results: Max results
+
+        Returns:
+            List of matching emails with relevance scores
+        """
+        from dateutil import parser as date_parser
+
+        # If only sender filter, use structured search
+        if sender_filter and not query:
+            return self.search_by_sender(sender_filter, n_results, date_filter)
+
+        # Get semantic search results
+        query_embedding = self._get_embedding(query)
+
+        # Get all results for filtering
+        results = self.collection.query(
+            query_embeddings=[query_embedding],
+            n_results=100  # Get more for filtering
+        )
+
+        matches = []
+        for i in range(len(results['ids'][0])):
+            metadata = results['metadatas'][0][i]
+
+            # Apply filters
+            if sender_filter:
+                sender = metadata.get('sender', '').lower()
+                if sender_filter.lower() not in sender:
+                    continue
+
+            if date_filter:
+                if date_filter not in metadata.get('date', ''):
+                    continue
+
+            matches.append({
+                'subject': metadata.get('subject', 'No subject'),
+                'sender': metadata.get('sender', 'Unknown'),
+                'date': metadata.get('date', 'Unknown'),
+                'message_id': metadata.get('message_id', ''),
+                'relevance': 1 - results['distances'][0][i],
+                'content': results['documents'][0][i]
+            })
+
+        # Return top N
+        return matches[:n_results]
 
     def get_recent_emails(self, n: int = 10) -> List[Dict[str, Any]]:
         """
