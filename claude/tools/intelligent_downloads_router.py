@@ -54,19 +54,16 @@ ROUTING_RULES = {
     "csv": {
         "destination": Path.home() / "Documents" / "Data",
         "action": "move",
-        "subfolder_by": "date",  # Create YYYY-MM subfolders
         "description": "CSV data exports"
     },
     "xlsx": {
         "destination": Path.home() / "Documents" / "Data",
         "action": "move",
-        "subfolder_by": "date",
         "description": "Excel spreadsheets"
     },
     "json": {
         "destination": Path.home() / "Documents" / "Data",
         "action": "move",
-        "subfolder_by": "date",
         "description": "JSON data files"
     },
 
@@ -74,13 +71,37 @@ ROUTING_RULES = {
     "pdf": {
         "destination": Path.home() / "Documents" / "PDFs",
         "action": "move",
-        "subfolder_by": "date",
         "description": "PDF documents"
+    },
+    "docx": {
+        "destination": Path.home() / "Documents" / "Word",
+        "action": "move",
+        "description": "Word documents"
+    },
+    "doc": {
+        "destination": Path.home() / "Documents" / "Word",
+        "action": "move",
+        "description": "Word documents (legacy)"
+    },
+    "pptx": {
+        "destination": Path.home() / "Documents" / "PowerPoint",
+        "action": "move",
+        "description": "PowerPoint presentations"
+    },
+    "ppt": {
+        "destination": Path.home() / "Documents" / "PowerPoint",
+        "action": "move",
+        "description": "PowerPoint presentations (legacy)"
     },
     "md": {
         "destination": Path.home() / "Documents" / "Markdown",
         "action": "move",
         "description": "Markdown documents"
+    },
+    "txt": {
+        "destination": Path.home() / "Documents" / "Text",
+        "action": "move",
+        "description": "Text files"
     },
 
     # Archives
@@ -239,6 +260,49 @@ class IntelligentDownloadsRouter(FileSystemEventHandler):
         logger.info(f"File download completed: {file_path.name}")
         self.route_file(file_path)
 
+    def _classify_document_content(self, file_path: Path) -> Optional[str]:
+        """
+        Classify document based on filename and content
+        Returns: content_type or None
+        """
+        filename = file_path.name.lower()
+
+        # CV/Resume detection patterns
+        cv_patterns = [
+            'cv', 'resume', 'curriculum vitae', 'talent pack',
+            'candidate profile', 'application'
+        ]
+
+        # Job description patterns
+        jd_patterns = [
+            'job description', 'jd ', 'position description',
+            'role description', 'job spec', 'job posting',
+            'engineer -', 'developer -', 'manager -', 'lead -',
+            'analyst -', 'consultant -', 'specialist -', 'architect -'
+        ]
+
+        # Invoice patterns
+        invoice_patterns = [
+            'invoice', 'receipt', 'bill', 'statement'
+        ]
+
+        # Contract patterns
+        contract_patterns = [
+            'contract', 'agreement', 'terms', 'policy', 'pol00'
+        ]
+
+        # Check filename first (fast)
+        if any(pattern in filename for pattern in cv_patterns):
+            return 'cv'
+        if any(pattern in filename for pattern in jd_patterns):
+            return 'job_description'
+        if any(pattern in filename for pattern in invoice_patterns):
+            return 'invoice'
+        if any(pattern in filename for pattern in contract_patterns):
+            return 'contract'
+
+        return None
+
     def route_file(self, file_path: Path):
         """Intelligently route file based on type and content"""
         try:
@@ -254,6 +318,44 @@ class IntelligentDownloadsRouter(FileSystemEventHandler):
 
             # Get file extension
             extension = file_path.suffix.lstrip('.').lower()
+
+            # Classify document content for intelligent routing
+            content_type = self._classify_document_content(file_path)
+
+            # Override routing based on content classification
+            if content_type and extension in ['pdf', 'docx', 'doc']:
+                if content_type == 'cv':
+                    # Route CVs to recruitment folder
+                    destination = Path.home() / "Documents" / "Recruitment" / "CVs"
+                    destination.mkdir(parents=True, exist_ok=True)
+                    self._move_file(file_path, destination / file_path.name, {
+                        'description': f'CV/Resume (auto-detected)'
+                    })
+                    return
+                elif content_type == 'job_description':
+                    # Route job descriptions to recruitment folder
+                    destination = Path.home() / "Documents" / "Recruitment" / "Job Descriptions"
+                    destination.mkdir(parents=True, exist_ok=True)
+                    self._move_file(file_path, destination / file_path.name, {
+                        'description': f'Job Description (auto-detected)'
+                    })
+                    return
+                elif content_type == 'invoice':
+                    # Route invoices to finance folder
+                    destination = Path.home() / "Documents" / "Finance" / "Invoices"
+                    destination.mkdir(parents=True, exist_ok=True)
+                    self._move_file(file_path, destination / file_path.name, {
+                        'description': f'Invoice (auto-detected)'
+                    })
+                    return
+                elif content_type == 'contract':
+                    # Route contracts to legal folder
+                    destination = Path.home() / "Documents" / "Legal" / "Contracts"
+                    destination.mkdir(parents=True, exist_ok=True)
+                    self._move_file(file_path, destination / file_path.name, {
+                        'description': f'Contract/Policy (auto-detected)'
+                    })
+                    return
 
             # Get routing rule
             rule = ROUTING_RULES.get(extension)
@@ -306,6 +408,15 @@ class IntelligentDownloadsRouter(FileSystemEventHandler):
     def _move_file(self, source: Path, destination: Path, rule: Dict):
         """Move file to destination"""
         try:
+            # Handle duplicates
+            if destination.exists():
+                counter = 1
+                stem = source.stem
+                suffix = source.suffix
+                while destination.exists():
+                    destination = destination.parent / f"{stem} ({counter}){suffix}"
+                    counter += 1
+
             logger.info(f"📦 Moving: {source.name} → {destination.parent.name}/{destination.name}")
             logger.info(f"   Reason: {rule['description']}")
 
@@ -346,8 +457,16 @@ def scan_existing_files(handler: IntelligentDownloadsRouter):
     """Scan Downloads for existing files and route them"""
     logger.info("🔍 Scanning Downloads for existing files...")
 
-    # Get all files in Downloads
-    all_files = [f for f in DOWNLOADS_DIR.iterdir() if f.is_file()]
+    # Get all files in Downloads (handle permission errors gracefully)
+    try:
+        all_files = [f for f in DOWNLOADS_DIR.iterdir() if f.is_file()]
+    except PermissionError:
+        logger.warning("⚠️ Permission denied accessing Downloads folder - skipping initial scan")
+        logger.info("Files will be processed when created/modified (LaunchAgent may need Full Disk Access)")
+        return
+    except Exception as e:
+        logger.error(f"Failed to scan Downloads: {e}")
+        return
 
     if not all_files:
         logger.info("No files found in Downloads")

@@ -64,6 +64,15 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 - **Local ML Execution**: 99.3% cost savings through local model training and inference with lightweight ML approach
 - **Real-Time Governance**: Continuous policy evaluation and adaptive updates based on violation history patterns
 
+### Service Desk Manager Agent ⭐ **NEW - PHASE 95 ESCALATION & ROOT CAUSE ANALYSIS**
+**Location**: `claude/agents/service_desk_manager_agent.md`
+- **Purpose**: Operational Service Desk Manager for Orro, designed to rapidly analyze customer complaints, identify root causes, detect escalation patterns, and provide actionable recommendations for service improvement
+- **Specialties**: Customer complaint management, escalation intelligence, root cause analysis (5-Whys), workflow bottleneck detection, process efficiency optimization, staff performance analysis, predictive escalation modeling
+- **Key Commands**: analyze_customer_complaints, analyze_escalation_patterns, detect_workflow_bottlenecks, run_root_cause_analysis, predict_escalation_risk, generate_improvement_roadmap, urgent_escalation_triage, complaint_recovery_plan
+- **Integration**: Escalation Intelligence FOB (handoff analysis, trigger detection, prediction), Core Analytics FOB (ticket metrics, SLA tracking), Temporal Analytics FOB (time patterns), Client Intelligence FOB (account analysis), SRE/SOE/Azure agents (technical escalations)
+- **Escalation Framework**: Risk scoring (0-100), severity classification (P1-P4), efficiency scoring (0-100 with A-F grades), 5-step complaint resolution process
+- **Value Proposition**: <15min complaint response, <1hr root cause analysis, >90% customer recovery, 15% escalation rate reduction, 25% resolution time improvement, 15-20% team productivity gains
+
 ### Technical Recruitment Agent ⭐ **NEW - PHASE 94 MSP/CLOUD TECHNICAL HIRING**
 **Location**: `claude/agents/technical_recruitment_agent.md`
 - **Purpose**: AI-augmented recruitment specialist for Orro MSP/Cloud technical roles, designed to rapidly screen and evaluate candidates across cloud infrastructure, endpoint management, networking, and modern workplace specializations

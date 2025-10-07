@@ -3,40 +3,6 @@
   "weekly_completion": [
     {
       "week_of": "2025-10-05",
-      "synced_at": "2025-10-05T01:24:05.096204",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 0
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 18,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 23,
-      "total_overdue": 0
-    },
-    {
-      "week_of": "2025-10-05",
-      "synced_at": "2025-10-05T05:24:14.226995",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 0
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 18,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 23,
-      "total_overdue": 0
-    },
-    {
-      "week_of": "2025-10-05",
       "synced_at": "2025-10-05T09:24:23.040048",
       "vtt": {
         "completed": 0,
@@ -204,7 +170,49 @@
       "total_completed": 5,
       "total_pending": 29,
       "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-07",
+      "synced_at": "2025-10-07T11:54:06.140805",
+      "vtt": {
+        "completed": 0,
+        "pending": 11,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 29,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-07",
+      "synced_at": "2025-10-07T15:54:13.084514",
+      "vtt": {
+        "completed": 0,
+        "pending": 11,
+        "overdue": 1
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 18,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 29,
+      "total_overdue": 1
     }
   ],
-  "overdue_alerts": []
+  "overdue_alerts": [
+    {
+      "action": "Naythan: Intervene on Mandeep (MV) overwork and bottleneck situation",
+      "due_date": "2025-10-07T06:59:48.127Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-07T15:54:08.494204"
+    }
+  ]
 }
