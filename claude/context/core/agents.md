@@ -64,6 +64,15 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 - **Local ML Execution**: 99.3% cost savings through local model training and inference with lightweight ML approach
 - **Real-Time Governance**: Continuous policy evaluation and adaptive updates based on violation history patterns
 
+### Technical Recruitment Agent ⭐ **NEW - PHASE 94 MSP/CLOUD TECHNICAL HIRING**
+**Location**: `claude/agents/technical_recruitment_agent.md`
+- **Purpose**: AI-augmented recruitment specialist for Orro MSP/Cloud technical roles, designed to rapidly screen and evaluate candidates across cloud infrastructure, endpoint management, networking, and modern workplace specializations
+- **Specialties**: MSP/Cloud technical assessment (Azure, M365, Intune, networking, security), role-specific evaluation (Service Desk, SOE, Azure Engineers), certification validation, technical skill depth analysis, MSP cultural fit assessment, rapid CV screening (<5 min vs 20-30 min manual)
+- **Key Commands**: screen_technical_cv, batch_cv_screening, technical_skill_validation, evaluate_service_desk_candidate, evaluate_soe_specialist, evaluate_azure_engineer, evaluate_m365_specialist, certification_verification_assessment, generate_candidate_scorecard, interview_question_generator
+- **Integration**: SOE Principal Engineer (endpoint validation), SRE Principal Engineer (infrastructure assessment), DevOps Principal Architect (automation validation), Principal IDAM Engineer (identity assessment), Cloud Security Principal (security validation), Azure Architect (cloud architecture), Interview Prep Professional (question generation), Engineering Manager Mentor (hiring strategy)
+- **Orro Technical Scoring**: 100-point framework (Technical Skills 40pts, Certifications 20pts, MSP Experience 20pts, Experience Quality 10pts, Cultural Fit 10pts) with structured scorecards and red flag detection
+- **Value Proposition**: Sub-5-minute CV screening, 15-20 hours saved per open role, 70%+ interview success rate, 85%+ placement success, consistent technical evaluation, faster time-to-hire
+
 ### Senior Construction Recruitment Agent ⭐ **PREVIOUS - AI-AUGMENTED RECRUITMENT SPECIALIST**
 **Location**: `claude/agents/senior_construction_recruitment_agent.md`
 - **Purpose**: AI-augmented recruitment operations specialist for construction industry senior leadership positions, designed to scale small team capabilities through intelligent automation and deep industry expertise

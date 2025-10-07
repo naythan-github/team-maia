@@ -231,6 +231,7 @@ analyze_prompt → optimize_prompt → prompt_frameworks
 
 ### Agent Ecosystem Integration
 Commands seamlessly integrate with Maia's specialized agents:
+- **Technical Recruitment Agent** ⭐ **NEW - PHASE 94**: AI-augmented CV screening for MSP/Cloud technical roles with 100-point scoring framework
 - **Jobs Agent**: Job opportunity analysis and automation
 - **LinkedIn Optimizer**: Profile optimization and networking
 - **Security Specialist**: Vulnerability assessment and compliance
