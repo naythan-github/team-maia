@@ -1,0 +1,146 @@
+{
+  "processed": [
+    "/Users/naythandawe/Downloads/Install Wavebox 10.140.38.2.dmg",
+    "/Users/naythandawe/Downloads/unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/maia_comprehensive_manual_20251001_092749.tar.gz",
+    "/Users/naythandawe/Downloads/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+    "/Users/naythandawe/Downloads/final_reviewed_unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/final_unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/Invoice-FYZ5VQI5-0006.pdf",
+    "/Users/naythandawe/Downloads/JabraDirectSetup.dmg",
+    "/Users/naythandawe/Downloads/GS1 - Orro Onboarding - 21.2.25.xlsx",
+    "/Users/naythandawe/Downloads/general_unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/Network_Tickets_Analysis_Report.html",
+    "/Users/naythandawe/Downloads/linkedin_dashboard_demo.md",
+    "/Users/naythandawe/Downloads/Taylor Barkle - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+    "/Users/naythandawe/Downloads/.DS_Store",
+    "/Users/naythandawe/Downloads/Vikrant Slathia - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+    "/Users/naythandawe/Downloads/wavebox_export_1_10_2025_18_11.json",
+    "/Users/naythandawe/Downloads/setup_downloader.dmg",
+    "/Users/naythandawe/Downloads/offboarding.xlsx",
+    "/Users/naythandawe/Downloads/Intune_Customers.xlsx",
+    "/Users/naythandawe/Downloads/POL005 Orro BYOD Security Requirements Policy V3.0.pdf"
+  ],
+  "history": [
+    {
+      "file": "/Users/naythandawe/Downloads/JabraDirectSetup.dmg",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/JabraDirectSetup.dmg",
+      "timestamp": "2025-10-07T11:11:39.931372"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/final_unique_descriptions.csv",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/final_unique_descriptions.csv",
+      "timestamp": "2025-10-07T11:11:39.931766"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/unique_descriptions.csv",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/unique_descriptions.csv",
+      "timestamp": "2025-10-07T11:11:40.005857"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Network_Tickets_Analysis_Report.html",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Network_Tickets_Analysis_Report.html",
+      "timestamp": "2025-10-07T11:11:40.067965"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Taylor Barkle - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/PDFs/2025-10/Taylor Barkle - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+      "timestamp": "2025-10-07T11:11:40.068545"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/maia_comprehensive_manual_20251001_092749.tar.gz",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Archives/maia_comprehensive_manual_20251001_092749.tar.gz",
+      "timestamp": "2025-10-07T11:11:40.133712"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/.DS_Store",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/.DS_Store",
+      "timestamp": "2025-10-07T11:11:40.205152"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/general_unique_descriptions.csv",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/general_unique_descriptions.csv",
+      "timestamp": "2025-10-07T11:11:40.205689"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/offboarding.xlsx",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/offboarding.xlsx",
+      "timestamp": "2025-10-07T11:11:40.277160"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Intune_Customers.xlsx",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/Intune_Customers.xlsx",
+      "timestamp": "2025-10-07T11:11:40.348514"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Invoice-FYZ5VQI5-0006.pdf",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/PDFs/2025-10/Invoice-FYZ5VQI5-0006.pdf",
+      "timestamp": "2025-10-07T11:11:40.416927"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/setup_downloader.dmg",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/setup_downloader.dmg",
+      "timestamp": "2025-10-07T11:11:40.487751"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Install Wavebox 10.140.38.2.dmg",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Install Wavebox 10.140.38.2.dmg",
+      "timestamp": "2025-10-07T11:11:40.488110"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/wavebox_export_1_10_2025_18_11.json",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/wavebox_export_1_10_2025_18_11.json",
+      "timestamp": "2025-10-07T11:11:40.489039"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/linkedin_dashboard_demo.md",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Markdown/linkedin_dashboard_demo.md",
+      "timestamp": "2025-10-07T11:11:40.560650"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/GS1 - Orro Onboarding - 21.2.25.xlsx",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/GS1 - Orro Onboarding - 21.2.25.xlsx",
+      "timestamp": "2025-10-07T11:11:40.632905"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/final_reviewed_unique_descriptions.csv",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/Data/2025-10/final_reviewed_unique_descriptions.csv",
+      "timestamp": "2025-10-07T11:11:40.718764"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/PDFs/2025-10/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+      "timestamp": "2025-10-07T11:11:40.828959"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/POL005 Orro BYOD Security Requirements Policy V3.0.pdf",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/PDFs/2025-10/POL005 Orro BYOD Security Requirements Policy V3.0.pdf",
+      "timestamp": "2025-10-07T11:11:40.912628"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Vikrant Slathia - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+      "action": "move",
+      "destination": "/Users/naythandawe/Documents/PDFs/2025-10/Vikrant Slathia - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+      "timestamp": "2025-10-07T11:11:41.001980"
+    }
+  ]
+}

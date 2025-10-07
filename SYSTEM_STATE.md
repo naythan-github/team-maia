@@ -1,8 +1,8 @@
 # Maia System State Summary
 
 **Last Updated**: 2025-10-07
-**Session Context**: ServiceDesk Comments Table Export Request
-**System Version**: Phase 92 - ServiceDesk Analytics Enhancement - Comments Table Request
+**Session Context**: Orro Cloud Billing P&L Categorization
+**System Version**: Phase 93 - Cloud Billing P&L Categorization - Business Unit Separation
 
 ## 📚 Accessing Historical Information
 
@@ -47,7 +47,114 @@ results = rag.semantic_search("email integration", n_results=5)
 
 ## 🎯 Current Session Overview
 
-### **✅ ServiceDesk Comments Table Export Request Submitted** ⭐ **CURRENT SESSION - PHASE 92**
+### **✅ Cloud Billing P&L Categorization - Business Unit Separation** ⭐ **CURRENT SESSION - PHASE 93**
+
+**Achievement**: Successfully categorized 645 unique cloud billing services into 8 distinct P&L lines, eliminating separate Managed Services category and integrating support into Cloud/Networks/Collaboration
+
+**Business Context**: Orro separating traditional voice/calling services from cloud infrastructure for accurate P&L reporting and margin analysis by business unit
+
+**Problem Solved**: Cloud practice billing included Networks (internet, equipment) and Collaboration (calling, meeting rooms) services requiring separate P&L tracking for business unit performance
+
+**Solution Delivered**:
+
+1. **P&L Categorization System** (645 services → 8 P&L lines)
+   - **Cloud P&L (60.8%)**: 392 services
+     - Azure infrastructure (149): VMs, storage, databases
+     - M365/Productivity SaaS (105): E1/E3/E5, Exchange, Power Platform
+     - Security & Compliance (28): Defender, Entra ID, Intune
+     - User/Device/Server Support (110): Modern workplace support integrated
+
+   - **Networks P&L (18.3%)**: 118 services
+     - Internet connectivity (93): 25Mbps → 1000Mbps, NBN, Fibre
+     - Network equipment (5): Meraki, Cisco, switches, routers
+     - Wireless solutions: UniFi controllers, access points
+     - Network support (1): Router/firewall management
+
+   - **Collaboration P&L (9.3%)**: 60 services
+     - 3CX phone systems (20): Hosting, maintenance, licensing
+     - SIP trunking (8): Voice trunk services
+     - Phone numbers (7): DID numbers, 1300 numbers
+     - Teams Phone/Rooms (15): Meeting room systems, calling
+     - Call usage charges (10): Inbound/outbound billing
+
+   - **Other P&L Lines (11.7%)**: 75 services
+     - Hosting (27): Web hosting, DNS, number hosting
+     - Software & Tools (22): Adobe, Dropbox, applications
+     - Usage & Billing (14): Shipping, charges, invoices
+     - Professional Services (7): Project-based delivery
+     - Hardware (5): Equipment purchases
+
+2. **Managed Services Elimination** (Strategic Decision)
+   - **No separate Managed Services P&L** per Engineering Manager guidance
+   - **Reclassified 112 services** into Cloud/Networks/Collaboration:
+     - 110 → Cloud: User support, devices, servers, printers (modern workplace)
+     - 1 → Networks: Router support
+     - 1 → Collaboration: Phone user management
+
+   - **Business Logic**: Support services are delivery mechanisms for cloud/network/voice value, not standalone P&L lines
+
+3. **Categorization Intelligence**
+   - **Pattern-based classification**: Service descriptions, Level 1/2 categories
+   - **Business rule engine**: 15+ category-specific rules
+   - **Modern workplace model**: End-user support integral to cloud delivery
+   - **100% coverage**: Zero manual review items, all 645 services categorized
+
+**Key Business Separations Achieved**:
+
+**Cloud P&L** - Modern cloud consumption + support:
+- Azure consumption (compute, storage, networking)
+- Microsoft 365 SaaS ecosystem
+- Security & compliance tools
+- End-user support (modern workplace enablement)
+- Device management (Intune, cloud-managed endpoints)
+- Server support (hybrid cloud infrastructure)
+
+**Networks P&L** - Connectivity infrastructure:
+- Internet circuits (all speeds)
+- Network equipment (switches, routers, wireless)
+- Network support and management
+- WAN services, backup connections
+
+**Collaboration P&L** - Traditional UC/calling:
+- Legacy phone systems (3CX)
+- SIP trunking and voice services
+- Meeting room technology (Teams Rooms Pro)
+- Call centre/contact centre services
+- Phone number management
+
+**Business Value Delivered**:
+- ✅ **Accurate margin analysis** by service type (Cloud vs Networks vs Collaboration)
+- ✅ **Strategic pricing decisions** per P&L line with proper cost allocation
+- ✅ **Business unit performance** tracking aligned to modern MSP model
+- ✅ **Financial reporting** ready for P&L analysis and forecasting
+- ✅ **Support cost attribution** properly allocated to revenue-generating services
+
+**Technical Approach**:
+- Python pandas for data transformation
+- Pattern matching with regex for service categorization
+- Business rule engine with confidence scoring
+- Excel output with populated P&L column
+
+**Files Modified**:
+- `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Billing/cloud-billing_with_PL.xlsx` (645 services with P&L assignments)
+
+**Mentor Agent Guidance**:
+- Engineering Manager (Cloud) Mentor Agent provided strategic consultation
+- Modern workplace model: Support integrated into cloud delivery
+- MSP business unit separation: Cloud + Networks + Collaboration
+- P&L structure aligned to service delivery model
+
+**Output Schema**:
+- Column A: Unique Shortened Description
+- Column B: Level_1_Category
+- Column C: Level_2_Category
+- Column D: **P&L** (NEW - 8 distinct values)
+
+**Result**: ✅ Production-ready P&L categorization enabling accurate business unit financial reporting and margin analysis
+
+---
+
+### **✅ ServiceDesk Comments Table Export Request Submitted** ⭐ **PHASE 92**
 
 **Achievement**: Submitted comprehensive ServiceDesk comments table export request to unlock First Call Resolution (FCR) tracking and performance analytics capabilities
 
