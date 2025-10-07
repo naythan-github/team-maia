@@ -267,21 +267,28 @@ class VTTIntelligenceProcessor:
 
         trello_cards = []
         for action in actions:
-            # Get source file from action metadata
-            source_file = action.get('source_file', 'Unknown')
-            meeting_name = Path(source_file).stem.replace('_summary', '') if source_file != 'Unknown' else 'Unknown'
+            # Get source meeting name from action
+            meeting_name = action.get('source', 'Unknown')
+
+            # Look up source file from meetings dict
+            source_file = 'Unknown'
+            if meeting_name in self.intelligence['meetings']:
+                source_file = self.intelligence['meetings'][meeting_name]['file']
+
+            # Format meeting name for display
+            display_name = meeting_name.replace('_', ' ')
 
             # Create enhanced description with source link
             desc = f"""**Owner**: {action['owner']}
 **Deadline**: {action['deadline']}
-**Source Meeting**: {meeting_name}
+**Source Meeting**: {display_name}
 **Source File**: `{source_file}`
 **Created**: {action['created_at']}
 
 ---
 📄 **Source Context**: Check the source file above for full meeting context, decisions, and related action items.
 
-🔍 **Ask Maia**: "What was discussed in {meeting_name}?" or "Show me context for this action"
+🔍 **Ask Maia**: "What was discussed in {display_name}?" or "Show me context for this action"
 """
 
             trello_cards.append({

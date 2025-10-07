@@ -33,7 +33,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration
-VTT_WATCH_DIR = Path("/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT")
+VTT_WATCH_DIR = Path.home() / "Documents" / "VTT"
 SUMMARY_OUTPUT_DIR = Path.home() / "git" / "maia" / "claude" / "data" / "transcript_summaries"
 PROCESSED_TRACKER = Path.home() / "git" / "maia" / "claude" / "data" / "vtt_processed.json"
 

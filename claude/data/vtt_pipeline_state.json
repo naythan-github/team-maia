@@ -1,0 +1,44 @@
+{
+  "processed_summaries": {
+    "Catch-up part 2 _-)_summary": {
+      "summary_file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Catch-up part 2 _-)_summary.md",
+      "timestamp": 1759756087.1835427,
+      "steps": {
+        "intelligence": {
+          "status": "success",
+          "action_items": 0,
+          "decisions": 0,
+          "contacts": 0
+        },
+        "trello": {
+          "status": "error",
+          "error": "List 'Action Items' not found in board"
+        },
+        "rag": {
+          "status": "indexed",
+          "doc_id": "a84f7156f5345efc3eec9dea6c05a62f"
+        }
+      }
+    },
+    "Intune, Dicker, AWA (1)_summary": {
+      "summary_file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Intune, Dicker, AWA (1)_summary.md",
+      "timestamp": 1759756466.9592733,
+      "steps": {
+        "intelligence": {
+          "status": "success",
+          "action_items": 0,
+          "decisions": 0,
+          "contacts": 0
+        },
+        "trello": {
+          "status": "error",
+          "error": "List 'Action Items' not found in board"
+        },
+        "rag": {
+          "status": "indexed",
+          "doc_id": "06d0773641cc95a8bff7817c1fdb633d"
+        }
+      }
+    }
+  }
+}

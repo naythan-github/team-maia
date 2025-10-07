@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 # Configuration
 DOWNLOADS_DIR = Path.home() / "Downloads"
-VTT_DESTINATION = Path.home() / "Library" / "CloudStorage" / "OneDrive-ORROPTYLTD" / "Documents" / "1-VTT"
+VTT_DESTINATION = Path.home() / "Documents" / "VTT"
 MOVED_TRACKER = Path.home() / "git" / "maia" / "claude" / "data" / "vtt_moved.json"
 
 # Ensure destination exists

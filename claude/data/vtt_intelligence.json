@@ -57,9 +57,10 @@
             "owner": "Naythan",
             "action": "Meeting with Richard to discuss out-of-scope work systemic issues",
             "deadline": "Scheduled",
-            "status": "pending",
+            "status": "completed",
             "created_at": "2025-10-03T19:22:47.164617",
-            "source": "vtt_summary"
+            "source": "vtt_summary",
+            "completed_at": "2025-10-07T07:53:54.424085"
           },
           {
             "owner": "Naythan",
@@ -160,6 +161,483 @@
         ],
         "summary_text": "This meeting addressed critical vendor coordination and revenue leakage issues around field services and device provisioning. The team agreed to establish Shredex for e-waste with cost-plus pricing, transition to outsourced field services via AWA to improve billing and ticket hygiene, and set clear boundaries with SDMs who pressure engineers to perform out-of-scope work. A customer Intune deployment audit is underway to support Dicker Data vendor negotiations, though major Intune onboarding projects are deferred until the pod structure is established due to their complexity and cost ($50K-$500K per customer)."
       }
+    },
+    "Catch-up part 2 _-)_summary": {
+      "file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Catch-up part 2 _-)_summary.md",
+      "processed_at": "2025-10-06T21:08:08.042512",
+      "results": {
+        "action_items": [],
+        "decisions": [],
+        "contacts": [],
+        "meetings_mentioned": [],
+        "summary_text": ""
+      }
+    },
+    "Intune, Dicker, AWA (1)_summary": {
+      "file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Intune, Dicker, AWA (1)_summary.md",
+      "processed_at": "2025-10-06T21:14:27.255806",
+      "results": {
+        "action_items": [],
+        "decisions": [],
+        "contacts": [],
+        "meetings_mentioned": [
+          {
+            "reference": "Wednesday meeting Wednesday",
+            "extracted_at": "2025-10-06T21:14:27.253135"
+          },
+          {
+            "reference": "fortnightly meeting",
+            "extracted_at": "2025-10-06T21:14:27.253389"
+          },
+          {
+            "reference": "meeting with the",
+            "extracted_at": "2025-10-06T21:14:27.255370"
+          },
+          {
+            "reference": "meeting with Richard",
+            "extracted_at": "2025-10-06T21:14:27.255374"
+          },
+          {
+            "reference": "meeting with you",
+            "extracted_at": "2025-10-06T21:14:27.255456"
+          }
+        ],
+        "summary_text": ""
+      }
+    },
+    "Weekly_Cloud_Leadership_Meeting_1_summary": {
+      "file": "claude/data/transcript_summaries/Weekly_Cloud_Leadership_Meeting_1_summary.md",
+      "processed_at": "2025-10-07T06:39:38.547282",
+      "processor": "claude_sonnet_4.5",
+      "results": {
+        "action_items": [],
+        "decisions": [],
+        "contacts": [],
+        "summary_text": ""
+      }
+    },
+    "Weekly_Cloud_Leadership_Meeting_2_summary": {
+      "file": "claude/data/transcript_summaries/Weekly_Cloud_Leadership_Meeting_2_summary.md",
+      "processed_at": "2025-10-07T06:39:38.547282",
+      "processor": "claude_sonnet_4.5",
+      "results": {
+        "action_items": [
+          {
+            "owner": "Naythan (with Jeff intro)",
+            "action": "Naythan: Get access enablement for OTC change management dashboard",
+            "deadline": "This week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547711",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Naythan + Marielle",
+            "action": "Naythan + Marielle: Review NSG cost tagging for pricing negotiation",
+            "deadline": "Today (directly after meeting)",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547715",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Naythan: Present change ticket enforcement policy to team",
+            "deadline": "Thursday (tomorrow)",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547718",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Robie (coordination), Jess (quotes), Marielle (forecasting)",
+            "action": "Robie + Jess + Marielle: Reconcile unbilled odd jobs list",
+            "deadline": "Next week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547720",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Naythan (ownership transfer from Hamish/Richard)",
+            "action": "Hamish + Naythan + Robie: Establish weekly PPM resource allocation cadence",
+            "deadline": "Start Monday",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547723",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Naythan: Set up regular cadence with portfolio team for OTC portal replatforming",
+            "deadline": "This week",
+            "status": "completed",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547726",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet",
+            "completed_at": "2025-10-07T07:53:51.662079"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Naythan: Meet with SDMs tomorrow, then Richard Friday, then establish workflow",
+            "deadline": "Complete by Monday",
+            "status": "completed",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547729",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet",
+            "completed_at": "2025-10-07T07:53:57.136405"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Naythan: Understand MV team workload and provide coverage/sorting",
+            "deadline": "Ongoing",
+            "status": "completed",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547735",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet",
+            "completed_at": "2025-10-07T07:53:53.103095"
+          },
+          {
+            "owner": "Marielle",
+            "action": "Marielle: Present September actuals at next meeting",
+            "deadline": "Next week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547737",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Marielle + Finance",
+            "action": "Marielle + Finance Team: Finalize FY25 forecast with operational model changes",
+            "deadline": "Next week (after immediate forecast process)",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547739",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish (lead), Dillon, Stu",
+            "action": "Hamish + Dillon + Stu: Reprice cloud offerings based on pod model decomposition",
+            "deadline": "Late October/November",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547742",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish",
+            "action": "Hamish: Hold 3CX to Teams migration planning meeting with Dion post-leave",
+            "deadline": "When Dion returns from leave",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547745",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Team (Hamish coordination)",
+            "action": "Team: Track GS1 onboarding completion target",
+            "deadline": "October 17",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.547749",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          }
+        ],
+        "decisions": [
+          {
+            "title": "Budget Will Go Red During Operating Model Transition",
+            "description": "Context: Parallel running old/new models, NSG revenue migration out, headcount changes\n   - **Rationale**: Gavin support secured, necessary to root cause pricing issues vs bundled subsidies\n   - **Impact**: Intentional short-term loss for long-term pricing accuracy",
+            "decision_maker": "Hamish",
+            "decided_at": "2025-10-07T06:39:38.547868",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Decompose Budget by Product Lines by EOY",
+            "description": "Products: Secure Workspace, Cloud, Hybrid\n   - **Rationale**: Attribute costs/revenue to products, enable product-specific margins, guide sellers with confidence\n   - **Timeline**: Complete decomposition by end of year for FY26 sales kickoff",
+            "decision_maker": "Hamish",
+            "decided_at": "2025-10-07T06:39:38.547870",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "No New Hires Until Pipeline Materializes",
+            "description": "Context: Dillon/Peter doing pre-sales (45% billable target), insufficient consultancy/roadmap work won\n   - **Status**: 3 new resources considered in budget (Nov+), but on hold\n   - **Trigger**: Win more consultancy work to justify adding capacity",
+            "decision_maker": "Hamish",
+            "decided_at": "2025-10-07T06:39:38.547872",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Transfer Resource Allocation Ownership to Naythan",
+            "description": "From: Hamish (too busy with escalations) / Richard (covering gap)\n   - **To**: Naythan + Robie (weekly cadence)\n   - **Rationale**: Cannot live with Hamish, needs operational owner with headspace",
+            "decision_maker": "Hamish",
+            "decided_at": "2025-10-07T06:39:38.547873",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Work Instruction Approach for Change Ticket Enforcement",
+            "description": "Context: Technical enforcement not possible in OTC\n   - **Method**: Policy communication, training, not system control",
+            "decision_maker": "Naythan",
+            "decided_at": "2025-10-07T06:39:38.547875",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Consider Contractor Use Until Pipeline Grows",
+            "description": "Context: Using Ploy and others to fill gaps without committing to full hire\n   - **Condition**: Until PS pipeline supports permanent headcount\n\n---",
+            "decision_maker": "Hamish, implicit",
+            "decided_at": "2025-10-07T06:39:38.547877",
+            "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+            "source_type": "vtt_claude_sonnet"
+          }
+        ],
+        "contacts": [
+          "Hamish Ridland",
+          "Stu",
+          "Dion",
+          "Jess",
+          "Peter Mustow",
+          "Dillon Loos",
+          "Marielle Boral",
+          "Robie Brown",
+          "Naythan Dawe",
+          "Gavin",
+          "Richard",
+          "Jeff"
+        ],
+        "summary_text": "Strategic budget review and operational transformation planning session. Leadership acknowledges intentional budget variance during operating model transition from network-heavy bundled services to decomposed cloud product lines. Critical process gaps identified in billable time tracking and resource allocation workflows.\n\n---"
+      }
+    },
+    "Weekly_Cloud_Leadership_Meeting_summary": {
+      "file": "claude/data/transcript_summaries/Weekly_Cloud_Leadership_Meeting_summary.md",
+      "processed_at": "2025-10-07T06:39:38.547282",
+      "processor": "claude_sonnet_4.5",
+      "results": {
+        "action_items": [
+          {
+            "owner": "Naythan (lead), Hamish (strategy), Nigel (execution)",
+            "action": "Naythan + Hamish + Nigel: Align on hiring strategy and timelines THIS WEEK",
+            "deadline": "This week (Tuesday-Wednesday)",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548084",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Naythan (process owner)",
+            "action": "Naythan + Dillon + Gina (OTC): Design new change management process",
+            "deadline": "This week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548088",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Naythan",
+            "action": "Naythan: Intervene on Mandeep (MV) overwork and bottleneck situation",
+            "deadline": "Immediate (potentially Melbourne trip, not yet booked)",
+            "status": "completed",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548093",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet",
+            "completed_at": "2025-10-07T07:53:55.769545"
+          },
+          {
+            "owner": "Hamish (lead)",
+            "action": "Hamish + Naythan + JP + Marielle: Pipeline hygiene grooming session",
+            "deadline": "This week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548098",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish",
+            "action": "Hamish: Get Alex to provide SGS training/enablement",
+            "deadline": "This week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548102",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish (lead), Naythan (timelines), Marielle (budget impact)",
+            "action": "Hamish + Naythan + Marielle: Forecast parallel operating structure costs",
+            "deadline": "Next week or two",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548105",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish",
+            "action": "Hamish: Add Philippines patching team member role to pipeline",
+            "deadline": "This week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548108",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish",
+            "action": "Hamish + Naythan: Design Jessica's pre-sales stand-up coordination role",
+            "deadline": "This week",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548111",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Marielle",
+            "action": "Marielle: Present full budget walkthrough to leadership team next week",
+            "deadline": "Next week's leadership meeting",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548114",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Marielle",
+            "action": "Marielle: Coordinate with Sarah on personnel cost changes from \"what group\"",
+            "deadline": "Before next budget presentation",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548117",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish (coordination)",
+            "action": "Hamish + Dillon + Peter + Naythan: Establish new project hire for Secure Workspace Principal",
+            "deadline": "Starting Monday (engineeringmanager)",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548120",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Hamish (initiator/champion)",
+            "action": "Hamish + Team + Gavin + Leadership: Resolve helpdesk strategy and BU structure",
+            "deadline": "Next week (discussion scheduled)",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548122",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "owner": "Robbie (Philippines project coordinator) + Jess (quotes)",
+            "action": "Team + Marielle: Backlog invoicing reconciliation (Robbie + Jess working through)",
+            "deadline": "Ongoing (first month closed, retrospective items flowing)",
+            "status": "pending",
+            "priority": "P0",
+            "created_at": "2025-10-07T06:39:38.548129",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          }
+        ],
+        "decisions": [
+          {
+            "title": "Establish Weekly Leadership Meeting Cadence",
+            "description": "Format: Projects/ops issues, HR (Kristy join), Finance (Marielle join)\n   - **Goal**: No more multiple emails, coordinate hiring/costs/project impacts in one room\n   - **Participants**: Hamish, Naythan, Dillon, Peter, + 3rd Principal when hired, Marielle, (Kristy)\n   - **Purpose**: Level set, resilient teams vs point people, visibility",
+            "decision_maker": "Hamish",
+            "decided_at": "2025-10-07T06:39:38.548171",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "PNL Decomposition by Products",
+            "description": "Products: Secure Workspace, Cloud, Hybrid\n   - **Rationale**: \"Talk same language\", traceability from balance sheet \u2192 service catalogue\n   - **Timeline**: In progress, Safina working on it, Hamish handing to Marielle/Sarah\n   - **Impact**: Product-aligned financials matching product-aligned principals",
+            "decision_maker": "Hamish \u2192 Marielle/Sarah handover",
+            "decided_at": "2025-10-07T06:39:38.548173",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Change Management Priority #1 Operational Intervention",
+            "description": "Rationale: Ampac 10-day P1 from self-inflicted vnet mistake, ITIL maturity 2/10, creating overwork \u2192 mistakes cycle\n   - **Approach**: Understand OTC capabilities, workshop new process, enforce/educate\n   - **Quote**: \"What if we just stop changing things as quickly and as rapidly?\" - Naythan (Day 1 observation)\n   - **Expected**: Will reduce MV overload, prevent shooting selves in foot",
+            "decision_maker": "Naythan + Hamish agreement",
+            "decided_at": "2025-10-07T06:39:38.548175",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Move Mandeep (MV) from BAU to Consulting",
+            "description": "Context: MV wants to be consultant but won't let go of BAU \u2192 overworked + bottleneck\n   - **Forcing Function**: \"Forcing function for others to step up\" - if MV gone, team must empower\n   - **Approach**: Naythan to help transition, empower team for end-to-end ownership without approval gates\n   - **Timeline**: Immediate intervention needed (health + quality impacts visible)",
+            "decision_maker": "Hamish, with team support",
+            "decided_at": "2025-10-07T06:39:38.548177",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Budget Will Go Red with Parallel Structure",
+            "description": "Context: Hiring new roles (principals, engineers, etc.) while old structure still operational\n   - **Board**: Q1 approved, full year pending AI/strategic narrative revisions\n   - **Status**: Budget \"not formally endorsed\", \"numbers still fluid\", \"feels like US Congress supply situation\"\n   - **Communication**: Gavin managing board expectations, team to be level set next week",
+            "decision_maker": "Hamish, Gavin aware",
+            "decided_at": "2025-10-07T06:39:38.548179",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Earned Value Revenue Recognition for Projects",
+            "description": "Method: Percentage of completion based on project manager OTC inputs\n   - **Example**: $100K project 50% complete \u2192 recognize $50K revenue\n   - **Context**: Peter asking about when revenue counted (answer: not at final payment, but progressive)",
+            "decision_maker": "Marielle + Hamish clarification",
+            "decided_at": "2025-10-07T06:39:38.548180",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          },
+          {
+            "title": "Helpdesk as Separate Tower/BU",
+            "description": "Status: \"Everyone agreed we need to think about this\"\n   - **Problem**: Can't tender competitively without helpdesk pre-sales capability\n   - **Option**: Create helpdesk services BU with dedicated pre-sales, pricing models, volume metrics\n   - **Benefit**: Stop treating as cost, start selling competitively\n   - **Challenge**: Cloud team doesn't have expertise (Dillon/Hamish acknowledged)\n   - **Timeline**: Discussion next week with Gavin + leadership\n\n---",
+            "decision_maker": "Hamish proposal, leadership discussion next week",
+            "decided_at": "2025-10-07T06:39:38.548182",
+            "source": "Weekly_Cloud_Leadership_Meeting_summary",
+            "source_type": "vtt_claude_sonnet"
+          }
+        ],
+        "contacts": [
+          "Hamish Ridland",
+          "Jessica",
+          "Llewellyn",
+          "Key Individual Contributors",
+          "Nigel",
+          "Kristy",
+          "Peter Mustow",
+          "Marielle Boral",
+          "Dillon Loos",
+          "Gina",
+          "Russell",
+          "Naythan Dawe",
+          "Sarah",
+          "Gavin",
+          "Alex"
+        ],
+        "summary_text": "First formal leadership team meeting establishing regular cadence with Finance (Marielle) integration. Critical operational issues identified: ITIL maturity rated 2/10 after Ampac 10-day outage from self-inflicted change, Mandeep (MV) overwork crisis requiring intervention, and helpdesk strategy misalignment with tender requirements. Strong August financial performance ($243K vs $76K budget), but hiring plans will push budget into red territory with board approval pending strategic AI/transforma"
+      }
     }
   },
   "action_items": [
@@ -250,6 +728,266 @@
       "status": "pending",
       "created_at": "2025-10-03T19:22:47.164622",
       "source": "vtt_summary"
+    },
+    {
+      "owner": "Naythan (with Jeff intro)",
+      "action": "Naythan: Get access enablement for OTC change management dashboard",
+      "deadline": "This week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547711",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan + Marielle",
+      "action": "Naythan + Marielle: Review NSG cost tagging for pricing negotiation",
+      "deadline": "Today (directly after meeting)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547715",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Naythan: Present change ticket enforcement policy to team",
+      "deadline": "Thursday (tomorrow)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547718",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Robie (coordination), Jess (quotes), Marielle (forecasting)",
+      "action": "Robie + Jess + Marielle: Reconcile unbilled odd jobs list",
+      "deadline": "Next week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547720",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan (ownership transfer from Hamish/Richard)",
+      "action": "Hamish + Naythan + Robie: Establish weekly PPM resource allocation cadence",
+      "deadline": "Start Monday",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547723",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Naythan: Set up regular cadence with portfolio team for OTC portal replatforming",
+      "deadline": "This week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547726",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Naythan: Meet with SDMs tomorrow, then Richard Friday, then establish workflow",
+      "deadline": "Complete by Monday",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547729",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Naythan: Understand MV team workload and provide coverage/sorting",
+      "deadline": "Ongoing",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547735",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Marielle",
+      "action": "Marielle: Present September actuals at next meeting",
+      "deadline": "Next week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547737",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Marielle + Finance",
+      "action": "Marielle + Finance Team: Finalize FY25 forecast with operational model changes",
+      "deadline": "Next week (after immediate forecast process)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547739",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish (lead), Dillon, Stu",
+      "action": "Hamish + Dillon + Stu: Reprice cloud offerings based on pod model decomposition",
+      "deadline": "Late October/November",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547742",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish",
+      "action": "Hamish: Hold 3CX to Teams migration planning meeting with Dion post-leave",
+      "deadline": "When Dion returns from leave",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547745",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Team (Hamish coordination)",
+      "action": "Team: Track GS1 onboarding completion target",
+      "deadline": "October 17",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.547749",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan (lead), Hamish (strategy), Nigel (execution)",
+      "action": "Naythan + Hamish + Nigel: Align on hiring strategy and timelines THIS WEEK",
+      "deadline": "This week (Tuesday-Wednesday)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548084",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan (process owner)",
+      "action": "Naythan + Dillon + Gina (OTC): Design new change management process",
+      "deadline": "This week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548088",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Naythan",
+      "action": "Naythan: Intervene on Mandeep (MV) overwork and bottleneck situation",
+      "deadline": "Immediate (potentially Melbourne trip, not yet booked)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548093",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish (lead)",
+      "action": "Hamish + Naythan + JP + Marielle: Pipeline hygiene grooming session",
+      "deadline": "This week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548098",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish",
+      "action": "Hamish: Get Alex to provide SGS training/enablement",
+      "deadline": "This week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548102",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish (lead), Naythan (timelines), Marielle (budget impact)",
+      "action": "Hamish + Naythan + Marielle: Forecast parallel operating structure costs",
+      "deadline": "Next week or two",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548105",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish",
+      "action": "Hamish: Add Philippines patching team member role to pipeline",
+      "deadline": "This week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548108",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish",
+      "action": "Hamish + Naythan: Design Jessica's pre-sales stand-up coordination role",
+      "deadline": "This week",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548111",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Marielle",
+      "action": "Marielle: Present full budget walkthrough to leadership team next week",
+      "deadline": "Next week's leadership meeting",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548114",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Marielle",
+      "action": "Marielle: Coordinate with Sarah on personnel cost changes from \"what group\"",
+      "deadline": "Before next budget presentation",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548117",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish (coordination)",
+      "action": "Hamish + Dillon + Peter + Naythan: Establish new project hire for Secure Workspace Principal",
+      "deadline": "Starting Monday (engineeringmanager)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548120",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Hamish (initiator/champion)",
+      "action": "Hamish + Team + Gavin + Leadership: Resolve helpdesk strategy and BU structure",
+      "deadline": "Next week (discussion scheduled)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548122",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "owner": "Robbie (Philippines project coordinator) + Jess (quotes)",
+      "action": "Team + Marielle: Backlog invoicing reconciliation (Robbie + Jess working through)",
+      "deadline": "Ongoing (first month closed, retrospective items flowing)",
+      "status": "pending",
+      "priority": "P0",
+      "created_at": "2025-10-07T06:39:38.548129",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
     }
   ],
   "decisions": [
@@ -276,13 +1014,119 @@
       "description": "Dicker Data handles Intune pre-registration, AWA handles on-site deployment, Service Desk coordinates",
       "decided_at": "2025-10-03T19:22:47.164728",
       "source": "vtt_summary"
+    },
+    {
+      "title": "Budget Will Go Red During Operating Model Transition",
+      "description": "Context: Parallel running old/new models, NSG revenue migration out, headcount changes\n   - **Rationale**: Gavin support secured, necessary to root cause pricing issues vs bundled subsidies\n   - **Impact**: Intentional short-term loss for long-term pricing accuracy",
+      "decision_maker": "Hamish",
+      "decided_at": "2025-10-07T06:39:38.547868",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Decompose Budget by Product Lines by EOY",
+      "description": "Products: Secure Workspace, Cloud, Hybrid\n   - **Rationale**: Attribute costs/revenue to products, enable product-specific margins, guide sellers with confidence\n   - **Timeline**: Complete decomposition by end of year for FY26 sales kickoff",
+      "decision_maker": "Hamish",
+      "decided_at": "2025-10-07T06:39:38.547870",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "No New Hires Until Pipeline Materializes",
+      "description": "Context: Dillon/Peter doing pre-sales (45% billable target), insufficient consultancy/roadmap work won\n   - **Status**: 3 new resources considered in budget (Nov+), but on hold\n   - **Trigger**: Win more consultancy work to justify adding capacity",
+      "decision_maker": "Hamish",
+      "decided_at": "2025-10-07T06:39:38.547872",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Transfer Resource Allocation Ownership to Naythan",
+      "description": "From: Hamish (too busy with escalations) / Richard (covering gap)\n   - **To**: Naythan + Robie (weekly cadence)\n   - **Rationale**: Cannot live with Hamish, needs operational owner with headspace",
+      "decision_maker": "Hamish",
+      "decided_at": "2025-10-07T06:39:38.547873",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Work Instruction Approach for Change Ticket Enforcement",
+      "description": "Context: Technical enforcement not possible in OTC\n   - **Method**: Policy communication, training, not system control",
+      "decision_maker": "Naythan",
+      "decided_at": "2025-10-07T06:39:38.547875",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Consider Contractor Use Until Pipeline Grows",
+      "description": "Context: Using Ploy and others to fill gaps without committing to full hire\n   - **Condition**: Until PS pipeline supports permanent headcount\n\n---",
+      "decision_maker": "Hamish, implicit",
+      "decided_at": "2025-10-07T06:39:38.547877",
+      "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Establish Weekly Leadership Meeting Cadence",
+      "description": "Format: Projects/ops issues, HR (Kristy join), Finance (Marielle join)\n   - **Goal**: No more multiple emails, coordinate hiring/costs/project impacts in one room\n   - **Participants**: Hamish, Naythan, Dillon, Peter, + 3rd Principal when hired, Marielle, (Kristy)\n   - **Purpose**: Level set, resilient teams vs point people, visibility",
+      "decision_maker": "Hamish",
+      "decided_at": "2025-10-07T06:39:38.548171",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "PNL Decomposition by Products",
+      "description": "Products: Secure Workspace, Cloud, Hybrid\n   - **Rationale**: \"Talk same language\", traceability from balance sheet \u2192 service catalogue\n   - **Timeline**: In progress, Safina working on it, Hamish handing to Marielle/Sarah\n   - **Impact**: Product-aligned financials matching product-aligned principals",
+      "decision_maker": "Hamish \u2192 Marielle/Sarah handover",
+      "decided_at": "2025-10-07T06:39:38.548173",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Change Management Priority #1 Operational Intervention",
+      "description": "Rationale: Ampac 10-day P1 from self-inflicted vnet mistake, ITIL maturity 2/10, creating overwork \u2192 mistakes cycle\n   - **Approach**: Understand OTC capabilities, workshop new process, enforce/educate\n   - **Quote**: \"What if we just stop changing things as quickly and as rapidly?\" - Naythan (Day 1 observation)\n   - **Expected**: Will reduce MV overload, prevent shooting selves in foot",
+      "decision_maker": "Naythan + Hamish agreement",
+      "decided_at": "2025-10-07T06:39:38.548175",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Move Mandeep (MV) from BAU to Consulting",
+      "description": "Context: MV wants to be consultant but won't let go of BAU \u2192 overworked + bottleneck\n   - **Forcing Function**: \"Forcing function for others to step up\" - if MV gone, team must empower\n   - **Approach**: Naythan to help transition, empower team for end-to-end ownership without approval gates\n   - **Timeline**: Immediate intervention needed (health + quality impacts visible)",
+      "decision_maker": "Hamish, with team support",
+      "decided_at": "2025-10-07T06:39:38.548177",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Budget Will Go Red with Parallel Structure",
+      "description": "Context: Hiring new roles (principals, engineers, etc.) while old structure still operational\n   - **Board**: Q1 approved, full year pending AI/strategic narrative revisions\n   - **Status**: Budget \"not formally endorsed\", \"numbers still fluid\", \"feels like US Congress supply situation\"\n   - **Communication**: Gavin managing board expectations, team to be level set next week",
+      "decision_maker": "Hamish, Gavin aware",
+      "decided_at": "2025-10-07T06:39:38.548179",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Earned Value Revenue Recognition for Projects",
+      "description": "Method: Percentage of completion based on project manager OTC inputs\n   - **Example**: $100K project 50% complete \u2192 recognize $50K revenue\n   - **Context**: Peter asking about when revenue counted (answer: not at final payment, but progressive)",
+      "decision_maker": "Marielle + Hamish clarification",
+      "decided_at": "2025-10-07T06:39:38.548180",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
+    },
+    {
+      "title": "Helpdesk as Separate Tower/BU",
+      "description": "Status: \"Everyone agreed we need to think about this\"\n   - **Problem**: Can't tender competitively without helpdesk pre-sales capability\n   - **Option**: Create helpdesk services BU with dedicated pre-sales, pricing models, volume metrics\n   - **Benefit**: Stop treating as cost, start selling competitively\n   - **Challenge**: Cloud team doesn't have expertise (Dillon/Hamish acknowledged)\n   - **Timeline**: Discussion next week with Gavin + leadership\n\n---",
+      "decision_maker": "Hamish proposal, leadership discussion next week",
+      "decided_at": "2025-10-07T06:39:38.548182",
+      "source": "Weekly_Cloud_Leadership_Meeting_summary",
+      "source_type": "vtt_claude_sonnet"
     }
   ],
   "contacts": {
     "Naythan Dawe": {
       "first_seen": "2025-10-03T19:22:47.165871",
       "meetings": [
-        "Intune_Dicker_AWA_summary"
+        "Intune_Dicker_AWA_summary",
+        "Weekly_Cloud_Leadership_Meeting_2_summary",
+        "Weekly_Cloud_Leadership_Meeting_summary"
       ]
     },
     "Harpreet": {
@@ -338,7 +1182,132 @@
       "meetings": [
         "Intune_Dicker_AWA_summary"
       ]
+    },
+    "Hamish Ridland": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary",
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Stu": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary"
+      ]
+    },
+    "Dion": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary"
+      ]
+    },
+    "Jess": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary"
+      ]
+    },
+    "Peter Mustow": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary",
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Dillon Loos": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary",
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Marielle Boral": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary",
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Robie Brown": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary"
+      ]
+    },
+    "Gavin": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary",
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Richard": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary"
+      ]
+    },
+    "Jeff": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_2_summary"
+      ]
+    },
+    "Jessica": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Llewellyn": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Key Individual Contributors": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Nigel": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Kristy": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Gina": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Russell": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Sarah": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
+    },
+    "Alex": {
+      "first_seen": "2025-10-07T06:39:38.547282",
+      "meetings": [
+        "Weekly_Cloud_Leadership_Meeting_summary"
+      ]
     }
   },
-  "last_processed": "2025-10-03T19:22:47.165878"
+  "last_processed": "2025-10-07T06:39:38.547282"
 }
