@@ -57,10 +57,10 @@
             "owner": "Naythan",
             "action": "Meeting with Richard to discuss out-of-scope work systemic issues",
             "deadline": "Scheduled",
-            "status": "pending",
+            "status": "completed",
             "created_at": "2025-10-03T19:22:47.164617",
             "source": "vtt_summary",
-            "completed_at": "2025-10-07T07:53:54.424085"
+            "completed_at": "2025-10-08T09:40:43.642439"
           },
           {
             "owner": "Naythan",
@@ -246,11 +246,12 @@
             "owner": "Naythan",
             "action": "Naythan: Present change ticket enforcement policy to team",
             "deadline": "Thursday (tomorrow)",
-            "status": "pending",
+            "status": "completed",
             "priority": "P0",
             "created_at": "2025-10-07T06:39:38.547718",
             "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
-            "source_type": "vtt_claude_sonnet"
+            "source_type": "vtt_claude_sonnet",
+            "completed_at": "2025-10-08T09:40:45.125757"
           },
           {
             "owner": "Robie (coordination), Jess (quotes), Marielle (forecasting)",
@@ -276,34 +277,34 @@
             "owner": "Naythan",
             "action": "Naythan: Set up regular cadence with portfolio team for OTC portal replatforming",
             "deadline": "This week",
-            "status": "pending",
+            "status": "completed",
             "priority": "P0",
             "created_at": "2025-10-07T06:39:38.547726",
             "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
             "source_type": "vtt_claude_sonnet",
-            "completed_at": "2025-10-07T07:53:51.662079"
+            "completed_at": "2025-10-08T09:40:37.855638"
           },
           {
             "owner": "Naythan",
             "action": "Naythan: Meet with SDMs tomorrow, then Richard Friday, then establish workflow",
             "deadline": "Complete by Monday",
-            "status": "pending",
+            "status": "completed",
             "priority": "P0",
             "created_at": "2025-10-07T06:39:38.547729",
             "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
             "source_type": "vtt_claude_sonnet",
-            "completed_at": "2025-10-07T07:53:57.136405"
+            "completed_at": "2025-10-08T09:40:36.153887"
           },
           {
             "owner": "Naythan",
             "action": "Naythan: Understand MV team workload and provide coverage/sorting",
             "deadline": "Ongoing",
-            "status": "pending",
+            "status": "completed",
             "priority": "P0",
             "created_at": "2025-10-07T06:39:38.547735",
             "source": "Weekly_Cloud_Leadership_Meeting_2_summary",
             "source_type": "vtt_claude_sonnet",
-            "completed_at": "2025-10-07T07:53:53.103095"
+            "completed_at": "2025-10-08T09:40:34.784395"
           },
           {
             "owner": "Marielle",
@@ -453,12 +454,12 @@
             "owner": "Naythan",
             "action": "Naythan: Intervene on Mandeep (MV) overwork and bottleneck situation",
             "deadline": "Immediate (potentially Melbourne trip, not yet booked)",
-            "status": "pending",
+            "status": "completed",
             "priority": "P0",
             "created_at": "2025-10-07T06:39:38.548093",
             "source": "Weekly_Cloud_Leadership_Meeting_summary",
             "source_type": "vtt_claude_sonnet",
-            "completed_at": "2025-10-07T07:53:55.769545"
+            "completed_at": "2025-10-08T09:40:46.487298"
           },
           {
             "owner": "Hamish (lead)",

@@ -19,7 +19,7 @@ sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.reliable_confluence_client import ReliableConfluenceClient
 from claude.tools.confluence_intelligence_processor import ConfluenceIntelligenceProcessor
-from claude.tools.confluence_to_trello import ConfluenceToTrello
+from claude.tools.confluence_to_trello import ConfluenceTrelloIntegration
 
 
 class ConfluenceAutoSync:
@@ -29,7 +29,7 @@ class ConfluenceAutoSync:
         """Initialize auto-sync system"""
         self.confluence = ReliableConfluenceClient()
         self.processor = ConfluenceIntelligenceProcessor()
-        self.trello_sync = ConfluenceToTrello()
+        self.trello_sync = None  # Initialize later with board_id
         self.cache_file = MAIA_ROOT / "claude" / "data" / "confluence_sync_cache.json"
         self.cache = self._load_cache()
 
@@ -103,7 +103,9 @@ class ConfluenceAutoSync:
         # Sync to Trello if board specified
         if board_id:
             print(f"📋 Syncing to Trello board {board_id}...")
-            trello_result = self.trello_sync.sync_to_trello(board_id)
+            if not self.trello_sync:
+                self.trello_sync = ConfluenceTrelloIntegration(board_id)
+            trello_result = self.trello_sync.sync_all()
             print(f"✅ Created {trello_result['summary']['total_created']} Trello cards")
         else:
             trello_result = None
