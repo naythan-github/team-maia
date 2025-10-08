@@ -101,14 +101,13 @@ class ConfluenceAutoSync:
         result = self.processor.process_page(str(page_file), url)
 
         # Sync to Trello if board specified
+        trello_result = None
         if board_id:
-            print(f"📋 Syncing to Trello board {board_id}...")
+            print(f"📋 Syncing to Trello (max 10 new cards per category)...")
             if not self.trello_sync:
                 self.trello_sync = ConfluenceTrelloIntegration(board_id)
-            trello_result = self.trello_sync.sync_all()
-            print(f"✅ Created {trello_result['summary']['total_created']} Trello cards")
-        else:
-            trello_result = None
+            trello_result = self.trello_sync.sync_intelligence_to_trello(limit_per_category=10)
+            print(f"✅ Created {trello_result['summary']['total_created']} cards, skipped {trello_result['summary']['total_skipped']} duplicates")
 
         # Update cache
         self.cache["pages"][page_id] = {

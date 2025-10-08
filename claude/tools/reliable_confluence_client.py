@@ -278,6 +278,22 @@ class ReliableConfluenceClient:
             data = response.json()
             return data.get('results', [])
         return None
+
+    def get_page(self, page_id: str, expand: str = 'body.storage,version') -> Optional[Dict]:
+        """
+        Get a Confluence page by ID
+
+        Args:
+            page_id: Confluence page ID
+            expand: Comma-separated list of properties to expand (default: body.storage,version)
+
+        Returns:
+            Page data dictionary or None if failed
+        """
+        response = self._make_request('GET', f'/content/{page_id}', params={'expand': expand})
+        if response:
+            return response.json()
+        return None
         
     def create_page(self, space_key: str, title: str, content: str, 
                    parent_id: Optional[str] = None) -> Optional[Dict]:

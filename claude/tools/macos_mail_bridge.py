@@ -131,13 +131,14 @@ class MacOSMailBridge:
 
         return mailboxes
 
-    def get_inbox_messages(self, limit: int = 50, account: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_inbox_messages(self, limit: int = 50, account: Optional[str] = None, hours_ago: Optional[int] = None) -> List[Dict[str, Any]]:
         """
         Get recent messages from inbox
 
         Args:
             limit: Maximum number of messages to retrieve
             account: Optional account name (defaults to first account)
+            hours_ago: Optional filter for messages within last N hours
 
         Returns:
             List of message dictionaries
@@ -148,14 +149,35 @@ class MacOSMailBridge:
             if accounts:
                 account = accounts[0]['name']
 
-        return self.search_messages_in_account(account=account, mailbox_type="Inbox", limit=limit)
+        return self.search_messages_in_account(account=account, mailbox_type="Inbox", limit=limit, hours_ago=hours_ago)
+
+    def get_sent_messages(self, limit: int = 50, account: Optional[str] = None, hours_ago: Optional[int] = None) -> List[Dict[str, Any]]:
+        """
+        Get recent sent messages
+
+        Args:
+            limit: Maximum number of messages to retrieve
+            account: Optional account name (defaults to first account)
+            hours_ago: Optional filter for messages within last N hours
+
+        Returns:
+            List of message dictionaries
+        """
+        # If no account specified, use first Exchange account
+        if not account:
+            accounts = self.get_accounts()
+            if accounts:
+                account = accounts[0]['name']
+
+        return self.search_messages_in_account(account=account, mailbox_type="Sent Items", limit=limit, hours_ago=hours_ago)
 
     def search_messages_in_account(
         self,
         account: str,
         mailbox_type: str = "Inbox",
         limit: int = 50,
-        query: Optional[str] = None
+        query: Optional[str] = None,
+        hours_ago: Optional[int] = None
     ) -> List[Dict[str, Any]]:
         """
         Search messages in account-specific mailbox
@@ -165,14 +187,23 @@ class MacOSMailBridge:
             mailbox_type: Mailbox name (Inbox, Sent Items, Drafts, Deleted Items)
             limit: Maximum results
             query: Optional search query (searches subject and content)
+            hours_ago: Optional filter for messages within last N hours
 
         Returns:
             List of message dictionaries with metadata
         """
         # Build AppleScript query
         search_filter = ""
+        filter_conditions = []
+
         if query:
-            search_filter = f'whose subject contains "{query}" or content contains "{query}"'
+            filter_conditions.append(f'(subject contains "{query}" or content contains "{query}")')
+
+        if hours_ago:
+            filter_conditions.append(f'(date received > (current date) - ({hours_ago} * hours))')
+
+        if filter_conditions:
+            search_filter = f'whose {" and ".join(filter_conditions)}'
 
         script = f'''
         tell application "Mail"

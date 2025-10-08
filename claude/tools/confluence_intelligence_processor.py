@@ -66,9 +66,11 @@ class ConfluenceIntelligenceProcessor:
         Returns:
             Extracted intelligence
         """
-        logger.info(f"Processing Confluence page: {page_file.name}")
+        from pathlib import Path
+        page_path = Path(page_file)
+        logger.info(f"Processing Confluence page: {page_path.name}")
 
-        with open(page_file, 'r') as f:
+        with open(page_path, 'r') as f:
             content = f.read()
 
         results = {
@@ -82,9 +84,9 @@ class ConfluenceIntelligenceProcessor:
         }
 
         # Store in database
-        page_id = page_file.stem
+        page_id = page_path.stem
         self.intelligence["pages"][page_id] = {
-            "file": str(page_file),
+            "file": str(page_path),
             "url": page_url,
             "processed_at": datetime.now().isoformat(),
             "results": results

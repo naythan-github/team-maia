@@ -87,18 +87,34 @@ class EmailRAGOllama:
         response.raise_for_status()
         return response.json()["embeddings"][0]
 
-    def index_inbox(self, limit: Optional[int] = None, force: bool = False) -> Dict[str, int]:
-        """Index emails with Ollama embeddings"""
-        # If not forcing full index, only fetch recent emails (last 50)
-        # RAG will skip already-indexed emails automatically
-        if force:
-            fetch_limit = limit or 1000
-            print(f"📧 Retrieving inbox messages (full scan, limit={fetch_limit})...")
-        else:
-            fetch_limit = 50  # Only check last 50 emails for new ones (hourly runs)
-            print(f"📧 Retrieving last {fetch_limit} inbox messages for new emails...")
+    def index_inbox(self, limit: Optional[int] = None, force: bool = False, hours_ago: int = 24, include_sent: bool = True) -> Dict[str, int]:
+        """
+        Index emails with Ollama embeddings
 
-        messages = self.mail_bridge.get_inbox_messages(limit=fetch_limit)
+        Args:
+            limit: Max messages per mailbox (None = all within time window)
+            force: Re-index already indexed emails
+            hours_ago: Only index messages from last N hours (default: 24)
+            include_sent: Also index sent messages (default: True)
+        """
+        fetch_limit = limit or 200  # Default to 200 messages max per mailbox
+
+        print("=" * 60)
+        print(f"📥 Indexing Inbox{' & Sent' if include_sent else ''} (last {hours_ago}h)...")
+        print("=" * 60)
+
+        # Get inbox messages
+        print(f"📧 Retrieving inbox messages (last {hours_ago}h)...")
+        messages = self.mail_bridge.get_inbox_messages(limit=fetch_limit, hours_ago=hours_ago)
+
+        # Get sent messages if requested
+        if include_sent:
+            print(f"📤 Retrieving sent messages (last {hours_ago}h)...")
+            sent_messages = self.mail_bridge.get_sent_messages(limit=fetch_limit, hours_ago=hours_ago)
+            # Mark sent messages so we can identify them
+            for msg in sent_messages:
+                msg['mailbox'] = 'Sent Items'
+            messages.extend(sent_messages)
 
         stats = {"total": len(messages), "new": 0, "skipped": 0, "errors": 0}
 
@@ -121,13 +137,16 @@ class EmailRAGOllama:
                 print(f"  [{i}/{len(messages)}] Embedding: {content['subject'][:50]}...")
                 embedding = self._get_embedding(doc_text)
 
+                # Determine mailbox type (sent vs inbox)
+                mailbox_type = "Sent" if msg.get('mailbox') == 'Sent Items' else "Inbox"
+
                 metadata = {
                     "message_id": msg['id'],
                     "subject": content['subject'][:500],
                     "sender": content['from'][:200],
                     "date": content['date'],
                     "read": str(content['read']),
-                    "mailbox": "Inbox"
+                    "mailbox": mailbox_type
                 }
 
                 documents.append(doc_text)
@@ -366,7 +385,12 @@ class EmailRAGOllama:
 
 def main():
     """Production Email RAG with Ollama - Full Inbox Indexing"""
+    import sys
     print("🧠 Email RAG System - Ollama Local Embeddings\n")
+
+    # Check for --full-history flag
+    full_history = '--full-history' in sys.argv
+    hours_ago = None if full_history else 24
 
     try:
         rag = EmailRAGOllama()
@@ -376,11 +400,12 @@ def main():
         for key, value in stats.items():
             print(f"   • {key}: {value}")
 
-        print("\n" + "="*60)
-        print("📥 Indexing Full Inbox (all unindexed emails)...")
-        print("="*60)
+        if full_history:
+            print("\n🔄 Full history mode: Indexing ALL sent items (no time limit)")
+        else:
+            print(f"\n⏰ Standard mode: Last {hours_ago}h (use --full-history for all)")
 
-        index_stats = rag.index_inbox(limit=None)
+        index_stats = rag.index_inbox(limit=None, hours_ago=hours_ago)
         print(f"\n✅ Indexing Complete:")
         print(f"   • Total: {index_stats['total']}")
         print(f"   • New: {index_stats['new']}")
