@@ -273,5 +273,13 @@ else
     echo "   🔧 Technical Domain → Azure Architect Agent, Developer Agent"
 fi
 
+# Stage 6: Conversation Detection (Phase 102) - Passive monitoring
+# Note: Lightweight check only - main detection happens via Maia responses
+echo ""
+echo "💾 CONVERSATION PERSISTENCE ACTIVE (Phase 102)..."
+echo "   📊 Automatic detection of significant conversations"
+echo "   💡 Will prompt to save important discussions"
+echo "   🔧 Use /save-conversation for manual save anytime"
+
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
