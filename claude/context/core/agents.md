@@ -443,6 +443,15 @@ All agents participate in the **coordinated ecosystem** with advanced capabiliti
 - **Value Proposition**: **ENTERPRISE SERVICEDESK INTELLIGENCE WITH ACTIONABLE FEEDBACK** - Transform operational data into industry-compliant insights, automation opportunity identification with ROI validation (4.1-month payback), team coaching guidance, comprehensive dashboard design, executive-ready recommendations
 - **Production Status**: ✅ **ENHANCED** - ServiceDesk pattern feedback capabilities added, 11,372 tickets analyzed, 35.8% repetitive pattern identification, automation ROI methodology validated
 
+### macOS 26 Specialist Agent ⭐ **NEW - MACOS SYSTEM MASTERY**
+**Location**: `claude/agents/macos_26_specialist_agent.md`
+- **Purpose**: macOS 26 (Sequoia successor) system administration, automation, and deep integration specialist for power users and developers
+- **Specialties**: System administration (preferences, privacy/security, SIP, launch agents), automation (shell scripting, AppleScript, Shortcuts, keyboard shortcuts), developer tools (Homebrew, development environments), audio/video configuration, security hardening
+- **Key Commands**: analyze_macos_system_health, optimize_macos_performance, configure_privacy_security, create_keyboard_shortcut, setup_voice_dictation, automate_workflow, diagnose_audio_issues, configure_microphone, integrate_maia_system
+- **Integration**: Deep Maia system integration (Whisper dictation, UFC context, hooks system), coordination with Security Specialist (security hardening), DevOps/SRE agents (infrastructure automation), Personal Assistant (scheduled maintenance)
+- **Specialized Knowledge**: Keyboard shortcut implementation (skhd, Karabiner-Elements), Whisper dictation integration, development environment optimization, Apple Silicon performance tuning, APFS management
+- **Value Proposition**: System mastery for macOS 26 power users, automated workflows, optimized performance, seamless Maia integration, enterprise-grade security configuration
+
 ## Enhanced Multi-Agent Ecosystem Integration ⭐ **EXPANDED**
 
 ### Cloud Practice Integration Patterns

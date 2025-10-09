@@ -31,7 +31,7 @@ from pathlib import Path
 
 # Configuration
 WHISPER_SERVER_URL = "http://127.0.0.1:8090/inference"
-SERVER_HEALTH_URL = "http://127.0.0.1:8090/health"
+SERVER_HEALTH_URL = "http://127.0.0.1:8090/"
 AUDIO_FORMAT = "wav"
 SAMPLE_RATE = 16000
 
@@ -75,24 +75,30 @@ class WhisperDictationClient:
             fd, output_file = tempfile.mkstemp(suffix=f".{AUDIO_FORMAT}")
             os.close(fd)
 
-        print("🎤 Recording... (speak now, auto-stops on silence)")
+        print("🎤 Recording... (speak now, 5 seconds)")
 
-        # sox with silence detection
+        # Use ffmpeg with MacBook microphone (device :1 = MacBook Air Microphone)
+        # Device :0 = Jabra (may require additional permissions)
         cmd = [
-            "sox", "-d",
-            "-r", str(SAMPLE_RATE),
-            "-c", "1",
-            "-b", "16",
-            output_file,
-            "silence", "1", "0.1", "2%",
-            "1", "2.0", "2%",
-            "trim", "0", str(duration_seconds)
+            "/opt/homebrew/bin/ffmpeg",
+            "-f", "avfoundation",
+            "-i", ":1",  # MacBook Air Microphone (most reliable)
+            "-t", "5",  # 5 seconds
+            "-ar", str(SAMPLE_RATE),
+            "-ac", "1",
+            "-af", "volume=10dB",  # Boost quiet input by 10dB
+            "-loglevel", "error",  # Suppress verbose output
+            "-y",  # Overwrite without asking
+            output_file
         ]
 
         try:
-            subprocess.run(cmd, check=True, capture_output=True)
+            # Add timeout to prevent hanging - increased for permission prompts
+            result = subprocess.run(cmd, check=True, capture_output=True, timeout=30)
             print("✅ Recording complete")
             return output_file
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(f"Recording timed out - check microphone access")
         except subprocess.CalledProcessError as e:
             raise RuntimeError(f"Recording failed: {e.stderr.decode()}")
 

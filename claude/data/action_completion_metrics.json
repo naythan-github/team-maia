@@ -2,40 +2,6 @@
   "tracking_started": "2025-10-04T08:47:53.525389",
   "weekly_completion": [
     {
-      "week_of": "2025-10-05",
-      "synced_at": "2025-10-05T21:24:45.385441",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 0
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 18,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 23,
-      "total_overdue": 0
-    },
-    {
-      "week_of": "2025-10-06",
-      "synced_at": "2025-10-06T01:24:54.398104",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 0
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 18,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 23,
-      "total_overdue": 0
-    },
-    {
       "week_of": "2025-10-06",
       "synced_at": "2025-10-06T05:25:03.233623",
       "vtt": {
@@ -191,6 +157,40 @@
     {
       "week_of": "2025-10-08",
       "synced_at": "2025-10-08T18:28:24.110466",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 5,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-09",
+      "synced_at": "2025-10-09T11:22:49.168781",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 5,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-09",
+      "synced_at": "2025-10-09T15:22:56.467152",
       "vtt": {
         "completed": 0,
         "pending": 5,
