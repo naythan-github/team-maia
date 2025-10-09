@@ -4,22 +4,41 @@
 Systematic audit and improvement of design decision documentation across the Maia ecosystem to ensure future context windows can understand implementation rationale.
 
 ## Implementation Status
-- **Current State**: Deployed
-- **Last Updated**: 2025-01-07
-- **Entry Point**: `python3 claude/tools/design_decision_capture.py audit`
-- **Dependencies**: Python 3, filesystem access to Maia structure
+- **Current State**: ⚠️ Manual Process (Automated tool pending - Phase 103 Week 3)
+- **Last Updated**: 2025-10-09 (Phase 103 - SRE Reliability Sprint)
+- **Entry Point**: Manual review using template from save_state.md
+- **Dependencies**: None (manual process)
 
 ## Usage
 
-### Run System-Wide Audit
-```bash
-cd ${MAIA_ROOT}
-python3 claude/tools/design_decision_capture.py audit
+### Manual Design Decision Capture
+Design decisions are now captured manually during save state using JSON template.
+
+**Template** (from save_state.md):
+```json
+{
+  "decision_id": "phase_NNN_decision_N",
+  "date": "2025-MM-DD",
+  "title": "Decision Title",
+  "context": "Why was this decision needed?",
+  "alternatives_considered": ["Option A", "Option B", "Option C"],
+  "chosen_solution": "Option B",
+  "rationale": "Why Option B was chosen",
+  "trade_offs": "What we gave up choosing Option B",
+  "validation": "How we know this was the right choice"
+}
 ```
 
-### Create Decision Template
+**Save to**: `claude/context/session/decisions/phase_NNN_decision_N.json`
+
+### Manual Audit Process
 ```bash
-python3 claude/tools/design_decision_capture.py template "Component Name" "Decision Title"
+# 1. List all decision files
+find claude/context/session/decisions -name "*.json" -type f
+
+# 2. Review each decision for completeness
+# 3. Check that major phases have documented decisions
+# 4. Verify alternatives and rationale are clear
 ```
 
 ## What Gets Audited

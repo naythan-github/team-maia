@@ -3,23 +3,6 @@
   "weekly_completion": [
     {
       "week_of": "2025-10-06",
-      "synced_at": "2025-10-06T05:25:03.233623",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 0
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 18,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 23,
-      "total_overdue": 0
-    },
-    {
-      "week_of": "2025-10-06",
       "synced_at": "2025-10-06T10:17:12.416027",
       "vtt": {
         "completed": 0,
@@ -191,6 +174,23 @@
     {
       "week_of": "2025-10-09",
       "synced_at": "2025-10-09T15:22:56.467152",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 0
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 5,
+      "total_overdue": 0
+    },
+    {
+      "week_of": "2025-10-09",
+      "synced_at": "2025-10-09T19:28:43.991312",
       "vtt": {
         "completed": 0,
         "pending": 5,
