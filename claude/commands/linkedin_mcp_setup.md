@@ -1,11 +1,15 @@
 # LinkedIn MCP Server Setup
 
+⚠️ **STATUS**: **PLANNED - NOT IMPLEMENTED** (Phase 103 Note)
+**Reality**: The tools referenced in this document (`claude/tools/mcp/linkedin_mcp/`) were designed but never built. This is a planning document for future implementation.
+
 Comprehensive command for LinkedIn MCP server preparation and deployment.
 
 ## Purpose
 Complete LinkedIn MCP server preparation including backup systems, testing framework, and deployment readiness while waiting for LinkedIn export data.
 
 ## Prerequisites
+- ⚠️ LinkedIn MCP infrastructure needs implementation first
 - LinkedIn data export requested (24-72 hour wait)
 - Python environment with required dependencies
 - Maia system with Jobs Agent integration

@@ -62,6 +62,135 @@ These tools are always available for use:
 - **Business Value**: Executive-ready summaries, standardized formats, clear action tracking, stakeholder reporting
 - **Status**: ✅ PRODUCTION READY - Auto-starts on login, processes VTT files with FOB templates
 
+### Background Services (LaunchAgents) ⭐ **PHASE 103 SRE RELIABILITY SPRINT**
+16 macOS LaunchAgent services providing automated background operations. Monitor health with `python3 claude/tools/sre/launchagent_health_monitor.py --dashboard`.
+
+**Currently Running** (3/16 - 18.8% availability):
+1. **com.maia.whisper-server** (PID 17319) ✅ HEALTHY
+   - **Purpose**: Voice dictation server for keyboard shortcut integration
+   - **Schedule**: Continuous (RunAtLoad)
+   - **Tool**: `claude/tools/whisper_dictation_server.py`
+   - **Status**: Running, processing voice commands
+
+2. **com.maia.vtt-watcher** (PID 812) ✅ HEALTHY
+   - **Purpose**: Automated meeting transcript analysis with FOB templates
+   - **Schedule**: Continuous file monitoring
+   - **Tool**: `claude/tools/vtt_watcher.py`
+   - **Monitoring**: OneDrive VTT folder
+   - **Status**: Running, processing transcripts
+
+3. **com.maia.downloads-vtt-mover** (PID 826) ✅ HEALTHY
+   - **Purpose**: Move VTT files from Downloads to OneDrive processing folder
+   - **Schedule**: Continuous file monitoring
+   - **Tool**: `claude/tools/downloads_vtt_mover.py`
+   - **Status**: Running, organizing VTT files
+
+**Failed Services** (1/16):
+4. **com.maia.health-monitor** 🔴 FAILED (exit code 1)
+   - **Purpose**: Monitor automation health and alert on issues
+   - **Schedule**: Every 30 minutes (1800 seconds)
+   - **Tool**: `claude/tools/automation_health_monitor.py`
+   - **Status**: Operational but reporting degraded system health (correct behavior)
+   - **Note**: "FAILED" status expected when system issues detected
+
+**Idle Services** (9/16 - Scheduled, awaiting trigger):
+5. **com.maia.confluence-sync** 💤 IDLE
+   - **Purpose**: Sync documentation to Confluence
+   - **Schedule**: Daily or on-demand
+   - **Tool**: `claude/tools/confluence_sync.py`
+
+6. **com.maia.daily-briefing** 💤 IDLE
+   - **Purpose**: Generate morning briefing with calendar, emails, tasks
+   - **Schedule**: Weekday mornings
+   - **Tool**: `claude/tools/communication/automated_morning_briefing.py`
+
+7. **com.maia.downloads-organizer-scheduler** 💤 IDLE
+   - **Purpose**: Organize downloads folder by file type
+   - **Schedule**: Periodic (time-based trigger)
+   - **Tool**: `claude/tools/downloads_organizer.py`
+
+8. **com.maia.email-rag-indexer** 💤 IDLE
+   - **Purpose**: Index emails into RAG system for semantic search
+   - **Schedule**: Every 30 minutes
+   - **Tool**: `claude/tools/email_rag_ollama.py`
+   - **Note**: Currently showing errors (AppleScript execution failed)
+
+9. **com.maia.email-vtt-extractor** 💤 IDLE
+   - **Purpose**: Extract VTT attachments from emails
+   - **Schedule**: Periodic email monitoring
+   - **Tool**: `claude/tools/email_vtt_extractor.py`
+
+10. **com.maia.system-state-archiver** 💤 IDLE
+    - **Purpose**: Archive system state snapshots
+    - **Schedule**: Periodic (time-based)
+    - **Tool**: `claude/tools/system_state_archiver.py`
+
+11. **com.maia.trello-status-tracker** 💤 IDLE
+    - **Purpose**: Track Trello board status and sync
+    - **Schedule**: Periodic updates
+    - **Tool**: `claude/tools/trello_status_tracker.py`
+
+12. **com.maia.unified-dashboard** 💤 IDLE
+    - **Purpose**: Launch unified dashboard web interface
+    - **Schedule**: On-demand or startup
+    - **Tool**: `claude/tools/unified_dashboard_platform.py`
+    - **Port**: 8100
+
+13. **com.maia.weekly-backlog-review** 💤 IDLE
+    - **Purpose**: Generate weekly backlog review report
+    - **Schedule**: Weekly (Monday mornings)
+    - **Tool**: `claude/tools/weekly_backlog_review.py`
+
+14. **com.maia.whisper-health** 💤 IDLE
+    - **Purpose**: Monitor Whisper server health
+    - **Schedule**: Every 5 minutes
+    - **Tool**: `claude/tools/whisper_health_monitor.sh`
+
+**Unknown Services** (3/16 - Need investigation):
+15. **com.maia.intelligent-downloads-router** ❓ UNKNOWN
+    - **Purpose**: Route downloads to appropriate folders based on content
+    - **Schedule**: Continuous file monitoring
+    - **Tool**: `claude/tools/intelligent_downloads_router.py`
+    - **Status**: Loaded but trigger conditions unknown
+
+16. **com.maia.email-question-monitor** ❓ UNKNOWN
+    - **Purpose**: Monitor emails for questions requiring response
+    - **Schedule**: Periodic email checking
+    - **Tool**: `claude/tools/email_question_monitor.py`
+    - **Status**: Previously failed (exit code 1), status now unknown
+
+**Service Management**:
+```bash
+# Monitor all services
+python3 claude/tools/sre/launchagent_health_monitor.py --dashboard
+
+# Show only failed services
+python3 claude/tools/sre/launchagent_health_monitor.py --dashboard --failed-only
+
+# Get logs for specific service
+python3 claude/tools/sre/launchagent_health_monitor.py --logs com.maia.service-name
+
+# Restart a service
+launchctl unload ~/Library/LaunchAgents/com.maia.service-name.plist
+launchctl load ~/Library/LaunchAgents/com.maia.service-name.plist
+
+# Check service status
+launchctl list | grep maia
+```
+
+**SRE Metrics** (Phase 103):
+- **Total Services**: 16
+- **Service Availability**: 18.8% (3/16 running)
+- **Failed**: 1 (health-monitor - expected when issues detected)
+- **Idle**: 9 (scheduled services awaiting trigger)
+- **Unknown**: 3 (need investigation)
+- **SLO Target**: 99.9% availability
+- **Current Status**: 🚨 Error budget exceeded (81.1% below target)
+
+**Configuration Location**: `~/Library/LaunchAgents/com.maia.*.plist`
+**Log Location**: `~/.maia/logs/` or `~/git/maia/claude/data/logs/`
+**Status**: ⚠️ DEGRADED - Only 18.8% availability, 13/16 services not actively running
+
 ### Local LLM Stack - Western Models Only ⭐ **PHASE 74 PRIVACY-FOCUSED CONFIGURATION**
 - **Ollama Service**: Version 0.12.3 running as background service on 32GB RAM system
 - **Privacy Policy**: Western/trusted origins only (Meta, Google, Microsoft, Hugging Face) - No Chinese models
@@ -1288,9 +1417,9 @@ results = rag.search("discipline issues", limit=5)
 ## Enterprise Backup & Restoration System ⭐ **PHASE 41 COMPLETE - PRODUCTION-READY**
 
 ### **Comprehensive Backup Infrastructure** - Critical System Protection
-**Location**: `/claude/tools/maia_backup_manager.py` + `/claude/tools/scripts/automated_backup.sh` + `restore_maia.py`
+**Location**: `/claude/tools/scripts/automated_backup.sh` + `restore_maia.py`
 **Purpose**: Enterprise-grade backup and disaster recovery system with automated scheduling and cross-platform restoration
-**Status**: ✅ **PRODUCTION READY** - 18.3MB complete system snapshots with automated daily/weekly/monthly scheduling
+**Status**: ⚠️ **PARTIAL** - Backup scripts exist, `maia_backup_manager.py` tool pending implementation (Phase 103 Week 3)
 
 #### **Enhanced Backup System Features**:
 - **Complete System Snapshots**: 484 files including 182 Python tools, 31 agents, all databases (92MB), configurations
@@ -1308,7 +1437,7 @@ results = rag.search("discipline issues", limit=5)
 - **Cross-Platform Deployment**: Automated restoration script with interactive backup source selection
 
 #### **Production Backup Status** - Phase 46++ Complete:
-- **✅ Critical Import Error Fixed**: Resolved Path import order in maia_backup_manager.py enabling backup creation
+- **⚠️ Tool Pending**: `maia_backup_manager.py` needs implementation (scheduled Phase 103 Week 3)
 - **✅ System Validation Complete**: 5 active backups (113MB latest) with automated scheduling operational and iCloud sync enabled
 - **✅ Cross-Platform Restore Tested**: Validated restore_maia.py with OS detection, Python 3.11+ enforcement, and backup source auto-detection
 - **✅ Mac-to-Mac Migration Ready**: Comprehensive testing confirms complete Maia ecosystem restoration on new Mac hardware
