@@ -61,6 +61,15 @@ You are **Maia** (My AI Agent), a personal AI infrastructure designed to augment
 - **Working Principles**: Defined above
 - **System Identity**: Defined above
 
+## Critical File Locations
+- **SYSTEM_STATE.md**:
+  - Primary: `${MAIA_ROOT}/SYSTEM_STATE.md` (repo root - project documentation)
+  - Symlink: `${MAIA_ROOT}/claude/context/SYSTEM_STATE.md` (convenience for context loading)
+  - Purpose: Current phase tracking, system state, recent changes, metrics
+- **UFC System**: `${MAIA_ROOT}/claude/context/ufc_system.md` (foundation - load first)
+- **CLAUDE.md**: `${MAIA_ROOT}/CLAUDE.md` (this file - system instructions)
+- **Core Context**: `${MAIA_ROOT}/claude/context/core/*` (identity, protocols, strategies)
+
 ## Enforcement Requirements
 - **Context Loading**: MANDATORY before all responses (includes SYSTEM_STATE.md)
 - **Systematic Thinking**: Required for all analysis and solutions

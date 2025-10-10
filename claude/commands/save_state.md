@@ -103,14 +103,40 @@ find claude/tools claude/agents claude/commands -type f \
 
 **Action if violations found**: Clean up before commit (graduate to production or archive)
 
-#### 2.2 Dependency Health Check (Optional but Recommended)
+#### 2.2 Comprehensive System Health Check ⭐ **PHASE 103 WEEK 3 - AUTOMATED**
 ```bash
-python3 claude/tools/sre/dependency_graph_validator.py --analyze --critical-only
+python3 claude/tools/sre/automated_health_monitor.py
 ```
 
-**Action if critical phantoms found**: Fix phantom references or mark as known issue
+**What it checks** (4 comprehensive validations):
+1. **Dependency Health**: Phantom tool detection, dependency graph integrity
+2. **RAG System Health**: Data freshness, availability, document counts
+3. **Service Health**: LaunchAgent availability, failed services
+4. **UFC Compliance**: Directory nesting, file naming, structure validation
 
-#### 2.3 Documentation Consistency Verification
+**Exit codes**:
+- 0 = HEALTHY (all checks pass)
+- 1 = WARNING/DEGRADED (warnings but no critical issues)
+- 2 = CRITICAL (critical issues found, review required)
+
+**Action if CRITICAL**: Review critical issues and fix before proceeding with commit
+
+**Alternative: Individual checks** (if automated monitor unavailable):
+```bash
+# UFC Compliance only
+python3 claude/tools/security/ufc_compliance_checker.py --check
+
+# Dependency Health only
+python3 claude/tools/sre/dependency_graph_validator.py --analyze --critical-only
+
+# RAG Health only
+python3 claude/tools/sre/rag_system_health_monitor.py --dashboard
+
+# Service Health only
+python3 claude/tools/sre/launchagent_health_monitor.py --dashboard
+```
+
+#### 2.4 Documentation Consistency Verification
 - Verify all new tools mentioned in SYSTEM_STATE.md are also in available.md
 - Verify all new agents mentioned in SYSTEM_STATE.md are also in agents.md
 - Check that phase numbers are consistent across files

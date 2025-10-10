@@ -697,6 +697,145 @@ These are the core systems that transform Maia from individual tools to a coordi
 - **agent_error_handler.py** - Intelligent error classification and recovery
 - **performance_monitoring_dashboard.py** - System analytics and optimization
 
+## SRE Tools ⭐ **PHASE 103 WEEK 1-3 - RELIABILITY SPRINT**
+
+### Site Reliability Engineering Observability & Validation
+
+**Purpose**: Production-grade reliability monitoring, validation, and health scoring for Maia system infrastructure
+
+#### **Save State Pre-Flight Checker** (Week 1)
+**Location**: `claude/tools/sre/save_state_preflight_checker.py` (350 lines)
+**Status**: ✅ Production Ready
+
+**Capabilities**:
+- 143 automated pre-flight validations before save state execution
+- Detects phantom tool references (209 found in initial run)
+- Validates git status, write permissions, disk space (1GB minimum)
+- Exit code based: 0 = ready, 1 = critical failures
+- Prevents silent save state failures (reliability gate pattern)
+
+**Usage**:
+```bash
+python3 claude/tools/sre/save_state_preflight_checker.py --check
+python3 claude/tools/sre/save_state_preflight_checker.py --json report.json
+```
+
+**Integration**: Mandatory step in `claude/commands/save_state.md` Phase 0
+
+---
+
+#### **Dependency Graph Validator** (Week 1)
+**Location**: `claude/tools/sre/dependency_graph_validator.py` (430 lines)
+**Status**: ✅ Production Ready
+
+**Capabilities**:
+- Builds complete system dependency graph across commands, agents, documentation
+- Detects phantom dependencies (documented but don't exist)
+- Identifies single points of failure (5+ references)
+- Calculates dependency health score (0-100)
+- Severity classification (CRITICAL vs MEDIUM phantoms)
+
+**Metrics** (Initial Audit):
+- Health Score: 29.1/100 → 40.6/100 (Week 2 improvements)
+- Phantom Rate: 42% (83/199 dependencies)
+- Critical Phantoms: 5 → 1 (after Week 2 fixes)
+
+**Usage**:
+```bash
+python3 claude/tools/sre/dependency_graph_validator.py --analyze
+python3 claude/tools/sre/dependency_graph_validator.py --analyze --critical-only
+python3 claude/tools/sre/dependency_graph_validator.py --analyze --json report.json
+```
+
+---
+
+#### **LaunchAgent Health Monitor** (Week 1)
+**Location**: `claude/tools/sre/launchagent_health_monitor.py` (380 lines)
+**Status**: ✅ Production Ready
+
+**Capabilities**:
+- Real-time health monitoring for 16 Maia LaunchAgent background services
+- SLI/SLO metric tracking (availability percentage, error budget)
+- Failed service detection with exit code analysis
+- Service state classification (HEALTHY/FAILED/IDLE/UNKNOWN)
+- Log file access for troubleshooting
+
+**Current Metrics**:
+- Service Availability: 25.0% (4/16 running, target: 99.9%)
+- Services: 4 healthy, 1 failed, 9 idle (schedule-based), 2 unknown
+
+**Usage**:
+```bash
+python3 claude/tools/sre/launchagent_health_monitor.py --dashboard
+python3 claude/tools/sre/launchagent_health_monitor.py --dashboard --failed-only
+python3 claude/tools/sre/launchagent_health_monitor.py --logs com.maia.service-name
+```
+
+---
+
+#### **RAG System Health Monitor** (Week 3)
+**Location**: `claude/tools/sre/rag_system_health_monitor.py` (480 lines)
+**Status**: ✅ Production Ready
+
+**Capabilities**:
+- Comprehensive health monitoring for all 4 RAG systems
+- ChromaDB statistics (document counts, collection health, storage usage)
+- Data freshness assessment (Fresh/Recent/Stale/Very Stale)
+- Health scoring (0-100) with HEALTHY/DEGRADED/CRITICAL classification
+- Auto-discovery of RAG system storage locations
+
+**Current Metrics**:
+- Overall Health: 75.0% (improved from 50% after Email RAG consolidation)
+- Systems: 3 healthy, 1 degraded (Meeting RAG - stale data)
+- Total Documents: 529 across all RAG systems
+- Total Storage: 11.62 MB
+
+**Usage**:
+```bash
+python3 claude/tools/sre/rag_system_health_monitor.py --dashboard
+python3 claude/tools/sre/rag_system_health_monitor.py --dashboard --verbose
+python3 claude/tools/sre/rag_system_health_monitor.py --dashboard --json report.json
+```
+
+---
+
+#### **UFC Compliance Checker** ⭐ **WEEK 3 - NEW** (Week 3)
+**Location**: `claude/tools/security/ufc_compliance_checker.py` (365 lines)
+**Status**: ✅ Production Ready
+
+**Capabilities**:
+- Validates Unified Filesystem-based Context (UFC) system compliance
+- Directory nesting depth validation (max 5 levels, preferred 3)
+- File naming convention enforcement (lowercase, underscores, descriptive)
+- Required UFC directory structure verification
+- Context pollution detection (UFC files in wrong locations)
+- Severity classification (CRITICAL/HIGH/MEDIUM/LOW)
+
+**Current Metrics**:
+- Total Files Scanned: 802
+- Max Nesting Depth Found: 6 (exceeds limit in 20 files)
+- Violations: 20 high-severity (excessive nesting, invalid chars)
+- Warnings: 499 (mostly acceptable 4-level nesting)
+
+**Usage**:
+```bash
+python3 claude/tools/security/ufc_compliance_checker.py --check
+python3 claude/tools/security/ufc_compliance_checker.py --check --verbose
+python3 claude/tools/security/ufc_compliance_checker.py --check --json report.json
+```
+
+**Integration**: Integrated into `claude/commands/save_state.md` Phase 2.2 (Anti-Sprawl & System Validation)
+
+---
+
+### SRE Reliability Patterns Applied
+
+**Observability**: All critical systems (dependencies, services, RAG, UFC) have health dashboards
+**Reliability Gates**: Pre-flight validation prevents silent failures
+**Health Scoring**: Quantitative 0-100 assessment for objective measurement
+**SLI/SLO Tracking**: Service availability targets (99.9% goal)
+**Fail Fast**: Exit codes and severity classification for clear status
+
 ## Custom Commands
 Located in: `claude/commands/` - See `claude/context/tools/commands.md` for details
 
@@ -1413,6 +1552,53 @@ results = rag.search("discipline issues", limit=5)
 - **Intelligent Routing**: Content analysis automatically selects optimal collections for faster results
 - **Production Email Integration**: Real email system integration replacing external API dependencies
 - **Scalable Architecture**: Multi-collection design supports enterprise-scale document management
+
+### **Email RAG System** - Phase 103 Consolidation ⭐ **PRODUCTION READY**
+**Location**: `/claude/tools/email_rag_ollama.py`
+**Purpose**: Semantic search across personal email history (Apple Mail integration)
+**Status**: ✅ **PRODUCTION READY** - 488 emails indexed, actively maintained
+
+#### **Active System - Email RAG (Ollama)**:
+- **email_rag_ollama.py** - Production email semantic search
+  - macOS Mail.app integration via AppleScript
+  - 488 emails indexed and searchable
+  - Embeddings: Ollama nomic-embed-text (100% local)
+  - Storage: `~/.maia/email_rag_ollama/` (11.33 MB)
+  - Automated indexing: LaunchAgent every 30 minutes
+  - Last updated: <24h (fresh)
+  - CLI: `--index`, `--query`, `--stats`
+
+#### **Usage Examples**:
+```bash
+# Index emails from Apple Mail
+python3 claude/tools/email_rag_ollama.py --index
+
+# Search emails semantically
+python3 claude/tools/email_rag_ollama.py --query "meeting notes" --limit 5
+
+# Get statistics
+python3 claude/tools/email_rag_ollama.py --stats
+```
+
+#### **Deprecated Systems** (Phase 103 Consolidation):
+
+**Email RAG (Enhanced)** - ⚠️ **DEPRECATED - SCHEDULED FOR REMOVAL**
+- **Status**: Deprecated in favor of Email RAG (Ollama) - Phase 103 Week 3
+- **Reason**: Ollama version has 488 emails vs 10, actively maintained
+- **Last Updated**: 181.9h ago (very stale)
+- **Storage**: `~/.maia/email_rag_enhanced/` (0.71 MB) - **scheduled for deletion**
+- **Tool**: `claude/tools/email_rag_enhanced.py` - not maintained
+
+**Email RAG (Legacy)** - ⚠️ **DEPRECATED - SCHEDULED FOR REMOVAL**
+- **Status**: Deprecated in favor of Email RAG (Ollama) - Phase 103 Week 3
+- **Reason**: Empty (0 emails), not maintained, superseded by newer implementations
+- **Last Updated**: Unknown
+- **Storage**: `~/.maia/email_rag/` (0.22 MB) - **scheduled for deletion**
+- **Tool**: `claude/tools/email_rag_system.py` - not maintained
+
+#### **Known Issues**:
+- **AppleScript Errors**: Normal behavior when emails are deleted/moved after indexing (non-fatal)
+- **Duplicate Systems**: Enhanced/Legacy scheduled for removal in Phase 103 Week 3
 
 ## Enterprise Backup & Restoration System ⭐ **PHASE 41 COMPLETE - PRODUCTION-READY**
 
