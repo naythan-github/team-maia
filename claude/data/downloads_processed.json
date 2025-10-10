@@ -1,30 +1,39 @@
 {
   "processed": [
-    "/Users/naythandawe/Downloads/Paul Roberts Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
-    "/Users/naythandawe/Downloads/.DS_Store",
+    "/Users/naythandawe/Downloads/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
     "/Users/naythandawe/Downloads/Wayne Ash Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
-    "/Users/naythandawe/Downloads/GS1 - Orro Onboarding - 21.2.25.xlsx",
-    "/Users/naythandawe/Downloads/maia_comprehensive_manual_20251001_092749.tar.gz",
-    "/Users/naythandawe/Downloads/Vikrant Slathia - Talent Pack for Endpoint Engineer at Orro Group.pdf",
-    "/Users/naythandawe/Downloads/general_unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/final_reviewed_unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/Intune_Customers.xlsx",
+    "/Users/naythandawe/Downloads/offboarding.xlsx",
+    "/Users/naythandawe/Downloads/Senior EndPoint Engineer - Orro Cloud (The Onset).docx",
+    "/Users/naythandawe/Downloads/.DS_Store",
+    "/Users/naythandawe/Downloads/Paul Roberts Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
+    "/Users/naythandawe/Downloads/linkedin_dashboard_demo.md",
+    "/Users/naythandawe/Downloads/wavebox_export_1_10_2025_18_11.json",
     "/Users/naythandawe/Downloads/final_unique_descriptions.csv",
     "/Users/naythandawe/Downloads/unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/FPB_ Monthly Audit - August 2025.eml",
+    "/Users/naythandawe/Downloads/August 2025 - Month End Report Moir Group-  Invoicing.eml",
+    "/Users/naythandawe/Downloads/Isalbi - August 2025 Monthly Audit - Service Desk monthly Report.eml",
+    "/Users/naythandawe/Downloads/Invoice-FYZ5VQI5-0006.pdf",
+    "/Users/naythandawe/Downloads/August 2025 - Playgroup Invoicing.eml",
+    "/Users/naythandawe/Downloads/maia_comprehensive_manual_20251001_092749.tar.gz",
+    "/Users/naythandawe/Downloads/FRM012 Orro Company Asset Acceptance Form V1.1[93].docx",
+    "/Users/naythandawe/Downloads/POL005 Orro BYOD Security Requirements Policy V3.0.pdf",
     "/Users/naythandawe/Downloads/Senior IDAM Engineer - Identity & Access Management Pod Lead.docx",
     "/Users/naythandawe/Downloads/Taylor Barkle - Talent Pack for Endpoint Engineer at Orro Group.pdf",
-    "/Users/naythandawe/Downloads/final_reviewed_unique_descriptions.csv",
-    "/Users/naythandawe/Downloads/FRM012 Orro Company Asset Acceptance Form V1.1[93].docx",
-    "/Users/naythandawe/Downloads/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
-    "/Users/naythandawe/Downloads/linkedin_dashboard_demo.md",
-    "/Users/naythandawe/Downloads/Intune_Customers.xlsx",
-    "/Users/naythandawe/Downloads/wavebox_export_1_10_2025_18_11.json",
-    "/Users/naythandawe/Downloads/Invoice-FYZ5VQI5-0006.pdf",
-    "/Users/naythandawe/Downloads/Network_Tickets_Analysis_Report.html",
+    "/Users/naythandawe/Downloads/August 2025 - Psychology Melbourne -  Invoicing.eml",
     "/Users/naythandawe/Downloads/JabraDirectSetup.dmg",
-    "/Users/naythandawe/Downloads/setup_downloader.dmg",
-    "/Users/naythandawe/Downloads/POL005 Orro BYOD Security Requirements Policy V3.0.pdf",
-    "/Users/naythandawe/Downloads/Senior EndPoint Engineer - Orro Cloud (The Onset).docx",
+    "/Users/naythandawe/Downloads/Network_Tickets_Analysis_Report.html",
+    "/Users/naythandawe/Downloads/GS1 - Orro Onboarding - 21.2.25.xlsx",
+    "/Users/naythandawe/Downloads/Vikrant Slathia - Talent Pack for Endpoint Engineer at Orro Group.pdf",
+    "/Users/naythandawe/Downloads/Pacific Optics - July 2025 - Monthly Audit report.eml",
+    "/Users/naythandawe/Downloads/MIPS - July 2025 - Monthly Report & Monthly Audit.eml",
+    "/Users/naythandawe/Downloads/August 2025 - Month End Report Fyna -  Invoicing.eml",
+    "/Users/naythandawe/Downloads/List G Banisters - For Invoicing - July and August 2025.eml",
     "/Users/naythandawe/Downloads/Install Wavebox 10.140.38.2.dmg",
-    "/Users/naythandawe/Downloads/offboarding.xlsx"
+    "/Users/naythandawe/Downloads/general_unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/setup_downloader.dmg"
   ],
   "history": [
     {
@@ -188,6 +197,60 @@
       "action": "move",
       "destination": "/Users/naythandawe/Documents/Recruitment/CVs/Paul Roberts Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
       "timestamp": "2025-10-07T16:42:02.332387"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/List G Banisters - For Invoicing - July and August 2025.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/List G Banisters - For Invoicing - July and August 2025.eml",
+      "timestamp": "2025-10-10T12:31:22.155190"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Isalbi - August 2025 Monthly Audit - Service Desk monthly Report.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Isalbi - August 2025 Monthly Audit - Service Desk monthly Report.eml",
+      "timestamp": "2025-10-10T12:31:28.324123"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/FPB_ Monthly Audit - August 2025.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/FPB_ Monthly Audit - August 2025.eml",
+      "timestamp": "2025-10-10T12:31:34.496627"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/August 2025 - Psychology Melbourne -  Invoicing.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/August 2025 - Psychology Melbourne -  Invoicing.eml",
+      "timestamp": "2025-10-10T12:31:53.154867"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/August 2025 - Playgroup Invoicing.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/August 2025 - Playgroup Invoicing.eml",
+      "timestamp": "2025-10-10T12:31:59.364103"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/August 2025 - Month End Report Moir Group-  Invoicing.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/August 2025 - Month End Report Moir Group-  Invoicing.eml",
+      "timestamp": "2025-10-10T12:32:05.561038"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/August 2025 - Month End Report Fyna -  Invoicing.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/August 2025 - Month End Report Fyna -  Invoicing.eml",
+      "timestamp": "2025-10-10T12:32:11.785548"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Pacific Optics - July 2025 - Monthly Audit report.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Pacific Optics - July 2025 - Monthly Audit report.eml",
+      "timestamp": "2025-10-10T12:32:18.004140"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/MIPS - July 2025 - Monthly Report & Monthly Audit.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/MIPS - July 2025 - Monthly Report & Monthly Audit.eml",
+      "timestamp": "2025-10-10T12:32:24.211932"
     }
   ]
 }
