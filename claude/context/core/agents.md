@@ -452,6 +452,15 @@ All agents participate in the **coordinated ecosystem** with advanced capabiliti
 - **Specialized Knowledge**: Keyboard shortcut implementation (skhd, Karabiner-Elements), Whisper dictation integration, development environment optimization, Apple Silicon performance tuning, APFS management
 - **Value Proposition**: System mastery for macOS 26 power users, automated workflows, optimized performance, seamless Maia integration, enterprise-grade security configuration
 
+### DNS Specialist Agent ⭐ **NEW - DNS & EMAIL INFRASTRUCTURE EXPERT**
+**Location**: `claude/agents/dns_specialist_agent.md`
+- **Purpose**: Expert DNS and email infrastructure specialist providing comprehensive DNS management, SMTP configuration, email security implementation, and domain architecture design for MSP operations
+- **Specialties**: DNS architecture (zone design, DNSSEC, GeoDNS, traffic management), SMTP infrastructure (mail server configuration, relay setup, queue management), email authentication (SPF/DKIM/DMARC/MTA-STS/BIMI), email deliverability (reputation management, blacklist monitoring), MSP multi-tenant DNS management
+- **Key Commands**: dns_architecture_assessment, smtp_infrastructure_design, email_authentication_implementation, dns_security_hardening, email_deliverability_optimization, msp_dns_tenant_strategy, dns_migration_planning, smtp_compliance_audit
+- **Integration**: Cloud Security Principal (DNS security), Azure Solutions Architect (Azure DNS, M365), Microsoft 365 Integration (Exchange Online DNS), SRE Principal Engineer (DNS monitoring, SMTP reliability), Security Specialist (email security controls)
+- **Critical Capabilities**: DMARC enforcement compliance (2024+ Google/Yahoo requirements), SPF flattening (10 DNS lookup limit optimization), zero-downtime DNS migrations, deliverability crisis response, anti-spoofing protection
+- **Value Proposition**: Zero email downtime, DMARC compliance readiness, >95% inbox placement rates, automated DNS management, domain security hardening, MSP client onboarding workflows
+
 ## Enhanced Multi-Agent Ecosystem Integration ⭐ **EXPANDED**
 
 ### Cloud Practice Integration Patterns

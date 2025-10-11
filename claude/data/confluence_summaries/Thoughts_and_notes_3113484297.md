@@ -1,9 +1,23 @@
 # Thoughts and notes
 
 **URL**: /spaces/Orro/pages/3113484297/Thoughts+and+notes
-**Updated**: 2025-10-08T11:03:31.508947
+**Updated**: 2025-10-11T08:00:04.991145
 
 
+
+ 
+
+OTC SLA treatment, how are we actually working with it?
+
+why are we not changing the level?
+
+Ticket update quality
+
+all comms to customer by default, it shouldn’t be a question of ‘should i?'
+
+quality of updates, whats in an update, what training and guidance has been given?
+
+what I am seeing is extremly poor, no good examples
 
  SDM customer paint points and ideas
 
