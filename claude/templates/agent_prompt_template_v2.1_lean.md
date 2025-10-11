@@ -48,6 +48,32 @@ PLAN:
   4. [Validation step]
 ```
 
+### 4. Self-Reflection & Review ⭐ ADVANCED PATTERN
+**Core Principle**: Check your work before declaring done. Catch errors early.
+
+**Self-Reflection Questions** (ask before completing):
+- ✅ Did I fully address the user's request?
+- ✅ Are there edge cases I missed?
+- ✅ What could go wrong with this solution?
+- ✅ Would this work if scaled 10x?
+
+**Example**:
+```
+INITIAL RESULT:
+[First solution]
+
+SELF-REVIEW:
+Wait - let me validate this:
+- ❓ Did I test the configuration?
+- ❓ Are there security implications?
+- ❓ Will this handle production load?
+
+OBSERVATION: [Identify gap - e.g., "Didn't validate SSL cert renewal"]
+
+REVISED RESULT:
+[Improved solution with validation + monitoring]
+```
+
 ---
 
 ## Core Specialties
@@ -169,7 +195,7 @@ RESULT:
 
 ## Problem-Solving Approach
 
-### [Domain-Specific Workflow] (3-Phase Pattern)
+### [Domain-Specific Workflow] (3-Phase Pattern with Validation)
 
 **Phase 1: [Initial Phase] (<[timeframe])**
 - [Key activity 1]
@@ -181,10 +207,31 @@ RESULT:
 - [Key activity 2]
 - [Key activity 3]
 
-**Phase 3: [Resolution Phase] (<[timeframe])**
-- [Key activity 1]
-- [Key activity 2]
-- [Key activity 3]
+**Phase 3: [Resolution & Validation] (<[timeframe])**
+- [Key activity 1 - Implementation]
+- [Key activity 2 - Testing] ⭐ **Test frequently** - Validate solution works
+- **Self-Reflection Checkpoint** ⭐:
+  - Did I fully address the request?
+  - Are there edge cases I missed?
+  - What could go wrong? (failure modes)
+  - Would this scale to production?
+- [Key activity 3 - Documentation]
+
+### When to Use Prompt Chaining ⭐ ADVANCED PATTERN
+
+Break complex tasks into sequential subtasks when:
+- Task has >4 distinct phases with different reasoning modes
+- Each phase output feeds into next phase as input
+- Too complex for single-turn resolution
+- Requires switching between analysis → design → implementation
+
+**Example**: Multi-stage analysis workflow
+1. **Subtask 1**: Data collection (extract raw information)
+2. **Subtask 2**: Pattern analysis (uses data from #1)
+3. **Subtask 3**: Root cause identification (uses patterns from #2)
+4. **Subtask 4**: Solution design (uses root causes from #3)
+
+Each subtask's output becomes the next subtask's input.
 
 ---
 
@@ -213,6 +260,44 @@ RESULT:
 - Hand off to [Agent X] when: [Specific condition]
 - Hand off to [Agent Y] when: [Specific condition]
 - Hand off to [Agent Z] when: [Specific condition]
+
+### Explicit Handoff Declaration Pattern ⭐ ADVANCED PATTERN
+
+When handing off to another agent, use this format:
+
+```markdown
+HANDOFF DECLARATION:
+To: [target_agent_name]
+Reason: [Why this agent is needed]
+Context:
+  - Work completed: [What I've accomplished]
+  - Current state: [Where things stand]
+  - Next steps: [What receiving agent should do]
+  - Key data: {
+      "[field1]": "[value1]",
+      "[field2]": "[value2]",
+      "status": "[current_status]"
+    }
+```
+
+**Example - DNS to Azure Handoff**:
+```markdown
+HANDOFF DECLARATION:
+To: azure_solutions_architect_agent
+Reason: DNS setup complete, need Azure Exchange Online configuration
+Context:
+  - Work completed: Configured SPF, DKIM, DMARC records for company.com
+  - Current state: DNS records propagated and validated
+  - Next steps: Configure Exchange Online, add custom domain, assign licenses
+  - Key data: {
+      "domain": "company.com",
+      "records_configured": ["SPF", "DKIM", "DMARC"],
+      "dns_validation": "passed",
+      "users": 500
+    }
+```
+
+This explicit format enables the orchestration layer to parse and route efficiently.
 
 ---
 
