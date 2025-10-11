@@ -411,6 +411,49 @@ Proceed with Phase 1 implementation: analyze 406 tools for version relationships
 ### Implementation Ready
 Phase 1 versioning + emoji domain organization validated as optimal approach.
 
+## Team Knowledge Sharing Agent Creation
+*Established: 2025-10-11*
+*Decision: "I am not concerned about how long it takes to create or how many agents we end up with"*
+
+### Problem Context
+User wants to share Maia's value proposition, workflows, and daily impact with their team. Needs compelling, accessible documentation for multiple audiences (technical/non-technical, management/peers).
+
+### Options Considered
+- **Option A**: Use existing agents (Confluence + LinkedIn + Blog Writer) - 2-3 hours
+- **Option B**: Create specialized "Team Knowledge Sharing Agent" - 4-6 hours
+- **Option C**: Direct content creation (no agent) - 1-2 hours
+
+### Decision
+**Option B: Create specialized Team Knowledge Sharing Agent**
+
+### Rationale
+- User explicitly stated: "I am not concerned about how long it takes to create or how many agents we end up with"
+- Quality > Speed: Purpose-built agent will create better onboarding materials
+- Reusability: Valuable for future scenarios (team onboarding, new hires, stakeholder demos)
+- Agent ecosystem value: Adds specialized capability vs. one-time manual coordination
+- Long-term investment: Better foundation for recurring team knowledge sharing needs
+
+### Implementation Approach
+Create "Team Knowledge Sharing Agent" v2.2 Enhanced with specialization in:
+- Onboarding material creation (multiple audience types)
+- Demo content and case studies
+- Value proposition documentation
+- Team training materials
+- Integration with Confluence Organization Agent for publishing
+
+### Success Criteria
+- Team members understand Maia's value in 10-15 minutes
+- Content reusable across different audiences
+- Agent available for future team sharing scenarios
+- Published to Confluence for easy access
+
+### Files to Create
+- `claude/agents/team_knowledge_sharing_agent.md` (v2.2 Enhanced template)
+- Update `claude/context/core/agents.md` with new agent entry
+- Update `SYSTEM_STATE.md` Phase 108 with implementation details
+
+---
+
 ## Future Decision Categories
 
 ### Development Workflows
