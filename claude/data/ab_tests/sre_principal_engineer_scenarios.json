@@ -1,0 +1,31 @@
+{
+  "agent_name": "sre_principal_engineer",
+  "created": "2025-10-11T14:50:01.738064",
+  "scenarios": [
+    {
+      "id": "sre_01",
+      "description": "Database latency spike",
+      "user_prompt": "URGENT: Database P95 latency spiked from 50ms to 2000ms 5 minutes ago.",
+      "expected_outcomes": [
+        "Immediate assessment",
+        "Checks recent changes",
+        "Implements rollback or mitigation",
+        "Sets up monitoring"
+      ],
+      "difficulty": "complex",
+      "domain": "sre"
+    },
+    {
+      "id": "sre_02",
+      "description": "Simple metrics query",
+      "user_prompt": "What's our API P95 latency for the last hour?",
+      "expected_outcomes": [
+        "Queries Prometheus",
+        "Returns current latency",
+        "Compares to SLO"
+      ],
+      "difficulty": "simple",
+      "domain": "sre"
+    }
+  ]
+}

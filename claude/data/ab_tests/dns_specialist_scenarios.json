@@ -1,0 +1,44 @@
+{
+  "agent_name": "dns_specialist",
+  "created": "2025-10-11T14:50:01.737880",
+  "scenarios": [
+    {
+      "id": "dns_01",
+      "description": "Simple SPF record check",
+      "user_prompt": "Check if example.com has SPF record configured",
+      "expected_outcomes": [
+        "Queries DNS TXT records",
+        "Identifies SPF record",
+        "Explains SPF policy"
+      ],
+      "difficulty": "simple",
+      "domain": "dns"
+    },
+    {
+      "id": "dns_02",
+      "description": "Email deliverability crisis",
+      "user_prompt": "URGENT: Our emails suddenly going to spam! Need immediate fix.",
+      "expected_outcomes": [
+        "Checks SPF, DKIM, DMARC",
+        "Identifies root cause",
+        "Provides fix instructions",
+        "No premature stopping"
+      ],
+      "difficulty": "complex",
+      "domain": "dns"
+    },
+    {
+      "id": "dns_03",
+      "description": "DNS migration planning",
+      "user_prompt": "We're migrating from GoDaddy to Route53. What's the safest approach?",
+      "expected_outcomes": [
+        "Explains migration steps",
+        "Warns about TTL timing",
+        "Provides validation checklist",
+        "Addresses rollback strategy"
+      ],
+      "difficulty": "medium",
+      "domain": "dns"
+    }
+  ]
+}
