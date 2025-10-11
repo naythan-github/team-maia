@@ -62,6 +62,51 @@ class DNSAuditor:
         except Exception as e:
             return "ERROR", f"Error: {str(e)[:50]}", ""
 
+    def check_dkim(self, domain: str) -> Tuple[str, str, str]:
+        """Check DKIM records across common selectors"""
+        # Common DKIM selectors to probe
+        common_selectors = [
+            'selector1', 'selector2',  # Microsoft 365
+            'google',                   # Google Workspace
+            's1', 's2',                # SendGrid
+            'default',                 # Generic
+            'k1', 'k2',                # Some mail servers
+            'dkim',                    # Generic
+            'mail',                    # Generic
+            'email',                   # Generic
+        ]
+
+        found_selectors = []
+
+        for selector in common_selectors:
+            dkim_domain = f"{selector}._domainkey.{domain}"
+            try:
+                answers = self.resolver.resolve(dkim_domain, 'TXT')
+                for rdata in answers:
+                    record = str(rdata).strip('"')
+                    if 'v=DKIM1' in record or 'p=' in record:
+                        # Check key length (rough estimate from public key)
+                        key_match = re.search(r'p=([A-Za-z0-9+/]+)', record)
+                        if key_match:
+                            key_b64 = key_match.group(1)
+                            key_bits = len(key_b64) * 6  # Rough estimate
+                            found_selectors.append(f"{selector}:{key_bits}b")
+                        else:
+                            found_selectors.append(selector)
+                        break
+            except (dns.resolver.NXDOMAIN, dns.resolver.NoAnswer, dns.exception.Timeout):
+                continue
+            except Exception:
+                continue
+
+        if not found_selectors:
+            return "FAIL", "No DKIM records found", ""
+
+        if len(found_selectors) >= 2:
+            return "PASS", f"DKIM configured ({len(found_selectors)} selectors)", ", ".join(found_selectors[:3])
+        else:
+            return "WARN", f"DKIM found (1 selector only)", ", ".join(found_selectors)
+
     def check_dmarc(self, domain: str) -> Tuple[str, str, str]:
         """Check DMARC record"""
         dmarc_domain = f"_dmarc.{domain}"
@@ -150,10 +195,11 @@ class DNSAuditor:
         ns_status, ns_note, ns_detail = self.check_ns(domain)
         mx_status, mx_note, mx_detail = self.check_mx(domain)
         spf_status, spf_note, spf_detail = self.check_spf(domain)
+        dkim_status, dkim_note, dkim_detail = self.check_dkim(domain)
         dmarc_status, dmarc_note, dmarc_detail = self.check_dmarc(domain)
 
         # Calculate overall status
-        statuses = [ns_status, mx_status, spf_status, dmarc_status]
+        statuses = [ns_status, mx_status, spf_status, dkim_status, dmarc_status]
         if "FAIL" in statuses or ns_status == "FAIL":
             overall = "FAIL"
         elif "ERROR" in statuses:
@@ -175,6 +221,9 @@ class DNSAuditor:
             'spf_status': spf_status,
             'spf_note': spf_note,
             'spf_detail': spf_detail,
+            'dkim_status': dkim_status,
+            'dkim_note': dkim_note,
+            'dkim_detail': dkim_detail,
             'dmarc_status': dmarc_status,
             'dmarc_note': dmarc_note,
             'dmarc_detail': dmarc_detail,
@@ -189,7 +238,7 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
 
     # Add headers if not present
     headers = ['Domain', 'Overall Status', 'NS Status', 'NS Note', 'MX Status', 'MX Note',
-               'SPF Status', 'SPF Note', 'DMARC Status', 'DMARC Note', 'Audit Date']
+               'SPF Status', 'SPF Note', 'DKIM Status', 'DKIM Note', 'DMARC Status', 'DMARC Note', 'Audit Date']
 
     # Clear existing headers and add new ones
     for col_idx, header in enumerate(headers, start=1):
@@ -237,9 +286,19 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
         elif result['spf_status'] == 'WARN':
             spf_status_cell.fill = YELLOW_FILL
 
+        # DKIM
+        dkim_status_cell = ws.cell(row=row_idx, column=9, value=result['dkim_status'])
+        ws.cell(row=row_idx, column=10, value=result['dkim_note'])
+        if result['dkim_status'] == 'PASS':
+            dkim_status_cell.fill = GREEN_FILL
+        elif result['dkim_status'] == 'FAIL':
+            dkim_status_cell.fill = RED_FILL
+        elif result['dkim_status'] == 'WARN':
+            dkim_status_cell.fill = YELLOW_FILL
+
         # DMARC
-        dmarc_status_cell = ws.cell(row=row_idx, column=9, value=result['dmarc_status'])
-        ws.cell(row=row_idx, column=10, value=result['dmarc_note'])
+        dmarc_status_cell = ws.cell(row=row_idx, column=11, value=result['dmarc_status'])
+        ws.cell(row=row_idx, column=12, value=result['dmarc_note'])
         if result['dmarc_status'] == 'PASS':
             dmarc_status_cell.fill = GREEN_FILL
         elif result['dmarc_status'] == 'FAIL':
@@ -248,7 +307,7 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
             dmarc_status_cell.fill = YELLOW_FILL
 
         # Audit date
-        ws.cell(row=row_idx, column=11, value=datetime.now().strftime('%Y-%m-%d %H:%M'))
+        ws.cell(row=row_idx, column=13, value=datetime.now().strftime('%Y-%m-%d %H:%M'))
 
     # Adjust column widths
     ws.column_dimensions['A'].width = 40
@@ -259,9 +318,11 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
     ws.column_dimensions['F'].width = 40
     ws.column_dimensions['G'].width = 12
     ws.column_dimensions['H'].width = 40
-    ws.column_dimensions['I'].width = 15
+    ws.column_dimensions['I'].width = 12
     ws.column_dimensions['J'].width = 40
-    ws.column_dimensions['K'].width = 18
+    ws.column_dimensions['K'].width = 15
+    ws.column_dimensions['L'].width = 40
+    ws.column_dimensions['M'].width = 18
 
     # Save workbook
     wb.save(output_file)
@@ -309,11 +370,13 @@ def main():
 
     # Breakdown
     spf_fail = sum(1 for r in results if r['spf_status'] == 'FAIL')
+    dkim_fail = sum(1 for r in results if r['dkim_status'] == 'FAIL')
     dmarc_fail = sum(1 for r in results if r['dmarc_status'] == 'FAIL')
     mx_fail = sum(1 for r in results if r['mx_status'] == 'FAIL')
 
     print(f"\n🔍 Issues Breakdown:")
     print(f"   SPF missing/failed:   {spf_fail} domains")
+    print(f"   DKIM missing/failed:  {dkim_fail} domains")
     print(f"   DMARC missing/failed: {dmarc_fail} domains")
     print(f"   MX missing/failed:    {mx_fail} domains")
 
