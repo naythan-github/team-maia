@@ -5,23 +5,24 @@
     {
       "agent_name": "dns_specialist",
       "v1_lines": 306,
-      "v2_lines": 1114,
-      "size_change_pct": 264.0522875816993,
+      "v2_lines": 550,
+      "size_change_pct": 79.73856209150327,
       "v1_quality_score": 38,
-      "v2_quality_score": 92,
-      "quality_improvement": 54,
+      "v2_quality_score": 63,
+      "quality_improvement": 25,
       "v1_few_shot_count": 0,
-      "v2_few_shot_count": 4,
+      "v2_few_shot_count": 0,
       "v1_issues": [
         "Missing Core Behavior Principles section",
         "Only 0 few-shot examples (need 2+ per key command)",
         "Missing tool-calling code patterns",
         "Missing Problem-Solving Approach section"
       ],
-      "v2_issues": [],
+      "v2_issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "improvements": [
         "Added Core Behavior Principles (OpenAI's 3 critical reminders)",
-        "Added few-shot examples (0 \u2192 4)",
         "Added tool-calling code patterns",
         "Added Problem-Solving Approach templates"
       ]
@@ -29,23 +30,24 @@
     {
       "agent_name": "sre_principal_engineer",
       "v1_lines": 45,
-      "v2_lines": 986,
-      "size_change_pct": 2091.1111111111113,
+      "v2_lines": 554,
+      "size_change_pct": 1131.111111111111,
       "v1_quality_score": 20,
-      "v2_quality_score": 85,
-      "quality_improvement": 65,
+      "v2_quality_score": 63,
+      "quality_improvement": 43,
       "v1_few_shot_count": 0,
-      "v2_few_shot_count": 3,
+      "v2_few_shot_count": 0,
       "v1_issues": [
         "Missing Core Behavior Principles section",
         "Only 0 few-shot examples (need 2+ per key command)",
         "Missing tool-calling code patterns",
         "Missing Problem-Solving Approach section"
       ],
-      "v2_issues": [],
+      "v2_issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "improvements": [
         "Added Core Behavior Principles (OpenAI's 3 critical reminders)",
-        "Added few-shot examples (0 \u2192 3)",
         "Added tool-calling code patterns",
         "Added Problem-Solving Approach templates",
         "Added Performance Metrics section"
@@ -54,23 +56,24 @@
     {
       "agent_name": "azure_solutions_architect",
       "v1_lines": 241,
-      "v2_lines": 760,
-      "size_change_pct": 215.35269709543567,
+      "v2_lines": 440,
+      "size_change_pct": 82.57261410788381,
       "v1_quality_score": 26,
-      "v2_quality_score": 85,
-      "quality_improvement": 59,
+      "v2_quality_score": 63,
+      "quality_improvement": 37,
       "v1_few_shot_count": 0,
-      "v2_few_shot_count": 3,
+      "v2_few_shot_count": 0,
       "v1_issues": [
         "Missing Core Behavior Principles section",
         "Only 0 few-shot examples (need 2+ per key command)",
         "Missing tool-calling code patterns",
         "Missing Problem-Solving Approach section"
       ],
-      "v2_issues": [],
+      "v2_issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "improvements": [
         "Added Core Behavior Principles (OpenAI's 3 critical reminders)",
-        "Added few-shot examples (0 \u2192 3)",
         "Added tool-calling code patterns",
         "Added Problem-Solving Approach templates",
         "Added Performance Metrics section"
@@ -79,23 +82,24 @@
     {
       "agent_name": "service_desk_manager",
       "v1_lines": 349,
-      "v2_lines": 1272,
-      "size_change_pct": 264.4699140401146,
+      "v2_lines": 392,
+      "size_change_pct": 12.320916905444127,
       "v1_quality_score": 20,
-      "v2_quality_score": 92,
-      "quality_improvement": 72,
+      "v2_quality_score": 63,
+      "quality_improvement": 43,
       "v1_few_shot_count": 0,
-      "v2_few_shot_count": 7,
+      "v2_few_shot_count": 0,
       "v1_issues": [
         "Missing Core Behavior Principles section",
         "Only 0 few-shot examples (need 2+ per key command)",
         "Missing tool-calling code patterns",
         "Missing Problem-Solving Approach section"
       ],
-      "v2_issues": [],
+      "v2_issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "improvements": [
         "Added Core Behavior Principles (OpenAI's 3 critical reminders)",
-        "Added few-shot examples (0 \u2192 7)",
         "Added tool-calling code patterns",
         "Added Problem-Solving Approach templates",
         "Added Performance Metrics section"
@@ -104,23 +108,24 @@
     {
       "agent_name": "ai_specialists",
       "v1_lines": 154,
-      "v2_lines": 1272,
-      "size_change_pct": 725.974025974026,
+      "v2_lines": 391,
+      "size_change_pct": 153.89610389610388,
       "v1_quality_score": 26,
-      "v2_quality_score": 92,
-      "quality_improvement": 66,
+      "v2_quality_score": 63,
+      "quality_improvement": 37,
       "v1_few_shot_count": 0,
-      "v2_few_shot_count": 5,
+      "v2_few_shot_count": 0,
       "v1_issues": [
         "Missing Core Behavior Principles section",
         "Only 0 few-shot examples (need 2+ per key command)",
         "Missing tool-calling code patterns",
         "Missing Problem-Solving Approach section"
       ],
-      "v2_issues": [],
+      "v2_issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "improvements": [
         "Added Core Behavior Principles (OpenAI's 3 critical reminders)",
-        "Added few-shot examples (0 \u2192 5)",
         "Added tool-calling code patterns",
         "Added Problem-Solving Approach templates",
         "Added Performance Metrics section"
@@ -132,24 +137,25 @@
       "agent_name": "dns_specialist",
       "version": "v2",
       "file_path": "claude/agents/dns_specialist_agent_v2.md",
-      "line_count": 1114,
+      "line_count": 550,
       "size_change_pct": 0.0,
       "has_agent_overview": true,
       "has_core_behavior_principles": true,
       "has_openai_3_reminders": true,
-      "has_few_shot_examples": true,
-      "few_shot_example_count": 4,
+      "has_few_shot_examples": false,
+      "few_shot_example_count": 0,
       "has_tool_calling_patterns": true,
       "has_problem_solving_templates": true,
       "has_performance_metrics": true,
       "has_integration_points": true,
-      "template_compliance_score": 100,
-      "few_shot_quality_score": 85,
-      "overall_quality_score": 92,
-      "issues": [],
+      "template_compliance_score": 87,
+      "few_shot_quality_score": 40,
+      "overall_quality_score": 63,
+      "issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "strengths": [
         "Has Core Behavior Principles with OpenAI reminders",
-        "Has 4 few-shot examples",
         "Includes tool-calling code patterns",
         "Has Problem-Solving templates"
       ]
@@ -158,24 +164,25 @@
       "agent_name": "sre_principal_engineer",
       "version": "v2",
       "file_path": "claude/agents/sre_principal_engineer_agent_v2.md",
-      "line_count": 986,
+      "line_count": 554,
       "size_change_pct": 0.0,
       "has_agent_overview": true,
       "has_core_behavior_principles": true,
       "has_openai_3_reminders": true,
-      "has_few_shot_examples": true,
-      "few_shot_example_count": 3,
+      "has_few_shot_examples": false,
+      "few_shot_example_count": 0,
       "has_tool_calling_patterns": true,
       "has_problem_solving_templates": true,
       "has_performance_metrics": true,
       "has_integration_points": true,
-      "template_compliance_score": 100,
-      "few_shot_quality_score": 70,
-      "overall_quality_score": 85,
-      "issues": [],
+      "template_compliance_score": 87,
+      "few_shot_quality_score": 40,
+      "overall_quality_score": 63,
+      "issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "strengths": [
         "Has Core Behavior Principles with OpenAI reminders",
-        "Has 3 few-shot examples",
         "Includes tool-calling code patterns",
         "Has Problem-Solving templates"
       ]
@@ -184,24 +191,25 @@
       "agent_name": "azure_solutions_architect",
       "version": "v2",
       "file_path": "claude/agents/azure_solutions_architect_agent_v2.md",
-      "line_count": 760,
+      "line_count": 440,
       "size_change_pct": 0.0,
       "has_agent_overview": true,
       "has_core_behavior_principles": true,
       "has_openai_3_reminders": true,
-      "has_few_shot_examples": true,
-      "few_shot_example_count": 3,
+      "has_few_shot_examples": false,
+      "few_shot_example_count": 0,
       "has_tool_calling_patterns": true,
       "has_problem_solving_templates": true,
       "has_performance_metrics": true,
       "has_integration_points": true,
-      "template_compliance_score": 100,
-      "few_shot_quality_score": 70,
-      "overall_quality_score": 85,
-      "issues": [],
+      "template_compliance_score": 87,
+      "few_shot_quality_score": 40,
+      "overall_quality_score": 63,
+      "issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "strengths": [
         "Has Core Behavior Principles with OpenAI reminders",
-        "Has 3 few-shot examples",
         "Includes tool-calling code patterns",
         "Has Problem-Solving templates"
       ]
@@ -210,24 +218,25 @@
       "agent_name": "service_desk_manager",
       "version": "v2",
       "file_path": "claude/agents/service_desk_manager_agent_v2.md",
-      "line_count": 1272,
+      "line_count": 392,
       "size_change_pct": 0.0,
       "has_agent_overview": true,
       "has_core_behavior_principles": true,
       "has_openai_3_reminders": true,
-      "has_few_shot_examples": true,
-      "few_shot_example_count": 7,
+      "has_few_shot_examples": false,
+      "few_shot_example_count": 0,
       "has_tool_calling_patterns": true,
       "has_problem_solving_templates": true,
       "has_performance_metrics": true,
       "has_integration_points": true,
-      "template_compliance_score": 100,
-      "few_shot_quality_score": 85,
-      "overall_quality_score": 92,
-      "issues": [],
+      "template_compliance_score": 87,
+      "few_shot_quality_score": 40,
+      "overall_quality_score": 63,
+      "issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "strengths": [
         "Has Core Behavior Principles with OpenAI reminders",
-        "Has 7 few-shot examples",
         "Includes tool-calling code patterns",
         "Has Problem-Solving templates"
       ]
@@ -236,39 +245,40 @@
       "agent_name": "ai_specialists",
       "version": "v2",
       "file_path": "claude/agents/ai_specialists_agent_v2.md",
-      "line_count": 1272,
+      "line_count": 391,
       "size_change_pct": 0.0,
       "has_agent_overview": true,
       "has_core_behavior_principles": true,
       "has_openai_3_reminders": true,
-      "has_few_shot_examples": true,
-      "few_shot_example_count": 5,
+      "has_few_shot_examples": false,
+      "few_shot_example_count": 0,
       "has_tool_calling_patterns": true,
       "has_problem_solving_templates": true,
       "has_performance_metrics": true,
       "has_integration_points": true,
-      "template_compliance_score": 100,
-      "few_shot_quality_score": 85,
-      "overall_quality_score": 92,
-      "issues": [],
+      "template_compliance_score": 87,
+      "few_shot_quality_score": 40,
+      "overall_quality_score": 63,
+      "issues": [
+        "Only 0 few-shot examples (need 2+ per key command)"
+      ],
       "strengths": [
         "Has Core Behavior Principles with OpenAI reminders",
-        "Has 5 few-shot examples",
         "Includes tool-calling code patterns",
         "Has Problem-Solving templates"
       ]
     }
   ],
   "summary": {
-    "avg_size_change_pct": 712.1920071604774,
-    "avg_quality_improvement": 63.2,
-    "avg_v2_quality_score": 89.2,
-    "total_few_shot_examples": 22,
+    "avg_size_change_pct": 291.92786162240924,
+    "avg_quality_improvement": 37.0,
+    "avg_v2_quality_score": 63.0,
+    "total_few_shot_examples": 0,
     "template_compliance": {
       "Agent Overview": 5,
       "Core Behavior Principles": 5,
       "OpenAI 3 Reminders": 5,
-      "Few-Shot Examples": 5,
+      "Few-Shot Examples": 0,
       "Tool-Calling Patterns": 5,
       "Problem-Solving Templates": 5,
       "Performance Metrics": 5,
@@ -276,12 +286,14 @@
     }
   },
   "lessons_learned": [
-    "\u2705 All agents have 2+ few-shot examples",
-    "\u2705 All agents have excellent template compliance (90%+)",
-    "\u26a0\ufe0f  Very large size increase (+712%) - may impact performance",
-    "\u2705 Strong quality improvement (+63.2 points)"
+    "\u26a0\ufe0f  5 agents have <2 few-shot examples per command (need minimum 2)",
+    "\u26a0\ufe0f  5 agents have <90% template compliance",
+    "\u2705 Significant size increase (+292%) indicates comprehensive upgrades",
+    "\u2705 Strong quality improvement (+37.0 points)"
   ],
   "recommendations": [
-    "Consider template optimization - average +500% size may be excessive"
+    "Increase few-shot examples to 4+ per agent (current avg: 0.0)",
+    "Target 85+ quality score for remaining agents (current avg: 63.0)",
+    "Address common issue: 'Only 0 few-shot examples (need 2+ per key command)' (found in 5 agents)"
   ]
 }
