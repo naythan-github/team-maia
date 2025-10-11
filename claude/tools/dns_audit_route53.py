@@ -237,8 +237,13 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
     ws = wb.active
 
     # Add headers if not present
-    headers = ['Domain', 'Overall Status', 'NS Status', 'NS Note', 'MX Status', 'MX Note',
-               'SPF Status', 'SPF Note', 'DKIM Status', 'DKIM Note', 'DMARC Status', 'DMARC Note', 'Audit Date']
+    headers = ['Domain', 'Overall Status',
+               'NS Status', 'NS Note', 'NS Details',
+               'MX Status', 'MX Note', 'MX Details',
+               'SPF Status', 'SPF Note', 'SPF Details',
+               'DKIM Status', 'DKIM Note', 'DKIM Details',
+               'DMARC Status', 'DMARC Note', 'DMARC Details',
+               'Audit Date']
 
     # Clear existing headers and add new ones
     for col_idx, header in enumerate(headers, start=1):
@@ -261,14 +266,16 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
         # NS
         ns_status_cell = ws.cell(row=row_idx, column=3, value=result['ns_status'])
         ws.cell(row=row_idx, column=4, value=result['ns_note'])
+        ws.cell(row=row_idx, column=5, value=result['ns_detail'])
         if result['ns_status'] == 'PASS':
             ns_status_cell.fill = GREEN_FILL
         elif result['ns_status'] == 'FAIL':
             ns_status_cell.fill = RED_FILL
 
         # MX
-        mx_status_cell = ws.cell(row=row_idx, column=5, value=result['mx_status'])
-        ws.cell(row=row_idx, column=6, value=result['mx_note'])
+        mx_status_cell = ws.cell(row=row_idx, column=6, value=result['mx_status'])
+        ws.cell(row=row_idx, column=7, value=result['mx_note'])
+        ws.cell(row=row_idx, column=8, value=result['mx_detail'])
         if result['mx_status'] == 'PASS':
             mx_status_cell.fill = GREEN_FILL
         elif result['mx_status'] == 'FAIL':
@@ -277,8 +284,9 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
             mx_status_cell.fill = YELLOW_FILL
 
         # SPF
-        spf_status_cell = ws.cell(row=row_idx, column=7, value=result['spf_status'])
-        ws.cell(row=row_idx, column=8, value=result['spf_note'])
+        spf_status_cell = ws.cell(row=row_idx, column=9, value=result['spf_status'])
+        ws.cell(row=row_idx, column=10, value=result['spf_note'])
+        ws.cell(row=row_idx, column=11, value=result['spf_detail'])
         if result['spf_status'] == 'PASS':
             spf_status_cell.fill = GREEN_FILL
         elif result['spf_status'] == 'FAIL':
@@ -287,8 +295,9 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
             spf_status_cell.fill = YELLOW_FILL
 
         # DKIM
-        dkim_status_cell = ws.cell(row=row_idx, column=9, value=result['dkim_status'])
-        ws.cell(row=row_idx, column=10, value=result['dkim_note'])
+        dkim_status_cell = ws.cell(row=row_idx, column=12, value=result['dkim_status'])
+        ws.cell(row=row_idx, column=13, value=result['dkim_note'])
+        ws.cell(row=row_idx, column=14, value=result['dkim_detail'])
         if result['dkim_status'] == 'PASS':
             dkim_status_cell.fill = GREEN_FILL
         elif result['dkim_status'] == 'FAIL':
@@ -297,8 +306,9 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
             dkim_status_cell.fill = YELLOW_FILL
 
         # DMARC
-        dmarc_status_cell = ws.cell(row=row_idx, column=11, value=result['dmarc_status'])
-        ws.cell(row=row_idx, column=12, value=result['dmarc_note'])
+        dmarc_status_cell = ws.cell(row=row_idx, column=15, value=result['dmarc_status'])
+        ws.cell(row=row_idx, column=16, value=result['dmarc_note'])
+        ws.cell(row=row_idx, column=17, value=result['dmarc_detail'])
         if result['dmarc_status'] == 'PASS':
             dmarc_status_cell.fill = GREEN_FILL
         elif result['dmarc_status'] == 'FAIL':
@@ -307,22 +317,27 @@ def update_excel_with_results(input_file: str, output_file: str, results: List[D
             dmarc_status_cell.fill = YELLOW_FILL
 
         # Audit date
-        ws.cell(row=row_idx, column=13, value=datetime.now().strftime('%Y-%m-%d %H:%M'))
+        ws.cell(row=row_idx, column=18, value=datetime.now().strftime('%Y-%m-%d %H:%M'))
 
     # Adjust column widths
-    ws.column_dimensions['A'].width = 40
-    ws.column_dimensions['B'].width = 15
-    ws.column_dimensions['C'].width = 12
-    ws.column_dimensions['D'].width = 40
-    ws.column_dimensions['E'].width = 12
-    ws.column_dimensions['F'].width = 40
-    ws.column_dimensions['G'].width = 12
-    ws.column_dimensions['H'].width = 40
-    ws.column_dimensions['I'].width = 12
-    ws.column_dimensions['J'].width = 40
-    ws.column_dimensions['K'].width = 15
-    ws.column_dimensions['L'].width = 40
-    ws.column_dimensions['M'].width = 18
+    ws.column_dimensions['A'].width = 40  # Domain
+    ws.column_dimensions['B'].width = 15  # Overall Status
+    ws.column_dimensions['C'].width = 12  # NS Status
+    ws.column_dimensions['D'].width = 30  # NS Note
+    ws.column_dimensions['E'].width = 50  # NS Details
+    ws.column_dimensions['F'].width = 12  # MX Status
+    ws.column_dimensions['G'].width = 30  # MX Note
+    ws.column_dimensions['H'].width = 50  # MX Details
+    ws.column_dimensions['I'].width = 12  # SPF Status
+    ws.column_dimensions['J'].width = 30  # SPF Note
+    ws.column_dimensions['K'].width = 80  # SPF Details (full record)
+    ws.column_dimensions['L'].width = 12  # DKIM Status
+    ws.column_dimensions['M'].width = 30  # DKIM Note
+    ws.column_dimensions['N'].width = 50  # DKIM Details
+    ws.column_dimensions['O'].width = 12  # DMARC Status
+    ws.column_dimensions['P'].width = 30  # DMARC Note
+    ws.column_dimensions['Q'].width = 80  # DMARC Details (full record)
+    ws.column_dimensions['R'].width = 18  # Audit Date
 
     # Save workbook
     wb.save(output_file)
