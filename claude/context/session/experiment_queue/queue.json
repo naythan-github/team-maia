@@ -1,0 +1,32 @@
+[
+  {
+    "experiment_id": "exp_002",
+    "agent_name": "jobs_agent",
+    "priority": "medium",
+    "status": "paused",
+    "created_at": "2025-10-12T15:32:58.795829",
+    "started_at": "2025-10-12T15:32:58.795936",
+    "completed_at": null,
+    "notes": "Resume parsing test\nPaused: Waiting for more data"
+  },
+  {
+    "experiment_id": "exp_003",
+    "agent_name": "linkedin_advisor",
+    "priority": "low",
+    "status": "active",
+    "created_at": "2025-10-12T15:32:58.796033",
+    "started_at": "2025-10-12T15:32:58.796179",
+    "completed_at": null,
+    "notes": "Engagement optimization"
+  },
+  {
+    "experiment_id": "exp_004",
+    "agent_name": "financial_advisor",
+    "priority": "high",
+    "status": "active",
+    "created_at": "2025-10-12T15:32:58.796281",
+    "started_at": "2025-10-12T15:32:58.797149",
+    "completed_at": null,
+    "notes": "Risk assessment test"
+  }
+]
