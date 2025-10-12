@@ -14,8 +14,14 @@ Usage:
     result = route_and_execute("Setup DNS authentication for example.com")
 """
 
+import sys
 from typing import Dict, Any, Optional
 from pathlib import Path
+
+# Add orchestration directory to path for imports
+_orchestration_dir = Path(__file__).parent
+if str(_orchestration_dir) not in sys.path:
+    sys.path.insert(0, str(_orchestration_dir))
 
 from coordinator_agent import CoordinatorAgent, RoutingDecision
 from swarm_conversation_bridge import SwarmConversationBridge, load_agent_prompt
