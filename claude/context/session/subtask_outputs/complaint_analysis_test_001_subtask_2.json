@@ -1,0 +1,14 @@
+{
+  "chain_id": "complaint_analysis_test_001",
+  "subtask_id": 2,
+  "subtask_name": "Root Cause Analysis (5-Whys)",
+  "timestamp": "2025-10-11T20:47:07.720273",
+  "execution_time_seconds": 5e-06,
+  "output": {
+    "status": "mock_execution",
+    "note": "This is mock output. In production, would call Claude Code agent.",
+    "prompt_preview": "You are the Service Desk Manager agent performing root cause analysis.\n\nCONTEXT:\n- Top complaint patterns identified in previous analysis\n- Organization: {organization_context}\n- Goal: Identify true r..."
+  },
+  "prompt_used": "You are the Service Desk Manager agent performing root cause analysis.\n\nCONTEXT:\n- Top complaint patterns identified in previous analysis\n- Organization: {organization_context}\n- Goal: Identify true root causes using 5-Whys methodology\n\nPATTERNS TO ANALYZE:\n{top_3_patterns}\n\nDETAILED PATTERN DATA:\n{complaint_patterns}\n\nTASK:\nFor EACH of the top 3 patterns:\n\n1. Apply 5-Whys Methodology:\n   - Start with the surface problem\n   - Ask \"Why\" 5 times, going deeper each time\n   - Document each level of causation\n   - Reach the root cause (usually organizational, process, or systemic)\n\n2. Identify Contributing Factors:\n   - What else contributed to this issue?\n   - Are there multiple root causes?\n   - What enabled this to persist?\n\n3. Validate with Evidence:\n   - Reference metrics from pattern analysis\n   - Connect to known organizational issues\n   - Verify assumptions with data\n\n4. Categorize Solutions:\n   - Quick Wins: Can implement in <2 weeks\n   - Medium-Term: 1-3 months implementation\n   - Long-Term: >3 months or systemic change\n\nOUTPUT FORMAT:\nReturn JSON with:\n- root_cause_analysis: Array of 5-Whys analyses (one per top pattern)\n- systemic_issues: Underlying organizational issues discovered\n- quick_wins: Immediate actions that can be taken\n- long_term_fixes: Structural changes needed\n\nQUALITY CRITERIA:\n✅ Each 5-Whys must reach organizational/process root cause (not symptoms)\n✅ Root causes must be actionable (not \"bad luck\" or external factors)\n✅ Evidence-based validation (reference metrics)\n✅ Clear distinction between quick wins and long-term fixes",
+  "error": null
+}

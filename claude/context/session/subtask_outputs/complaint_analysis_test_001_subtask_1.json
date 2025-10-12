@@ -1,0 +1,14 @@
+{
+  "chain_id": "complaint_analysis_test_001",
+  "subtask_id": 1,
+  "subtask_name": "Complaint Pattern Extraction",
+  "timestamp": "2025-10-11T20:47:07.720097",
+  "execution_time_seconds": 4.7e-05,
+  "output": {
+    "status": "mock_execution",
+    "note": "This is mock output. In production, would call Claude Code agent.",
+    "prompt_preview": "You are the Service Desk Manager agent analyzing complaint patterns.\n\nCONTEXT:\n- Complaint tickets from last {timeframe} days\n- Focus categories: [\n  \"escalation\",\n  \"resolution_time\"\n]\n- Goal: Identi..."
+  },
+  "prompt_used": "You are the Service Desk Manager agent analyzing complaint patterns.\n\nCONTEXT:\n- Complaint tickets from last {timeframe} days\n- Focus categories: [\n  \"escalation\",\n  \"resolution_time\"\n]\n- Goal: Identify recurring patterns for root cause analysis\n\nDATA:\n[\n  {\n    \"id\": 1,\n    \"issue\": \"Exchange escalation\",\n    \"client\": \"Client A\"\n  }\n]\n\nTASK:\n1. Group complaints by similarity (technical issue, process gap, knowledge gap, vendor delay, communication issue)\n2. Calculate frequency and impact for each pattern\n3. Identify top 3 patterns by combined frequency + severity\n4. Note common themes and client impact\n5. Highlight unusual spikes or trends\n\nOUTPUT FORMAT:\nReturn JSON with:\n- complaint_patterns: Array of pattern objects\n- top_3_patterns: Array of pattern names (prioritized)\n- pattern_insights: Key observations about patterns\n- affected_stakeholders: Clients/teams most impacted\n\nQUALITY CRITERIA:\n✅ Patterns must have 3+ occurrences (statistical relevance)\n✅ Each pattern must have clear common theme\n✅ Prioritization based on frequency × severity\n✅ Client impact quantified where possible",
+  "error": null
+}

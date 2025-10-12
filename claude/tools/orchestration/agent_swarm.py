@@ -116,8 +116,8 @@ class HandoffParser:
         r'HANDOFF DECLARATION:\s*\n'
         r'To:\s*([^\n]+)\n'
         r'Reason:\s*([^\n]+)\n'
-        r'Context:\s*\n(.*?)(?=\n\n|$)',
-        re.DOTALL | re.MULTILINE
+        r'Context:\s*\n((?:.*\n)*?)(?:\n\n|$)',
+        re.MULTILINE
     )
 
     @classmethod

@@ -1,0 +1,14 @@
+{
+  "chain_id": "complaint_analysis_test_001",
+  "subtask_id": 3,
+  "subtask_name": "Prioritized Action Plan Generation",
+  "timestamp": "2025-10-11T20:47:07.720414",
+  "execution_time_seconds": 4e-06,
+  "output": {
+    "status": "mock_execution",
+    "note": "This is mock output. In production, would call Claude Code agent.",
+    "prompt_preview": "You are the Service Desk Manager agent creating a comprehensive action plan.\n\nCONTEXT:\n- Root cause analysis complete with quick wins and long-term fixes identified\n- Available resources: {available_r..."
+  },
+  "prompt_used": "You are the Service Desk Manager agent creating a comprehensive action plan.\n\nCONTEXT:\n- Root cause analysis complete with quick wins and long-term fixes identified\n- Available resources: {available_resources}\n- Goal: Create prioritized, actionable plan with accountability\n\nROOT CAUSE ANALYSIS RESULTS:\n{root_cause_analysis}\n\nQUICK WINS IDENTIFIED:\n{quick_wins}\n\nLONG-TERM FIXES IDENTIFIED:\n{long_term_fixes}\n\nTASK:\n1. Create Comprehensive Action Plan:\n   - Categorize by timeline (Quick Wins <2 weeks, Medium-Term 1-3 months, Long-Term >3 months)\n   - For EACH action, specify:\n     * Clear action description\n     * Named owner (role or person)\n     * Realistic timeline\n     * Effort estimate (Low/Medium/High with time details)\n     * Expected impact (Low/Medium/High with metrics)\n     * Success metrics (measurable outcomes)\n     * Dependencies (what's needed to start/complete)\n\n2. Build Prioritization Matrix:\n   - Plot actions on Impact (Low/High) × Effort (Low/High) matrix\n   - Highlight quick wins (high impact, low effort)\n   - Flag high-effort items needing leadership approval\n\n3. Resource Planning:\n   - Calculate total budget needed\n   - Estimate time requirements (immediate + ongoing)\n   - Identify people/teams required\n   - Check against available resources\n\n4. Risk Assessment:\n   - Identify risks to action plan execution\n   - Assess probability and impact\n   - Propose mitigation strategies\n\n5. Communication Plan:\n   - List key stakeholders requiring updates\n   - Draft key messages\n   - Plan communication timeline\n\nOUTPUT FORMAT:\nReturn JSON with:\n- action_plan: Object with quick_wins, medium_term, long_term arrays\n- prioritization_matrix: Impact/effort quadrants\n- resource_requirements: Budget, time, people summary\n- risk_assessment: Array of risk objects with mitigations\n- communication_plan: Stakeholder communication strategy\n\nQUALITY CRITERIA:\n✅ Every action has named owner and deadline\n✅ Success metrics are measurable (not vague)\n✅ Resource estimates are realistic\n✅ Risks have concrete mitigation strategies\n✅ Prioritization is data-driven (impact × effort)",
+  "error": null
+}
