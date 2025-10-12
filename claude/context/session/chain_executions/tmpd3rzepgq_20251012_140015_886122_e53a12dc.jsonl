@@ -1,0 +1,33 @@
+{
+  "chain_id": "tmpd3rzepgq_20251012_140015_886122_e53a12dc",
+  "workflow_name": "tmpd3rzepgq",
+  "start_time": "2025-10-12T14:00:15.886128",
+  "end_time": "2025-10-12T14:00:15.886136",
+  "status": "completed",
+  "initial_input": {
+    "test": "convenience"
+  },
+  "subtask_executions": [
+    {
+      "subtask_id": 1,
+      "name": "Subtask 1",
+      "status": "completed",
+      "start_time": "2025-10-12T14:00:15.886131",
+      "end_time": "2025-10-12T14:00:15.886134",
+      "input_data": {
+        "test": "convenience"
+      },
+      "output_data": {},
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 1,
+      "execution_time_ms": 0.003
+    }
+  ],
+  "final_output": {},
+  "total_tokens": 1,
+  "total_time_ms": 0.003,
+  "success_count": 1,
+  "failure_count": 0
+}

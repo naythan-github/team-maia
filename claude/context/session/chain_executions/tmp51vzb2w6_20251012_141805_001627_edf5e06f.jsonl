@@ -1,0 +1,33 @@
+{
+  "chain_id": "tmp51vzb2w6_20251012_141805_001627_edf5e06f",
+  "workflow_name": "tmp51vzb2w6",
+  "start_time": "2025-10-12T14:18:05.001631",
+  "end_time": "2025-10-12T14:18:05.001637",
+  "status": "completed",
+  "initial_input": {
+    "test": "convenience"
+  },
+  "subtask_executions": [
+    {
+      "subtask_id": 1,
+      "name": "Single",
+      "status": "completed",
+      "start_time": "2025-10-12T14:18:05.001633",
+      "end_time": "2025-10-12T14:18:05.001635",
+      "input_data": {
+        "test": "convenience"
+      },
+      "output_data": {},
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 1,
+      "execution_time_ms": 0.002
+    }
+  ],
+  "final_output": {},
+  "total_tokens": 1,
+  "total_time_ms": 0.002,
+  "success_count": 1,
+  "failure_count": 0
+}

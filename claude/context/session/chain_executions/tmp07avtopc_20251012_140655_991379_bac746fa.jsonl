@@ -1,0 +1,33 @@
+{
+  "chain_id": "tmp07avtopc_20251012_140655_991379_bac746fa",
+  "workflow_name": "tmp07avtopc",
+  "start_time": "2025-10-12T14:06:55.991385",
+  "end_time": "2025-10-12T14:06:55.991391",
+  "status": "completed",
+  "initial_input": {
+    "test": "convenience"
+  },
+  "subtask_executions": [
+    {
+      "subtask_id": 1,
+      "name": "Subtask 1",
+      "status": "completed",
+      "start_time": "2025-10-12T14:06:55.991387",
+      "end_time": "2025-10-12T14:06:55.991389",
+      "input_data": {
+        "test": "convenience"
+      },
+      "output_data": {},
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 1,
+      "execution_time_ms": 0.002
+    }
+  ],
+  "final_output": {},
+  "total_tokens": 1,
+  "total_time_ms": 0.002,
+  "success_count": 1,
+  "failure_count": 0
+}

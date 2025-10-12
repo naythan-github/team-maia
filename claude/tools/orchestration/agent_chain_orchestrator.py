@@ -136,12 +136,15 @@ class WorkflowParser:
         for subtask_num, subtask_content in matches:
             subtask_id = int(subtask_num)
 
-            # Extract subtask components
-            name = self._extract_section(subtask_content, r'### Subtask \d+: (.*?)\n')
+            # Extract subtask name from the heading captured in regex group 2
+            # Format: "### Subtask N: Name Here" where subtask_content starts after the colon
+            name = subtask_content.split('\n')[0].strip()
+
+            # Extract goal
             goal = self._extract_section(subtask_content, r'\*\*Goal\*\*: (.*?)\n')
 
-            # Extract input schema (JSON block after **Input**)
-            input_schema = self._extract_json_block(subtask_content, r'\*\*Input\*\*:')
+            # Extract input schema (support both JSON blocks and bullet lists)
+            input_schema = self._extract_input_schema(subtask_content)
 
             # Extract output schema (JSON block after **Output**)
             output_schema = self._extract_json_block(subtask_content, r'\*\*Output\*\*:')
@@ -164,10 +167,83 @@ class WorkflowParser:
 
         return subtasks
 
+    def _extract_input_schema(self, content: str) -> Dict[str, Any]:
+        """Extract input schema from either JSON block or bullet list format
+
+        Handles two formats:
+        1. JSON block: **Input**: ```json {...} ```
+        2. Bullet list: **Input**: - `key`: description
+        """
+        marker = '**Input**:'
+        marker_pos = content.find(marker)
+        if marker_pos == -1:
+            return {}
+
+        # Check what comes after **Input**: to determine format
+        # Look for either ``` (JSON block) or newline + dash (bullet list)
+        after_input = content[marker_pos + len(marker):marker_pos + len(marker) + 50]
+
+        # If we see ``` within 5 chars, it's a JSON block
+        if '```' in after_input[:10]:
+            json_schema = self._extract_json_block(content, r'\*\*Input\*\*:')
+            if json_schema:
+                return json_schema
+
+        # Otherwise, parse as bullet list (the real workflow format)
+
+        # Find the section between **Input**: and the next **Section**:
+        next_section_pattern = r'\*\*[A-Z][a-z]+\*\*:'
+        next_section = re.search(next_section_pattern, content[marker_pos + len(marker):])
+
+        if next_section:
+            section_end = marker_pos + len(marker) + next_section.start()
+            input_section = content[marker_pos + len(marker):section_end]
+        else:
+            input_section = content[marker_pos + len(marker):]
+
+        # Parse bullet list format: - `key`: description
+        schema = {}
+        bullet_pattern = r'-\s+`([^`]+)`:\s*([^\n]+)'
+        matches = re.findall(bullet_pattern, input_section)
+
+        for key, description in matches:
+            # Infer type from description
+            desc_lower = description.lower()
+            if 'boolean' in desc_lower or 'true' in desc_lower or 'false' in desc_lower:
+                param_type = 'boolean'
+            elif 'array' in desc_lower or 'list' in desc_lower or '[' in description:
+                param_type = 'array'
+            elif 'number' in desc_lower or 'integer' in desc_lower:
+                param_type = 'number'
+            else:
+                param_type = 'string'
+
+            schema[key] = {
+                'type': param_type,
+                'description': description.strip()
+            }
+
+        return schema
+
     def _extract_json_block(self, content: str, after_marker: str) -> Dict[str, Any]:
-        """Extract JSON block that appears after a marker"""
+        """Extract JSON block that appears after a marker
+
+        Args:
+            after_marker: Can be regex pattern (like r'\*\*Output\*\*:') or literal string
+        """
+        # Convert regex pattern to literal string if needed
+        if after_marker.startswith('r\\'):
+            # It's already a regex pattern, extract the actual string
+            marker_text = after_marker.replace(r'\*\*', '**').replace(r'\:', ':')
+        elif '\\*\\*' in after_marker:
+            # It's an escaped pattern
+            marker_text = after_marker.replace(r'\*\*', '**').replace(r'\:', ':')
+        else:
+            # It's a literal string
+            marker_text = after_marker
+
         # Find marker, then find next ```json block
-        marker_pos = content.find(after_marker)
+        marker_pos = content.find(marker_text)
         if marker_pos == -1:
             return {}
 
@@ -197,8 +273,23 @@ class WorkflowParser:
             return {}
 
     def _extract_code_block(self, content: str, after_marker: str) -> str:
-        """Extract code block (``` ... ```) after marker"""
-        marker_pos = content.find(after_marker)
+        """Extract code block (``` ... ```) after marker
+
+        Args:
+            after_marker: Can be regex pattern (like r'\*\*Prompt\*\*:') or literal string
+        """
+        # Convert regex pattern to literal string if needed
+        if after_marker.startswith('r\\'):
+            # It's already a regex pattern, extract the actual string
+            marker_text = after_marker.replace(r'\*\*', '**').replace(r'\:', ':')
+        elif '\\*\\*' in after_marker:
+            # It's an escaped pattern
+            marker_text = after_marker.replace(r'\*\*', '**').replace(r'\:', ':')
+        else:
+            # It's a literal string
+            marker_text = after_marker
+
+        marker_pos = content.find(marker_text)
         if marker_pos == -1:
             return ""
 

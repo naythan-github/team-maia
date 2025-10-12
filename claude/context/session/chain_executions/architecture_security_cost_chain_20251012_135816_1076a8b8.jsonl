@@ -1,0 +1,72 @@
+{
+  "chain_id": "architecture_security_cost_chain_20251012_135816_1076a8b8",
+  "workflow_name": "architecture_security_cost_chain",
+  "start_time": "2025-10-12T13:58:16.372638",
+  "end_time": "2025-10-12T13:58:16.372660",
+  "status": "completed",
+  "initial_input": {
+    "domain": "example.com",
+    "include_subdomains": true
+  },
+  "subtask_executions": [
+    {
+      "subtask_id": 1,
+      "name": "Subtask 1",
+      "status": "completed",
+      "start_time": "2025-10-12T13:58:16.372643",
+      "end_time": "2025-10-12T13:58:16.372649",
+      "input_data": {
+        "domain": "example.com",
+        "include_subdomains": true
+      },
+      "output_data": {},
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 1,
+      "execution_time_ms": 0.006
+    },
+    {
+      "subtask_id": 2,
+      "name": "Subtask 2",
+      "status": "completed",
+      "start_time": "2025-10-12T13:58:16.372653",
+      "end_time": "2025-10-12T13:58:16.372655",
+      "input_data": {
+        "domain": "example.com",
+        "include_subdomains": true,
+        "subtask_1_output": {}
+      },
+      "output_data": {},
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 1,
+      "execution_time_ms": 0.002
+    },
+    {
+      "subtask_id": 3,
+      "name": "Subtask 3",
+      "status": "completed",
+      "start_time": "2025-10-12T13:58:16.372657",
+      "end_time": "2025-10-12T13:58:16.372659",
+      "input_data": {
+        "domain": "example.com",
+        "include_subdomains": true,
+        "subtask_1_output": {},
+        "subtask_2_output": {}
+      },
+      "output_data": {},
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 1,
+      "execution_time_ms": 0.002
+    }
+  ],
+  "final_output": {},
+  "total_tokens": 3,
+  "total_time_ms": 0.01,
+  "success_count": 3,
+  "failure_count": 0
+}

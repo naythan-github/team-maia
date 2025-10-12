@@ -1,0 +1,33 @@
+{
+  "chain_id": "tmpdnfnzhsc_20251012_140043_444859_38b7a1f0",
+  "workflow_name": "tmpdnfnzhsc",
+  "start_time": "2025-10-12T14:00:43.444862",
+  "end_time": "2025-10-12T14:00:43.444868",
+  "status": "completed",
+  "initial_input": {
+    "test": "convenience"
+  },
+  "subtask_executions": [
+    {
+      "subtask_id": 1,
+      "name": "Subtask 1",
+      "status": "completed",
+      "start_time": "2025-10-12T14:00:43.444864",
+      "end_time": "2025-10-12T14:00:43.444867",
+      "input_data": {
+        "test": "convenience"
+      },
+      "output_data": {},
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 1,
+      "execution_time_ms": 0.003
+    }
+  ],
+  "final_output": {},
+  "total_tokens": 1,
+  "total_time_ms": 0.003,
+  "success_count": 1,
+  "failure_count": 0
+}
