@@ -1,0 +1,35 @@
+[
+  {
+    "task_description": "Write a Python function to calculate fibonacci numbers",
+    "domain": "code",
+    "prompt_type": "few_shot",
+    "selected_prompt_id": "prompt_20251012_180317_1",
+    "selected_prompt_text": "You are a expert software engineer.\n\nTask: Write a Python function to calculate fibonacci numbers\n\nExamples:\n\nExample 1:\nInput: Write a function to reverse a string\nOutput: def reverse_string(s: str) -> str:\n    return s[::-1]\n\nExample 2:\nInput: Create a binary search function\nOutput: def binary_search(arr: list, target: int) -> int:\n    left, right = 0, len(arr)-1\n    while left <= right:\n        mid = (left+right)//2\n        if arr[mid] == target: return mid\n        elif arr[mid] < target: left = mid+1\n        else: right = mid-1\n    return -1\n\n\nConstraints:\n- Include type hints\n- Add docstring\n- Handle edge cases\n\nOutput Format: Provide clear, structured output.",
+    "selected_prompt_score": 96.67,
+    "strategy": "template_with_examples",
+    "timestamp": "2025-10-12T18:03:17.630851",
+    "num_candidates": 3
+  },
+  {
+    "task_description": "Analyze DNS records for security misconfigurations",
+    "domain": "security",
+    "prompt_type": "react",
+    "selected_prompt_id": "prompt_20251012_180317_1",
+    "selected_prompt_text": "You are a principal security analyst.\n\nContext:\n- domain: example.com\n- record_types: ['TXT', 'MX', 'A']\n\nTask: Analyze DNS records for security misconfigurations\n\nReasoning Approach:\n1. Thought: Analyze what needs to be done\n2. Action: Take an action\n3. Observation: Observe the result\n4. Repeat until task complete\n\nConstraints:\n- Check SPF, DKIM, DMARC\n- Identify risks\n- Provide remediation\n\nOutput Format: Provide clear, structured output.",
+    "selected_prompt_score": 85.0,
+    "strategy": "reasoning_focused",
+    "timestamp": "2025-10-12T18:03:17.631046",
+    "num_candidates": 2
+  },
+  {
+    "task_description": "Design highly available architecture for web application",
+    "domain": "cloud",
+    "prompt_type": "cot",
+    "selected_prompt_id": "prompt_20251012_180317_1",
+    "selected_prompt_text": "You are a senior cloud architect.\n\nTask: Design highly available architecture for web application\n\nReasoning Approach:\n1. Break down the problem step by step\n2. Show your reasoning for each step\n3. Arrive at the final answer\n\nConstraints:\n- Multi-region\n- Auto-scaling\n- Cost-optimized\n\nOutput Format: Provide clear, structured output.",
+    "selected_prompt_score": 81.67,
+    "strategy": "reasoning_focused",
+    "timestamp": "2025-10-12T18:03:17.631227",
+    "num_candidates": 2
+  }
+]
