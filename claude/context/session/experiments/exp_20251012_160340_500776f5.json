@@ -1,0 +1,32 @@
+{
+  "experiment_id": "exp_20251012_160340_500776f5",
+  "name": "Lifecycle Test",
+  "hypothesis": "Treatment improves completion by 20%",
+  "agent_name": "test_agent",
+  "control": {
+    "name": "control",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpj05_fkzd/control2.md",
+    "description": "Current production prompt",
+    "interactions": 16,
+    "successes": 11,
+    "total_quality_score": 1200.0,
+    "total_tokens": 8000,
+    "total_latency_ms": 16000.0
+  },
+  "treatment": {
+    "name": "treatment",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpj05_fkzd/treatment2.md",
+    "description": "Testing: Lifecycle Test",
+    "interactions": 14,
+    "successes": 10,
+    "total_quality_score": 1050.0,
+    "total_tokens": 7000,
+    "total_latency_ms": 14000.0
+  },
+  "start_date": "2025-10-12T16:03:40.775721",
+  "end_date": null,
+  "status": "active",
+  "minimum_sample_size": 100,
+  "success_criteria": ">15% improvement with p<0.05",
+  "winner": null
+}

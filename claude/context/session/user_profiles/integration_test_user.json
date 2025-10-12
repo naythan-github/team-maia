@@ -1,0 +1,15 @@
+{
+  "user_id": "integration_test_user",
+  "detail_level": "minimal",
+  "tone": "professional",
+  "format_preference": "mixed",
+  "code_style": "concise",
+  "explanation_depth": "balanced",
+  "common_corrections": [
+    "Too verbose, keep it concise",
+    "Too verbose, keep it concise"
+  ],
+  "avg_rating": 3.0,
+  "interaction_count": 2,
+  "last_updated": "2025-10-12T17:29:45.711262"
+}

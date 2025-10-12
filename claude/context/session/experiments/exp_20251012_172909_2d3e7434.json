@@ -1,0 +1,32 @@
+{
+  "experiment_id": "exp_20251012_172909_2d3e7434",
+  "name": "E2E Integration Test",
+  "hypothesis": "Enhanced prompt improves quality",
+  "agent_name": "cloud_architect",
+  "control": {
+    "name": "control",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpzvb2mipc/e2e_control.md",
+    "description": "Current production prompt",
+    "interactions": 1,
+    "successes": 1,
+    "total_quality_score": 53.0,
+    "total_tokens": 600,
+    "total_latency_ms": 3000.0
+  },
+  "treatment": {
+    "name": "treatment",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpzvb2mipc/e2e_treatment.md",
+    "description": "Testing: E2E Integration Test",
+    "interactions": 4,
+    "successes": 4,
+    "total_quality_score": 212.0,
+    "total_tokens": 2400,
+    "total_latency_ms": 12000.0
+  },
+  "start_date": "2025-10-12T17:29:09.039655",
+  "end_date": null,
+  "status": "active",
+  "minimum_sample_size": 100,
+  "success_criteria": ">15% improvement with p<0.05",
+  "winner": null
+}

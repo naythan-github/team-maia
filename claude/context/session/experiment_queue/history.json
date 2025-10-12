@@ -1,12 +1,12 @@
 [
   {
-    "experiment_id": "exp_001",
-    "agent_name": "cloud_architect",
+    "experiment_id": "test3_exp_001",
+    "agent_name": "agent1",
     "priority": "high",
     "status": "completed",
-    "created_at": "2025-10-12T15:32:58.795516",
-    "started_at": "2025-10-12T15:32:58.795715",
-    "completed_at": "2025-10-12T15:32:58.796456",
-    "notes": "Critical latency test\nOutcome: Treatment 15% better, promoted"
+    "created_at": "2025-10-12T17:26:23.389170",
+    "started_at": "2025-10-12T17:26:23.389278",
+    "completed_at": "2025-10-12T17:26:23.389650",
+    "notes": "First\nOutcome: Success"
   }
 ]

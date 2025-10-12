@@ -1,32 +1,72 @@
 [
   {
-    "experiment_id": "exp_002",
-    "agent_name": "jobs_agent",
-    "priority": "medium",
-    "status": "paused",
-    "created_at": "2025-10-12T15:32:58.795829",
-    "started_at": "2025-10-12T15:32:58.795936",
-    "completed_at": null,
-    "notes": "Resume parsing test\nPaused: Waiting for more data"
-  },
-  {
-    "experiment_id": "exp_003",
-    "agent_name": "linkedin_advisor",
-    "priority": "low",
-    "status": "active",
-    "created_at": "2025-10-12T15:32:58.796033",
-    "started_at": "2025-10-12T15:32:58.796179",
-    "completed_at": null,
-    "notes": "Engagement optimization"
-  },
-  {
-    "experiment_id": "exp_004",
-    "agent_name": "financial_advisor",
+    "experiment_id": "test2_exp_001",
+    "agent_name": "test_agent",
     "priority": "high",
     "status": "active",
-    "created_at": "2025-10-12T15:32:58.796281",
-    "started_at": "2025-10-12T15:32:58.797149",
+    "created_at": "2025-10-12T17:26:23.388688",
+    "started_at": "2025-10-12T17:26:23.388893",
     "completed_at": null,
-    "notes": "Risk assessment test"
+    "notes": "Test experiment"
+  },
+  {
+    "experiment_id": "test3_exp_002",
+    "agent_name": "agent2",
+    "priority": "medium",
+    "status": "active",
+    "created_at": "2025-10-12T17:26:23.389377",
+    "started_at": "2025-10-12T17:26:23.389922",
+    "completed_at": null,
+    "notes": "Second"
+  },
+  {
+    "experiment_id": "test3_exp_003",
+    "agent_name": "agent3",
+    "priority": "low",
+    "status": "queued",
+    "created_at": "2025-10-12T17:26:23.389486",
+    "started_at": null,
+    "completed_at": null,
+    "notes": "Third"
+  },
+  {
+    "experiment_id": "test4_exp_low_1",
+    "agent_name": "agent1",
+    "priority": "low",
+    "status": "queued",
+    "created_at": "2025-10-12T17:26:23.390201",
+    "started_at": null,
+    "completed_at": null,
+    "notes": "Low priority 1"
+  },
+  {
+    "experiment_id": "test4_exp_high_1",
+    "agent_name": "agent2",
+    "priority": "high",
+    "status": "queued",
+    "created_at": "2025-10-12T17:26:23.390313",
+    "started_at": null,
+    "completed_at": null,
+    "notes": "High priority"
+  },
+  {
+    "experiment_id": "test4_exp_med_1",
+    "agent_name": "agent3",
+    "priority": "medium",
+    "status": "queued",
+    "created_at": "2025-10-12T17:26:23.390444",
+    "started_at": null,
+    "completed_at": null,
+    "notes": "Medium priority"
+  },
+  {
+    "experiment_id": "test4_exp_low_2",
+    "agent_name": "agent4",
+    "priority": "low",
+    "status": "queued",
+    "created_at": "2025-10-12T17:26:23.390583",
+    "started_at": null,
+    "completed_at": null,
+    "notes": "Low priority 2"
   }
 ]

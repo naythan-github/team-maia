@@ -1,0 +1,11 @@
+{
+  "feedback_id": "fb_integration_test_user_20251012172945",
+  "user_id": "integration_test_user",
+  "agent_name": "test_agent",
+  "interaction_id": "int_001",
+  "timestamp": "2025-10-12T17:29:45.711111",
+  "feedback_type": "correction",
+  "content": "Too verbose, keep it concise",
+  "rating": 3.0,
+  "metadata": null
+}

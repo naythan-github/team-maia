@@ -1,0 +1,32 @@
+{
+  "experiment_id": "exp_20251012_160433_1adf3ae4",
+  "name": "Insufficient Data Test",
+  "hypothesis": "Not enough data",
+  "agent_name": "test_agent",
+  "control": {
+    "name": "control",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpu0iluiol/control4.md",
+    "description": "Current production prompt",
+    "interactions": 8,
+    "successes": 8,
+    "total_quality_score": 640.0,
+    "total_tokens": 4000,
+    "total_latency_ms": 8000.0
+  },
+  "treatment": {
+    "name": "treatment",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpu0iluiol/treatment4.md",
+    "description": "Testing: Insufficient Data Test",
+    "interactions": 2,
+    "successes": 2,
+    "total_quality_score": 160.0,
+    "total_tokens": 1000,
+    "total_latency_ms": 2000.0
+  },
+  "start_date": "2025-10-12T16:04:33.971625",
+  "end_date": null,
+  "status": "active",
+  "minimum_sample_size": 100,
+  "success_criteria": ">15% improvement with p<0.05",
+  "winner": null
+}

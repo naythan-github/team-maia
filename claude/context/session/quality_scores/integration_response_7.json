@@ -1,0 +1,60 @@
+{
+  "overall_score": 53.0,
+  "task_completion_score": 100.0,
+  "tool_accuracy_score": 50.0,
+  "decomposition_score": 0.0,
+  "response_quality_score": 0.0,
+  "efficiency_score": 60.0,
+  "agent_name": "test_agent",
+  "response_id": "integration_response_7",
+  "timestamp": "2025-10-12T17:29:45.708274",
+  "criteria_evaluations": [
+    {
+      "name": "task_completion",
+      "score": 1.0,
+      "weight": 0.4,
+      "feedback": "Excellent task completion - all requirements met with validation",
+      "evidence": [
+        "Task marked as completed",
+        "Requirements: 2/2 addressed",
+        "Validation performed",
+        "Edge cases considered"
+      ]
+    },
+    {
+      "name": "tool_accuracy",
+      "score": 0.5,
+      "weight": 0.2,
+      "feedback": "Satisfactory - tools used but with some errors",
+      "evidence": [
+        "No tools used (may be incomplete)"
+      ]
+    },
+    {
+      "name": "decomposition",
+      "score": 0.0,
+      "weight": 0.2,
+      "feedback": "Needs improvement - ad-hoc approach",
+      "evidence": []
+    },
+    {
+      "name": "response_quality",
+      "score": 0.0,
+      "weight": 0.15,
+      "feedback": "Needs improvement - unclear or unhelpful",
+      "evidence": [
+        "Response too brief"
+      ]
+    },
+    {
+      "name": "efficiency",
+      "score": 0.6,
+      "weight": 0.05,
+      "feedback": "Good efficiency - reasonable resource usage",
+      "evidence": [
+        "Fast execution (0ms)",
+        "No redundant operations"
+      ]
+    }
+  ]
+}

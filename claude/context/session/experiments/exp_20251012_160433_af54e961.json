@@ -1,0 +1,32 @@
+{
+  "experiment_id": "exp_20251012_160433_af54e961",
+  "name": "Winner Test",
+  "hypothesis": "Treatment wins by 20%+",
+  "agent_name": "test_agent",
+  "control": {
+    "name": "control",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpu0iluiol/control3.md",
+    "description": "Current production prompt",
+    "interactions": 32,
+    "successes": 17,
+    "total_quality_score": 2560.0,
+    "total_tokens": 16000,
+    "total_latency_ms": 32000.0
+  },
+  "treatment": {
+    "name": "treatment",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpu0iluiol/treatment3.md",
+    "description": "Testing: Winner Test",
+    "interactions": 28,
+    "successes": 25,
+    "total_quality_score": 2240.0,
+    "total_tokens": 14000,
+    "total_latency_ms": 28000.0
+  },
+  "start_date": "2025-10-12T16:04:33.961771",
+  "end_date": null,
+  "status": "active",
+  "minimum_sample_size": 100,
+  "success_criteria": ">15% improvement with p<0.05",
+  "winner": null
+}
