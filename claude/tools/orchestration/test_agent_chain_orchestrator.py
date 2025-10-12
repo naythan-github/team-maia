@@ -457,12 +457,31 @@ def test_real_workflow():
 
     runner = TestRunner()
 
-    # Find real workflow file
+    # Find real workflow file (use new-format workflow for testing)
     workflows_dir = Path(__file__).parent.parent.parent / "workflows" / "prompt_chains"
-    workflow_files = list(workflows_dir.glob("*.md"))
 
-    if workflow_files:
-        workflow_file = workflow_files[0]
+    # Prefer new-format workflows (with **Input**: marker)
+    new_format_workflows = [
+        "dns_audit_security_migration_chain.md",
+        "complaint_analysis_chain.md",
+        "email_crisis_authentication_monitoring_chain.md",
+        "system_health_bottleneck_optimization_chain.md"
+    ]
+
+    workflow_file = None
+    for wf_name in new_format_workflows:
+        candidate = workflows_dir / wf_name
+        if candidate.exists():
+            workflow_file = candidate
+            break
+
+    # Fallback to any workflow if new-format not found
+    if workflow_file is None:
+        workflow_files = list(workflows_dir.glob("*.md"))
+        if workflow_files:
+            workflow_file = workflow_files[0]
+
+    if workflow_file:
         print(f"   Using: {workflow_file.name}")
 
         try:
@@ -600,7 +619,9 @@ Missing: {missing_key}
             # Execute with missing key
             execution = orchestrator.execute_chain(workflow, {"required_key": "value"})
 
-            runner.assert_equal(execution.status, "partial", "Partial execution with error")
+            # Single subtask that fails should have status "failed" (not "partial")
+            # "partial" is for workflows where some subtasks succeed and some fail
+            runner.assert_equal(execution.status, "failed", "Failed execution with error")
             runner.assert_equal(execution.failure_count, 1, "Failure recorded")
             runner.assert_true(
                 execution.subtask_executions[0].error_message is not None,
