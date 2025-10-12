@@ -1,0 +1,130 @@
+[
+  {
+    "problem": "Build a complete e-commerce platform for 1M+ concurrent users",
+    "total_steps": 6,
+    "complexity_progression": [
+      2,
+      2,
+      3,
+      4,
+      3,
+      5
+    ],
+    "success": true,
+    "timestamp": "2025-10-12T18:01:35.043288",
+    "subproblems": [
+      {
+        "id": "sp1",
+        "description": "Define product catalog data model",
+        "complexity": "SIMPLE",
+        "dependencies": [],
+        "solved": true
+      },
+      {
+        "id": "sp2",
+        "description": "Design user authentication system",
+        "complexity": "SIMPLE",
+        "dependencies": [],
+        "solved": true
+      },
+      {
+        "id": "sp3",
+        "description": "Build shopping cart functionality",
+        "complexity": "MODERATE",
+        "dependencies": [
+          "sp1",
+          "sp2"
+        ],
+        "solved": true
+      },
+      {
+        "id": "sp4",
+        "description": "Implement payment processing",
+        "complexity": "COMPLEX",
+        "dependencies": [
+          "sp2",
+          "sp3"
+        ],
+        "solved": true
+      },
+      {
+        "id": "sp5",
+        "description": "Add order tracking and notifications",
+        "complexity": "MODERATE",
+        "dependencies": [
+          "sp4"
+        ],
+        "solved": true
+      },
+      {
+        "id": "sp6",
+        "description": "Scale for 1M+ concurrent users",
+        "complexity": "VERY_COMPLEX",
+        "dependencies": [
+          "sp3",
+          "sp4",
+          "sp5"
+        ],
+        "solved": true
+      }
+    ]
+  },
+  {
+    "problem": "Design a production-ready RESTful API with versioning and monitoring",
+    "total_steps": 5,
+    "complexity_progression": [
+      2,
+      3,
+      3,
+      4,
+      4
+    ],
+    "success": true,
+    "timestamp": "2025-10-12T18:01:35.043507",
+    "subproblems": [
+      {
+        "id": "sp1",
+        "description": "Define API resource models and endpoints",
+        "complexity": "SIMPLE",
+        "dependencies": [],
+        "solved": true
+      },
+      {
+        "id": "sp2",
+        "description": "Implement authentication and authorization",
+        "complexity": "MODERATE",
+        "dependencies": [],
+        "solved": true
+      },
+      {
+        "id": "sp3",
+        "description": "Add rate limiting and throttling",
+        "complexity": "MODERATE",
+        "dependencies": [
+          "sp1",
+          "sp2"
+        ],
+        "solved": true
+      },
+      {
+        "id": "sp4",
+        "description": "Implement versioning strategy",
+        "complexity": "COMPLEX",
+        "dependencies": [
+          "sp1"
+        ],
+        "solved": true
+      },
+      {
+        "id": "sp5",
+        "description": "Add monitoring and analytics",
+        "complexity": "COMPLEX",
+        "dependencies": [
+          "sp3",
+          "sp4"
+        ],
+        "solved": true
+      }
+    ]
+  }
+]
