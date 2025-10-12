@@ -23,6 +23,13 @@ from pathlib import Path
 
 from agent_loader import AgentLoader
 
+# Try to import CapabilityRegistry (optional enhancement)
+try:
+    from agent_capability_registry import CapabilityRegistry
+    CAPABILITY_REGISTRY_AVAILABLE = True
+except ImportError:
+    CAPABILITY_REGISTRY_AVAILABLE = False
+
 
 @dataclass
 class Intent:
@@ -285,9 +292,28 @@ class AgentSelector:
         'endpoint': 'principal_endpoint_engineer',
     }
 
-    def __init__(self, agent_loader: AgentLoader = None):
-        """Initialize with agent loader"""
+    def __init__(self, agent_loader: AgentLoader = None, use_capability_registry: bool = False):
+        """
+        Initialize with agent loader and optional capability registry.
+
+        Args:
+            agent_loader: Agent loader instance
+            use_capability_registry: Use CapabilityRegistry for dynamic agent matching
+        """
         self.agent_loader = agent_loader or AgentLoader()
+        self.use_registry = use_capability_registry and CAPABILITY_REGISTRY_AVAILABLE
+
+        # Initialize capability registry if available
+        if self.use_registry:
+            try:
+                self.capability_registry = CapabilityRegistry()
+                print(f"✅ Capability Registry enabled ({len(self.capability_registry.capabilities)} agents)")
+            except Exception as e:
+                print(f"⚠️  Capability Registry failed to initialize: {e}")
+                self.use_registry = False
+                self.capability_registry = None
+        else:
+            self.capability_registry = None
 
     def select(self, intent: Intent, user_query: str) -> RoutingDecision:
         """
@@ -316,7 +342,16 @@ class AgentSelector:
     def _route_single_agent(self, intent: Intent, user_query: str) -> RoutingDecision:
         """Route to single agent (simple queries)"""
         domain = intent.domains[0]
-        agent = self.DOMAIN_AGENT_MAP.get(domain, 'ai_specialists_agent')  # Fallback to AI Specialists
+
+        # Try capability-based matching first
+        if self.use_registry and self.capability_registry:
+            matches = self.capability_registry.match_query(user_query, top_k=1, min_score=0.4)
+            if matches:
+                agent = matches[0][0]  # Top match
+            else:
+                agent = self.DOMAIN_AGENT_MAP.get(domain, 'ai_specialists_agent')
+        else:
+            agent = self.DOMAIN_AGENT_MAP.get(domain, 'ai_specialists_agent')
 
         context = {
             'query': user_query,
