@@ -1,0 +1,43 @@
+[
+  {
+    "problem": "Design a scalable architecture for e-commerce platform with 1M+ users",
+    "selected_conclusion": "Use microservices with API gateway for scalability",
+    "consistency_level": "moderate",
+    "vote_counts": {
+      "Use microservices with API gateway for scalability": 3,
+      "Use microservices with event-driven messaging": 1,
+      "Use modular monolith with service boundaries": 1
+    },
+    "total_responses": 5,
+    "agreement_percentage": 60.0,
+    "confidence_score": 0.66,
+    "timestamp": "2025-10-12T17:59:55.031205",
+    "response_ids": [
+      "response_1",
+      "response_2",
+      "response_3",
+      "response_4",
+      "response_5"
+    ]
+  },
+  {
+    "problem": "Choose optimal database for high-read workload with 80/20 read/write ratio",
+    "selected_conclusion": "Use PostgreSQL with read replicas",
+    "consistency_level": "strong",
+    "vote_counts": {
+      "Use PostgreSQL with read replicas": 4,
+      "Use PostgreSQL with connection pooling": 1
+    },
+    "total_responses": 5,
+    "agreement_percentage": 80.0,
+    "confidence_score": 0.74,
+    "timestamp": "2025-10-12T17:59:55.031451",
+    "response_ids": [
+      "response_1",
+      "response_2",
+      "response_3",
+      "response_4",
+      "response_5"
+    ]
+  }
+]
