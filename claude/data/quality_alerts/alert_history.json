@@ -1,0 +1,153 @@
+[
+  {
+    "alert_id": "dns_specialist_quality_below_75_20251012_184454",
+    "alert_type": "threshold_breach",
+    "severity": "warning",
+    "agent_name": "dns_specialist",
+    "current_score": 72,
+    "previous_score": 88,
+    "threshold": 75.0,
+    "message": "Agent 'dns_specialist' quality below threshold: 72.0 < 75.0",
+    "details": {
+      "rule_name": "Quality Below Threshold (75)",
+      "response_id": "resp_002",
+      "delta": 3.0
+    },
+    "timestamp": "2025-10-12T18:44:54.883405",
+    "acknowledged": false,
+    "resolved": false
+  },
+  {
+    "alert_id": "dns_specialist_sudden_drop_10_20251012_184454",
+    "alert_type": "sudden_regression",
+    "severity": "error",
+    "agent_name": "dns_specialist",
+    "current_score": 72,
+    "previous_score": 88,
+    "threshold": 10.0,
+    "message": "Agent 'dns_specialist' quality dropped suddenly: -16.0 points",
+    "details": {
+      "rule_name": "Sudden Quality Drop (>10 points)",
+      "response_id": "resp_002",
+      "drop_amount": 16,
+      "previous_score": 88
+    },
+    "timestamp": "2025-10-12T18:44:54.883537",
+    "acknowledged": false,
+    "resolved": false
+  },
+  {
+    "alert_id": "sre_agent_quality_below_75_20251012_184454",
+    "alert_type": "threshold_breach",
+    "severity": "warning",
+    "agent_name": "sre_agent",
+    "current_score": 70,
+    "previous_score": 85,
+    "threshold": 75.0,
+    "message": "Agent 'sre_agent' quality below threshold: 70.0 < 75.0",
+    "details": {
+      "rule_name": "Quality Below Threshold (75)",
+      "response_id": "resp_004",
+      "delta": 5.0
+    },
+    "timestamp": "2025-10-12T18:44:54.883724",
+    "acknowledged": false,
+    "resolved": false
+  },
+  {
+    "alert_id": "sre_agent_sudden_drop_10_20251012_184454",
+    "alert_type": "sudden_regression",
+    "severity": "error",
+    "agent_name": "sre_agent",
+    "current_score": 70,
+    "previous_score": 85,
+    "threshold": 10.0,
+    "message": "Agent 'sre_agent' quality dropped suddenly: -15.0 points",
+    "details": {
+      "rule_name": "Sudden Quality Drop (>10 points)",
+      "response_id": "resp_004",
+      "drop_amount": 15,
+      "previous_score": 85
+    },
+    "timestamp": "2025-10-12T18:44:54.883859",
+    "acknowledged": false,
+    "resolved": false
+  },
+  {
+    "alert_id": "azure_agent_quality_below_75_20251012_184454",
+    "alert_type": "threshold_breach",
+    "severity": "warning",
+    "agent_name": "azure_agent",
+    "current_score": 70,
+    "previous_score": 75,
+    "threshold": 75.0,
+    "message": "Agent 'azure_agent' quality below threshold: 70.0 < 75.0",
+    "details": {
+      "rule_name": "Quality Below Threshold (75)",
+      "response_id": "resp_007",
+      "delta": 5.0
+    },
+    "timestamp": "2025-10-12T18:44:54.884030",
+    "acknowledged": false,
+    "resolved": false
+  },
+  {
+    "alert_id": "azure_agent_declining_3_20251012_184454",
+    "alert_type": "declining_trend",
+    "severity": "warning",
+    "agent_name": "azure_agent",
+    "current_score": 70,
+    "previous_score": 75,
+    "threshold": 3.0,
+    "message": "Agent 'azure_agent' quality declining: 3 consecutive drops",
+    "details": {
+      "rule_name": "Declining Trend (3 consecutive drops)",
+      "response_id": "resp_007",
+      "recent_scores": [
+        80,
+        75,
+        70
+      ],
+      "trend": "declining"
+    },
+    "timestamp": "2025-10-12T18:44:54.884176",
+    "acknowledged": false,
+    "resolved": false
+  },
+  {
+    "alert_id": "service_desk_quality_below_75_20251012_184454",
+    "alert_type": "threshold_breach",
+    "severity": "warning",
+    "agent_name": "service_desk",
+    "current_score": 55,
+    "previous_score": null,
+    "threshold": 75.0,
+    "message": "Agent 'service_desk' quality below threshold: 55.0 < 75.0",
+    "details": {
+      "rule_name": "Quality Below Threshold (75)",
+      "response_id": "resp_009",
+      "delta": 20.0
+    },
+    "timestamp": "2025-10-12T18:44:54.884356",
+    "acknowledged": false,
+    "resolved": false
+  },
+  {
+    "alert_id": "service_desk_critical_below_60_20251012_184454",
+    "alert_type": "critical_failure",
+    "severity": "critical",
+    "agent_name": "service_desk",
+    "current_score": 55,
+    "previous_score": null,
+    "threshold": 60.0,
+    "message": "\ud83d\udea8 CRITICAL: Agent 'service_desk' quality critically low: 55.0",
+    "details": {
+      "rule_name": "Critical Quality Failure (<60)",
+      "response_id": "resp_009",
+      "immediate_action_required": true
+    },
+    "timestamp": "2025-10-12T18:44:54.884530",
+    "acknowledged": false,
+    "resolved": false
+  }
+]
