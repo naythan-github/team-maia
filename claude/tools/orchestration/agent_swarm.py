@@ -30,6 +30,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Any
 import json
+import re
 
 
 class MaxHandoffsExceeded(Exception):
@@ -102,6 +103,112 @@ class HandoffChainEntry:
 
     def to_dict(self):
         return asdict(self)
+
+
+class HandoffParser:
+    """Parse handoff declarations from agent markdown output
+
+    Extracts structured handoff information from agent responses using
+    the standard HANDOFF DECLARATION format defined in v2.2 agent templates.
+    """
+
+    HANDOFF_PATTERN = re.compile(
+        r'HANDOFF DECLARATION:\s*\n'
+        r'To:\s*([^\n]+)\n'
+        r'Reason:\s*([^\n]+)\n'
+        r'Context:\s*\n(.*?)(?=\n\n|$)',
+        re.DOTALL | re.MULTILINE
+    )
+
+    @classmethod
+    def extract_handoff(cls, agent_output: str) -> Optional[AgentHandoff]:
+        """
+        Extract handoff declaration from agent markdown output
+
+        Looks for pattern:
+        ```
+        HANDOFF DECLARATION:
+        To: agent_name
+        Reason: why handoff needed
+        Context:
+          - Work completed: ...
+          - Current state: ...
+          - Next steps: ...
+          - Key data: {...}
+        ```
+
+        Args:
+            agent_output: Raw markdown output from agent
+
+        Returns:
+            AgentHandoff if found, None if no handoff declared
+        """
+        match = cls.HANDOFF_PATTERN.search(agent_output)
+
+        if not match:
+            return None
+
+        to_agent = match.group(1).strip()
+        reason = match.group(2).strip()
+        context_text = match.group(3).strip()
+
+        # Parse context section into structured dict
+        context = cls._parse_context(context_text)
+
+        return AgentHandoff(
+            to_agent=to_agent,
+            context=context,
+            reason=reason
+        )
+
+    @classmethod
+    def _parse_context(cls, context_text: str) -> Dict[str, Any]:
+        """Parse context section into structured dict
+
+        Extracts key-value pairs from bullet list format:
+        - Work completed: DNS records configured
+        - Current state: Records propagated
+        - Key data: {"domain": "example.com"}
+
+        Args:
+            context_text: Context section from handoff declaration
+
+        Returns:
+            Dictionary of parsed context data
+        """
+        context = {}
+        lines = context_text.split('\n')
+        current_key = None
+
+        for line in lines:
+            line = line.strip()
+            if not line or line == '-':
+                continue
+
+            # Match "- Key: Value" or "  - Key: Value"
+            if line.startswith('- ') or line.startswith('  - '):
+                line = line.lstrip('- ').strip()
+
+                if ':' in line:
+                    key, value = line.split(':', 1)
+                    key = key.strip().lower().replace(' ', '_')
+                    value = value.strip()
+
+                    # Try to parse JSON if looks like dict/list
+                    if value.startswith('{') or value.startswith('['):
+                        try:
+                            value = json.loads(value)
+                        except json.JSONDecodeError:
+                            pass  # Keep as string
+
+                    context[key] = value
+                    current_key = key
+            elif current_key:
+                # Continuation of previous value
+                if current_key in context:
+                    context[current_key] += ' ' + line
+
+        return context
 
 
 class SwarmOrchestrator:
@@ -237,11 +344,11 @@ class SwarmOrchestrator:
     def _execute_agent(self, agent_name: str, context: Dict[str, Any]) -> AgentResult:
         """Execute specific agent with context
 
-        NOTE: This is a mock implementation. In production, this would:
+        Integration Instructions:
         1. Load agent prompt from claude/agents/{agent_name}.md
         2. Inject context into agent prompt
         3. Call LLM with agent prompt + context
-        4. Parse agent response for handoff declarations
+        4. Parse agent response for handoff declarations using HandoffParser
         5. Return AgentResult with output and optional handoff
 
         Args:
@@ -250,31 +357,51 @@ class SwarmOrchestrator:
 
         Returns:
             AgentResult with output and optional handoff
+
+        Example integration:
+            # Load agent
+            agent_file = Path(f"claude/agents/{agent_name}_v2.md")
+            with open(agent_file) as f:
+                agent_prompt = f.read()
+
+            # Inject context
+            full_prompt = f"{agent_prompt}\n\nContext:\n{json.dumps(context, indent=2)}"
+
+            # Execute via LLM
+            response = claude_api.complete(prompt=full_prompt, model="claude-sonnet-4.5")
+
+            # Parse handoff
+            handoff = HandoffParser.extract_handoff(response.text)
+
+            return AgentResult(
+                output={"response": response.text},
+                handoff=handoff,
+                agent_name=agent_name,
+                execution_time_ms=response.latency_ms
+            )
         """
         agent_def = self.agent_registry[agent_name]
 
-        # MOCK IMPLEMENTATION - In production, call actual agent
-        # For now, return mock result
+        # STUB IMPLEMENTATION
+        # TODO: Replace with actual agent execution (see integration instructions above)
+        print(f"  [STUB] Would execute {agent_name} with context: {list(context.keys())}")
+
+        # Mock output
         mock_output = {
             "agent": agent_name,
-            "status": "executed",
-            "context_received": list(context.keys())
+            "status": "executed (stub)",
+            "context_received": list(context.keys()),
+            "note": "Replace _execute_agent stub with actual agent invocation"
         }
 
-        # Mock handoff decision (in production, agent declares this)
+        # Mock handoff (in production, extracted from agent response via HandoffParser)
         mock_handoff = None
-        # Example: if agent_name == "dns_specialist" and "azure" in context.get("query", "").lower():
-        #     mock_handoff = AgentHandoff(
-        #         to_agent="azure_solutions_architect",
-        #         context={"dns_completed": True, "next_steps": ["Configure Azure"]},
-        #         reason="Azure configuration required"
-        #     )
 
         return AgentResult(
             output=mock_output,
             handoff=mock_handoff,
             agent_name=agent_name,
-            execution_time_ms=1000  # Mock
+            execution_time_ms=0  # Mock
         )
 
     def _load_agent_registry(self) -> Dict[str, Any]:
