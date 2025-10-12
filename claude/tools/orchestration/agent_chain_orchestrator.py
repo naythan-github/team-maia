@@ -28,6 +28,19 @@ from typing import Dict, List, Any, Optional
 from datetime import datetime
 from enum import Enum
 
+# Import error recovery system
+try:
+    from claude.tools.orchestration.error_recovery import (
+        ErrorRecoverySystem, RecoveryConfig, RecoveryStrategy,
+        RetryConfig, RetryPolicy, ErrorContext
+    )
+except ModuleNotFoundError:
+    # Relative import for when running tests directly
+    from error_recovery import (
+        ErrorRecoverySystem, RecoveryConfig, RecoveryStrategy,
+        RetryConfig, RetryPolicy, ErrorContext
+    )
+
 
 class SubtaskStatus(Enum):
     """Subtask execution status"""
@@ -70,6 +83,8 @@ class SubtaskExecution:
     handoffs_triggered: int = 0
     tokens_used: int = 0
     execution_time_ms: float = 0.0
+    retry_attempts: int = 0  # Number of retry attempts
+    recovery_applied: bool = False  # Whether error recovery was used
 
 
 @dataclass
@@ -371,7 +386,7 @@ class AgentChainOrchestrator:
     - Integration with Swarm (handoffs within subtasks)
     """
 
-    def __init__(self, audit_dir: Path = None):
+    def __init__(self, audit_dir: Path = None, recovery_config: Optional[RecoveryConfig] = None):
         self.parser = WorkflowParser()
         self.validator = ChainValidator()
 
@@ -380,6 +395,20 @@ class AgentChainOrchestrator:
             audit_dir = Path(__file__).parent.parent.parent / "context" / "session" / "chain_executions"
         self.audit_dir = audit_dir
         self.audit_dir.mkdir(parents=True, exist_ok=True)
+
+        # Error recovery system
+        if recovery_config is None:
+            # Default configuration: retry up to 3 times with exponential backoff
+            recovery_config = RecoveryConfig(
+                strategy=RecoveryStrategy.RETRY_THEN_FAIL,
+                retry_config=RetryConfig(
+                    policy=RetryPolicy.EXPONENTIAL,
+                    max_attempts=3,
+                    initial_delay_ms=1000
+                )
+            )
+        self.recovery_config = recovery_config
+        self.recovery_system = ErrorRecoverySystem(recovery_config)
 
     def load_workflow(self, workflow_file: Path) -> Dict[str, Any]:
         """Load and parse workflow definition"""
@@ -481,7 +510,7 @@ class AgentChainOrchestrator:
 
     def _execute_subtask(self, subtask_def: SubtaskDefinition, context: Dict[str, Any],
                         chain_exec: ChainExecution) -> SubtaskExecution:
-        """Execute single subtask with context"""
+        """Execute single subtask with context and error recovery"""
         start_time = datetime.now()
 
         subtask_exec = SubtaskExecution(
@@ -492,12 +521,12 @@ class AgentChainOrchestrator:
             input_data=context.copy()
         )
 
-        try:
+        # Define the core execution logic
+        def execute_core():
             # Format prompt with context
             formatted_prompt = subtask_def.prompt_template.format(**context)
 
             # Simulate agent execution (in real implementation, this would call actual agent)
-            # For now, return mock output based on subtask_def
             output = self._simulate_agent_execution(subtask_def, formatted_prompt, context)
 
             # Validate output
@@ -506,29 +535,43 @@ class AgentChainOrchestrator:
             )
 
             if not is_valid:
-                subtask_exec.status = SubtaskStatus.FAILED
-                subtask_exec.error_message = f"Validation failed: {'; '.join(errors)}"
-            else:
-                subtask_exec.status = SubtaskStatus.COMPLETED
-                subtask_exec.output_data = output
+                raise ValueError(f"Validation failed: {'; '.join(errors)}")
 
             # Record metrics
             subtask_exec.agent_used = subtask_def.agent_name or "default"
             subtask_exec.tokens_used = len(formatted_prompt.split()) + len(str(output).split())
 
-        except KeyError as e:
-            subtask_exec.status = SubtaskStatus.FAILED
-            subtask_exec.error_message = f"Missing required context key: {e}"
+            return output
 
-        except Exception as e:
-            subtask_exec.status = SubtaskStatus.FAILED
-            subtask_exec.error_message = f"Execution error: {str(e)}"
+        # Execute with recovery system
+        success, result, error_context = self.recovery_system.execute_with_recovery(
+            subtask_id=subtask_def.subtask_id,
+            subtask_name=subtask_def.name,
+            execution_func=execute_core,
+            rollback_func=None  # Could implement state rollback here
+        )
 
-        finally:
-            subtask_exec.end_time = datetime.now()
-            subtask_exec.execution_time_ms = (
-                subtask_exec.end_time - subtask_exec.start_time
-            ).total_seconds() * 1000
+        # Update subtask execution based on result
+        if success:
+            subtask_exec.status = SubtaskStatus.COMPLETED
+            subtask_exec.output_data = result
+            subtask_exec.recovery_applied = True
+        else:
+            subtask_exec.status = SubtaskStatus.FAILED
+            subtask_exec.error_message = error_context.error_message if error_context else "Unknown error"
+            subtask_exec.recovery_applied = error_context.attempt_number > 1 if error_context else False
+
+        # Record retry attempts from recovery system
+        subtask_attempts = [
+            ra for ra in self.recovery_system.recovery_attempts
+            if ra.subtask_id == subtask_def.subtask_id
+        ]
+        subtask_exec.retry_attempts = len(subtask_attempts)
+
+        subtask_exec.end_time = datetime.now()
+        subtask_exec.execution_time_ms = (
+            subtask_exec.end_time - subtask_exec.start_time
+        ).total_seconds() * 1000
 
         return subtask_exec
 
