@@ -1,8 +1,8 @@
 # Maia System State
 
 **Last Updated**: 2025-10-12
-**Current Phase**: 2 (Resumed) + Infrastructure Complete + Production Integration
-**Status**: ✅ COMPLETE - Swarm Framework Production-Ready | 🚀 IN PROGRESS - Phase 2 Agent Upgrades (19/46 agents in other context)
+**Current Phase**: 2 (Agent Upgrades - Research Guardrails Enforcement)
+**Status**: 🚀 IN PROGRESS - Phase 2 Agent Upgrades (1/27 agents completed, research guardrails established)
 
 ---
 
@@ -220,18 +220,30 @@ if handoff:
 
 ---
 
-## 🎯 PHASE 2: Agent Evolution - Systematic Upgrades (2025-10-12 RESUMED)
+## 🎯 PHASE 2: Agent Evolution - Research Guardrails Enforcement (2025-10-12 RESUMED)
 
 ### Objective
-Complete systematic upgrade of all 46 agents to v2.2 Enhanced template following research-backed best practices. Phase 111 (prompt chaining) deferred until agent foundation complete.
+Complete systematic upgrade of all 46 agents to v2.2 Enhanced template following **research guardrails** (400-550 lines). Phase 111 (prompt chaining) deferred until agent foundation complete.
 
-### Strategic Decision
-**Returned to Phase 2** after drift analysis identified gap: Only 14/46 agents upgraded before jumping to Phase 3. Following research sequence: Complete agent optimizations → Then build advanced orchestration.
+### Critical Course Correction (2025-10-12)
+**Issue Identified**: Tactical subset (5 agents) delivered 610-920 lines (over-engineered vs research target of 400-550 lines).
+**Root Cause**: Few-shot examples 400-500 lines each (should be 150-200 lines per research).
+**Resolution**: Established research guardrails for remaining 27 agents (400-550 lines, 2 examples at 150-200 lines each).
+**Validation**: Financial Planner revised 1,227 → 349 lines (research-compliant).
 
-### Tactical Subset Complete ✅ (5/5 High-Priority Agents)
+### Research Guardrails (Google/OpenAI Validated)
+**Target**: 400-550 lines total per agent
+**Structure**:
+- Core Framework: ~150 lines (overview, principles, capabilities, commands)
+- Few-Shot Examples: 2 examples at 150-200 lines each (~300-400 lines)
+- Integration/Handoffs: ~50 lines
+**Quality Target**: 85-90/100 (maintained with 40-50% size reduction vs tactical subset)
+
+### Progress Status
 **Date**: 2025-10-12
-**Status**: COMPLETE
-**Quality**: 87.2/100 average (exceeds 85+ target)
+**Status**: 🚀 IN PROGRESS
+**Completed**: 1/27 agents (Financial Planner - 349 lines, research-compliant)
+**Remaining**: 26 agents (Batch 1: 6 agents, Batch 2: 10 agents, Batch 3: 10 agents)
 
 **Agents Upgraded**:
 1. **Jobs Agent**: 216 → 680 lines (+214%) - Career advancement with AI-powered job analysis
