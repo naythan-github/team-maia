@@ -1,0 +1,11 @@
+{
+  "feedback_id": "fb_nathan@example.com_20251012153926",
+  "user_id": "nathan@example.com",
+  "agent_name": "cloud_architect",
+  "interaction_id": "int_003",
+  "timestamp": "2025-10-12T15:39:26.165712",
+  "feedback_type": "correction",
+  "content": "Just tell me what I need to do, skip the preamble.",
+  "rating": 4.0,
+  "metadata": null
+}

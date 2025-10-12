@@ -1,0 +1,16 @@
+{
+  "user_id": "nathan@example.com",
+  "detail_level": "minimal",
+  "tone": "direct",
+  "format_preference": "bullets",
+  "code_style": "concise",
+  "explanation_depth": "balanced",
+  "common_corrections": [
+    "Too verbose. Please keep responses shorter and more to-the-point.",
+    "Can you use bullet points instead of long paragraphs?",
+    "Just tell me what I need to do, skip the preamble."
+  ],
+  "avg_rating": 3.5,
+  "interaction_count": 3,
+  "last_updated": "2025-10-12T15:39:26.165830"
+}

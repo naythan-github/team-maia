@@ -1,0 +1,10 @@
+{
+  "adaptation_id": "adapt_nathan@example.com_cloud_architect_tone_20251012153926",
+  "user_id": "nathan@example.com",
+  "agent_name": "cloud_architect",
+  "adaptation_type": "tone",
+  "original_value": "professional",
+  "adapted_value": "direct",
+  "created_at": "2025-10-12T15:39:26.165989",
+  "effectiveness_score": null
+}

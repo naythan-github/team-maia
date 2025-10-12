@@ -1,0 +1,10 @@
+{
+  "adaptation_id": "adapt_nathan@example.com_cloud_architect_detail_level_20251012153926",
+  "user_id": "nathan@example.com",
+  "agent_name": "cloud_architect",
+  "adaptation_type": "detail_level",
+  "original_value": "standard",
+  "adapted_value": "minimal",
+  "created_at": "2025-10-12T15:39:26.165984",
+  "effectiveness_score": null
+}
