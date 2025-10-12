@@ -433,6 +433,28 @@ class CapabilityRegistry:
         matcher = CapabilityMatcher(self)
         return matcher.match(query, top_k=top_k, min_score=min_score)
 
+    def update_performance_metrics(self, analytics):
+        """
+        Update agent capabilities with performance metrics.
+
+        Args:
+            analytics: PerformanceAnalytics instance from performance_monitoring
+
+        Updates:
+            - avg_response_time
+            - success_rate
+            - usage_count
+        """
+        for agent_name, capability in self.capabilities.items():
+            stats = analytics.get_agent_statistics(agent_name)
+
+            if stats['total_executions'] > 0:
+                capability.avg_response_time = stats['avg_execution_time_ms']
+                capability.success_rate = stats['success_rate']
+                capability.usage_count = stats['total_executions']
+
+        print(f"✅ Updated performance metrics for {len(self.capabilities)} agents")
+
     def get_stats(self) -> Dict[str, Any]:
         """Get registry statistics"""
         return {
