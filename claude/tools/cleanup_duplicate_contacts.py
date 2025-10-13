@@ -120,31 +120,33 @@ class ContactsCleaner:
             return False
 
     def find_duplicates(self, contacts: List[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
-        """Find duplicate contacts by email or name (for contacts without email)"""
+        """Find duplicate contacts by name"""
         groups = defaultdict(list)
 
+        # Group ALL contacts by name
         for contact in contacts:
-            if contact['email']:
-                # Group by email if available
-                key = f"email:{contact['email']}"
-                groups[key].append(contact)
-            else:
-                # Group by name if no email
-                key = f"name:{contact['name']}"
-                groups[key].append(contact)
+            groups[contact['name']].append(contact)
 
-        # Only return groups with duplicates
-        return {key: group for key, group in groups.items() if len(group) > 1}
+        # Only return groups with duplicates (2+ contacts with same name)
+        return {name: group for name, group in groups.items() if len(group) > 1}
 
     def select_best_contact(self, duplicates: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Select the best contact from duplicates
 
         Priority:
-        1. Most fields populated (field_count)
-        2. If tied, keep first one (arbitrary but consistent)
+        1. Has email (most important)
+        2. Most fields populated (field_count)
+        3. If tied, keep first one (arbitrary but consistent)
         """
-        return max(duplicates, key=lambda c: c['field_count'])
+        # First priority: has email
+        with_email = [c for c in duplicates if c.get('email')]
+        if with_email:
+            # Among those with email, pick the one with most fields
+            return max(with_email, key=lambda c: c['field_count'])
+        else:
+            # If none have email, pick the one with most fields
+            return max(duplicates, key=lambda c: c['field_count'])
 
     def cleanup(self) -> Dict[str, Any]:
         """Find and remove duplicate contacts"""
@@ -176,21 +178,15 @@ class ContactsCleaner:
         }
 
         # Process each duplicate group
-        for key, duplicates in duplicate_groups.items():
+        for name, duplicates in duplicate_groups.items():
             best = self.select_best_contact(duplicates)
             to_delete = [c for c in duplicates if c['id'] != best['id']]
 
-            # Format display based on key type
-            if key.startswith("email:"):
-                display_key = f"📧 {key.replace('email:', '')}"
-            else:
-                display_key = f"👤 {key.replace('name:', '')}"
-
-            print(f"{display_key} ({len(duplicates)} copies)")
-            print(f"   ✅ KEEP: {best['name']} (ID: {best['id'][:8]}..., {best['field_count']} fields)")
+            print(f"👤 {name} ({len(duplicates)} copies)")
+            print(f"   ✅ KEEP: {best['name']} | Email: {best.get('email') or '(none)'} (ID: {best['id'][:8]}..., {best['field_count']} fields)")
 
             for contact in to_delete:
-                print(f"   ❌ DELETE: {contact['name']} (ID: {contact['id'][:8]}..., {contact['field_count']} fields)")
+                print(f"   ❌ DELETE: {contact['name']} | Email: {contact.get('email') or '(none)'} (ID: {contact['id'][:8]}..., {contact['field_count']} fields)")
 
                 if not self.dry_run:
                     if self.delete_contact_by_id(contact['id']):

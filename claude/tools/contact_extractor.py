@@ -352,13 +352,16 @@ class MacOSContactsBridge:
         """
         Add new contact to Contacts app
 
+        Uses two-pass approach to work around AppleScript limitation
+        where multiple phones can't be added in one transaction.
+
         Args:
             contact: Contact object to add
 
         Returns:
             True if successful, False otherwise
         """
-        # Build AppleScript based on available fields
+        # PASS 1: Create contact with first phone and all other fields
         fields = []
 
         if contact.email:
@@ -373,13 +376,11 @@ class MacOSContactsBridge:
             company_escaped = contact.company.replace('"', '\\"')
             fields.append(f'set organization of newPerson to "{company_escaped}"')
 
-        if contact.phone:
-            phone_escaped = contact.phone.replace('"', '\\"')
-            fields.append(f'make new phone at end of phones of newPerson with properties {{value:"{phone_escaped}", label:"work"}}')
-
-        if contact.mobile:
-            mobile_escaped = contact.mobile.replace('"', '\\"')
-            fields.append(f'make new phone at end of phones of newPerson with properties {{value:"{mobile_escaped}", label:"mobile"}}')
+        # Add first phone (prefer mobile over work phone if both exist)
+        first_phone = contact.mobile if contact.mobile else contact.phone
+        if first_phone:
+            phone_escaped = first_phone.replace('"', '\\"')
+            fields.append(f'make new phone at end of phones of newPerson with properties {{value:"{phone_escaped}"}}')
 
         if contact.website:
             website_escaped = contact.website.replace('"', '\\"')
@@ -388,18 +389,37 @@ class MacOSContactsBridge:
         name_escaped = contact.name.replace('"', '\\"')
         fields_script = '\n            '.join(fields)
 
+        # Return person ID so we can add second phone
         script = f'''
         tell application "Contacts"
             set newPerson to make new person with properties {{first name:"{name_escaped}"}}
             {fields_script}
             save
-            return "SUCCESS"
+            return id of newPerson
         end tell
         '''
 
         try:
             result = self._execute_applescript(script)
-            return "SUCCESS" in result
+            person_id = result.strip()
+
+            # PASS 2: Add second phone if both phone and mobile exist and are different
+            if contact.phone and contact.mobile and contact.phone != contact.mobile:
+                second_phone = contact.phone  # We added mobile first, now add work phone
+                phone_escaped = second_phone.replace('"', '\\"')
+
+                script2 = f'''
+                tell application "Contacts"
+                    set targetPerson to person id "{person_id}"
+                    make new phone at end of phones of targetPerson with properties {{value:"{phone_escaped}"}}
+                    save
+                    return "SUCCESS"
+                end tell
+                '''
+
+                self._execute_applescript(script2)
+
+            return True
         except Exception as e:
             print(f"  ⚠️  Error adding contact: {e}")
             return False

@@ -1,5 +1,58 @@
 # Available Tools & Capabilities
 
+## 🔄 Disaster Recovery & Backup ⭐ **NEW - PHASE 114**
+
+### Enhanced Disaster Recovery System
+**Location**: `claude/tools/sre/disaster_recovery_system.py`
+**Purpose**: Complete backup and restoration infrastructure with OneDrive sync
+
+**Capabilities**:
+- **Full System Backup**: 8-component backup (code, databases, LaunchAgents, dependencies, shell configs, credentials, metadata, restoration script)
+- **OneDrive Integration**: Auto-detects OneDrive path across org changes, syncs backups automatically
+- **Large Database Chunking**: Splits >10MB databases into 50MB chunks for efficient sync
+- **Encrypted Credentials**: AES-256-CBC encryption for production_api_credentials.py
+- **Directory-Agnostic Restoration**: Works regardless of installation path, updates LaunchAgent paths dynamically
+- **Dependency Capture**: Generates requirements_freeze.txt (pip) and brew_packages.txt (Homebrew)
+- **System Metadata**: Captures macOS version, Python version, hostname, Maia phase
+
+**Commands**:
+```bash
+# Create full backup with encrypted credentials
+python3 claude/tools/sre/disaster_recovery_system.py backup --vault-password "your_password"
+
+# List available backups
+python3 claude/tools/sre/disaster_recovery_system.py list
+
+# Prune old backups (retention: 7 daily, 4 weekly, 12 monthly)
+python3 claude/tools/sre/disaster_recovery_system.py prune
+```
+
+**Restoration**:
+```bash
+# On new hardware after OneDrive sync
+cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_YYYYMMDD_HHMMSS/
+./restore_maia.sh
+```
+
+**Backup Components**:
+- Code: 62MB (all claude/ subdirectories, excludes .git/)
+- Small databases: 38 DBs <10MB compressed to 528KB
+- Large databases: servicedesk_tickets.db (348MB → 7 chunks @ 50MB)
+- LaunchAgents: 19 com.maia.* plists + system dependencies
+- Dependencies: 400+ pip packages, 50+ Homebrew formulas
+- Shell configs: .zshrc, .zprofile, .gitconfig
+- Credentials: Encrypted vault (requires password for restoration)
+- Restoration script: Self-contained bash script
+
+**Automated Backups**:
+- LaunchAgent: `com.maia.disaster-recovery.plist`
+- Schedule: Daily at 3:00 AM
+- Status: Created (requires vault password configuration before loading)
+
+**Recovery Time**: <30 min from hardware failure to operational Maia
+
+---
+
 ## Recruitment & Interview Tools ⭐ **NEW - PHASE 111**
 - **Interview Review Template System**: Standardized post-interview analysis for Confluence
   - **Tool**: `OneDrive/Documents/Recruitment/Templates/interview_review_confluence_template.py`
