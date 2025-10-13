@@ -1,0 +1,94 @@
+================================================================================
+📅 WEEKLY STRATEGIC REVIEW - Week of October 13, 2025
+Generated: 2025-10-13T18:52:22.551840
+================================================================================
+
+## 1️⃣  CLEAR YOUR HEAD (5 min)
+
+Instructions:
+  • Write down any thoughts, concerns, or random items on your mind
+  • Review last week's calendar - anything incomplete or needing follow-up?
+  • Review next week's calendar - any prep needed?
+
+Brain Dump Prompts:
+  • What's been bothering you this week?
+  • Any incomplete conversations or commitments?
+  • What are you worried about?
+  • Any ideas or opportunities to capture?
+
+
+## 2️⃣  REVIEW PROJECTS (20 min)
+
+Total Initiatives: 116
+
+Active Projects (10):
+  • ### 3. OTC (One Touch Cloud) Training & Operations
+  • - Who has had training so far?
+  • - What training have they had?
+  • - Service catalogues awareness
+  • ### 5. Team Structure & Hiring
+
+Review Questions:
+  • Does each project have a clear next action?
+  • Are any projects stuck or blocked?
+  • Should any projects be cancelled or put on hold?
+  • Are priorities still aligned with strategic goals?
+
+
+## 3️⃣  REVIEW WAITING-FOR (10 min)
+
+Total Waiting Items: 1
+
+
+## 4️⃣  REVIEW GOALS/HORIZONS (20 min)
+
+Quarter: Q4 2025
+Initiatives Tracked: 116
+
+Key Metrics:
+  • Team Engagement: 30% → 60% (Target: 70%, Progress: 75%)
+  • Strategic Initiatives: 0 → 116 (Target: 100, Progress: 116%)
+  • Cloud Practice Growth: TBD → In Progress (Target: 20% YoY, Progress: TBD)
+
+Role Alignment:
+  • Team Management: Strong - Engagement improving, new starter onboarding in progress
+  • Client Relationships: Good - Regular touchpoints with key accounts, need more strategic discussions
+  • Technical Strategy: Needs attention - Azure Extended Zone positioning, M365 optimization opportunities
+  • Budget & Resource Management: Good - Confluence budget decision pending
+
+
+## 5️⃣  REVIEW STAKEHOLDERS (15 min)
+
+Key Relationships: 4
+
+⚠️  Requiring Attention (1):
+  • Trevor (New Starter - Wintel Engineer)
+    Next: First day onboarding - next week
+
+✅ Healthy Relationships: 3
+
+Upcoming 1-on-1s:
+  • Hamish - Next week (PREP NEEDED)
+  • Trevor - Next week (first day) (PREP NEEDED)
+
+
+## 6️⃣  PLAN NEXT WEEK (20 min)
+
+Top 3-5 Strategic Priorities:
+  1. Strategic planning for Q1 2026 Azure Extended Zone positioning (120 min, high energy)
+  2. Prepare 1-on-1 agenda for Hamish (30 min, medium energy)
+
+Focus Time Blocks:
+  • Tuesday 9:00-11:00 AM - Deep Work: Strategic planning or architecture design
+  • Thursday 2:00-4:00 PM - Strategic Thinking: Team development or process improvement
+  • Friday 3:00-5:00 PM - Batch Processing: Email cleanup, low-priority reviews, weekly review
+
+Weekly Time Allocation Intentions:
+  • Strategic Work: 50% of time (vs 20% baseline)
+  • Team Management: 30% of time
+  • Client Engagement: 15% of time
+  • Admin Operational: 5% of time
+
+================================================================================
+✅ Review Complete - Execute priorities with focus and intention
+================================================================================
