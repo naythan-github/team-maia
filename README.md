@@ -72,10 +72,19 @@ Each command implements:
 - `weekly_strategic_review.py` - 90-min guided GTD review across 6 stages (clear head, review projects, review waiting-for, review goals, review stakeholders, plan next week)
 - **Automation**: 2 LaunchAgents (daily 7AM briefing, Friday 3PM review reminder)
 
-**Phase 2: Specialist Agents** (3 systems, 2,150 lines, 3 databases):
-- `stakeholder_intelligence_agent.py` - CRM-style relationship health monitoring (0-100 scoring), sentiment analysis, 33 stakeholders auto-discovered from 313 emails, color-coded dashboard (🟢🟡🟠🔴)
+**Phase 2: Management Tools** (3 tools, 2,150 lines, 3 databases):
+- `stakeholder_intelligence.py` - CRM-style relationship health monitoring (0-100 scoring), sentiment analysis, 33 stakeholders auto-discovered from 313 emails, color-coded dashboard (🟢🟡🟠🔴)
 - `executive_information_manager.py` - 5-tier prioritization (critical→noise), multi-factor scoring (0-100), 15-30 min morning ritual, energy-aware batch processing
-- `decision_intelligence_agent.py` - 8 decision templates, 6-dimension quality framework (60 pts), outcome tracking, pattern analysis, lessons learned
+- `decision_intelligence.py` - 8 decision templates, 6-dimension quality framework (60 pts), outcome tracking, pattern analysis, lessons learned
+
+**Phase 2.1: Agent Orchestration Layer** (3 agents, 700 lines):
+- `information_management_orchestrator.md` - Master orchestrator coordinating all 7 information management tools with natural language interface
+- `stakeholder_intelligence_agent.md` - Natural language interface for relationship management ("How's my relationship with Hamish?")
+- `decision_intelligence_agent.md` - Guided decision capture workflow with quality coaching ("Help me decide on [topic]")
+
+**Architecture**: Proper agent-tool separation
+- **7 Tools** (Python .py files): DO the work - execute database operations, calculations, data retrieval
+- **3 Agents** (Markdown .md files): ORCHESTRATE tools - natural language interface, multi-tool workflows, response synthesis
 
 **Business Value**:
 - **Time Savings**: 7+ hrs/week (strategic briefing 1 hr/day, meeting prep 1 hr/week, inbox processing 3 hrs/week)
@@ -83,7 +92,7 @@ Each command implements:
 - **ROI**: $50,400/year value vs $2,400 development cost = **2,100% first year**
 - **Strategic Time**: Target 50% strategic vs tactical (from 20% baseline)
 
-**Status**: ✅ Phase 1 production operational, Phase 2 agents tested and ready for production graduation
+**Status**: ✅ Phase 1 production operational, Phase 2 tools tested and operational, Phase 2.1 agent orchestration layer complete (natural language testing pending)
 
 ### Productivity Integration Tools ⭐ **PHASE 79-83**
 **VTT Meeting Intelligence** (Phase 83) ⭐ **PRODUCTION READY**:

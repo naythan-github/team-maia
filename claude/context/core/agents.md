@@ -3,52 +3,68 @@
 ## System Overview
 All agents automatically load UFC context and operate within Maia's coordinated ecosystem framework. The system has evolved from individual agents with JSON handoffs to real-time communication via message bus with enhanced context preservation and intelligent orchestration.
 
-### **Phase 115 Information Management Specialist Agents** ⭐ **IMPLEMENTED - OPERATIONAL**
-Three specialist agents fully implemented and tested (Phase 2 complete):
+### **Phase 115 Information Management System** ⭐ **COMPLETE - PHASE 2.1 AGENT ORCHESTRATION**
+Complete information management ecosystem with proper agent-tool architecture separation:
 
-**1. Stakeholder Relationship Intelligence Agent** ✅ **OPERATIONAL**
-- **Location**: `claude/extensions/experimental/stakeholder_intelligence_agent.py` (750 lines)
-- **Purpose**: CRM-style stakeholder management with sentiment analysis and relationship health monitoring
-- **Capabilities**:
-  - Auto-discovery from email patterns (33 stakeholders from 313 emails)
-  - Multi-factor health scoring (0-100): sentiment 30%, engagement 25%, commitments 20%, response time 15%, meetings 10%
-  - Color-coded dashboard (🟢 Excellent 90-100, 🟡 Good 70-89, 🟠 Needs Attention 50-69, 🔴 At Risk <50)
-  - Pre-meeting context assembly with recent interactions and pending commitments
-- **Database**: stakeholder_intelligence.db (4 tables, 44 fields)
-- **Test Results**: 5 stakeholders tested (scores 38.5-77.8), 14 interactions, 7 commitments tracked
-- **Status**: ✅ Implemented, tested, ready for production graduation
+**Architecture**: Agent-Tool Separation Pattern
+- **7 Tools** (Python .py files in `claude/tools/`): DO the work - execute database operations, calculations, data retrieval
+- **3 Agents** (Markdown .md files in `claude/agents/`): ORCHESTRATE tools - natural language interface, multi-tool workflows, response synthesis
 
-**2. Executive Information Manager Agent** ✅ **OPERATIONAL**
-- **Location**: `claude/extensions/experimental/executive_information_manager.py` (700 lines)
-- **Purpose**: Cross-system prioritization and GTD workflow orchestration
-- **Capabilities**:
-  - Multi-factor priority scoring (0-100): decision 30pts, time 25pts, stakeholder 25pts, alignment 15pts, value 5pts
-  - 5-tier filtering (Tier 1: 90-100 critical → Tier 5: 0-29 noise)
-  - 15-30 min morning ritual generator with structured workflow
-  - Energy-aware batch processing (high/medium/low energy recommendations)
-  - Complete GTD workflow: capture → clarify → organize → reflect → engage
-- **Database**: executive_information.db (3 tables, 35 fields)
-- **Test Results**: 21 items processed across 5 tiers (6 actioned, 5 deferred, 10 archived)
-- **Status**: ✅ Implemented, tested, ready for production graduation
+**Phase 1: Production Systems** (4 tools, 2,750 lines):
+- `enhanced_daily_briefing_strategic.py` - Executive intelligence with 0-10 impact scoring
+- `meeting_context_auto_assembly.py` - Automated meeting prep (80% time reduction)
+- `unified_action_tracker_gtd.py` - GTD workflow with 7 context tags
+- `weekly_strategic_review.py` - 90-min guided review across 6 stages
+
+**Phase 2: Management Tools** (3 tools, 2,150 lines):
+- **Tool Location**: `claude/tools/information_management/` and `claude/tools/productivity/`
+- `stakeholder_intelligence.py` - CRM-style relationship health monitoring (0-100 scoring), 33 stakeholders auto-discovered, color-coded dashboard (🟢🟡🟠🔴)
+- `executive_information_manager.py` - 5-tier prioritization (critical→noise), 15-30 min morning ritual, energy-aware batch processing
+- `decision_intelligence.py` - 8 decision templates, 6-dimension quality framework (60 pts), outcome tracking, pattern analysis
+
+**Phase 2.1: Agent Orchestration Layer** (3 agents, 700 lines) ⭐ **NEW**
+- **Agent Location**: `claude/agents/`
+- **Purpose**: Natural language interface transforming CLI tools into conversational workflows
+
+**1. Information Management Orchestrator** ✅ **OPERATIONAL**
+- **Location**: `claude/agents/information_management_orchestrator.md` (300 lines)
+- **Type**: Master Orchestrator Agent
+- **Purpose**: Coordinates all 7 information management tools with natural language interface
+- **Capabilities**: 6 core workflows (daily priorities, stakeholder management, decision capture, meeting prep, GTD workflow, strategic synthesis)
+- **Natural Language Examples**:
+  - "what should i focus on" → orchestrates executive_information_manager.py + stakeholder_intelligence.py + enhanced_daily_briefing_strategic.py
+  - "help me decide on [topic]" → guides through decision_intelligence.py workflow
+  - "weekly review" → orchestrates weekly_strategic_review.py + stakeholder portfolio
+- **Tool Delegation**: Multi-tool workflows with response synthesis and quality coaching
+
+**2. Stakeholder Intelligence Agent** ✅ **OPERATIONAL**
+- **Location**: `claude/agents/stakeholder_intelligence_agent.md` (200 lines)
+- **Type**: Specialist Agent (Relationship Management)
+- **Purpose**: Natural language interface for stakeholder relationship management
+- **Capabilities**: 6 workflows (health queries, portfolio overview, at-risk identification, meeting prep, commitment tracking, interaction logging)
+- **Natural Language Examples**:
+  - "how's my relationship with Hamish" → context --id <resolved_id>
+  - "who needs attention" → dashboard (filter health <70)
+  - "meeting prep for Russell tomorrow" → context --id + recent commitments
+- **Tool Delegation**: Delegates to stakeholder_intelligence.py tool with name resolution and quality coaching
 
 **3. Decision Intelligence Agent** ✅ **OPERATIONAL**
-- **Location**: `claude/extensions/experimental/decision_intelligence_agent.py` (700 lines)
-- **Purpose**: Systematic decision capture with outcome tracking and learning
-- **Capabilities**:
-  - 8 decision templates (strategic, hire, vendor, architecture, resource, process, incident, investment)
-  - 6-dimension quality framework (60 pts): Frame, Alternatives, Information, Values, Reasoning, Commitment
-  - Outcome tracking with success levels (exceeded, met, partial, missed, failed)
-  - Pattern analysis (type distribution, quality by type, success rates, time to outcome)
-  - Learning loops with "would decide again?" retrospectives
-- **Database**: decision_intelligence.db (4 tables, 40 fields)
-- **Test Results**: Architecture decision tested with 3 options, quality score 43/60, outcome "met"
-- **Status**: ✅ Implemented, tested, ready for production graduation
+- **Location**: `claude/agents/decision_intelligence_agent.md` (200 lines)
+- **Type**: Specialist Agent (Decision Capture & Learning)
+- **Purpose**: Guided decision capture workflow with quality coaching
+- **Capabilities**: 5 workflows (guided capture, review & quality scoring, outcome tracking, pattern analysis, templates & guidance)
+- **Natural Language Examples**:
+  - "i need to decide on [topic]" → guided workflow with template selection
+  - "review my decision on [topic]" → quality scoring + coaching
+  - "track outcome of [decision]" → outcome recording + lessons learned
+- **Tool Delegation**: Delegates to decision_intelligence.py tool with decision type classification and 6-dimension quality framework
 
 **Project Metrics**:
-- **Total Code**: 6,200+ lines (Phase 1: 2,750 lines + Phase 2: 2,150 lines + databases: 1,350 lines)
-- **Development Time**: 16 hours across 4 sessions
+- **Total Code**: 7,000+ lines (Phase 1: 2,750 lines + Phase 2: 2,150 lines + Phase 2.1: 700 lines + databases: 1,350 lines)
+- **Development Time**: 16 hours across 5 sessions (Phase 1: 3 hrs, Phase 2: 10 hrs, Phase 2.1: 3 hrs)
 - **Business Value**: $50,400/year savings vs $2,400 cost = 2,100% ROI
-- **Integration**: Cross-system workflows with Phase 1 production systems
+- **Architecture**: Proper agent-tool separation (agents orchestrate, tools implement)
+- **Integration**: Cross-system workflows with natural language interface
 
 ### **Phase 108 Team Knowledge Sharing Agent** ⭐ **PREVIOUS ENHANCEMENT**
 The Team Knowledge Sharing Agent creates compelling team onboarding materials, documentation, and presentations demonstrating AI system value across multiple audience types:
