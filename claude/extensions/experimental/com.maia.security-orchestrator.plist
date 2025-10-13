@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Service Identity -->
+    <key>Label</key>
+    <string>com.maia.security-orchestrator</string>
+
+    <!-- Program Configuration -->
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/local/bin/python3</string>
+        <string>/Users/naythandawe/git/maia/claude/extensions/experimental/security_orchestration_service.py</string>
+        <string>--daemon</string>
+    </array>
+
+    <!-- Working Directory -->
+    <key>WorkingDirectory</key>
+    <string>/Users/naythandawe/git/maia</string>
+
+    <!-- Environment Variables -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>MAIA_ROOT</key>
+        <string>/Users/naythandawe/git/maia</string>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+
+    <!-- Auto-Start Configuration -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <!-- Keep Alive with Crash Recovery -->
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+
+    <!-- Logging -->
+    <key>StandardOutPath</key>
+    <string>/Users/naythandawe/git/maia/claude/data/logs/security_orchestrator_stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/naythandawe/git/maia/claude/data/logs/security_orchestrator_stderr.log</string>
+
+    <!-- Process Management -->
+    <key>ProcessType</key>
+    <string>Background</string>
+
+    <key>Nice</key>
+    <integer>10</integer>
+
+    <!-- Resource Limits -->
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+</dict>
+</plist>
