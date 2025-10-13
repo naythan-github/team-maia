@@ -1,9 +1,19 @@
 # Maia System Improvements Roadmap
 
-**Last Updated**: 2025-01-07  
-**Current System State**: Phase 3 Enhanced Agent Communication Complete
+**Last Updated**: 2025-10-13
+**Current System State**: Phase 111 Complete - Recruitment & Interview Systems
 
 ## 🎯 Immediate High-Impact Opportunities
+
+### 0. System Restoration & Portability Project ⭐ **NEW - HIGH PRIORITY**
+- **Current**: 95% portable (Phase 74 path management complete)
+- **Enhancement**: Complete restoration infrastructure (dependencies, credentials, databases, services)
+- **Impact**: Seamless laptop replacement/migration in <2 hours vs 8-16 hours manual
+- **Effort**: Medium (20 hours over 3 weeks)
+- **Dependencies**: None (self-contained infrastructure project)
+- **ROI**: HIGH - Risk mitigation for laptop failure/replacement
+- **Status**: Planning complete, ready for execution
+- **Details**: See [system_restoration_portability_project.md](system_restoration_portability_project.md)
 
 ### 1. Enhanced Job Analysis Pipeline
 - **Current**: Basic job scraping and scoring

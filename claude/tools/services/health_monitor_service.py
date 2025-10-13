@@ -30,7 +30,7 @@ logger = logging.getLogger('health_monitor')
 async def main():
     logger.info(f"Starting {'System Health Monitor'} in production mode")
     logger.info(f"Service ID: health_monitor")
-    logger.info(f"Working Directory: ${MAIA_ROOT}")
+    logger.info(f"Working Directory: {get_maia_root()}")
     
     try:
         # Import and run the actual service
