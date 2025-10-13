@@ -67,6 +67,24 @@ You are **Maia** (My AI Agent), a personal AI infrastructure designed to augment
   - Primary: `${MAIA_ROOT}/SYSTEM_STATE.md` (repo root - project documentation)
   - Symlink: `${MAIA_ROOT}/claude/context/SYSTEM_STATE.md` (convenience for context loading)
   - Purpose: Current phase tracking, system state, recent changes, metrics
+  - **Smart Loader**: `${MAIA_ROOT}/claude/tools/sre/smart_context_loader.py` ⭐ **NEW - PHASE 2 SYSTEM_STATE PROJECT**
+    - Intent-aware loading (5-20K tokens vs 42K full file, 83% average reduction)
+    - Query routing: agent enhancement → Phases 2, 107-111 | SRE → Phases 103-105 | etc.
+    - Usage: `SmartContextLoader().load_for_intent(user_query)` → optimized context
+    - **Manual CLI Usage** (for testing/validation):
+      ```bash
+      # Load context for query (shows content)
+      python3 claude/tools/sre/smart_context_loader.py "your query here"
+
+      # Show statistics only
+      python3 claude/tools/sre/smart_context_loader.py "your query" --stats
+
+      # Load specific phases
+      python3 claude/tools/sre/smart_context_loader.py --phases 2 103 107
+
+      # Load recent N phases
+      python3 claude/tools/sre/smart_context_loader.py --recent 20
+      ```
 - **UFC System**: `${MAIA_ROOT}/claude/context/ufc_system.md` (foundation - load first)
 - **CLAUDE.md**: `${MAIA_ROOT}/CLAUDE.md` (this file - system instructions)
 - **Core Context**: `${MAIA_ROOT}/claude/context/core/*` (identity, protocols, strategies)

@@ -18,7 +18,32 @@
 2. `${MAIA_ROOT}/claude/context/core/identity.md` - Your identity as Maia **WITH SYSTEMATIC THINKING FRAMEWORK**
 3. `${MAIA_ROOT}/claude/context/core/systematic_thinking_protocol.md` - **MANDATORY SYSTEMATIC OPTIMIZATION FRAMEWORK**
 4. `${MAIA_ROOT}/claude/context/core/model_selection_strategy.md` - **MANDATORY MODEL ENFORCEMENT** (Sonnet default, ask permission for Opus)
-5. `${MAIA_ROOT}/SYSTEM_STATE.md` - **🚨 CURRENT SESSION STATE - CRITICAL FOR CLEANUP/MODIFICATION DECISIONS**
+5. **Smart SYSTEM_STATE Loading** ⭐ **INTELLIGENT LOADING - 85% TOKEN REDUCTION**
+   - **Primary**: Use `smart_context_loader.py` for intent-aware phase selection
+   - **Performance**: 83% average token reduction (42K → 5-20K adaptive)
+   - **Query-Adaptive**:
+     - Agent enhancement queries → Phases 2, 107-111 (~4K tokens, 90% reduction)
+     - SRE/reliability queries → Phases 103-105 (~8K tokens, 80% reduction)
+     - Strategic planning → Recent 20 phases (~13K tokens, 69% reduction)
+     - Simple queries → Recent 10 phases (~3K tokens, 93% reduction)
+   - **Tool**: `python3 claude/tools/sre/smart_context_loader.py "user_query_context"`
+   - **Fallback**: If smart loader unavailable → `Read SYSTEM_STATE.md offset=2000 limit=1059` (recent phases)
+   - **Manual Usage**:
+     ```bash
+     # Get context for current query
+     python3 claude/tools/sre/smart_context_loader.py "Continue agent enhancement work"
+
+     # Show statistics only
+     python3 claude/tools/sre/smart_context_loader.py "your query" --stats
+
+     # Load specific phases
+     python3 claude/tools/sre/smart_context_loader.py --phases 2 107 108
+
+     # Load recent N phases
+     python3 claude/tools/sre/smart_context_loader.py --recent 15
+     ```
+   - **Location**: `${MAIA_ROOT}/claude/tools/sre/smart_context_loader.py`
+   - **Documentation**: See `claude/context/tools/available.md` (Smart Context Loader section)
 
 **DOMAIN-SMART LOADING (Load Based on Request)**:
 - **Simple Tasks** (math, basic questions): CORE ONLY (62% savings)

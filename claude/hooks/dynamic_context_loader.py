@@ -306,6 +306,60 @@ class DynamicContextLoader:
         results["accuracy"] = results["correct"] / results["total"] if results["total"] > 0 else 0
         return results
 
+
+def load_system_state_smart(user_query: str = None) -> str:
+    """
+    Load SYSTEM_STATE.md intelligently using smart context loader.
+
+    Args:
+        user_query: User's query for intent-based loading
+
+    Returns:
+        SYSTEM_STATE content optimized for query (5-20K tokens)
+    """
+    import subprocess
+    import sys
+
+    maia_root = Path(__file__).parent.parent.parent
+    loader_path = maia_root / "claude" / "tools" / "sre" / "smart_context_loader.py"
+
+    # Default query if none provided
+    if not user_query:
+        user_query = "What is the current system status?"
+
+    try:
+        # Invoke smart loader
+        result = subprocess.run(
+            [sys.executable, str(loader_path), user_query],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            # Fallback to recent phases
+            print(f"⚠️  Smart loader failed, falling back to recent phases", file=sys.stderr)
+            system_state = maia_root / "SYSTEM_STATE.md"
+            if system_state.exists():
+                lines = system_state.read_text().splitlines()
+                # Load recent 1000 lines (approximately Phases 97-111)
+                return '\n'.join(lines[-1000:])
+            else:
+                return "⚠️  SYSTEM_STATE.md not found"
+
+    except Exception as e:
+        # Fallback on any error
+        print(f"⚠️  Smart loader exception: {e}, falling back", file=sys.stderr)
+        system_state = maia_root / "SYSTEM_STATE.md"
+        if system_state.exists():
+            lines = system_state.read_text().splitlines()
+            return '\n'.join(lines[-1000:])
+        else:
+            return "⚠️  SYSTEM_STATE.md not found"
+
+
 def main():
     """CLI interface for testing dynamic context loader"""
     import sys

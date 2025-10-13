@@ -46,7 +46,7 @@ class SystemStateArchiver:
         lines = self.system_state_path.read_text().splitlines()
 
         # Count phases - look for actual phase markers (not historical references)
-        phase_pattern = re.compile(r'^###\s+\*\*✅.*\*\*\s+⭐\s+\*\*.*PHASE\s+\d+', re.IGNORECASE)
+        phase_pattern = re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠].+PHASE\s+(\d+):', re.IGNORECASE)
         phases = [i for i, line in enumerate(lines) if phase_pattern.search(line)]
 
         archive_lines = 0
@@ -77,7 +77,7 @@ class SystemStateArchiver:
         lines = content.splitlines()
 
         # Match actual phase markers at end of title
-        phase_pattern = re.compile(r'^###\s+\*\*✅.*\*\*\s+⭐\s+\*\*.*PHASE\s+(\d+)', re.IGNORECASE)
+        phase_pattern = re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠].+PHASE\s+(\d+):', re.IGNORECASE)
 
         phases = []
         current_phase_start = None

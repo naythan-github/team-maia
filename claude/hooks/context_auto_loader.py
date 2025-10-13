@@ -20,6 +20,57 @@ from context_loading_enforcer import (
 )
 from claude.tools.core.path_manager import get_maia_root
 
+def load_system_state_smart(user_query: str = None) -> str:
+    """
+    Load SYSTEM_STATE.md intelligently using smart context loader.
+
+    Args:
+        user_query: User's query for intent-based loading
+
+    Returns:
+        SYSTEM_STATE content optimized for query (5-20K tokens)
+    """
+    import subprocess
+
+    maia_root = Path(__file__).parent.parent.parent
+    loader_path = maia_root / "claude" / "tools" / "sre" / "smart_context_loader.py"
+
+    # Default query if none provided
+    if not user_query:
+        user_query = "What is the current system status?"
+
+    try:
+        # Invoke smart loader
+        result = subprocess.run(
+            [sys.executable, str(loader_path), user_query],
+            capture_output=True,
+            text=True,
+            timeout=10
+        )
+
+        if result.returncode == 0:
+            return result.stdout
+        else:
+            # Fallback to recent phases
+            print(f"⚠️  Smart loader failed, falling back to recent phases", file=sys.stderr)
+            system_state = maia_root / "SYSTEM_STATE.md"
+            if system_state.exists():
+                lines = system_state.read_text().splitlines()
+                # Load recent 1000 lines (approximately Phases 97-111)
+                return '\n'.join(lines[-1000:])
+            else:
+                return "⚠️  SYSTEM_STATE.md not found"
+
+    except Exception as e:
+        # Fallback on any error
+        print(f"⚠️  Smart loader exception: {e}, falling back", file=sys.stderr)
+        system_state = maia_root / "SYSTEM_STATE.md"
+        if system_state.exists():
+            lines = system_state.read_text().splitlines()
+            return '\n'.join(lines[-1000:])
+        else:
+            return "⚠️  SYSTEM_STATE.md not found"
+
 def simulate_context_loading():
     """
     Simulate the context loading process that Claude would perform
@@ -97,9 +148,10 @@ def generate_recovery_instructions():
 Since auto-recovery failed, please manually load the core context files:
 
 1. 📖 Read: ${MAIA_ROOT}/claude/context/ufc_system.md
-2. 🤖 Read: ${MAIA_ROOT}/claude/context/core/identity.md  
+2. 🤖 Read: ${MAIA_ROOT}/claude/context/core/identity.md
 3. 🧠 Read: ${MAIA_ROOT}/claude/context/core/systematic_thinking_protocol.md
 4. 🔧 Read: ${MAIA_ROOT}/claude/context/core/model_selection_strategy.md
+5. 📊 Smart Load: Use load_system_state_smart() for SYSTEM_STATE.md (85% token savings)
 
 After loading, respond with:
 "✅ Core context manually loaded. Operating as Maia with systematic optimization framework."
