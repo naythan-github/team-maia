@@ -29,18 +29,26 @@ except ImportError:
     sys.exit(1)
 
 from claude.tools.macos_mail_bridge import MacOSMailBridge
+from claude.tools.contact_extractor import SignatureParser, MacOSContactsBridge
 
 
 class EmailRAGOllama:
     """Email RAG with Ollama local embeddings"""
 
-    def __init__(self, db_path: Optional[str] = None, embedding_model: str = "nomic-embed-text"):
+    def __init__(self, db_path: Optional[str] = None, embedding_model: str = "nomic-embed-text", extract_contacts: bool = True):
         """Initialize with Ollama embeddings"""
         self.db_path = db_path or os.path.expanduser("~/.maia/email_rag_ollama")
         os.makedirs(self.db_path, exist_ok=True)
 
         self.embedding_model = embedding_model
         self.ollama_url = "http://localhost:11434"
+        self.extract_contacts = extract_contacts
+
+        # Initialize contact extraction components
+        if self.extract_contacts:
+            self.signature_parser = SignatureParser()
+            self.contacts_bridge = MacOSContactsBridge()
+            self.existing_contact_emails = set()
 
         # Initialize ChromaDB
         self.client = chromadb.PersistentClient(
@@ -116,7 +124,13 @@ class EmailRAGOllama:
                 msg['mailbox'] = 'Sent Items'
             messages.extend(sent_messages)
 
-        stats = {"total": len(messages), "new": 0, "skipped": 0, "errors": 0}
+        stats = {"total": len(messages), "new": 0, "skipped": 0, "errors": 0, "contacts_added": 0}
+
+        # Load existing contacts once at the start
+        if self.extract_contacts:
+            existing_contacts = self.contacts_bridge.get_all_contacts()
+            self.existing_contact_emails = {c['email'] for c in existing_contacts if c.get('email')}
+            print(f"📇 Loaded {len(existing_contacts)} existing contacts for deduplication\n")
 
         documents = []
         metadatas = []
@@ -161,6 +175,26 @@ class EmailRAGOllama:
                 embeddings.append(embedding)
 
                 stats["new"] += 1
+
+                # Extract contact from signature (only for inbox messages)
+                if self.extract_contacts and mailbox_type == "Inbox":
+                    try:
+                        contact = self.signature_parser.parse_signature({
+                            'from': content['from'],
+                            'content': content['content'],
+                            'subject': content['subject'],
+                            'id': msg['id']
+                        })
+
+                        # Add contact if valid, high confidence, and not duplicate
+                        if contact and contact.confidence >= 0.7 and contact.email:
+                            if contact.email not in self.existing_contact_emails:
+                                if self.contacts_bridge.add_contact(contact):
+                                    self.existing_contact_emails.add(contact.email)
+                                    stats["contacts_added"] += 1
+                    except Exception as ce:
+                        # Silently skip contact extraction errors - don't fail email indexing
+                        pass
 
             except Exception as e:
                 print(f"  ⚠️  Error: {e}")
@@ -417,6 +451,8 @@ def main():
         print(f"   • New: {index_stats['new']}")
         print(f"   • Skipped: {index_stats['skipped']}")
         print(f"   • Errors: {index_stats['errors']}")
+        if index_stats.get('contacts_added', 0) > 0:
+            print(f"   • Contacts Added: {index_stats['contacts_added']}")
 
         if index_stats['new'] > 0:
             print("\n" + "="*60)
