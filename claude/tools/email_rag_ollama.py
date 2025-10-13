@@ -132,6 +132,12 @@ class EmailRAGOllama:
 
             try:
                 content = self.mail_bridge.get_message_content(msg['id'])
+
+                # Skip if message not found (deleted/moved)
+                if content is None:
+                    stats["skipped"] += 1
+                    continue
+
                 doc_text = f"{content['subject']}\n\n{content['content'][:2000]}"  # Limit content
 
                 print(f"  [{i}/{len(messages)}] Embedding: {content['subject'][:50]}...")

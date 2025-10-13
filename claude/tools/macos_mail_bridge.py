@@ -250,7 +250,7 @@ class MacOSMailBridge:
 
         return messages
 
-    def get_message_content(self, message_id: str, account: str = "Exchange") -> Dict[str, Any]:
+    def get_message_content(self, message_id: str, account: str = "Exchange") -> Optional[Dict[str, Any]]:
         """
         Get full content of a specific message
 
@@ -259,38 +259,58 @@ class MacOSMailBridge:
             account: Account name (default: Exchange)
 
         Returns:
-            Dictionary with complete message details
+            Dictionary with complete message details, or None if message not found
         """
         script = f'''
         tell application "Mail"
-            set targetAccount to account "{account}"
-            set targetMailbox to mailbox "Inbox" of targetAccount
-            set msg to (first message of targetMailbox whose id is {message_id})
+            try
+                set targetAccount to account "{account}"
+                set targetMailbox to mailbox "Inbox" of targetAccount
+                set msg to (first message of targetMailbox whose id is {message_id})
 
-            set msgSubject to subject of msg
-            set msgSender to sender of msg
-            set msgDate to date received of msg as string
-            set msgContent to content of msg
-            set msgRead to read status of msg as string
+                set msgSubject to subject of msg
+                set msgSender to sender of msg
+                set msgDate to date received of msg as string
+                set msgContent to content of msg
+                set msgRead to read status of msg as string
 
-            return msgSubject & "::||::" & msgSender & "::||::" & msgDate & "::||::" & msgContent & "::||::" & msgRead
+                return msgSubject & "::||::" & msgSender & "::||::" & msgDate & "::||::" & msgContent & "::||::" & msgRead
+            on error errMsg
+                return "ERROR::" & errMsg
+            end try
         end tell
         '''
 
-        result = self._execute_applescript(script)
+        try:
+            result = self._execute_applescript(script)
 
-        if result.strip():
-            parts = result.split("::||::")
-            if len(parts) >= 5:
-                return {
-                    "subject": parts[0].strip(),
-                    "from": parts[1].strip(),
-                    "date": parts[2].strip(),
-                    "content": parts[3].strip(),
-                    "read": parts[4].strip().lower() == "true"
-                }
+            if result.strip():
+                # Check for error message
+                if result.startswith("ERROR::"):
+                    error_msg = result.replace("ERROR::", "").strip()
+                    # Return None for common "not found" errors instead of raising
+                    if "Can't get message" in error_msg or "Invalid index" in error_msg:
+                        return None
+                    # For other errors, still raise
+                    raise ValueError(f"AppleScript error: {error_msg}")
 
-        raise ValueError(f"Could not retrieve message with ID: {message_id}")
+                parts = result.split("::||::")
+                if len(parts) >= 5:
+                    return {
+                        "subject": parts[0].strip(),
+                        "from": parts[1].strip(),
+                        "date": parts[2].strip(),
+                        "content": parts[3].strip(),
+                        "read": parts[4].strip().lower() == "true"
+                    }
+
+            return None
+
+        except RuntimeError as e:
+            # Handle AppleScript execution errors gracefully
+            if "Invalid index" in str(e) or "Can't get message" in str(e):
+                return None
+            raise
 
     def get_unread_count(self, account: Optional[str] = None, mailbox_type: str = "Inbox") -> int:
         """
