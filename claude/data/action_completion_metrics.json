@@ -3,23 +3,6 @@
   "weekly_completion": [
     {
       "week_of": "2025-10-12",
-      "synced_at": "2025-10-12T03:28:05.377514",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 3
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 0,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 5,
-      "total_overdue": 3
-    },
-    {
-      "week_of": "2025-10-12",
       "synced_at": "2025-10-12T07:28:12.188994",
       "vtt": {
         "completed": 0,
@@ -204,30 +187,26 @@
       "total_completed": 0,
       "total_pending": 5,
       "total_overdue": 3
+    },
+    {
+      "week_of": "2025-10-14",
+      "synced_at": "2025-10-14T06:16:35.694433",
+      "vtt": {
+        "completed": 0,
+        "pending": 5,
+        "overdue": 3
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 5,
+      "total_overdue": 3
     }
   ],
   "overdue_alerts": [
-    {
-      "action": "Get services team to audit Intune deployments via Lighthouse",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-11T05:30:11.606430"
-    },
-    {
-      "action": "Provide Intune deployment status report",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-11T05:30:11.606636"
-    },
-    {
-      "action": "Provide subcategory list to Mariel for customer spreadsheet update",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-11T09:30:18.521469"
-    },
     {
       "action": "Get services team to audit Intune deployments via Lighthouse",
       "due_date": "2025-10-10T19:28:29.629Z",
@@ -556,6 +535,27 @@
       "owner": "Naythan",
       "source": "vtt",
       "checked_at": "2025-10-14T02:16:22.921483"
+    },
+    {
+      "action": "Provide subcategory list to Mariel for customer spreadsheet update",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-14T06:16:31.025592"
+    },
+    {
+      "action": "Get services team to audit Intune deployments via Lighthouse",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-14T06:16:31.025760"
+    },
+    {
+      "action": "Provide Intune deployment status report",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-14T06:16:31.025880"
     }
   ]
 }
