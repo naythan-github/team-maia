@@ -185,7 +185,31 @@ git add claude/context/core/agents.md
 git add [other specific files]
 ```
 
-#### 4.3 Create Comprehensive Commit
+#### 4.3 Security Validation (MANDATORY) ⭐ **PHASE 113 - AUTOMATED THREAT PREVENTION**
+**Run security checks before commit to prevent accidentally creating threats**:
+```bash
+python3 claude/tools/sre/save_state_security_checker.py --verbose
+```
+
+**What it checks** (4 automated security validations):
+1. **Secret Detection**: API keys, passwords, tokens, private keys (8 patterns)
+2. **Critical Vulnerabilities**: Recent scans for critical CVEs
+3. **Code Security**: Bandit high-severity issues in Python files
+4. **Compliance**: UFC system validation
+
+**Exit codes**:
+- 0 = ✅ PASSED (clean, commit allowed)
+- 1 = ❌ BLOCKED (critical issues found, fix before commit)
+
+**Action if BLOCKED**:
+- Review security findings displayed
+- Fix critical issues (remove secrets, fix vulnerabilities)
+- Re-run security check
+- **Do NOT bypass security gate**
+
+**Security notes added to commit**: Warnings automatically added to commit message
+
+#### 4.4 Create Comprehensive Commit
 ```bash
 git commit -m "$(cat <<'EOF'
 [EMOJI] PHASE NNN: [Title] - [Subtitle]
@@ -223,7 +247,7 @@ EOF
 - Include quantitative metrics when available
 - Reference problem context (why this was needed)
 
-#### 4.4 Push to Remote
+#### 4.5 Push to Remote
 ```bash
 git push
 ```
@@ -248,6 +272,7 @@ git status
 - [ ] agents.md updated if agents added/modified
 - [ ] Session summary created if complex work
 - [ ] Design decisions documented if architectural changes
+- [ ] **Security validation passed (Phase 113)** ⭐ **NEW**
 - [ ] Git commit created with comprehensive message
 - [ ] Git push successful
 - [ ] Anti-sprawl validation passed
@@ -273,7 +298,10 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 
 # 2. Update SYSTEM_STATE.md (add phase entry)
 # 3. Update README.md if needed
-# 4. Git commit & push
+# 4. Security validation (Phase 113)
+python3 claude/tools/sre/save_state_security_checker.py --verbose
+
+# 5. Git commit & push
 git add -A
 git commit -m "[EMOJI] PHASE NNN: [Title]"
 git push
@@ -289,7 +317,10 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 # 4. Document design decisions if applicable
 # 5. Run anti-sprawl validation
 # 6. Check dependency health
-# 7. Git commit with full details & push
+# 7. Security validation (Phase 113 - MANDATORY)
+python3 claude/tools/sre/save_state_security_checker.py --verbose
+
+# 8. Git commit with full details & push
 ```
 
 ---
@@ -312,6 +343,15 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 - **Conflicts**: `git pull --rebase`, resolve conflicts, `git push`
 - **Authentication**: Check GitHub credentials, update if needed
 - **Network**: Retry when connection restored
+
+### Security Check Blocked Commit ⭐ **NEW - PHASE 113**
+**Symptom**: save_state_security_checker.py returns exit code 1 (blocked)
+**Action**:
+- **Secrets Detected**: Remove API keys, passwords, tokens from staged files
+- **Critical CVEs**: Fix vulnerabilities or defer commit until resolved
+- **Code Security**: Fix high-severity Bandit issues in Python code
+- **Compliance**: Address critical UFC violations
+**Prevention**: Run security scans regularly during development, not just at commit time
 
 ### Documentation Inconsistency
 **Symptom**: New tool mentioned in SYSTEM_STATE.md but not in available.md
