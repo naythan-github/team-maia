@@ -376,27 +376,14 @@ class MacOSContactsBridge:
             company_escaped = contact.company.replace('"', '\\"')
             fields.append(f'set organization of newPerson to "{company_escaped}"')
 
-        # Add phone number (prefer mobile, fallback to work phone)
-        # Note: AppleScript limitation - can only add ONE phone number
-        # If both exist, we'll add the mobile and put work phone in notes
-        first_phone = contact.mobile if contact.mobile else contact.phone
-        if first_phone:
-            phone_escaped = first_phone.replace('"', '\\"')
-            fields.append(f'make new phone at end of phones of newPerson with properties {{value:"{phone_escaped}"}}')
+        # Add mobile phone only (AppleScript limitation - can only add ONE phone)
+        if contact.mobile:
+            mobile_escaped = contact.mobile.replace('"', '\\"')
+            fields.append(f'make new phone at end of phones of newPerson with properties {{value:"{mobile_escaped}"}}')
 
         if contact.website:
             website_escaped = contact.website.replace('"', '\\"')
             fields.append(f'make new url at end of urls of newPerson with properties {{value:"{website_escaped}"}}')
-
-        # If both phone and mobile exist and are different, add work phone to notes
-        notes_parts = []
-        if contact.phone and contact.mobile and contact.phone != contact.mobile:
-            notes_parts.append(f"Work phone: {contact.phone}")
-
-        if notes_parts:
-            notes_text = "\\n".join(notes_parts)
-            notes_escaped = notes_text.replace('"', '\\"')
-            fields.append(f'set note of newPerson to "{notes_escaped}"')
 
         name_escaped = contact.name.replace('"', '\\"')
         fields_script = '\n            '.join(fields)
