@@ -1,0 +1,122 @@
+{
+  "generated_at": "2025-10-13T18:50:26.603011",
+  "contexts": {
+    "@waiting-for": {
+      "count": 1,
+      "top_items": [
+        {
+          "id": 5,
+          "title": "Waiting for Mariele subcategory list approval",
+          "priority": "medium",
+          "due_date": null,
+          "estimated_duration": 30
+        }
+      ]
+    },
+    "@delegated": {
+      "count": 0,
+      "top_items": []
+    },
+    "@needs-decision": {
+      "count": 1,
+      "top_items": [
+        {
+          "id": 5,
+          "title": "Waiting for Mariele subcategory list approval",
+          "priority": "medium",
+          "due_date": null,
+          "estimated_duration": 30
+        }
+      ]
+    },
+    "@strategic": {
+      "count": 2,
+      "top_items": [
+        {
+          "id": 4,
+          "title": "Strategic planning for Q1 2026 Azure Extended Zone positioning",
+          "priority": "strategic",
+          "due_date": null,
+          "estimated_duration": 120
+        },
+        {
+          "id": 6,
+          "title": "Prepare 1-on-1 agenda for Hamish",
+          "priority": "high",
+          "due_date": "2025-10-14T18:50:26.602244",
+          "estimated_duration": 30
+        }
+      ]
+    },
+    "@quick-wins": {
+      "count": 1,
+      "top_items": [
+        {
+          "id": 3,
+          "title": "Quick check on Intune deployment status",
+          "priority": "high",
+          "due_date": null,
+          "estimated_duration": 15
+        }
+      ]
+    },
+    "@deep-work": {
+      "count": 2,
+      "top_items": [
+        {
+          "id": 4,
+          "title": "Strategic planning for Q1 2026 Azure Extended Zone positioning",
+          "priority": "strategic",
+          "due_date": null,
+          "estimated_duration": 120
+        },
+        {
+          "id": 7,
+          "title": "Design cloud architecture for new client",
+          "priority": "high",
+          "due_date": null,
+          "estimated_duration": 120
+        }
+      ]
+    },
+    "@stakeholder-hamish": {
+      "count": 1,
+      "top_items": [
+        {
+          "id": 6,
+          "title": "Prepare 1-on-1 agenda for Hamish",
+          "priority": "high",
+          "due_date": "2025-10-14T18:50:26.602244",
+          "estimated_duration": 30
+        }
+      ]
+    },
+    "@stakeholder-mariele": {
+      "count": 1,
+      "top_items": [
+        {
+          "id": 5,
+          "title": "Waiting for Mariele subcategory list approval",
+          "priority": "medium",
+          "due_date": null,
+          "estimated_duration": 30
+        }
+      ]
+    },
+    "@stakeholder-mv": {
+      "count": 0,
+      "top_items": []
+    }
+  },
+  "energy_levels": {
+    "high": 2,
+    "medium": 2,
+    "low": 1
+  },
+  "duration_buckets": {
+    "quick_wins_15min": 1,
+    "short_30min": 2,
+    "medium_1hr": 0,
+    "deep_work_2hr_plus": 2
+  }
+}
