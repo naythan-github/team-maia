@@ -3,7 +3,28 @@
 ## System Overview
 All agents automatically load UFC context and operate within Maia's coordinated ecosystem framework. The system has evolved from individual agents with JSON handoffs to real-time communication via message bus with enhanced context preservation and intelligent orchestration.
 
-### **Phase 108 Team Knowledge Sharing Agent** ⭐ **LATEST ENHANCEMENT**
+### **Phase 115 Information Management Specialist Agents** ⭐ **NEW - READY FOR IMPLEMENTATION**
+Three specialist agents designed for Phase 2 implementation (designed, not yet built):
+
+**1. Stakeholder Relationship Intelligence Agent** (`claude/agents/stakeholder_relationship_intelligence.md`)
+- **Purpose**: CRM-style stakeholder management with sentiment analysis and relationship health monitoring
+- **Capabilities**: Multi-factor health scoring (0-100), sentiment analysis via CodeLlama 13B, commitment tracking, pre-meeting context
+- **Database**: 4 tables (stakeholders, relationship_metrics, commitments, interactions)
+- **Status**: Specification complete (600 lines), implementation pending Phase 2 Session 1
+
+**2. Executive Information Manager Agent** (`claude/agents/executive_information_manager.md`)
+- **Purpose**: Cross-system prioritization and GTD workflow orchestration
+- **Capabilities**: 5-tier filtering (Tier 1: 90-100 critical → Tier 5: 0-29 noise), morning ritual workflow (15-30 min), batch processing
+- **Priority Algorithm**: Multi-factor scoring (decision impact 30 pts, time urgency 25 pts, stakeholder tier 25 pts, strategic alignment 15 pts, value 5 pts)
+- **Status**: Specification complete (700 lines), implementation pending Phase 2 Session 2
+
+**3. Decision Intelligence Agent** (`claude/agents/decision_intelligence.md`)
+- **Purpose**: Systematic decision capture with outcome tracking and learning
+- **Capabilities**: 8 decision templates, quality scoring (6 dimensions), pattern recognition, lessons learned
+- **Quality Framework**: Frame (10) + Alternatives (10) + Information (10) + Values (10) + Reasoning (10) + Commitment (10) = 60 pts
+- **Status**: Specification complete (650 lines), implementation pending Phase 2 Session 3
+
+### **Phase 108 Team Knowledge Sharing Agent** ⭐ **PREVIOUS ENHANCEMENT**
 The Team Knowledge Sharing Agent creates compelling team onboarding materials, documentation, and presentations demonstrating AI system value across multiple audience types:
 - **Audience-Specific Content Creation**: Tailored documentation for management (executive summaries, ROI focus), technical staff (architecture guides, integration details), and operations (quick starts, practical examples)
 - **Value Proposition Articulation**: Transform technical capabilities into quantified business outcomes (cost savings, productivity gains, quality improvements, strategic advantages)
