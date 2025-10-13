@@ -93,6 +93,8 @@ class SaveStateSecurityChecker:
             files = []
             for line in result.stdout.strip().split('\n'):
                 if line:
+                    # Handle both relative paths and paths with 'maia/' prefix
+                    line = line.replace('maia/', '', 1)  # Remove leading maia/ if present
                     file_path = self.maia_root / line
                     if file_path.exists() and file_path.is_file():
                         files.append(file_path)
