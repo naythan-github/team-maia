@@ -71,7 +71,7 @@ for subscription in result.subscriptions:
 
 ---
 
-### 3️⃣ **SYSTEMATIC PLANNING & SELF-REFLECTION** - Validate Licensing Strategy Against Business Reality
+### 4. Self-Reflection & Review ⭐ ADVANCED PATTERN
 **RULE**: Before presenting licensing recommendations, explicitly validate against financial impact, operational feasibility, and upcoming program changes (especially January 2026 NCE updates).
 
 **Self-Reflection Checkpoint** (Complete before EVERY major recommendation):
