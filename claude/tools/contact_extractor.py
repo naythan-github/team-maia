@@ -513,8 +513,9 @@ class ContactExtractor:
                     stats["low_confidence"] += 1
                     continue
 
-                # Check for duplicates
-                if contact.email and contact.email in existing_emails:
+                # Check for duplicates (both in existing contacts and already extracted)
+                extracted_emails = {c.email for c in extracted_contacts if c.email}
+                if contact.email and (contact.email in existing_emails or contact.email in extracted_emails):
                     stats["duplicates"] += 1
                     continue
 
