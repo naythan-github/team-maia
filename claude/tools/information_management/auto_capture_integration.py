@@ -219,8 +219,8 @@ class AutoCaptureIntegration:
                     if any(subject.startswith(p) for p in ['Accepted:', 'Automatic reply:', 'Canceled:']):
                         continue
 
-                    # Relevance threshold
-                    if result.get('relevance', 0) < 0.5:
+                    # Lower threshold to capture more (learning phase)
+                    if result.get('relevance', 0) < 0.25:
                         continue
 
                     # External stakeholders get higher priority

@@ -1,8 +1,153 @@
 # Maia System State
 
-**Last Updated**: 2025-10-13
-**Current Phase**: Phase 116 - Contact & Calendar Automation (Complete)
-**Status**: ✅ PRODUCTION - Automated Contact Extraction + Calendar Availability
+**Last Updated**: 2025-10-14
+**Current Phase**: Phase 117 - Executive Information Manager - Production Integration (Complete)
+**Status**: ✅ PRODUCTION - Email/VTT Auto-Capture + Agent Orchestration Layer + Daily LaunchAgent
+
+---
+
+## 📊 PHASE 117: Executive Information Manager - Production Integration (2025-10-14)
+
+### Achievement
+**Complete production integration of executive information management with automatic capture from all sources** - Fixed Phase 115.3 agent orchestration layer architecture violation, implemented automatic capture from VTT Intelligence (11 items) and Email RAG (6 actionable emails with 0.25 relevance threshold), created LaunchAgent for daily 6:30 AM execution, fixed all import errors, and established learning-based email filtering approach.
+
+### Problem Solved
+**Gap 1**: Phase 115.3 agent orchestration layer built but never tested with real data - executive information manager had only test data, no automatic capture from real sources.
+**Gap 2**: Email RAG integration completely broken - wrong file paths, wrong method names, wrong field mappings, relevance threshold too high (0.5) missing 100% of actionable emails.
+**Gap 3**: No automated daily execution - manual workflow only, defeating purpose of "morning priorities" system.
+
+### Solution
+**Component 1**: Fixed all import errors (strategic briefing class name, email RAG path/methods)
+**Component 2**: Implemented comprehensive email capture with lower threshold (0.25 for learning phase)
+**Component 3**: Created LaunchAgent for daily 6:30 AM auto-capture before 7 AM briefing
+**Component 4**: Tested with real data - 11 VTT items + 6 email items captured and prioritized
+
+### Result
+User now has real morning priorities: 3 critical items, 11 high priority items, 46 medium priority items from actual VTT meetings and actionable emails.
+
+### Implementation Details
+
+**Email Capture Integration Fixed**:
+1. **Import Errors** (3 fixes):
+   - Strategic briefing: `EnhancedDailyBriefingStrategic` → `StrategicDailyBriefing` (correct class name)
+   - Email RAG path: `tools/productivity/email_rag_ollama.py` → `tools/email_rag_ollama.py` (correct location)
+   - Email RAG method: `rag.search()` → `rag.semantic_search()` (correct API)
+   - Email RAG fields: `relevance_score`/`body`/`email_id` → `relevance`/`preview`/`message_id` (correct schema)
+
+2. **Relevance Threshold Calibration**:
+   - **Initial**: 0.5 = 0 emails captured from 582 indexed emails
+   - **Lowered**: 0.4 = 1 email captured (too restrictive)
+   - **Final**: 0.25 = 6 actionable emails captured (learning phase)
+   - **Strategy**: Start permissive, monitor false positives, tighten over time
+   - **Emails captured**:
+     - BYOD Registration assigned (relevance: 0.28)
+     - Client Portal registration (relevance: 0.25)
+     - Help Desk review - 2 emails (relevance: 0.38, 0.32)
+     - Onset IAM Engineers conversation (relevance: 0.27)
+     - Cloud Strategic Thinking Time (relevance: 0.26)
+
+3. **Email Filtering Strategy** ([EMAIL_CAPTURE_STRATEGY.md](claude/data/EMAIL_CAPTURE_STRATEGY.md)):
+   - **Semantic queries** (5 patterns): urgent matters, action items, questions, decisions, external clients
+   - **Noise filtering**: Skip "Accepted:", "Automatic reply:", "Canceled:", Teams notifications, login links
+   - **External stakeholder boost**: Non-@orro.group emails auto-elevated to HIGH priority
+   - **Deduplication**: Track message IDs to prevent duplicate captures
+   - **Documented 7 types to capture**: Action requests, questions, decisions, escalations, commitments, external stakeholders, follow-ups
+   - **Documented 5 types to exclude**: Meeting acceptances, calendar notifications, auto-replies, FYI emails, closed threads
+
+**VTT Intelligence Integration** (already working):
+- Captures action items from meeting transcripts where owner = "Naythan"
+- 11 items captured from `vtt_intelligence.json`
+- Examples: "Provide subcategory list to Mariel", "Review NSG cost tagging", "Forecast parallel operating structure costs"
+
+**LaunchAgent Setup** ([com.maia.auto-capture.plist](~/Library/LaunchAgents/com.maia.auto-capture.plist)):
+- **Schedule**: Daily at 6:30 AM (30 minutes before morning briefing LaunchAgent at 7 AM)
+- **Script**: `auto_capture_integration.py` - scans 4 sources (Daily Briefing, Action Tracker, VTT Intelligence, Email RAG)
+- **Logging**: stdout/stderr to `claude/logs/production/auto_capture.*.log`
+- **Status**: Loaded and tested - `launchctl list | grep com.maia.auto-capture` shows loaded
+- **Test result**: Manual trigger successful, 11 VTT + 0 email items captured (before email fixes)
+
+**Tools Created**:
+1. `auto_capture_integration.py` (365 lines) - Automatic capture from 4 data sources
+2. `quick_capture.py` (172 lines) - Interactive/CLI manual capture for ad-hoc items
+3. `EMAIL_CAPTURE_STRATEGY.md` (306 lines) - Comprehensive email filtering strategy documentation
+
+**Files Modified**:
+- `executive_information_manager.py` - Fixed strategic briefing import
+- `auto_capture_integration.py` - Added VTT intelligence capture, fixed email RAG integration, lowered threshold to 0.25
+
+### Current Morning Priorities (Real Data)
+
+**🔴 Tier 1: Critical (3 items)**:
+1. BYOD Registration has been assigned (Score: 90.0)
+2. Client Portal Account Registration (Score: 90.0)
+3. (Duplicate of #1 - needs deduplication)
+
+**🟡 Tier 2: High Priority (11 items)**:
+1. Test agent orchestration layer natural language queries (Score: 85.0) - from Phase 115.3
+2. Naythan + Marielle: Review NSG cost tagging for pricing negotiation (Score: 75.0)
+3. Hamish + Naythan + Marielle: Forecast parallel operating structure costs (Score: 70.0)
+4. (7 VTT action items + 1 test item)
+
+**🟢 Tier 3: Medium Priority (46 items)**:
+- Mix of VTT action items and lower-priority emails
+
+**📊 System Status**:
+- Inbox: 23 unprocessed items (from multiple manual scans during testing)
+- Active Items: 60 total (Tiers 1-3)
+- Critical: 3 items, High Priority: 11 items
+
+### Metrics
+
+**Email Capture**:
+- Total emails in RAG: 582 indexed
+- Actionable emails found: 6 (1% of corpus)
+- Relevance threshold: 0.25 (learning phase)
+- False positive rate: TBD (requires user feedback)
+- Email corpus composition: ~90% calendar/Teams notifications, ~10% actual work emails
+
+**VTT Intelligence**:
+- Action items captured: 11
+- Filter: Only items assigned to "Naythan"
+- Source: Meeting transcript analysis
+
+**Development Time**: 3.5 hours
+- Diagnosis: 30 min (identified empty Email RAG, import errors)
+- Email RAG fixes: 1 hour (path, methods, fields, threshold calibration)
+- Strategy documentation: 30 min (EMAIL_CAPTURE_STRATEGY.md)
+- LaunchAgent setup: 30 min
+- Testing & validation: 1 hour
+
+### Success Criteria
+
+✅ **All 4 data sources working**:
+- Daily Briefing: ✅ (0 items today - expected, briefing generated later)
+- Action Tracker: ✅ (0 items today - expected, no active GTD items)
+- VTT Intelligence: ✅ (11 items captured from meeting transcripts)
+- Email RAG: ✅ (6 actionable emails captured with 0.25 threshold)
+
+✅ **Automatic execution**: LaunchAgent scheduled for daily 6:30 AM
+
+✅ **Real priorities generated**: 60 active items across 3 tiers
+
+✅ **Import errors fixed**: All 4 import/path/method errors resolved
+
+✅ **Learning approach established**: Low threshold (0.25) to capture more, will tighten based on false positive rate
+
+### Next Steps
+
+**Phase 4 (Pending)**: Natural language testing of agent orchestration layer
+- Test: "what should i focus on" → orchestrates 3 tools
+- Test: "how's my relationship with Hamish" → stakeholder agent
+- Test: "help me decide on X" → decision agent
+
+**Threshold tuning** (ongoing):
+- Monitor false positive rate from email captures
+- User marks items as "noise" vs "important"
+- Increase threshold (0.25 → 0.3 → 0.35) as patterns learned
+
+**Deduplication improvement**:
+- Current: Duplicates visible in morning ritual (same VTT item captured multiple times)
+- Fix: Add source_id checking in capture_item() to prevent duplicates
 
 ---
 

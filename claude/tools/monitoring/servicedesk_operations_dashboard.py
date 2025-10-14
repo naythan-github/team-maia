@@ -102,30 +102,37 @@ class ServiceDeskDashboard:
         }
 
     def get_fcr_by_team(self):
-        """Get FCR performance by team using comments table"""
+        """Get FCR performance by team using Cloud roster only"""
         conn = sqlite3.connect(self.db_path)
         query = """
-            WITH ticket_fcr AS (
+            WITH roster_ticket_team_fcr AS (
                 SELECT
-                    ticket_id,
-                    COUNT(DISTINCT user_id) as agent_count
-                FROM comments
-                WHERE user_id IS NOT NULL AND user_id <> 'nan'
-                GROUP BY ticket_id
+                    c.team,
+                    c.ticket_id,
+                    COUNT(DISTINCT c.user_name) as roster_agent_count
+                FROM comments c
+                INNER JOIN cloud_team_roster r ON c.user_name = r.username
+                WHERE c.user_name IS NOT NULL AND c.user_name <> 'nan'
+                AND c.team LIKE 'Cloud -%'
+                GROUP BY c.team, c.ticket_id
             ),
-            ticket_team AS (
-                SELECT DISTINCT ticket_id, team
-                FROM comments
-                WHERE team IS NOT NULL AND team <> 'nan'
+            team_members AS (
+                SELECT
+                    c.team,
+                    COUNT(DISTINCT c.user_name) as member_count
+                FROM comments c
+                INNER JOIN cloud_team_roster r ON c.user_name = r.username
+                WHERE c.team LIKE 'Cloud -%'
+                GROUP BY c.team
             )
             SELECT
-                tt.team,
-                COUNT(DISTINCT tt.ticket_id) as total,
-                ROUND(SUM(CASE WHEN tf.agent_count = 1 THEN 1 ELSE 0 END) * 100.0 /
-                      COUNT(DISTINCT tt.ticket_id), 1) as fcr_rate
-            FROM ticket_team tt
-            INNER JOIN ticket_fcr tf ON tt.ticket_id = tf.ticket_id
-            GROUP BY tt.team
+                rt.team,
+                COUNT(DISTINCT rt.ticket_id) as total,
+                ROUND(100.0 * SUM(CASE WHEN rt.roster_agent_count = 1 THEN 1 ELSE 0 END) / COUNT(DISTINCT rt.ticket_id), 1) as fcr_rate,
+                tm.member_count as team_members
+            FROM roster_ticket_team_fcr rt
+            INNER JOIN team_members tm ON rt.team = tm.team
+            GROUP BY rt.team, tm.member_count
             HAVING total > 100
             ORDER BY fcr_rate DESC
         """
@@ -175,17 +182,18 @@ class ServiceDeskDashboard:
         return df
 
     def get_top_agents_by_workload(self):
-        """Get top agents by comment volume"""
+        """Get top Cloud roster agents by comment volume"""
         conn = sqlite3.connect(self.db_path)
         query = """
             SELECT
-                user_name,
+                r.name,
                 COUNT(*) as comments,
-                COUNT(DISTINCT ticket_id) as tickets,
-                ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT ticket_id), 1) as avg_comments_per_ticket
-            FROM comments
-            WHERE user_id IS NOT NULL AND user_id <> 'nan' AND user_name IS NOT NULL AND user_name <> 'nan'
-            GROUP BY user_name
+                COUNT(DISTINCT c.ticket_id) as tickets,
+                ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT c.ticket_id), 1) as avg_comments_per_ticket
+            FROM comments c
+            INNER JOIN cloud_team_roster r ON c.user_name = r.username
+            WHERE c.user_id IS NOT NULL AND c.user_id <> 'nan'
+            GROUP BY r.name
             ORDER BY comments DESC
             LIMIT 15
         """
@@ -211,7 +219,7 @@ class ServiceDeskDashboard:
             dbc.Row([
                 dbc.Col([
                     html.H1("ServiceDesk Operations Intelligence", className="text-primary"),
-                    html.P(f"Cloud Teams Only | June 26 - Oct 14, 2025 | {metrics['tickets_with_comments']:,} tickets | {metrics['comments_count']:,} comments | {metrics['agents_count']} agents | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                    html.P(f"Cloud Teams (48 roster members) | June 26 - Oct 14, 2025 | {metrics['tickets_with_comments']:,} tickets | {metrics['comments_count']:,} comments | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
                           className="text-muted")
                 ])
             ], className="mb-4 mt-3"),
@@ -263,7 +271,7 @@ class ServiceDeskDashboard:
                 # FCR by Team
                 dbc.Col([
                     dbc.Card([
-                        dbc.CardHeader(html.H5("First Call Resolution by Team")),
+                        dbc.CardHeader(html.H5("First Call Resolution by Team (Cloud Roster Only)")),
                         dbc.CardBody([
                             dcc.Graph(
                                 figure={
@@ -272,7 +280,7 @@ class ServiceDeskDashboard:
                                         x=fcr_data['fcr_rate'],
                                         orientation='h',
                                         marker={'color': colors},
-                                        text=[f"{x}%" for x in fcr_data['fcr_rate']],
+                                        text=[f"{x}% ({y} members)" for x, y in zip(fcr_data['fcr_rate'], fcr_data['team_members'])],
                                         textposition='auto'
                                     )],
                                     'layout': go.Layout(
@@ -327,12 +335,12 @@ class ServiceDeskDashboard:
                 # Top Agents by Workload
                 dbc.Col([
                     dbc.Card([
-                        dbc.CardHeader(html.H5("Top 15 Agents by Workload")),
+                        dbc.CardHeader(html.H5("Top 15 Cloud Team Members by Workload")),
                         dbc.CardBody([
                             dash_table.DataTable(
                                 data=agent_data.to_dict('records'),
                                 columns=[
-                                    {'name': 'Agent', 'id': 'user_name'},
+                                    {'name': 'Cloud Team Member', 'id': 'name'},
                                     {'name': 'Comments', 'id': 'comments'},
                                     {'name': 'Tickets', 'id': 'tickets'},
                                     {'name': 'Avg Comments/Ticket', 'id': 'avg_comments_per_ticket'}
@@ -380,7 +388,7 @@ def main():
     print("🚀 Starting ServiceDesk Operations Dashboard...")
     print("📊 Dashboard: http://127.0.0.1:8065")
     print("🏥 Health: http://127.0.0.1:8065/health")
-    dashboard.app.run(debug=True, host='0.0.0.0', port=8065)
+    dashboard.app.run(debug=False, host='0.0.0.0', port=8065)
 
 if __name__ == '__main__':
     main()
