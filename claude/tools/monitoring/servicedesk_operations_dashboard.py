@@ -58,20 +58,22 @@ class ServiceDeskDashboard:
                 }), 500
 
     def get_summary_metrics(self):
-        """Get summary KPI metrics"""
+        """Get summary KPI metrics using comments table"""
         conn = sqlite3.connect(self.db_path)
 
         total = pd.read_sql_query("SELECT COUNT(*) as count FROM tickets", conn).iloc[0]['count']
 
+        # FCR from comments table (100% coverage)
         fcr_query = """
             SELECT
-                COUNT(DISTINCT t."TKT-Ticket ID") as total,
-                COUNT(DISTINCT CASE WHEN eng_count = 1 THEN t."TKT-Ticket ID" END) as fcr
-            FROM tickets t
-            LEFT JOIN (
-                SELECT crm_id, COUNT(DISTINCT user_username) as eng_count
-                FROM timesheets GROUP BY crm_id
-            ) ts ON t."TKT-Ticket ID" = ts.crm_id
+                COUNT(*) as total,
+                SUM(CASE WHEN agent_count = 1 THEN 1 ELSE 0 END) as fcr
+            FROM (
+                SELECT ticket_id, COUNT(DISTINCT user_id) as agent_count
+                FROM comments
+                WHERE user_id IS NOT NULL AND user_id <> 'nan'
+                GROUP BY ticket_id
+            )
         """
         fcr_data = pd.read_sql_query(fcr_query, conn)
         fcr_rate = round(fcr_data.iloc[0]['fcr'] * 100.0 / fcr_data.iloc[0]['total'], 1) if fcr_data.iloc[0]['total'] > 0 else 0
@@ -83,30 +85,47 @@ class ServiceDeskDashboard:
         """
         auto_count = pd.read_sql_query(auto_query, conn).iloc[0]['count']
 
+        # Total comments and agents
+        comments_count = pd.read_sql_query("SELECT COUNT(*) as count FROM comments", conn).iloc[0]['count']
+        agents_count = pd.read_sql_query("SELECT COUNT(DISTINCT user_id) as count FROM comments WHERE user_id <> 'nan'", conn).iloc[0]['count']
+
         conn.close()
 
         return {
             'total_tickets': total,
             'fcr_rate': fcr_rate,
             'automation_count': auto_count,
-            'hours_saved': round(auto_count * 0.25, 0)
+            'hours_saved': round(auto_count * 0.25, 0),
+            'comments_count': comments_count,
+            'agents_count': agents_count,
+            'tickets_with_comments': fcr_data.iloc[0]['total']
         }
 
     def get_fcr_by_team(self):
-        """Get FCR performance by team"""
+        """Get FCR performance by team using comments table"""
         conn = sqlite3.connect(self.db_path)
         query = """
+            WITH ticket_fcr AS (
+                SELECT
+                    ticket_id,
+                    COUNT(DISTINCT user_id) as agent_count
+                FROM comments
+                WHERE user_id IS NOT NULL AND user_id <> 'nan'
+                GROUP BY ticket_id
+            ),
+            ticket_team AS (
+                SELECT DISTINCT ticket_id, team
+                FROM comments
+                WHERE team IS NOT NULL AND team <> 'nan'
+            )
             SELECT
-                t."TKT-Team" as team,
-                COUNT(DISTINCT t."TKT-Ticket ID") as total,
-                ROUND(COUNT(DISTINCT CASE WHEN eng_count = 1 THEN t."TKT-Ticket ID" END) * 100.0 /
-                      COUNT(DISTINCT t."TKT-Ticket ID"), 1) as fcr_rate
-            FROM tickets t
-            LEFT JOIN (
-                SELECT crm_id, COUNT(DISTINCT user_username) as eng_count
-                FROM timesheets GROUP BY crm_id
-            ) ts ON t."TKT-Ticket ID" = ts.crm_id
-            GROUP BY t."TKT-Team"
+                tt.team,
+                COUNT(DISTINCT tt.ticket_id) as total,
+                ROUND(SUM(CASE WHEN tf.agent_count = 1 THEN 1 ELSE 0 END) * 100.0 /
+                      COUNT(DISTINCT tt.ticket_id), 1) as fcr_rate
+            FROM ticket_team tt
+            INNER JOIN ticket_fcr tf ON tt.ticket_id = tf.ticket_id
+            GROUP BY tt.team
             HAVING total > 100
             ORDER BY fcr_rate DESC
         """
@@ -133,12 +152,55 @@ class ServiceDeskDashboard:
         conn.close()
         return df
 
+    def get_reassignment_distribution(self):
+        """Get reassignment analysis from comments"""
+        conn = sqlite3.connect(self.db_path)
+        query = """
+            SELECT
+                agent_count as agents,
+                COUNT(*) as ticket_count,
+                ROUND(100.0 * COUNT(*) / (SELECT COUNT(DISTINCT ticket_id) FROM comments), 1) as percentage
+            FROM (
+                SELECT ticket_id, COUNT(DISTINCT user_id) as agent_count
+                FROM comments
+                WHERE user_id IS NOT NULL AND user_id <> 'nan'
+                GROUP BY ticket_id
+            )
+            GROUP BY agent_count
+            ORDER BY agent_count
+            LIMIT 8
+        """
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        return df
+
+    def get_top_agents_by_workload(self):
+        """Get top agents by comment volume"""
+        conn = sqlite3.connect(self.db_path)
+        query = """
+            SELECT
+                user_name,
+                COUNT(*) as comments,
+                COUNT(DISTINCT ticket_id) as tickets,
+                ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT ticket_id), 1) as avg_comments_per_ticket
+            FROM comments
+            WHERE user_id IS NOT NULL AND user_id <> 'nan' AND user_name IS NOT NULL AND user_name <> 'nan'
+            GROUP BY user_name
+            ORDER BY comments DESC
+            LIMIT 15
+        """
+        df = pd.read_sql_query(query, conn)
+        conn.close()
+        return df
+
     def setup_layout(self):
         """Setup dashboard layout"""
 
         metrics = self.get_summary_metrics()
         fcr_data = self.get_fcr_by_team()
         auto_data = self.get_automation_opportunities()
+        reassignment_data = self.get_reassignment_distribution()
+        agent_data = self.get_top_agents_by_workload()
 
         # Color-code FCR bars
         colors = ['#10b981' if x >= 70 else '#f59e0b' if x >= 40 else '#ef4444'
@@ -149,7 +211,7 @@ class ServiceDeskDashboard:
             dbc.Row([
                 dbc.Col([
                     html.H1("ServiceDesk Operations Intelligence", className="text-primary"),
-                    html.P(f"Analysis Period: July-Dec 2025 | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                    html.P(f"Cloud Teams Only | June 26 - Oct 14, 2025 | {metrics['tickets_with_comments']:,} tickets | {metrics['comments_count']:,} comments | {metrics['agents_count']} agents | Generated: {datetime.now().strftime('%Y-%m-%d %H:%M')}",
                           className="text-muted")
                 ])
             ], className="mb-4 mt-3"),
@@ -160,7 +222,8 @@ class ServiceDeskDashboard:
                     dbc.Card([
                         dbc.CardBody([
                             html.H6("Total Tickets", className="text-muted"),
-                            html.H2(f"{metrics['total_tickets']:,}", className="text-dark")
+                            html.H2(f"{metrics['total_tickets']:,}", className="text-dark"),
+                            html.Small(f"{metrics['tickets_with_comments']:,} with comments", className="text-muted")
                         ])
                     ])
                 ], width=3),
@@ -170,7 +233,7 @@ class ServiceDeskDashboard:
                             html.H6("Overall FCR Rate", className="text-muted"),
                             html.H2(f"{metrics['fcr_rate']}%",
                                    className="text-danger" if metrics['fcr_rate'] < 40 else "text-warning"),
-                            html.Small("Target: 70%", className="text-muted")
+                            html.Small("Target: 70-80% | Gap: -43 to -53 pts", className="text-danger")
                         ])
                     ])
                 ], width=3),
@@ -195,7 +258,7 @@ class ServiceDeskDashboard:
                 ], width=3),
             ], className="mb-4"),
 
-            # Main Charts
+            # Main Charts Row 1
             dbc.Row([
                 # FCR by Team
                 dbc.Col([
@@ -231,6 +294,61 @@ class ServiceDeskDashboard:
                     ])
                 ], width=6),
 
+                # Reassignment Distribution
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader(html.H5("Reassignment Distribution")),
+                        dbc.CardBody([
+                            dcc.Graph(
+                                figure={
+                                    'data': [go.Bar(
+                                        x=reassignment_data['agents'],
+                                        y=reassignment_data['ticket_count'],
+                                        marker={'color': ['#10b981'] + ['#f59e0b']*(len(reassignment_data)-1)},
+                                        text=[f"{x:,}<br>({y}%)" for x, y in zip(reassignment_data['ticket_count'], reassignment_data['percentage'])],
+                                        textposition='auto'
+                                    )],
+                                    'layout': go.Layout(
+                                        xaxis={'title': 'Number of Agents', 'dtick': 1},
+                                        yaxis={'title': 'Ticket Count'},
+                                        margin={'l': 50, 'r': 20, 't': 20, 'b': 50},
+                                        height=400
+                                    )
+                                },
+                                config={'displayModeBar': False}
+                            )
+                        ])
+                    ])
+                ], width=6),
+            ], className="mb-4"),
+
+            # Main Charts Row 2
+            dbc.Row([
+                # Top Agents by Workload
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardHeader(html.H5("Top 15 Agents by Workload")),
+                        dbc.CardBody([
+                            dash_table.DataTable(
+                                data=agent_data.to_dict('records'),
+                                columns=[
+                                    {'name': 'Agent', 'id': 'user_name'},
+                                    {'name': 'Comments', 'id': 'comments'},
+                                    {'name': 'Tickets', 'id': 'tickets'},
+                                    {'name': 'Avg Comments/Ticket', 'id': 'avg_comments_per_ticket'}
+                                ],
+                                style_cell={'textAlign': 'left', 'padding': '10px', 'fontSize': '13px'},
+                                style_header={'backgroundColor': '#f8f9fa', 'fontWeight': 'bold'},
+                                style_data_conditional=[{
+                                    'if': {'row_index': 'odd'},
+                                    'backgroundColor': '#f8f9fa'
+                                }],
+                                page_size=15
+                            )
+                        ])
+                    ])
+                ], width=6),
+
                 # Automation Opportunities
                 dbc.Col([
                     dbc.Card([
@@ -243,7 +361,7 @@ class ServiceDeskDashboard:
                                     {'name': 'Volume', 'id': 'volume'},
                                     {'name': 'Hours Saved', 'id': 'hours_saved'}
                                 ],
-                                style_cell={'textAlign': 'left', 'padding': '10px'},
+                                style_cell={'textAlign': 'left', 'padding': '10px', 'fontSize': '13px'},
                                 style_header={'backgroundColor': '#f8f9fa', 'fontWeight': 'bold'},
                                 style_data_conditional=[{
                                     'if': {'row_index': 'odd'},

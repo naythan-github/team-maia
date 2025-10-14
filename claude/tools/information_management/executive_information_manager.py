@@ -33,7 +33,7 @@ def import_module_from_path(module_name: str, file_path: Path):
 try:
     strategic_briefing_path = MAIA_ROOT / "tools" / "information_management" / "enhanced_daily_briefing_strategic.py"
     strategic_briefing = import_module_from_path("enhanced_daily_briefing_strategic", strategic_briefing_path)
-    StrategicBriefing = strategic_briefing.EnhancedDailyBriefingStrategic
+    StrategicBriefing = strategic_briefing.StrategicDailyBriefing
 except Exception as e:
     print(f"⚠️  Warning: Could not import strategic briefing: {e}")
     StrategicBriefing = None
