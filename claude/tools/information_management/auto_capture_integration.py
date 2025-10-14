@@ -170,12 +170,15 @@ class AutoCaptureIntegration:
         print(f"✅ Captured {captured} items from action tracker")
         return captured
 
-    def capture_from_email_rag(self, days_back: int = 3) -> int:
+    def capture_from_email_rag(self, days_back: int = 7) -> int:
         """
-        Capture recent important emails from Email RAG.
+        Capture actionable emails using intelligent semantic filtering.
 
-        Args:
-            days_back: Number of days to look back
+        Strategy:
+        - Semantic queries for action items, questions, decisions
+        - Filter out noise (meeting acceptances, auto-replies)
+        - Prioritize external stakeholders and urgent matters
+        - Only recent emails (last 7 days)
 
         Returns:
             Number of items captured
@@ -191,43 +194,59 @@ class AutoCaptureIntegration:
             return 0
 
         captured = 0
+        seen_messages = set()
 
-        # Query for recent high-priority emails
-        priority_keywords = [
-            "urgent", "asap", "important", "critical", "decision",
-            "approval", "review", "deadline", "board", "executive"
+        # Semantic queries: (query, time_sensitivity, decision_impact, stakeholder, limit)
+        queries = [
+            ("urgent matters need immediate attention", 'urgent', 'high', 'executive', 5),
+            ("action items I need to complete", 'week', 'high', 'team', 10),
+            ("questions waiting for my response", 'week', 'medium', 'team', 10),
+            ("decisions pending my approval", 'week', 'high', 'executive', 8),
+            ("emails from external clients", 'week', 'medium', 'client', 8),
         ]
 
-        for keyword in priority_keywords:
+        for query_text, time_sens, decision_imp, stakeholder, limit in queries:
             try:
-                results = rag.semantic_search(f"{keyword} recent", n_results=3)
+                results = rag.semantic_search(query_text, n_results=limit)
 
                 for result in results:
-                    # Skip if relevance too low
-                    if result.get('relevance', 0) < 0.3:
+                    msg_id = result.get('message_id')
+                    if msg_id in seen_messages:
                         continue
 
-                    # Determine priority from keyword
-                    decision_impact = 'high' if keyword in ['urgent', 'critical', 'board', 'executive'] else 'medium'
-                    time_sensitivity = 'urgent' if keyword in ['urgent', 'asap'] else 'week'
+                    # Filter noise
+                    subject = result.get('subject', '')
+                    if any(subject.startswith(p) for p in ['Accepted:', 'Automatic reply:', 'Canceled:']):
+                        continue
+
+                    # Relevance threshold
+                    if result.get('relevance', 0) < 0.5:
+                        continue
+
+                    # External stakeholders get higher priority
+                    sender = result.get('sender', '')
+                    if '@orro.group' not in sender.lower():
+                        stakeholder = 'client'
+                        decision_imp = 'high'
 
                     self.manager.capture_item(
                         source='email_rag',
                         item_type='email',
-                        title=result.get('subject', 'No subject'),
-                        content=f"From: {result.get('sender', 'Unknown')} | Date: {result.get('date', 'Unknown')} | Preview: {result.get('preview', '')}",
+                        title=f"Email: {subject}",
+                        content=f"From: {sender} | {result.get('preview', '')}",
                         metadata={
-                            'source_id': result.get('message_id'),
-                            'time_sensitivity': time_sensitivity,
-                            'decision_impact': decision_impact,
-                            'stakeholder_importance': 'executive' if keyword in ['board', 'executive'] else 'team',
-                            'strategic_alignment': 'core' if decision_impact == 'high' else 'supporting'
+                            'source_id': msg_id,
+                            'time_sensitivity': time_sens,
+                            'decision_impact': decision_imp,
+                            'stakeholder_importance': stakeholder,
+                            'strategic_alignment': 'core' if decision_imp == 'high' else 'supporting'
                         }
                     )
                     captured += 1
+                    seen_messages.add(msg_id)
 
             except Exception as e:
-                print(f"⚠️  Error querying Email RAG for '{keyword}': {e}")
+                print(f"⚠️  Error in email query: {e}")
                 continue
 
         print(f"✅ Captured {captured} items from Email RAG")
