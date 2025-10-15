@@ -50,15 +50,15 @@ class EmbeddingQualityTest:
 
         # Get collections
         try:
-            self.ollama_collection = self.client.get_collection("servicedesk_comments")
-            print(f"✅ Ollama collection: {self.ollama_collection.count():,} documents")
+            self.ollama_collection = self.client.get_collection("test_comments_ollama")
+            print(f"✅ Ollama collection: {self.ollama_collection.count():,} documents (768-dim)")
         except Exception as e:
             print(f"⚠️  Ollama collection not found: {e}")
             self.ollama_collection = None
 
         try:
-            self.gpu_collection = self.client.get_collection("servicedesk_descriptions")
-            print(f"✅ GPU collection: {self.gpu_collection.count():,} documents")
+            self.gpu_collection = self.client.get_collection("servicedesk_comments")
+            print(f"✅ GPU collection: {self.gpu_collection.count():,} documents (384-dim)")
         except Exception as e:
             print(f"⚠️  GPU collection not found: {e}")
             self.gpu_collection = None

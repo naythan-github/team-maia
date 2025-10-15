@@ -1,0 +1,134 @@
+{
+  "test_date": "2025-10-15T20:40:11.096727",
+  "test_approach": "Sampled comparison on identical 500-doc dataset",
+  "ollama_model": "nomic-embed-text (768-dim)",
+  "gpu_model": "all-MiniLM-L6-v2 (384-dim)",
+  "test_queries": [
+    {
+      "query": "DNS resolution failure on domain controller",
+      "category": "Infrastructure",
+      "ollama": {
+        "precision": 1.0,
+        "avg_distance": 378.56475219726565
+      },
+      "gpu": {
+        "precision": 0.25,
+        "avg_distance": 1.5657899618148803
+      }
+    },
+    {
+      "query": "Azure AD conditional access policy blocking authentication",
+      "category": "Security",
+      "ollama": {
+        "precision": 1.0,
+        "avg_distance": 385.71787109375
+      },
+      "gpu": {
+        "precision": 0.75,
+        "avg_distance": 0.9682124853134155
+      }
+    },
+    {
+      "query": "Exchange mailbox database corruption after crash",
+      "category": "Application",
+      "ollama": {
+        "precision": 0.5,
+        "avg_distance": 355.4938903808594
+      },
+      "gpu": {
+        "precision": 0.25,
+        "avg_distance": 1.358245038986206
+      }
+    },
+    {
+      "query": "SQL Server high CPU usage causing query timeouts",
+      "category": "Performance",
+      "ollama": {
+        "precision": 0.5,
+        "avg_distance": 353.5753173828125
+      },
+      "gpu": {
+        "precision": 0.75,
+        "avg_distance": 1.479465365409851
+      }
+    },
+    {
+      "query": "VMware vMotion failing due to network latency",
+      "category": "Virtualization",
+      "ollama": {
+        "precision": 0.25,
+        "avg_distance": 321.037109375
+      },
+      "gpu": {
+        "precision": 0.25,
+        "avg_distance": 1.6126204252243042
+      }
+    },
+    {
+      "query": "DHCP scope exhausted on VLAN",
+      "category": "Infrastructure",
+      "ollama": {
+        "precision": 0.25,
+        "avg_distance": 397.15888061523435
+      },
+      "gpu": {
+        "precision": 0.25,
+        "avg_distance": 1.7313923597335816
+      }
+    },
+    {
+      "query": "Certificate expired causing SSL errors",
+      "category": "Security",
+      "ollama": {
+        "precision": 0.75,
+        "avg_distance": 355.48577880859375
+      },
+      "gpu": {
+        "precision": 0.75,
+        "avg_distance": 1.3423388719558715
+      }
+    },
+    {
+      "query": "Active Directory replication not working",
+      "category": "Infrastructure",
+      "ollama": {
+        "precision": 0.3333333333333333,
+        "avg_distance": 438.05564575195314
+      },
+      "gpu": {
+        "precision": 1.0,
+        "avg_distance": 1.4412556886672974
+      }
+    },
+    {
+      "query": "Firewall blocking port 443 traffic",
+      "category": "Security",
+      "ollama": {
+        "precision": 0.75,
+        "avg_distance": 369.1325927734375
+      },
+      "gpu": {
+        "precision": 0.25,
+        "avg_distance": 1.6063160181045533
+      }
+    },
+    {
+      "query": "password reset for locked account",
+      "category": "Basic Support",
+      "ollama": {
+        "precision": 1.0,
+        "avg_distance": 422.2711547851562
+      },
+      "gpu": {
+        "precision": 1.0,
+        "avg_distance": 1.3512748718261718
+      }
+    }
+  ],
+  "summary": {
+    "ollama_avg_precision": 0.6333333333333333,
+    "gpu_avg_precision": 0.55,
+    "difference": -0.08333333333333326,
+    "verdict": "Ollama"
+  }
+}

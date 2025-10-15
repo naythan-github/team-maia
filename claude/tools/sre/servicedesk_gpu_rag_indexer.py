@@ -47,13 +47,13 @@ except ImportError as e:
 class GPURAGIndexer:
     """GPU-accelerated RAG indexer using sentence-transformers"""
 
-    def __init__(self, db_path: str = None, model_name: str = "all-MiniLM-L6-v2", batch_size: int = 64):
+    def __init__(self, db_path: str = None, model_name: str = "intfloat/e5-base-v2", batch_size: int = 64):
         """
         Initialize GPU indexer
 
         Args:
             db_path: Path to SQLite database
-            model_name: HuggingFace sentence-transformers model
+            model_name: HuggingFace sentence-transformers model (default: intfloat/e5-base-v2 - best quality)
             batch_size: Documents to process per GPU batch (64-256 recommended)
         """
         self.db_path = db_path or str(DB_PATH)
@@ -238,9 +238,17 @@ class GPURAGIndexer:
             settings=Settings(anonymized_telemetry=False)
         )
 
-        collection = client.get_or_create_collection(
-            name=f"servicedesk_{collection_name}",
-            metadata={"description": config['description']}
+        # Delete existing collection if it exists (for model changes)
+        collection_fullname = f"servicedesk_{collection_name}"
+        try:
+            client.delete_collection(collection_fullname)
+            print(f"   🗑️  Deleted existing collection: {collection_fullname}")
+        except:
+            pass
+
+        collection = client.create_collection(
+            name=collection_fullname,
+            metadata={"description": config['description'], "model": self.model_name}
         )
 
         # Process in batches
