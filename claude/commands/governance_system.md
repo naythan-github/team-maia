@@ -1,7 +1,11 @@
 # Repository Governance System
 
+**STATUS**: ⚠️ ASPIRATIONAL - Tools referenced in this document are not yet implemented
+
 ## Purpose
 Unified command interface for repository sprawl prevention and governance using ML-enhanced policy engine and integrated monitoring system.
+
+**Current Alternative**: Use `ufc_compliance_checker.py` for basic compliance validation
 
 ## System Architecture
 The governance system consists of 5 integrated components:

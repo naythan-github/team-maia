@@ -256,11 +256,12 @@ briefing = generate_personalized_briefing(include_indexed_context=True)
 ### Command Integration
 Access via existing command interface:
 ```bash
-# Index current project
-python3 claude/tools/rag_document_connectors.py
+# Index current project (TODO: rag_document_connectors.py not yet implemented)
+# Alternative: Use existing RAG indexers for specific domains
+python3 claude/tools/information_management/executive_information_manager.py index
 
-# Query via KAI integration
-python3 -c "from claude.tools.kai_integration_manager import kai_enhanced_query; print(kai_enhanced_query('deployment process', 'technical'))"
+# Query via system_state_rag_indexer
+python3 claude/tools/sre/system_state_rag_indexer.py query "deployment process"
 ```
 
 ## Security and Privacy

@@ -122,13 +122,13 @@ python3 ${MAIA_ROOT}/claude/tools/tool_usage_monitor.py report 1 | head -20
 **Output**: Validation report and test results
 
 ```bash
-# Test tool discovery system
-echo "🔍 Testing systematic tool discovery..."
-python3 ${MAIA_ROOT}/claude/tools/systematic_tool_discovery.py research
+# Test tool discovery system (manual review - systematic_tool_discovery.py not yet implemented)
+echo "🔍 Testing tool discovery..."
+# TODO: Implement systematic_tool_discovery.py or use capability_checker.py
 
-# Validate context loading
+# Validate UFC context system
 echo "📚 Validating UFC context system..."
-python3 ${MAIA_ROOT}/claude/hooks/pre_commit_ufc.py
+python3 ${MAIA_ROOT}/claude/tools/security/ufc_compliance_checker.py --check
 
 # Generate post-optimization report
 python3 ${MAIA_ROOT}/claude/tools/tool_usage_monitor.py report 7 > post_optimization_report.txt
