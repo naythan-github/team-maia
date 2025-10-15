@@ -80,6 +80,28 @@ else
 fi
 echo ""
 
+# Stage 0.8: Intelligent Agent Routing (Phase 121 - Automatic Specialist Engagement)
+echo "🎯 INTELLIGENT AGENT ROUTING..."
+COORDINATOR_CLI="$(dirname "$0")/../tools/orchestration/coordinator_agent.py"
+if [[ -f "$COORDINATOR_CLI" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    ROUTING_RESULT=$(python3 "$COORDINATOR_CLI" classify "$CLAUDE_USER_MESSAGE" 2>&1)
+    ROUTING_CODE=$?
+
+    if [[ $ROUTING_CODE -eq 0 ]]; then
+        echo "$ROUTING_RESULT"
+        echo ""
+        echo "💡 Maia will consider this routing suggestion (can override if context suggests otherwise)"
+    elif [[ $ROUTING_CODE -eq 2 ]]; then
+        # No specific agent needed - general query
+        echo "✅ General query - no specific agent routing needed"
+    else
+        echo "⚠️  Routing classification unavailable - Maia will select agents based on full context"
+    fi
+else
+    echo "⚠️  Coordinator not available - manual agent selection"
+fi
+echo ""
+
 # Stage 1: Validate UFC FIRST (most critical file)
 UFC_FILE="/Users/naythan/git/maia/claude/context/ufc_system.md"
 if [[ -f "$UFC_FILE" ]]; then

@@ -536,3 +536,127 @@ def route_query(user_query: str) -> RoutingDecision:
     """
     coordinator = CoordinatorAgent()
     return coordinator.route(user_query)
+
+
+# ═══════════════════════════════════════════════════════════════════
+# CLI INTERFACE (Phase 121 - Automatic Agent Routing)
+# ═══════════════════════════════════════════════════════════════════
+
+def format_routing_output(routing: RoutingDecision) -> str:
+    """
+    Format routing decision for hook display.
+
+    Returns formatted string for user-prompt-submit hook output.
+    """
+    if not routing:
+        return ""
+
+    # Only display routing for non-trivial queries (complexity > 3, confidence > 70%)
+    if routing.complexity < 3 or routing.confidence < 0.70:
+        # General query - no specific routing needed
+        return None
+
+    if not routing.agents:
+        return None
+
+    output = []
+    output.append(f"   Intent: {routing.intent.category}")
+    output.append(f"   Domains: {', '.join(routing.intent.domains)}")
+    output.append(f"   Complexity: {routing.complexity}/10")
+    output.append(f"   Confidence: {int(routing.confidence * 100)}%")
+    output.append("")
+
+    if len(routing.agents) == 1:
+        output.append(f"   💡 SUGGESTED AGENT: {routing.initial_agent}")
+    else:
+        output.append(f"   💡 SUGGESTED AGENTS: {', '.join(routing.agents)}")
+
+    output.append(f"   📋 Reason: {routing.reasoning}")
+    output.append(f"   🎯 Strategy: {routing.strategy.upper().replace('_', ' ')}")
+
+    return "\n".join(output)
+
+
+def cli_classify(query: str) -> int:
+    """
+    CLI classify command for hook integration.
+
+    Returns:
+        0: Routing suggestion available
+        1: Classification error
+        2: No specific routing needed (general query)
+    """
+    try:
+        coordinator = CoordinatorAgent()
+
+        # Get intent first
+        intent = coordinator.intent_classifier.classify(query)
+
+        # Only display routing for non-trivial queries (complexity > 3, confidence > 70%)
+        if intent.complexity < 3 or intent.confidence < 0.70:
+            # General query - no specific routing needed
+            return 2
+
+        # Get routing decision
+        routing = coordinator.agent_selector.select(intent, query)
+
+        if not routing or not routing.agents:
+            return 2
+
+        # Format output
+        output = []
+        output.append(f"   Intent: {intent.category}")
+        output.append(f"   Domains: {', '.join(intent.domains)}")
+        output.append(f"   Complexity: {intent.complexity}/10")
+        output.append(f"   Confidence: {int(intent.confidence * 100)}%")
+        output.append("")
+
+        if len(routing.agents) == 1:
+            output.append(f"   💡 SUGGESTED AGENT: {routing.initial_agent}")
+        else:
+            output.append(f"   💡 SUGGESTED AGENTS: {', '.join(routing.agents)}")
+
+        output.append(f"   📋 Reason: {routing.reasoning}")
+        output.append(f"   🎯 Strategy: {routing.strategy.upper().replace('_', ' ')}")
+
+        # Display routing suggestion
+        print("\n".join(output))
+        return 0
+
+    except Exception as e:
+        # Classification failed - fallback to normal
+        import sys
+        print(f"⚠️  Classification error: {str(e)}", file=sys.stderr)
+        return 1
+
+
+def main():
+    """CLI interface for coordinator agent."""
+    import sys
+
+    if len(sys.argv) < 2:
+        print("Usage: coordinator_agent.py classify <query>", file=sys.stderr)
+        print("", file=sys.stderr)
+        print("Commands:", file=sys.stderr)
+        print("  classify <query>  - Classify query and suggest agent routing", file=sys.stderr)
+        sys.exit(1)
+
+    command = sys.argv[1]
+
+    if command == "classify":
+        if len(sys.argv) < 3:
+            print("Error: classify requires a query argument", file=sys.stderr)
+            sys.exit(1)
+
+        query = sys.argv[2]
+        exit_code = cli_classify(query)
+        sys.exit(exit_code)
+
+    else:
+        print(f"Unknown command: {command}", file=sys.stderr)
+        print("Use 'classify' command for agent routing", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()
