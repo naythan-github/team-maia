@@ -56,6 +56,30 @@ else
 fi
 echo ""
 
+# Stage 0.7: Automated Capability Check (Phase 119 - Capability Amnesia Fix)
+echo "🔍 AUTOMATED CAPABILITY CHECK (Phase 0)..."
+CAPABILITY_ENFORCER="$(dirname "$0")/capability_check_enforcer.py"
+if [[ -f "$CAPABILITY_ENFORCER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    CAPABILITY_CHECK=$(python3 "$CAPABILITY_ENFORCER" "$CLAUDE_USER_MESSAGE" 2>&1)
+    CAPABILITY_CODE=$?
+
+    if [[ $CAPABILITY_CODE -eq 1 ]]; then
+        # Existing capability found with high confidence
+        echo "$CAPABILITY_CHECK"
+        echo ""
+        echo "⏸️  PAUSING: Review existing capability before building new"
+        echo "   Maia will ask for confirmation before proceeding."
+    elif [[ $CAPABILITY_CODE -eq 0 ]]; then
+        echo "✅ No duplicate capability detected (or low confidence match)"
+    else
+        echo "⚠️  Capability check encountered error - manual Phase 0 check recommended"
+    fi
+else
+    echo "⚠️  Capability enforcer not available or no user message"
+    echo "   Manual Phase 0 check recommended for build requests"
+fi
+echo ""
+
 # Stage 1: Validate UFC FIRST (most critical file)
 UFC_FILE="/Users/naythan/git/maia/claude/context/ufc_system.md"
 if [[ -f "$UFC_FILE" ]]; then

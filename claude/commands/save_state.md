@@ -1,14 +1,65 @@
-# Save State Command - Comprehensive & Executable
+# Save State Command - Tiered Approach
 
 ## Overview
-Production-ready save state protocol combining comprehensive session analysis with executable workflow. No phantom dependencies, all steps validated by pre-flight checks.
+Production-ready save state protocol with three tiers optimizing for different use cases:
+- **Tier 1**: Quick checkpoint (2-3 min) - Incremental progress
+- **Tier 2**: Standard save state (10-15 min) - End of session
+- **Tier 3**: Comprehensive save state (30-45 min) - Major phases, releases
 
 ## Implementation Status
-- **Current State**: ✅ Production Ready
-- **Last Updated**: 2025-10-09 (Phase 103 - SRE Reliability Sprint)
-- **Entry Point**: `save_state` command
-- **Dependencies**: git, save_state_preflight_checker.py (all validated)
-- **Previous Versions**: save_state.md (Oct 3), comprehensive_save_state.md (Oct 1 - archived)
+- **Current State**: ✅ Production Ready with Tiered Options
+- **Last Updated**: 2025-10-15 (Phase 119 - Capability Amnesia Fix)
+- **Entry Point**: Choose tier based on context (see Quick Tier Selection below)
+- **Dependencies**: git, save_state_preflight_checker.py, save_state_security_checker.py
+- **Previous Versions**: save_state.md (Oct 9), comprehensive_save_state.md (Oct 1 - archived)
+
+---
+
+## ⚡ Quick Tier Selection
+
+### Tier 1: Quick Checkpoint (2-3 min) - `ss-quick`
+**When**: Making incremental progress, multiple checkpoints per session, still in flow state
+**Files**: SYSTEM_STATE.md (bullet point), capability_index.md (if new capability)
+**Command**: See [save_state_tier1_quick.md](save_state_tier1_quick.md)
+**Skips**: Pre-flight, security checks, README, available.md, agents.md
+**Use Case**: "Just made progress, want to checkpoint before continuing"
+
+### Tier 2: Standard Save State (10-15 min) - `ss-std`
+**When**: End of work session, completing logical unit of work
+**Files**: SYSTEM_STATE.md (full entry), capability_index.md, README (if needed), security check
+**Command**: See [save_state_tier2_standard.md](save_state_tier2_standard.md)
+**Skips**: Pre-flight, available.md/agents.md (unless major changes), session summaries
+**Use Case**: "Done for now, want to document what I accomplished"
+
+### Tier 3: Comprehensive Save State (30-45 min) - `ss-full`
+**When**: End of major phase, weekly review, architecture changes, pre-release validation
+**Files**: All documentation + validation + comprehensive testing
+**Command**: This file (full protocol below)
+**Skips**: Nothing - full validation and documentation
+**Use Case**: "Major milestone complete, need comprehensive documentation and validation"
+
+---
+
+## Quick Decision Tree
+
+```
+Are you done with this session?
+├─ No → Still working
+│   └─ Made progress you want to checkpoint?
+│       └─ Yes → **Tier 1** (2-3 min)
+│
+└─ Yes → Done for now
+    └─ Is this a major milestone or phase completion?
+        ├─ No → Normal end of session
+        │   └─ **Tier 2** (10-15 min)
+        │
+        └─ Yes → Major phase/release
+            └─ **Tier 3** (30-45 min, this file)
+```
+
+---
+
+## Tier 3: Comprehensive Save State (Full Protocol)
 
 ---
 
