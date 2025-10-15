@@ -2,13 +2,21 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-15 (Phase 119 - Capability Amnesia Fix)
+**Last Updated**: 2025-10-15 (Phase 120 - Project Recovery Template System)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 120 (Oct 15) - Project Recovery Template System
+- generate_recovery_files.py - Template-based project recovery file generator (interactive + config modes)
+- PROJECT_PLAN_TEMPLATE.md - Comprehensive project plan template (40+ placeholders)
+- RECOVERY_STATE_TEMPLATE.json - Quick recovery state template
+- START_HERE_TEMPLATE.md - Entry point recovery guide template
+- Project recovery README.md - Complete usage guide
+- save_state.md Phase 0 integration - Multi-phase project setup workflow
 
 ### Phase 119 (Oct 15) - Capability Amnesia Fix
 - capability_index.md - Always-loaded capability registry (200+ tools, 49 agents)
@@ -54,7 +62,7 @@
 - secure_web_tools.py - Web tool security validation
 - pre_commit_ufc.py - UFC compliance pre-commit hook
 
-### SRE & Reliability (25 tools)
+### SRE & Reliability (26 tools)
 - save_state_preflight_checker.py - Pre-commit validation (161 checks)
 - automated_health_monitor.py - System health validation (dependency, RAG, service, UFC)
 - dependency_graph_validator.py - Phantom tool detection + dependency analysis
@@ -65,6 +73,7 @@
 - system_state_rag_indexer.py - RAG indexing for SYSTEM_STATE history
 - capability_checker.py - Existing capability search
 - intelligent_product_grouper.py - Product standardization (32.9% variance reduction)
+- generate_recovery_files.py - Project recovery file generator (interactive + config modes, 630 lines)
 
 ### ServiceDesk & Analytics (10 tools)
 - servicedesk_multi_rag_indexer.py - Multi-collection RAG (tickets, comments, knowledge)

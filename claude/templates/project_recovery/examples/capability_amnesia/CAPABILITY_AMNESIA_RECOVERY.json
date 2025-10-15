@@ -1,0 +1,158 @@
+{
+  "project_id": "CAPABILITY_AMNESIA_FIX_001",
+  "project_file": "claude/data/CAPABILITY_AMNESIA_FIX_PROJECT.md",
+  "created": "2025-10-15",
+  "status": "planning_complete",
+  "current_phase": 2,
+  "phase_1_completed": "2025-10-15",
+  "phase_2_completed": "2025-10-15",
+  "total_phases": 5,
+
+  "quick_summary": "Fix capability amnesia by creating always-loaded capability_index.md + automated Phase 0 enforcement. Solves: Maia forgets existing tools in new contexts, builds duplicates. Solution: 2-3K token index always loaded, prevents 95% of duplicates.",
+
+  "problem": "Smart context loading skips available.md/agents.md, causing capability amnesia and duplicate builds",
+
+  "solution": "Always-load capability_index.md (2-3K tokens) + automate Phase 0 capability check",
+
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Capability Index Creation",
+      "duration": "1 hour",
+      "status": "pending",
+      "deliverable": "claude/context/core/capability_index.md",
+      "description": "Extract 200+ tools and 49 agents from available.md/agents.md into always-loaded index",
+      "checkpoint": "capability_index.md created with 250-350 lines, organized by category"
+    },
+    {
+      "phase": 2,
+      "name": "Smart Context Loader Integration",
+      "duration": "30 min",
+      "status": "pending",
+      "deliverable": "Updated dynamic_context_loader.py",
+      "description": "Add capability_index.md to ALL 7 loading strategies",
+      "checkpoint": "capability_index.md loads in minimal/research/security/personal/technical/cloud/design/full modes"
+    },
+    {
+      "phase": 3,
+      "name": "Automated Phase 0 Enforcement",
+      "duration": "1.5 hours",
+      "status": "pending",
+      "deliverable": "claude/hooks/capability_check_enforcer.py + hook integration",
+      "description": "Auto-detect build requests, run capability check, warn about duplicates",
+      "checkpoint": "Phase 0 hook prevents duplicate builds with 70%+ confidence warnings"
+    },
+    {
+      "phase": 4,
+      "name": "Simplified Save State Process",
+      "duration": "45 min",
+      "status": "pending",
+      "deliverable": "Tier 1/2 save state templates",
+      "description": "Create tiered save state: Quick (2-3 min), Standard (10-15 min), Comprehensive (30-45 min)",
+      "checkpoint": "Three tier templates created, save_state.md updated with tier selection guide"
+    },
+    {
+      "phase": 5,
+      "name": "Testing & Validation",
+      "duration": "30 min",
+      "status": "pending",
+      "deliverable": "Test results and validation",
+      "description": "End-to-end testing of all components",
+      "checkpoint": "All tests passing, zero capability amnesia in 5 test scenarios"
+    }
+  ],
+
+  "files_to_create": [
+    "claude/context/core/capability_index.md",
+    "claude/hooks/capability_check_enforcer.py",
+    "claude/commands/save_state_tier1_quick.md",
+    "claude/commands/save_state_tier2_standard.md"
+  ],
+
+  "files_to_modify": [
+    "claude/hooks/dynamic_context_loader.py",
+    "claude/hooks/user-prompt-submit",
+    "claude/commands/save_state.md",
+    "claude/context/core/smart_context_loading.md"
+  ],
+
+  "success_metrics": {
+    "capability_amnesia_incidents": {
+      "before": "2-3 per week",
+      "target": "0",
+      "measurement": "Track duplicate build attempts"
+    },
+    "save_state_time": {
+      "before": "15-30 min",
+      "target": "2-3 min (Tier 1), 10-15 min (Tier 2)",
+      "measurement": "Time each save state"
+    },
+    "token_cost_per_session": {
+      "before": "16-39K tokens",
+      "target": "4-6K tokens",
+      "measurement": "Track tokens used on save state ceremony"
+    },
+    "time_savings": {
+      "before": "20-33% overhead",
+      "target": "5-10% overhead",
+      "measurement": "70-85% reduction"
+    }
+  },
+
+  "recovery_instructions": [
+    "If context compaction happens mid-project:",
+    "1. Read claude/data/CAPABILITY_AMNESIA_FIX_PROJECT.md (complete plan)",
+    "2. Check current_phase in this file",
+    "3. Verify deliverables from completed phases exist",
+    "4. Resume from current phase",
+    "5. Update phase_progress after each checkpoint"
+  ],
+
+  "phase_progress": {
+    "phase_1": {
+      "started": "2025-10-15",
+      "completed": "2025-10-15",
+      "deliverable_exists": true,
+      "deliverable_path": "claude/context/core/capability_index.md",
+      "deliverable_size": "381 lines, 1895 words, ~3K tokens",
+      "notes": "Extracted 200+ tools from available.md, 49 agents from agents.md, organized by category with keyword index and usage examples"
+    },
+    "phase_2": {
+      "started": "2025-10-15",
+      "completed": "2025-10-15",
+      "deliverable_exists": true,
+      "deliverable_path": "claude/hooks/dynamic_context_loader.py",
+      "changes": "Added capability_index.md to all 8 loading strategies (minimal, research, security, personal, technical, cloud, design, full)",
+      "notes": "capability_index.md now ALWAYS loads regardless of domain/complexity"
+    },
+    "phase_3": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_4": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_5": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    }
+  },
+
+  "last_updated": "2025-10-15",
+  "last_updated_by": "Maia (Planning Phase)",
+
+  "anti_drift_notes": [
+    "This JSON provides quick recovery state",
+    "Full details in CAPABILITY_AMNESIA_FIX_PROJECT.md",
+    "Update phase_progress after each session",
+    "If confused: Read project file from top to bottom",
+    "Key insight: capability_index.md always loaded = zero amnesia"
+  ]
+}

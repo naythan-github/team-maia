@@ -1,0 +1,54 @@
+{
+  "project_id": "{{PROJECT_ID}}",
+  "project_file": "{{PROJECT_FILE_PATH}}",
+  "created": "{{CREATION_DATE}}",
+  "status": "{{PROJECT_STATUS}}",
+  "current_phase": {{CURRENT_PHASE_NUMBER}},
+  "total_phases": {{TOTAL_PHASES}},
+
+  "quick_summary": "{{QUICK_SUMMARY}}",
+
+  "problem": "{{PROBLEM_ONE_LINE}}",
+
+  "solution": "{{SOLUTION_ONE_LINE}}",
+
+  "phases": [
+    {{PHASE_ARRAY_ITEMS}}
+  ],
+
+  "files_to_create": [
+    {{FILES_TO_CREATE_ARRAY}}
+  ],
+
+  "files_to_modify": [
+    {{FILES_TO_MODIFY_ARRAY}}
+  ],
+
+  "success_metrics": {
+    {{SUCCESS_METRICS_OBJECT}}
+  },
+
+  "recovery_instructions": [
+    "If context compaction happens mid-project:",
+    "1. Read {{PROJECT_FILE_PATH}} (complete plan)",
+    "2. Check current_phase in this file",
+    "3. Verify deliverables from completed phases exist",
+    "4. Resume from current phase",
+    "5. Update phase_progress after each checkpoint"
+  ],
+
+  "phase_progress": {
+    {{PHASE_PROGRESS_OBJECT}}
+  },
+
+  "last_updated": "{{LAST_UPDATED_DATE}}",
+  "last_updated_by": "{{LAST_UPDATED_BY}}",
+
+  "anti_drift_notes": [
+    "This JSON provides quick recovery state",
+    "Full details in {{PROJECT_FILE_PATH}}",
+    "Update phase_progress after each session",
+    "If confused: Read project file from top to bottom",
+    "Key insight: {{KEY_INSIGHT}}"
+  ]
+}

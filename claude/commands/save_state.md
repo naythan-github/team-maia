@@ -32,6 +32,72 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 
 ## Execution Sequence
 
+### Phase 0: Project Recovery Setup (For Multi-Phase Projects)
+
+**When to use**: Starting a new multi-phase project (3+ phases, >2 hours duration)
+
+**Purpose**: Generate comprehensive recovery files to prevent context compaction drift
+
+**Time**: <5 minutes (one-time per project)
+
+#### 0.1 Generate Recovery Files
+```bash
+# Interactive mode (recommended for first time)
+python3 claude/templates/project_recovery/generate_recovery_files.py --interactive
+
+# Or use config file (faster for repeat use)
+python3 claude/templates/project_recovery/generate_recovery_files.py --example-config
+nano project_config_example.json
+python3 claude/templates/project_recovery/generate_recovery_files.py --config project_config_example.json
+```
+
+**What it generates**:
+- `PROJECT_ID.md` - Comprehensive project plan (100-500 lines)
+- `PROJECT_ID_RECOVERY.json` - Quick recovery state
+- `implementation_checkpoints/PROJECT_ID_START_HERE.md` - Recovery entry point
+
+#### 0.2 Review Generated Files
+```bash
+# Open and review the project plan
+open claude/data/YOUR_PROJECT_ID/YOUR_PROJECT_ID.md
+
+# Verify recovery JSON is valid
+python3 -m json.tool claude/data/YOUR_PROJECT_ID/YOUR_PROJECT_ID_RECOVERY.json
+
+# Read START_HERE guide
+cat claude/data/YOUR_PROJECT_ID/implementation_checkpoints/YOUR_PROJECT_ID_START_HERE.md
+```
+
+#### 0.3 Fill in TBD Sections
+Edit the generated project plan to complete:
+- Architecture description
+- Success metrics details
+- Test scenarios
+- Validation criteria
+
+#### 0.4 Commit Recovery Files
+```bash
+git add claude/data/YOUR_PROJECT_ID/
+git commit -m "📋 Phase 0: Project recovery files for [PROJECT_NAME]
+
+Generated comprehensive recovery protection:
+- Project plan with phase-by-phase guide
+- Quick recovery JSON for 30-second status checks
+- START_HERE guide with recovery sequence
+
+Prevents context compaction drift and project amnesia.
+Estimated recovery time: <5 min (vs 15-30 min without protection)"
+```
+
+**Skip Phase 0 when**:
+- Single-phase project (<1 hour)
+- Simple bug fix or small enhancement
+- Work will complete in one session
+
+**See**: `claude/templates/project_recovery/README.md` for complete documentation
+
+---
+
 ### Phase 1: Session Analysis & Documentation Updates
 
 #### 1.1 Session Context Analysis (Manual)
@@ -65,7 +131,40 @@ Update these files with session changes:
    - Update agent capabilities if modified
    - Maintain agent catalog consistency
 
-#### 1.3 Session-Specific Documentation (If Applicable)
+#### 1.3 Project Recovery JSON Update (If Using Phase 0)
+**If this session is part of a multi-phase project with recovery files**:
+
+Update the recovery JSON with current progress:
+```bash
+# Example: Update current_phase and phase_progress
+nano claude/data/YOUR_PROJECT_ID/YOUR_PROJECT_ID_RECOVERY.json
+```
+
+Update fields:
+- `current_phase`: Current phase number
+- `phase_progress.phase_N.started`: Start date (if just started)
+- `phase_progress.phase_N.completed`: Completion date (if just finished)
+- `phase_progress.phase_N.deliverable_exists`: true/false
+- `phase_progress.phase_N.notes`: Key notes about completion
+
+**Example**:
+```json
+{
+  "current_phase": 3,
+  "phase_progress": {
+    "phase_2": {
+      "started": "2025-10-15",
+      "completed": "2025-10-15",
+      "deliverable_exists": true,
+      "notes": "Dashboard operational on port 8063"
+    }
+  }
+}
+```
+
+**Why important**: Enables <5 min recovery after context compaction (vs 15-30 min without)
+
+#### 1.4 Session-Specific Documentation (If Applicable)
 - Create session summary in `claude/context/session/` for complex work
 - Document design decisions in `claude/context/session/decisions/` (JSON format)
 - Update command documentation if workflows changed
@@ -140,6 +239,7 @@ python3 claude/tools/sre/launchagent_health_monitor.py --dashboard
 - Verify all new tools mentioned in SYSTEM_STATE.md are also in available.md
 - Verify all new agents mentioned in SYSTEM_STATE.md are also in agents.md
 - Check that phase numbers are consistent across files
+- **If using project recovery files**: Verify recovery JSON is updated with current phase progress
 
 ---
 
