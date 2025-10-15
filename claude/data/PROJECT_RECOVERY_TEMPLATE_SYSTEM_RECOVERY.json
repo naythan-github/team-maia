@@ -1,0 +1,180 @@
+{
+  "project_id": "PROJECT_RECOVERY_TEMPLATE_SYSTEM_001",
+  "project_file": "claude/data/PROJECT_RECOVERY_TEMPLATE_SYSTEM.md",
+  "created": "2025-10-15",
+  "status": "planning_complete",
+  "current_phase": 0,
+  "total_phases": 7,
+
+  "quick_summary": "Create reusable template system for project recovery files (anti-compaction protection). Enables any multi-phase project to generate comprehensive plan + recovery JSON + start here guide in <5 min, preventing project drift and context loss.",
+
+  "problem": "Currently, project recovery protection must be manually created for each project (30+ min). Phase 119 proved the value of 3-layer recovery, but pattern not reusable.",
+
+  "solution": "Build template system with generator script that auto-creates recovery files for any project in <5 min. Integrate with save state as Phase 0.",
+
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Create Template Directory Structure",
+      "duration": "5 min",
+      "status": "pending",
+      "deliverable": "claude/templates/project_recovery/ directory with examples/",
+      "description": "Create organized template directory and copy Phase 119 as reference example",
+      "checkpoint": "Directory structure exists, Phase 119 files copied to examples/"
+    },
+    {
+      "phase": 2,
+      "name": "Create PROJECT_PLAN_TEMPLATE.md",
+      "duration": "15 min",
+      "status": "pending",
+      "deliverable": "PROJECT_PLAN_TEMPLATE.md with placeholders",
+      "description": "Comprehensive project plan template with all standard sections and {{PLACEHOLDER}} syntax",
+      "checkpoint": "Template created, all sections present, placeholders defined"
+    },
+    {
+      "phase": 3,
+      "name": "Create RECOVERY_STATE_TEMPLATE.json",
+      "duration": "10 min",
+      "status": "pending",
+      "deliverable": "RECOVERY_STATE_TEMPLATE.json with placeholders",
+      "description": "Quick recovery state JSON template with phase progress tracking",
+      "checkpoint": "JSON template with all standard fields, valid JSON syntax"
+    },
+    {
+      "phase": 4,
+      "name": "Create START_HERE_TEMPLATE.md",
+      "duration": "10 min",
+      "status": "pending",
+      "deliverable": "START_HERE_TEMPLATE.md with recovery sequence",
+      "description": "Entry point guide template with 4-step recovery instructions",
+      "checkpoint": "Start here template with recovery sequence and verification commands"
+    },
+    {
+      "phase": 5,
+      "name": "Create generate_recovery_files.py",
+      "duration": "30 min",
+      "status": "pending",
+      "deliverable": "generate_recovery_files.py (working generator script)",
+      "description": "Python script that loads templates, replaces placeholders, outputs 3 files",
+      "checkpoint": "Generator script working end-to-end, tested with sample project"
+    },
+    {
+      "phase": 6,
+      "name": "Create Template Usage Guide",
+      "duration": "10 min",
+      "status": "pending",
+      "deliverable": "README.md in template directory",
+      "description": "Usage guide with quick start, examples, and customization instructions",
+      "checkpoint": "README complete with working examples"
+    },
+    {
+      "phase": 7,
+      "name": "Integration with Save State",
+      "duration": "15 min",
+      "status": "pending",
+      "deliverable": "Updated save_state.md with Phase 0",
+      "description": "Add Phase 0 (recovery setup) to save state workflow for multi-phase projects",
+      "checkpoint": "save_state.md updated, Phase 0 documented and tested"
+    }
+  ],
+
+  "files_to_create": [
+    "claude/templates/project_recovery/PROJECT_PLAN_TEMPLATE.md",
+    "claude/templates/project_recovery/RECOVERY_STATE_TEMPLATE.json",
+    "claude/templates/project_recovery/START_HERE_TEMPLATE.md",
+    "claude/templates/project_recovery/generate_recovery_files.py",
+    "claude/templates/project_recovery/README.md"
+  ],
+
+  "files_to_modify": [
+    "claude/commands/save_state.md"
+  ],
+
+  "success_metrics": {
+    "generation_time": {
+      "before": "30+ min manual creation",
+      "target": "<5 min via generator",
+      "measurement": "Time from command run to files created"
+    },
+    "adoption_rate": {
+      "before": "~20% of multi-phase projects",
+      "target": "100% (integrated with save state)",
+      "measurement": "Count projects with recovery files"
+    },
+    "context_loss": {
+      "before": "Unknown (not tracked)",
+      "target": "0 incidents",
+      "measurement": "Projects successfully resumed after compaction"
+    },
+    "recovery_time": {
+      "before": "15-30 min (re-reading docs)",
+      "target": "<5 min (START_HERE guide)",
+      "measurement": "Time to resume project after compaction"
+    }
+  },
+
+  "recovery_instructions": [
+    "If context compaction happens mid-project:",
+    "1. Read PROJECT_RECOVERY_TEMPLATE_SYSTEM.md (complete plan)",
+    "2. Check current_phase in this file",
+    "3. Verify deliverables from completed phases exist",
+    "4. Resume from current phase",
+    "5. Update phase_progress after each checkpoint"
+  ],
+
+  "phase_progress": {
+    "phase_1": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_2": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_3": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_4": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_5": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_6": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    },
+    "phase_7": {
+      "started": null,
+      "completed": null,
+      "deliverable_exists": false,
+      "notes": ""
+    }
+  },
+
+  "last_updated": "2025-10-15",
+  "last_updated_by": "Maia (Planning Phase)",
+
+  "anti_drift_notes": [
+    "This JSON provides quick recovery state",
+    "Full details in PROJECT_RECOVERY_TEMPLATE_SYSTEM.md",
+    "Update phase_progress after each session",
+    "If confused: Read project file from top to bottom",
+    "Key insight: Templates make recovery protection <5 min vs 30+ min manual"
+  ]
+}
