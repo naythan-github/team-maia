@@ -63,17 +63,28 @@ class ServiceDeskDashboard:
 
         total = pd.read_sql_query("SELECT COUNT(*) as count FROM tickets", conn).iloc[0]['count']
 
-        # FCR from comments table (100% coverage)
+        # FCR from comments table (Cloud roster only, 1-3 comments = Industry Standard)
+        # Excludes Alert tickets for accurate work ticket FCR
         fcr_query = """
+            WITH work_tickets AS (
+                SELECT t.`TKT-Ticket ID` as ticket_id
+                FROM tickets t
+                WHERE t.`TKT-Category` != 'Alert'
+            ),
+            ticket_comment_counts AS (
+                SELECT
+                    wt.ticket_id,
+                    COUNT(*) as comment_count
+                FROM work_tickets wt
+                INNER JOIN comments c ON wt.ticket_id = c.ticket_id
+                INNER JOIN cloud_team_roster r ON c.user_name = r.username
+                WHERE c.user_name IS NOT NULL AND c.user_name <> 'nan'
+                GROUP BY wt.ticket_id
+            )
             SELECT
                 COUNT(*) as total,
-                SUM(CASE WHEN agent_count = 1 THEN 1 ELSE 0 END) as fcr
-            FROM (
-                SELECT ticket_id, COUNT(DISTINCT user_id) as agent_count
-                FROM comments
-                WHERE user_id IS NOT NULL AND user_id <> 'nan'
-                GROUP BY ticket_id
-            )
+                SUM(CASE WHEN comment_count <= 3 THEN 1 ELSE 0 END) as fcr
+            FROM ticket_comment_counts
         """
         fcr_data = pd.read_sql_query(fcr_query, conn)
         fcr_rate = round(fcr_data.iloc[0]['fcr'] * 100.0 / fcr_data.iloc[0]['total'], 1) if fcr_data.iloc[0]['total'] > 0 else 0
@@ -85,9 +96,9 @@ class ServiceDeskDashboard:
         """
         auto_count = pd.read_sql_query(auto_query, conn).iloc[0]['count']
 
-        # Total comments and agents
+        # Total comments and Cloud roster agents
         comments_count = pd.read_sql_query("SELECT COUNT(*) as count FROM comments", conn).iloc[0]['count']
-        agents_count = pd.read_sql_query("SELECT COUNT(DISTINCT user_id) as count FROM comments WHERE user_id <> 'nan'", conn).iloc[0]['count']
+        agents_count = pd.read_sql_query("SELECT COUNT(*) as count FROM cloud_team_roster", conn).iloc[0]['count']
 
         conn.close()
 
@@ -102,15 +113,21 @@ class ServiceDeskDashboard:
         }
 
     def get_fcr_by_team(self):
-        """Get FCR performance by team using Cloud roster only"""
+        """Get FCR performance by team using Industry Standard (1-3 comments)"""
         conn = sqlite3.connect(self.db_path)
         query = """
-            WITH roster_ticket_team_fcr AS (
+            WITH work_tickets AS (
+                SELECT t.`TKT-Ticket ID` as ticket_id
+                FROM tickets t
+                WHERE t.`TKT-Category` != 'Alert'
+            ),
+            team_ticket_comments AS (
                 SELECT
                     c.team,
                     c.ticket_id,
-                    COUNT(DISTINCT c.user_name) as roster_agent_count
-                FROM comments c
+                    COUNT(*) as comment_count
+                FROM work_tickets wt
+                INNER JOIN comments c ON wt.ticket_id = c.ticket_id
                 INNER JOIN cloud_team_roster r ON c.user_name = r.username
                 WHERE c.user_name IS NOT NULL AND c.user_name <> 'nan'
                 AND c.team LIKE 'Cloud -%'
@@ -126,13 +143,13 @@ class ServiceDeskDashboard:
                 GROUP BY c.team
             )
             SELECT
-                rt.team,
-                COUNT(DISTINCT rt.ticket_id) as total,
-                ROUND(100.0 * SUM(CASE WHEN rt.roster_agent_count = 1 THEN 1 ELSE 0 END) / COUNT(DISTINCT rt.ticket_id), 1) as fcr_rate,
+                ttc.team,
+                COUNT(DISTINCT ttc.ticket_id) as total,
+                ROUND(100.0 * SUM(CASE WHEN ttc.comment_count <= 3 THEN 1 ELSE 0 END) / COUNT(DISTINCT ttc.ticket_id), 1) as fcr_rate,
                 tm.member_count as team_members
-            FROM roster_ticket_team_fcr rt
-            INNER JOIN team_members tm ON rt.team = tm.team
-            GROUP BY rt.team, tm.member_count
+            FROM team_ticket_comments ttc
+            INNER JOIN team_members tm ON ttc.team = tm.team
+            GROUP BY ttc.team, tm.member_count
             HAVING total > 100
             ORDER BY fcr_rate DESC
         """

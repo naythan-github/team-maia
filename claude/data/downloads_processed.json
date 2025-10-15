@@ -5,6 +5,7 @@
     "/Users/naythandawe/Downloads/final_reviewed_unique_descriptions.csv",
     "/Users/naythandawe/Downloads/Intune_Customers.xlsx",
     "/Users/naythandawe/Downloads/offboarding.xlsx",
+    "/Users/naythandawe/Downloads/Zoom.pkg",
     "/Users/naythandawe/Downloads/Senior EndPoint Engineer - Orro Cloud (The Onset).docx",
     "/Users/naythandawe/Downloads/.DS_Store",
     "/Users/naythandawe/Downloads/Paul Roberts Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
@@ -251,6 +252,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/MIPS - July 2025 - Monthly Report & Monthly Audit.eml",
       "timestamp": "2025-10-10T12:32:24.211932"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Zoom.pkg",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Zoom.pkg",
+      "timestamp": "2025-10-15T08:02:01.712245"
     }
   ]
 }

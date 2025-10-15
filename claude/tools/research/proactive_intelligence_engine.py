@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# NOTE: DEMO FILE - Message bus imports deprecated, use Swarm framework instead
+# See claude/tools/orchestration/agent_swarm.py for current orchestration patterns
 """
 Proactive Intelligence Engine - Phase 23
 =========================================

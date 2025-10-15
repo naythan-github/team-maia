@@ -79,9 +79,10 @@ class DynamicContextLoader:
                 "description": "Core files only (62% savings)",
                 "files": [
                     "claude/context/ufc_system.md",
-                    "claude/context/core/identity.md", 
+                    "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
-                    "claude/context/core/model_selection_strategy.md"
+                    "claude/context/core/model_selection_strategy.md",
+                    "claude/context/core/capability_index.md"
                 ],
                 "savings": 62
             },
@@ -90,8 +91,9 @@ class DynamicContextLoader:
                 "files": [
                     "claude/context/ufc_system.md",
                     "claude/context/core/identity.md",
-                    "claude/context/core/systematic_thinking_protocol.md", 
+                    "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
+                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/systematic_tool_checking.md"
@@ -104,7 +106,8 @@ class DynamicContextLoader:
                     "claude/context/ufc_system.md",
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
-                    "claude/context/core/model_selection_strategy.md", 
+                    "claude/context/core/model_selection_strategy.md",
+                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/systematic_tool_checking.md"
@@ -118,6 +121,7 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
+                    "claude/context/core/capability_index.md",
                     "claude/context/personal/profile.md",
                     "claude/context/core/agents.md"
                 ],
@@ -130,6 +134,7 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
+                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md",
@@ -144,7 +149,8 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/tools/available.md", 
+                    "claude/context/core/capability_index.md",
+                    "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md",
                     "claude/context/core/systematic_tool_checking.md"
@@ -158,6 +164,7 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
+                    "claude/context/core/capability_index.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md"
                 ],
@@ -170,8 +177,9 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
+                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
-                    "claude/context/core/agents.md", 
+                    "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md",
                     "claude/context/personal/profile.md",
                     "claude/context/core/systematic_tool_checking.md"

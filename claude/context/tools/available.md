@@ -756,9 +756,10 @@ These are the core systems that transform Maia from individual tools to a coordi
 - **Strategic Planning**: Long-term wealth building and retirement planning
 
 ### Enhanced Communication Infrastructure
-- **agent_message_bus.py** - Real-time agent-to-agent communication
-- **enhanced_context_manager.py** - 95% context retention with reasoning chains
-- **agent_error_handler.py** - Intelligent error classification and recovery
+- **DEPRECATED** - Message bus infrastructure replaced by Swarm framework
+  - See `claude/tools/orchestration/agent_swarm.py` for current orchestration
+  - See `claude/tools/orchestration/context_management.py` for context handling
+  - See `claude/tools/orchestration/error_recovery.py` for error handling
 - **performance_monitoring_dashboard.py** - System analytics and optimization
 
 ## SRE Tools ⭐ **PHASE 103 WEEK 1-3 - RELIABILITY SPRINT**
@@ -1484,7 +1485,7 @@ python3 claude/hooks/session_knowledge_consolidator.py consolidate
 - **intelligent_context_deduplicator.py** - Cross-file semantic similarity detection
 - **context_aware_orchestration.py** - Dynamic workflow adaptation based on context
 - **real_time_decision_support.py** - Context-aware decision automation
-- **enhanced_message_bus.py** - Real-time agent communication infrastructure
+- **DEPRECATED**: enhanced_message_bus.py - Replaced by Swarm orchestration framework
 - **Context Efficiency**: 60% reduction potential with 95% integrity preservation
 - **Dynamic Reconstruction**: On-demand context expansion with semantic relevance
 

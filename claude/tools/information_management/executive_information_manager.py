@@ -14,10 +14,13 @@ import os
 import sys
 import sqlite3
 import json
+import logging
 from pathlib import Path
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
 import importlib.util
+
+logger = logging.getLogger(__name__)
 
 # Path setup
 MAIA_ROOT = Path(os.environ.get('MAIA_ROOT', Path.home() / 'git' / 'maia' / 'claude'))
@@ -261,7 +264,7 @@ class ExecutiveInformationManager:
     def capture_item(self, source: str, item_type: str, title: str,
                     content: Optional[str] = None, metadata: Optional[Dict] = None) -> int:
         """
-        Capture item into unified inbox.
+        Capture item into unified inbox with deduplication.
 
         Args:
             source: Where item came from (email, calendar, confluence, manual)
@@ -271,12 +274,26 @@ class ExecutiveInformationManager:
             metadata: Additional metadata
 
         Returns:
-            Item ID
+            Item ID (or existing ID if duplicate)
         """
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
         metadata = metadata or {}
+        source_id = metadata.get('source_id')
+
+        # Check for duplicates using source + source_id
+        if source_id:
+            cursor.execute('''
+                SELECT id FROM information_items
+                WHERE source = ? AND source_id = ?
+                LIMIT 1
+            ''', (source, source_id))
+            existing = cursor.fetchone()
+            if existing:
+                conn.close()
+                # print(f"⏭️  Skipped duplicate: {title} (ID: {existing[0]})")
+                return existing[0]
 
         cursor.execute('''
             INSERT INTO information_items (
@@ -462,7 +479,43 @@ class ExecutiveInformationManager:
 
         # Section 3: Today's Meetings
         ritual.append("\n## 📅 Today's Meetings")
-        ritual.append("*Integration with meeting context system*\n")
+
+        # Get today's meetings from calendar
+        try:
+            calendar_bridge_path = MAIA_ROOT / "tools" / "macos_calendar_bridge.py"
+            calendar_module = import_module_from_path("macos_calendar_bridge", calendar_bridge_path)
+            calendar_bridge = calendar_module.MacOSCalendarBridge()
+
+            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            today_end = today_start + timedelta(days=1)
+
+            meetings = calendar_bridge.get_events_in_range(
+                start=today_start.isoformat(),
+                end=today_end.isoformat()
+            )
+
+            if meetings:
+                ritual.append(f"**Count**: {len(meetings)} meetings\n")
+                for meeting in meetings[:8]:  # Limit to 8
+                    start_time = meeting.get('start', 'Unknown')
+                    if 'T' in start_time:
+                        start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+                        start_time = start_dt.strftime('%H:%M')
+
+                    ritual.append(f"- **{start_time}** - {meeting.get('summary', 'Untitled')}")
+
+                    # Show attendees if available
+                    attendees = meeting.get('attendees', [])
+                    if attendees:
+                        attendee_names = [a.split('@')[0].replace('.', ' ').title() for a in attendees[:3]]
+                        ritual.append(f"  - With: {', '.join(attendee_names)}")
+            else:
+                ritual.append("*No meetings scheduled - focus time available*")
+        except Exception as e:
+            logger.warning(f"Could not load today's meetings: {e}")
+            ritual.append("*Meeting context unavailable*")
+
+        ritual.append("")
 
         # Section 4: Tier 3 - Medium Priority (This Week)
         cursor.execute('''

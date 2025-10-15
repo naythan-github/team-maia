@@ -39,3 +39,9 @@
 - **Systematic over reactive** - prefers comprehensive fixes over quick patches
 - **Quality over speed** - willing to invest time for system reliability and maintainability
 - **Engineering excellence** - values clean, well-structured systems that prevent future problems
+
+## Working Directories
+- **Recruitment**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles`
+  - Active recruitment roles organized by position (Senior Endpoint Engineer, Senior IAM Engineer, Senior Wintel Engineer)
+  - Contains CVs, interview notes, VTT transcripts, candidate assessments
+  - Default location for all recruitment-related searches and file operations

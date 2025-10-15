@@ -324,25 +324,35 @@ Advanced multi-agent command chaining system inspired by KAI's orchestration cap
    - Output: Professional market report
 ```
 
-## Enhanced Infrastructure Components
+## Production Infrastructure Components ✅
 
-### Message Bus System
-- **Location**: `${MAIA_ROOT}/claude/tools/agent_message_bus.py`
-- **Purpose**: Real-time agent-to-agent communication
-- **Features**: Priority queuing, broadcasting, message persistence, circuit breakers
-- **Usage**: `get_message_bus()` for global instance
+### Swarm Orchestration Framework
+- **Location**: `${MAIA_ROOT}/claude/tools/orchestration/agent_swarm.py`
+- **Purpose**: Lightweight multi-agent coordination with explicit handoffs
+- **Features**: Context enrichment, handoff chain tracking, circular prevention, failure recovery
+- **Usage**: `SwarmOrchestrator()` for orchestration, `AgentHandoff` for handoffs
+- **Status**: ✅ **PRODUCTION ACTIVE** - 49 agents registered
 
-### Enhanced Context Manager
-- **Location**: `${MAIA_ROOT}/claude/tools/enhanced_context_manager.py`  
-- **Purpose**: 95% context preservation with reasoning chains
-- **Features**: Quality metrics, user preference learning, performance tracking
-- **Usage**: `get_context_manager()` for global instance
+### Context Management System
+- **Location**: `${MAIA_ROOT}/claude/tools/orchestration/context_management.py`
+- **Purpose**: Context preservation across agent handoffs
+- **Features**: Context enrichment, reasoning chains, quality tracking
+- **Usage**: `ContextManager()` for context operations
+- **Status**: ✅ **PRODUCTION ACTIVE**
 
-### Error Handler System  
-- **Location**: `${MAIA_ROOT}/claude/tools/agent_error_handler.py`
+### Error Recovery System
+- **Location**: `${MAIA_ROOT}/claude/tools/orchestration/error_recovery.py`
 - **Purpose**: Intelligent error classification and automatic recovery
-- **Features**: Pattern matching, circuit breakers, recovery strategies, statistics
-- **Usage**: `get_error_handler()` for global instance
+- **Features**: Pattern matching, circuit breakers, recovery strategies
+- **Usage**: `ErrorRecovery()` for error handling
+- **Status**: ✅ **PRODUCTION ACTIVE**
+
+### Agent Loader
+- **Location**: `${MAIA_ROOT}/claude/tools/orchestration/agent_loader.py`
+- **Purpose**: Load and prepare agent prompts for Swarm execution
+- **Features**: Agent registry (49 agents), context injection, handoff support detection
+- **Usage**: `AgentLoader()` for loading agents
+- **Status**: ✅ **PRODUCTION ACTIVE**
 
 ### Integration Guidelines
 
@@ -352,24 +362,32 @@ Advanced multi-agent command chaining system inspired by KAI's orchestration cap
 3. **Enhanced Features**: Opt-in to message bus and enhanced context
 4. **Performance Monitoring**: Track improvements with new vs old system
 
-#### Command Enhancement Pattern
+#### Swarm Integration Pattern
 ```python
-# Import enhanced infrastructure
-from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
-from claude.tools.enhanced_context_manager import get_context_manager
-from claude.tools.agent_error_handler import get_error_handler
+# Import Swarm orchestration infrastructure
+from claude.tools.orchestration.agent_swarm import SwarmOrchestrator, AgentHandoff, AgentResult
+from claude.tools.orchestration.context_management import ContextManager
+from claude.tools.orchestration.error_recovery import ErrorRecovery
 
-# Register agent with message bus
-bus = get_message_bus()
-bus.register_agent("jobs_agent", ["job_analysis", "email_processing"])
+# Initialize orchestrator
+orchestrator = SwarmOrchestrator()
+context_manager = ContextManager()
 
-# Create enhanced context
-context_manager = get_context_manager()
-context = context_manager.create_context(command_id, "job_analysis")
+# Execute workflow with handoffs
+result = orchestrator.execute_with_handoffs(
+    initial_agent="dns_specialist",
+    task={"query": "Setup Azure Exchange Online with custom domain"},
+    max_handoffs=5
+)
 
-# Use real-time communication during execution
-bus.send_message("jobs_agent", "web_scraper", MessageType.COORDINATION_REQUEST, 
-                {"urls_to_scrape": high_priority_jobs}, MessagePriority.HIGH)
+# Agents declare handoffs explicitly
+handoff = AgentHandoff(
+    to_agent="azure_solutions_architect",
+    context={"dns_complete": True, "records": [...]},
+    reason="Azure expertise required"
+)
+
+return AgentResult(output=analysis, handoff=handoff)
 ```
 
-This enhanced framework transforms Maia from sequential pipeline architecture to a dynamic, intelligent agent ecosystem while maintaining full backward compatibility and your focus on professional productivity.
+This Swarm framework provides lightweight multi-agent coordination through explicit handoffs, perfect for conversation-driven architecture while maintaining clear audit trails and context preservation.

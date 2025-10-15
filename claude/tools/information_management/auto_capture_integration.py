@@ -16,9 +16,10 @@ Phase: 115.3 (Agent Orchestration Layer - Production Integration)
 import os
 import sys
 import json
+import hashlib
 from pathlib import Path
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 import importlib.util
 
 # Path setup
@@ -46,6 +47,40 @@ class AutoCaptureIntegration:
         """Initialize integration with Executive Information Manager"""
         self.manager = ExecutiveInformationManager()
         self.maia_root = MAIA_ROOT
+        self.seen_items: Set[str] = set()  # Track duplicates across all sources
+
+    def _generate_item_hash(self, title: str, source: str) -> str:
+        """
+        Generate unique hash for item deduplication.
+
+        Args:
+            title: Item title
+            source: Source system
+
+        Returns:
+            SHA256 hash of normalized title + source
+        """
+        # Normalize title: lowercase, remove extra whitespace
+        normalized = ' '.join(title.lower().strip().split())
+        unique_key = f"{source}:{normalized}"
+        return hashlib.sha256(unique_key.encode()).hexdigest()
+
+    def _is_duplicate(self, title: str, source: str) -> bool:
+        """
+        Check if item is duplicate.
+
+        Args:
+            title: Item title
+            source: Source system
+
+        Returns:
+            True if duplicate, False if new
+        """
+        item_hash = self._generate_item_hash(title, source)
+        if item_hash in self.seen_items:
+            return True
+        self.seen_items.add(item_hash)
+        return False
 
     def capture_from_daily_briefing(self) -> int:
         """
@@ -64,10 +99,18 @@ class AutoCaptureIntegration:
             briefing = json.load(f)
 
         captured = 0
+        duplicates = 0
 
         # Capture high-impact items (score >= 7.0)
         for item in briefing.get('high_impact_items', []):
             if item.get('impact_score', 0) >= 7.0:
+                title = item.get('action', 'Untitled action')
+
+                # Check for duplicates
+                if self._is_duplicate(title, 'daily_briefing'):
+                    duplicates += 1
+                    continue
+
                 # Determine time sensitivity from deadline
                 deadline = item.get('deadline', '')
                 time_sensitivity = 'urgent' if 'today' in deadline.lower() else \
@@ -94,6 +137,13 @@ class AutoCaptureIntegration:
 
         # Capture decision packages
         for decision in briefing.get('decision_packages', []):
+            title = f"Decision: {decision.get('topic', 'Untitled')}"
+
+            # Check for duplicates
+            if self._is_duplicate(title, 'daily_briefing'):
+                duplicates += 1
+                continue
+
             priority = decision.get('priority', 'medium').lower()
             decision_impact = 'high' if priority in ['critical', 'high'] else 'medium'
 
@@ -112,7 +162,10 @@ class AutoCaptureIntegration:
             )
             captured += 1
 
-        print(f"✅ Captured {captured} items from daily briefing")
+        if duplicates > 0:
+            print(f"✅ Captured {captured} items from daily briefing (skipped {duplicates} duplicates)")
+        else:
+            print(f"✅ Captured {captured} items from daily briefing")
         return captured
 
     def capture_from_action_tracker(self) -> int:
@@ -132,10 +185,18 @@ class AutoCaptureIntegration:
             actions = json.load(f)
 
         captured = 0
+        duplicates = 0
 
         # Capture active actions (not completed)
         for action in actions.get('actions', []):
             if action.get('status') != 'completed':
+                title = action.get('action', 'Untitled action')
+
+                # Check for duplicates
+                if self._is_duplicate(title, 'action_tracker'):
+                    duplicates += 1
+                    continue
+
                 # Determine time sensitivity from context
                 contexts = action.get('context_tags', [])
                 time_sensitivity = 'urgent' if '@needs-decision' in contexts else \
@@ -167,7 +228,10 @@ class AutoCaptureIntegration:
                 )
                 captured += 1
 
-        print(f"✅ Captured {captured} items from action tracker")
+        if duplicates > 0:
+            print(f"✅ Captured {captured} items from action tracker (skipped {duplicates} duplicates)")
+        else:
+            print(f"✅ Captured {captured} items from action tracker")
         return captured
 
     def capture_from_email_rag(self, days_back: int = 7) -> int:
@@ -194,7 +258,7 @@ class AutoCaptureIntegration:
             return 0
 
         captured = 0
-        seen_messages = set()
+        duplicates = 0
 
         # Semantic queries: (query, time_sensitivity, decision_impact, stakeholder, limit)
         queries = [
@@ -210,13 +274,15 @@ class AutoCaptureIntegration:
                 results = rag.semantic_search(query_text, n_results=limit)
 
                 for result in results:
-                    msg_id = result.get('message_id')
-                    if msg_id in seen_messages:
-                        continue
-
                     # Filter noise
                     subject = result.get('subject', '')
                     if any(subject.startswith(p) for p in ['Accepted:', 'Automatic reply:', 'Canceled:']):
+                        continue
+
+                    # Check for duplicates using email subject
+                    title = f"Email: {subject}"
+                    if self._is_duplicate(title, 'email_rag'):
+                        duplicates += 1
                         continue
 
                     # Lower threshold to capture more (learning phase)
@@ -235,7 +301,7 @@ class AutoCaptureIntegration:
                         title=f"Email: {subject}",
                         content=f"From: {sender} | {result.get('preview', '')}",
                         metadata={
-                            'source_id': msg_id,
+                            'source_id': result.get('message_id'),
                             'time_sensitivity': time_sens,
                             'decision_impact': decision_imp,
                             'stakeholder_importance': stakeholder,
@@ -243,13 +309,15 @@ class AutoCaptureIntegration:
                         }
                     )
                     captured += 1
-                    seen_messages.add(msg_id)
 
             except Exception as e:
                 print(f"⚠️  Error in email query: {e}")
                 continue
 
-        print(f"✅ Captured {captured} items from Email RAG")
+        if duplicates > 0:
+            print(f"✅ Captured {captured} items from Email RAG (skipped {duplicates} duplicates)")
+        else:
+            print(f"✅ Captured {captured} items from Email RAG")
         return captured
 
     def capture_from_vtt_intelligence(self) -> int:
@@ -269,6 +337,7 @@ class AutoCaptureIntegration:
             vtt_data = json.load(f)
 
         captured = 0
+        duplicates = 0
 
         # Capture action items from all meetings
         for meeting_id, meeting_data in vtt_data.get('meetings', {}).items():
@@ -278,6 +347,13 @@ class AutoCaptureIntegration:
             for action in results.get('action_items', []):
                 # Skip if status is completed
                 if action.get('status') == 'completed':
+                    continue
+
+                title = action.get('action', 'Untitled action')
+
+                # Check for duplicates
+                if self._is_duplicate(title, 'vtt_intelligence'):
+                    duplicates += 1
                     continue
 
                 # Determine time sensitivity from deadline
@@ -310,6 +386,12 @@ class AutoCaptureIntegration:
             # Capture key decisions
             for decision in results.get('key_decisions', []):
                 decision_text = decision.get('decision', '') if isinstance(decision, dict) else str(decision)
+                title = f"Decision: {decision_text[:100]}"
+
+                # Check for duplicates
+                if self._is_duplicate(title, 'vtt_intelligence'):
+                    duplicates += 1
+                    continue
 
                 self.manager.capture_item(
                     source='vtt_intelligence',
@@ -326,7 +408,10 @@ class AutoCaptureIntegration:
                 )
                 captured += 1
 
-        print(f"✅ Captured {captured} items from VTT intelligence")
+        if duplicates > 0:
+            print(f"✅ Captured {captured} items from VTT intelligence (skipped {duplicates} duplicates)")
+        else:
+            print(f"✅ Captured {captured} items from VTT intelligence")
         return captured
 
     def run_full_capture(self) -> Dict:
@@ -340,6 +425,14 @@ class AutoCaptureIntegration:
         print("🔄 AUTOMATIC CAPTURE INTEGRATION")
         print("="*80 + "\n")
 
+        # Get initial item count for accurate tracking
+        import sqlite3
+        conn = sqlite3.connect(self.manager.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM information_items')
+        initial_count = cursor.fetchone()[0]
+        conn.close()
+
         stats = {
             'daily_briefing': 0,
             'action_tracker': 0,
@@ -348,12 +441,22 @@ class AutoCaptureIntegration:
             'total': 0
         }
 
-        # Capture from each source
+        # Capture from each source (returns count attempted, not necessarily inserted)
         stats['daily_briefing'] = self.capture_from_daily_briefing()
         stats['action_tracker'] = self.capture_from_action_tracker()
         stats['vtt_intelligence'] = self.capture_from_vtt_intelligence()
         stats['email_rag'] = self.capture_from_email_rag()
-        stats['total'] = sum(stats.values()) - stats['total']  # Exclude total from sum
+
+        # Get actual new items added to database
+        conn = sqlite3.connect(self.manager.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM information_items')
+        final_count = cursor.fetchone()[0]
+        conn.close()
+
+        actual_new_items = final_count - initial_count
+        attempted_total = sum(stats.values())
+        duplicates_skipped = attempted_total - actual_new_items
 
         print("\n" + "="*80)
         print("📊 CAPTURE SUMMARY")
@@ -362,14 +465,19 @@ class AutoCaptureIntegration:
         print(f"Action Tracker: {stats['action_tracker']} items")
         print(f"VTT Intelligence: {stats['vtt_intelligence']} items")
         print(f"Email RAG: {stats['email_rag']} items")
-        print(f"Total Captured: {stats['total']} items")
+        print(f"Attempted: {attempted_total} items")
+        if duplicates_skipped > 0:
+            print(f"Duplicates Skipped (DB): {duplicates_skipped} items")
+        print(f"Actually Added: {actual_new_items} items")
         print("="*80 + "\n")
 
-        if stats['total'] > 0:
+        if actual_new_items > 0:
             print("✅ Automatic capture complete! Run 'python3 executive_information_manager.py process' to prioritize.")
         else:
-            print("⚠️  No items captured. Check that data sources have content.")
+            print("ℹ️  No new items - all sources already captured.")
 
+        stats['total'] = actual_new_items
+        stats['duplicates_skipped'] = duplicates_skipped
         return stats
 
 

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# NOTE: DEMO FILE - Message bus imports deprecated, use Swarm framework instead
+# See claude/tools/orchestration/agent_swarm.py for current orchestration patterns
 """
 Professional Performance Analytics - Work performance tracking and optimization
 ================================================================================
@@ -45,7 +47,8 @@ except ImportError:
         pass
 
 try:
-    from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
+    # DEPRECATED: Message bus replaced by Swarm framework
+# from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
 except ImportError:
     # Graceful fallback for missing agent_message_bus
     def get_message_bus():

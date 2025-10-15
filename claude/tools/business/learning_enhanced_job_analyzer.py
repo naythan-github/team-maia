@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# NOTE: DEMO FILE - Message bus imports deprecated, use Swarm framework instead
+# See claude/tools/orchestration/agent_swarm.py for current orchestration patterns
 """
 Learning-Enhanced Job Analyzer - Phase 21 Integration
 ====================================================
@@ -27,7 +29,8 @@ from dataclasses import dataclass
 
 # Import Phase 20 autonomous orchestration
 from claude.tools.business.autonomous_job_analyzer import AutonomousJobAnalyzer
-from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
+# DEPRECATED: Message bus replaced by Swarm framework
+# from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
 from claude.tools.enhanced_context_manager import get_context_manager
 
 # Import Phase 21 learning system

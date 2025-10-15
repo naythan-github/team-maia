@@ -3,14 +3,16 @@
 Autonomous Job Analyzer - Multi-Agent Orchestration Demo
 =======================================================
 
-Demonstrates sophisticated multi-agent workflow coordination:
+Demonstrates sophisticated multi-agent workflow coordination using Swarm framework:
+- Explicit agent handoffs with context enrichment
 - Parallel data gathering from multiple sources
-- Real-time agent-to-agent communication  
 - Intelligent error handling and fallbacks
 - Context preservation across agent chains
 - Quality scoring and optimization
 
-This showcases enterprise-grade AI orchestration capabilities.
+This showcases enterprise-grade AI orchestration capabilities using Swarm pattern.
+
+NOTE: This is a DEMO file showing orchestration patterns. Updated to use Swarm framework.
 """
 
 import asyncio
@@ -21,10 +23,15 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
-# Import Maia's orchestration infrastructure
-from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
-from claude.tools.enhanced_context_manager import get_context_manager
-from claude.tools.agent_error_handler import get_error_handler
+# Import Maia's Swarm orchestration infrastructure
+try:
+    from claude.tools.orchestration.agent_swarm import SwarmOrchestrator, AgentHandoff, AgentResult
+    from claude.tools.orchestration.context_management import ContextManager
+    from claude.tools.orchestration.error_recovery import ErrorRecovery
+    SWARM_AVAILABLE = True
+except ImportError:
+    SWARM_AVAILABLE = False
+    print("⚠️  Swarm framework not available - demo will use simplified pattern")
 
 @dataclass
 class JobOpportunity:
@@ -51,27 +58,27 @@ class AutonomousJobAnalyzer:
     """
     
     def __init__(self):
-        self.bus = get_message_bus()
-        self.context_manager = get_context_manager()
-        self.error_handler = get_error_handler()
+        if SWARM_AVAILABLE:
+            self.orchestrator = SwarmOrchestrator()
+            self.context_manager = ContextManager()
+            self.error_recovery = ErrorRecovery()
+        else:
+            self.orchestrator = None
+            self.context_manager = None
+            self.error_recovery = None
+
         self.session_id = str(uuid.uuid4())
-        
-        # Register all agents with the message bus
-        self._register_agents()
-        
-    def _register_agents(self):
-        """Register agent capabilities with message bus"""
-        agents = {
+        print(f"✅ Autonomous Job Analyzer initialized (Swarm: {'enabled' if SWARM_AVAILABLE else 'disabled'})")
+
+    def _get_agent_capabilities(self):
+        """Define agent capabilities for Swarm orchestration"""
+        return {
             "email_processor": ["email_parsing", "job_extraction", "notification_filtering"],
-            "web_scraper": ["url_processing", "content_extraction", "metadata_analysis"],  
+            "web_scraper": ["url_processing", "content_extraction", "metadata_analysis"],
             "market_analyst": ["salary_analysis", "company_research", "trend_analysis"],
             "quality_assurance": ["data_validation", "confidence_scoring", "result_verification"],
             "recommendation_engine": ["priority_ranking", "action_planning", "insight_generation"]
         }
-        
-        for agent_name, capabilities in agents.items():
-            self.bus.register_agent(agent_name, capabilities)
-            print(f"🤖 Registered agent: {agent_name} with {len(capabilities)} capabilities")
 
     async def analyze_job_opportunities(self, query: str = "recent job emails") -> Dict[str, Any]:
         """
