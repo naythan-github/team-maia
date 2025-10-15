@@ -61,3 +61,4 @@ claude/context/session/governance_analysis/dependency_scan_*.json
 tmp/
 temp/
 *.tmp
+claude/data/model_usage_log.txt
