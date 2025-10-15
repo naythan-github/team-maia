@@ -2,6 +2,9 @@
 # Enhanced user-prompt-submit hook with aggressive context validation
 # KAI-style Layer 2 enforcement for Maia context loading
 
+# Dynamic MAIA_ROOT detection (portable across environments)
+MAIA_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+
 echo ""
 echo "🚨🚨🚨 MAIA UFC ENFORCEMENT - CRITICAL FOUNDATION 🚨🚨🚨"
 echo "⚡⚡⚡ UFC SYSTEM MANDATORY - NO EXCEPTIONS ⚡⚡⚡"
@@ -32,7 +35,7 @@ echo ""
 
 # Stage 0.5: LLM Router Cost Protection (NEW)
 echo "💰 LLM ROUTER COST PROTECTION ACTIVE..."
-ROUTER_HEALTH_MONITOR="/Users/naythan/git/maia/claude/tools/🛠️_general/llm_router_health_monitor.py"
+ROUTER_HEALTH_MONITOR="$MAIA_ROOT/claude/tools/🛠️_general/llm_router_health_monitor.py"
 if [[ -f "$ROUTER_HEALTH_MONITOR" ]]; then
     # Check if this might be a code-related prompt that could benefit from local models
     # Read the prompt from stdin if available (simplified check)
@@ -103,7 +106,7 @@ fi
 echo ""
 
 # Stage 1: Validate UFC FIRST (most critical file)
-UFC_FILE="/Users/naythan/git/maia/claude/context/ufc_system.md"
+UFC_FILE="$MAIA_ROOT/claude/context/ufc_system.md"
 if [[ -f "$UFC_FILE" ]]; then
     echo "🚨 UFC SYSTEM: ✅ ACCESSIBLE - MUST LOAD FIRST"
 else
@@ -114,12 +117,12 @@ fi
 
 # Stage 1b: Validate other context files
 CONTEXT_FILES=(
-    "/Users/naythan/git/maia/claude/context/core/identity.md"
-    "/Users/naythan/git/maia/claude/context/core/systematic_thinking_protocol.md"
-    "/Users/naythan/git/maia/claude/context/tools/available.md"
-    "/Users/naythan/git/maia/claude/context/core/agents.md"
-    "/Users/naythan/git/maia/claude/context/core/command_orchestration.md"
-    "/Users/naythan/git/maia/claude/context/personal/profile.md"
+    "$MAIA_ROOT/claude/context/core/identity.md"
+    "$MAIA_ROOT/claude/context/core/systematic_thinking_protocol.md"
+    "$MAIA_ROOT/claude/context/tools/available.md"
+    "$MAIA_ROOT/claude/context/core/agents.md"
+    "$MAIA_ROOT/claude/context/core/command_orchestration.md"
+    "$MAIA_ROOT/claude/context/personal/profile.md"
 )
 
 echo "🔍 VALIDATING CONTEXT FILE ACCESSIBILITY..."
@@ -139,7 +142,7 @@ echo ""
 echo "⚡ MANDATORY CONTEXT LOADING SEQUENCE ⚡"
 echo ""
 echo "🚨🚨🚨 STEP 1 - NON-NEGOTIABLE 🚨🚨🚨"
-echo "   🏗️  UFC SYSTEM: /Users/naythan/git/maia/claude/context/ufc_system.md"
+echo "   🏗️  UFC SYSTEM: $MAIA_ROOT/claude/context/ufc_system.md"
 echo "   ⚠️  THIS DEFINES THE ENTIRE CONTEXT ARCHITECTURE - LOAD FIRST!"
 echo ""
 echo "🔄 THEN load remaining core files:"
@@ -205,7 +208,7 @@ echo "   3. Default to Sonnet if no response"
 echo ""
 
 # Token usage tracking (basic implementation)
-USAGE_LOG="/Users/naythan/git/maia/claude/data/model_usage_log.txt"
+USAGE_LOG="$MAIA_ROOT/claude/data/model_usage_log.txt"
 TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 
 # Create usage log if it doesn't exist
