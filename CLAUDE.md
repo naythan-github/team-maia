@@ -63,11 +63,21 @@ You are **Maia** (My AI Agent), a personal AI infrastructure designed to augment
 - **System Identity**: Defined above
 
 ## Critical File Locations
+
+### Always-Loaded Capability Registry ⭐ **PHASE 119 - CAPABILITY AMNESIA FIX**
+- **capability_index.md**: `${MAIA_ROOT}/claude/context/core/capability_index.md`
+  - Purpose: Quick reference of ALL tools (200+) and agents (49) - **SEARCH FIRST**
+  - Always loaded: Included in all 8 context loading strategies
+  - Size: 381 lines, ~3K tokens (acceptable overhead for zero amnesia)
+  - Usage: Cmd/Ctrl+F to search before building anything new
+  - Updates: Add new tool/agent entries (2 min per update)
+
+### Intent-Aware Phase Loading ⭐ **PHASE 2 - SMART SYSTEM_STATE**
 - **SYSTEM_STATE.md**:
   - Primary: `${MAIA_ROOT}/SYSTEM_STATE.md` (repo root - project documentation)
   - Symlink: `${MAIA_ROOT}/claude/context/SYSTEM_STATE.md` (convenience for context loading)
-  - Purpose: Current phase tracking, system state, recent changes, metrics
-  - **Smart Loader**: `${MAIA_ROOT}/claude/tools/sre/smart_context_loader.py` ⭐ **NEW - PHASE 2 SYSTEM_STATE PROJECT**
+  - Purpose: Detailed phase history, problem-solution narratives, implementation details
+  - **Smart Loader**: `${MAIA_ROOT}/claude/tools/sre/smart_context_loader.py`
     - Intent-aware loading (5-20K tokens vs 42K full file, 83% average reduction)
     - Query routing: agent enhancement → Phases 2, 107-111 | SRE → Phases 103-105 | etc.
     - Usage: `SmartContextLoader().load_for_intent(user_query)` → optimized context
@@ -85,12 +95,26 @@ You are **Maia** (My AI Agent), a personal AI infrastructure designed to augment
       # Load recent N phases
       python3 claude/tools/sre/smart_context_loader.py --recent 20
       ```
+
+### Layered Context Architecture
+**Layer 1 - Always Load** (5-10K tokens):
+- UFC system, identity, systematic thinking, model selection
+- **capability_index.md** ← Knows "what exists"
+
+**Layer 2 - Intent-Based** (5-20K tokens):
+- Smart SYSTEM_STATE loader (relevant phases only)
+- Domain-specific files (available.md, agents.md for some domains)
+- **Purpose**: Knows "why/how it exists"
+
+**Total**: 10-30K tokens (vs 42K+ before optimization)
 - **UFC System**: `${MAIA_ROOT}/claude/context/ufc_system.md` (foundation - load first)
 - **CLAUDE.md**: `${MAIA_ROOT}/CLAUDE.md` (this file - system instructions)
 - **Core Context**: `${MAIA_ROOT}/claude/context/core/*` (identity, protocols, strategies)
 
 ## Enforcement Requirements
-- **Context Loading**: MANDATORY before all responses (includes SYSTEM_STATE.md)
+- **Context Loading**: MANDATORY before all responses
+  - **Always load**: UFC, identity, systematic thinking, model selection, **capability_index.md**
+  - **Intent-based**: SYSTEM_STATE.md (via smart loader for relevant phases)
 - **Systematic Thinking**: Required for all analysis and solutions
 - **Model Strategy**: Sonnet default, request permission for Opus
 - **Documentation**: Update ALL relevant files for ANY system changes
