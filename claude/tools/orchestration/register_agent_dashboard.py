@@ -25,11 +25,11 @@ def register_agent_performance_dashboard():
     config = DashboardConfig(
         name="agent_performance_dashboard",
         description="Real-time agent routing performance monitoring - tracks success rates, execution times, bottlenecks, and routing strategy effectiveness for Phase 121 automatic agent routing",
-        file_path=str(MAIA_ROOT / "claude/tools/orchestration/agent_performance_dashboard.py"),
+        file_path=str(MAIA_ROOT / "claude/tools/orchestration/agent_performance_dashboard_web.py"),
         port=8066,
         host="127.0.0.1",
-        auto_start=False,  # CLI-based, not web-based yet
-        health_endpoint="/health",  # Will add when we create web version
+        auto_start=False,  # Can be started from hub
+        health_endpoint="/health",
         category="orchestration",
         version="1.0",
         dependencies=["performance_monitoring"]
