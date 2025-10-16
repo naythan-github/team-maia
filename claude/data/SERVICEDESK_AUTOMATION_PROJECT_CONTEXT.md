@@ -2,8 +2,8 @@
 
 **Purpose**: Persistent storage of business context, decisions, and answers to prevent knowledge loss across sessions
 
-**Last Updated**: 2025-10-16
-**Project Status**: Discovery phase complete, context captured, ready for quality-focused analysis
+**Last Updated**: 2025-10-16 (16:45 - CSV corruption issue identified)
+**Project Status**: Discovery phase complete, preparing XLSX re-import to fix CSV corruption
 
 ---
 
@@ -319,12 +319,33 @@ Transform ServiceDesk operations through intelligent automation, with **primary 
 - Engaged ServiceDesk Manager Agent for ROI analysis
 - Identified need for structured project context (this file)
 
+### 2025-10-16 (16:45) - CSV Corruption Issue Identified
+**Problem Discovered**: CSV import (Oct 14, 2025) caused data corruption
+- **Root Cause**: Unescaped commas in comment text → CSV parser sees 3,564 fields instead of 10
+- **Impact**:
+  - Column misalignment after comment_text field (position #3)
+  - **CT-VISIBLE-CUSTOMER field corrupted** (position #8) - CRITICAL for customer communication % metric!
+  - Comment text may be truncated at comma boundaries
+  - RAG embeddings created from corrupted text
+- **Decision**: Re-import from source XLSX files + Re-RAG from clean data
+- **Files Ready**:
+  - comments.xlsx (88MB, Oct 14 06:19)
+  - tickets.xlsx (322MB, Oct 14 15:38)
+  - timesheets.xlsx (104MB, Oct 14 07:53)
+- **Import Tool**: Already supports XLSX (pandas + openpyxl installed)
+- **Approach**:
+  1. Full clean import (drop tables, re-import from XLSX)
+  2. Validate CT-VISIBLE-CUSTOMER field populated correctly
+  3. Re-RAG all collections from clean SQLite data (3-4 hours)
+- **Status**: Ready to execute
+
 ### Next Session Actions
-1. **Fill knowledge gaps**: User to answer 14 critical questions above
-2. **Validate priorities**: User approval on Top 5 automation patterns
-3. **Budget approval**: Secure funding for Phase 1 ($12K-$18K)
-4. **Fix data quality**: Investigate TKT-Key/TKT-Summary placeholder issue
-5. **Begin Phase 1 design**: Password reset + email diagnostics workflows
+1. ✅ **Fill knowledge gaps**: User answered all 14 critical questions (documented in this file)
+2. **Execute XLSX re-import**: Clean import to fix CSV corruption
+3. **Validate data integrity**: Post-import validation (record counts, spot checks)
+4. **Re-establish baselines**: Verify FCR, ticket counts, date ranges
+5. **Validate priorities**: User approval on Top 5 automation patterns
+6. **Begin Phase 1 design**: Password reset + email diagnostics workflows
 
 ---
 

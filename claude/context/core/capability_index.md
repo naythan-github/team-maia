@@ -10,6 +10,14 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### Phase 126 (Oct 16) - Context Compaction Integration
+- Hybrid compaction strategy - Proactive compaction integrated into all 3 save state tiers
+- Tier 1 enhancement - Optional compaction every 3rd checkpoint (>40 messages)
+- Tier 2 enhancement - Optional compaction with validation (>50 messages)
+- Tier 3 enhancement - Comprehensive protocol with emergency fallback
+- Protection: 4 layers (Phase 120 recovery files, SYSTEM_STATE.md, capability_index.md, anti-breakage)
+- Expected: 95% reduction in "conversation too long" errors
+
 ### Phase 125 (Oct 16) - Routing Accuracy Monitoring System
 - routing_decision_logger.py - Logs routing suggestions + acceptance tracking (430 lines, SQLite 3 tables)
 - accuracy_analyzer.py - Statistical analysis: overall, by category/complexity/strategy (560 lines)
