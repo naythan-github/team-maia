@@ -86,6 +86,8 @@ echo ""
 # Stage 0.8: Intelligent Agent Routing (Phase 121 - Automatic Specialist Engagement)
 echo "🎯 INTELLIGENT AGENT ROUTING..."
 COORDINATOR_CLI="$(dirname "$0")/../tools/orchestration/coordinator_agent.py"
+ROUTING_LOGGER="$(dirname "$0")/../tools/orchestration/routing_decision_logger.py"
+
 if [[ -f "$COORDINATOR_CLI" && -n "$CLAUDE_USER_MESSAGE" ]]; then
     ROUTING_RESULT=$(python3 "$COORDINATOR_CLI" classify "$CLAUDE_USER_MESSAGE" 2>&1)
     ROUTING_CODE=$?
@@ -94,6 +96,12 @@ if [[ -f "$COORDINATOR_CLI" && -n "$CLAUDE_USER_MESSAGE" ]]; then
         echo "$ROUTING_RESULT"
         echo ""
         echo "💡 Maia will consider this routing suggestion (can override if context suggests otherwise)"
+
+        # Phase 122: Log routing suggestion
+        if [[ -f "$ROUTING_LOGGER" ]]; then
+            # Extract routing data and log to database
+            python3 "$COORDINATOR_CLI" classify "$CLAUDE_USER_MESSAGE" --log 2>/dev/null || true
+        fi
     elif [[ $ROUTING_CODE -eq 2 ]]; then
         # No specific agent needed - general query
         echo "✅ General query - no specific agent routing needed"

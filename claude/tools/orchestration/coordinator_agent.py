@@ -630,15 +630,76 @@ def cli_classify(query: str) -> int:
         return 1
 
 
+def cli_classify_and_log(query: str) -> int:
+    """
+    CLI classify command with Phase 122 logging.
+
+    Logs routing decision to routing_decisions.db for accuracy tracking.
+
+    Returns:
+        0: Routing suggestion logged
+        1: Classification error
+        2: No specific routing needed (general query)
+    """
+    try:
+        # Import logger (Phase 122)
+        from routing_decision_logger import RoutingDecisionLogger, RoutingIntent, RoutingDecision
+
+        coordinator = CoordinatorAgent()
+
+        # Get intent first
+        intent = coordinator.intent_classifier.classify(query)
+
+        # Only log non-trivial queries
+        if intent.complexity < 3 or intent.confidence < 0.70:
+            return 2
+
+        # Get routing decision
+        routing = coordinator.agent_selector.select(intent, query)
+
+        if not routing or not routing.agents:
+            return 2
+
+        # Log to database (Phase 122)
+        logger = RoutingDecisionLogger()
+
+        routing_intent = RoutingIntent(
+            category=intent.category,
+            domains=intent.domains,
+            complexity=intent.complexity,
+            confidence=intent.confidence
+        )
+
+        routing_decision = RoutingDecision(
+            agents=routing.agents,
+            initial_agent=routing.initial_agent,
+            strategy=routing.strategy,
+            reasoning=routing.reasoning,
+            confidence=routing.confidence
+        )
+
+        query_hash = logger.log_suggestion(query, routing_intent, routing_decision)
+
+        # Silent success - no output (used in hook)
+        return 0
+
+    except Exception as e:
+        # Silent failure - don't break hook
+        import sys
+        print(f"⚠️  Logging error: {str(e)}", file=sys.stderr)
+        return 1
+
+
 def main():
     """CLI interface for coordinator agent."""
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: coordinator_agent.py classify <query>", file=sys.stderr)
+        print("Usage: coordinator_agent.py classify <query> [--log]", file=sys.stderr)
         print("", file=sys.stderr)
         print("Commands:", file=sys.stderr)
-        print("  classify <query>  - Classify query and suggest agent routing", file=sys.stderr)
+        print("  classify <query>       - Classify query and suggest agent routing", file=sys.stderr)
+        print("  classify <query> --log - Classify and log to database (Phase 122)", file=sys.stderr)
         sys.exit(1)
 
     command = sys.argv[1]
@@ -649,7 +710,13 @@ def main():
             sys.exit(1)
 
         query = sys.argv[2]
-        exit_code = cli_classify(query)
+
+        # Check for --log flag (Phase 122)
+        if len(sys.argv) > 3 and sys.argv[3] == "--log":
+            exit_code = cli_classify_and_log(query)
+        else:
+            exit_code = cli_classify(query)
+
         sys.exit(exit_code)
 
     else:

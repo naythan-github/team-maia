@@ -2,6 +2,11 @@
 """
 Reliable Confluence Client with SRE Best Practices
 Implements retry logic, circuit breakers, health checks, and monitoring
+
+ENHANCEMENTS (Phase 122):
+- Integrated ConfluencePageBuilder for validated HTML generation
+- Added validate_confluence_html() for pre-flight checks
+- Added create_interview_prep_page() helper method
 """
 
 import os
@@ -15,6 +20,18 @@ from dataclasses import dataclass
 from enum import Enum
 import logging
 from pathlib import Path
+
+# Import HTML builder for validated content generation
+try:
+    from claude.tools.confluence_html_builder import (
+        ConfluencePageBuilder,
+        validate_confluence_html,
+        create_interview_prep_html
+    )
+    HTML_BUILDER_AVAILABLE = True
+except ImportError:
+    HTML_BUILDER_AVAILABLE = False
+    logging.warning("ConfluencePageBuilder not available - HTML validation disabled")
 
 # Configure logging
 logging.basicConfig(
@@ -295,16 +312,39 @@ class ReliableConfluenceClient:
             return response.json()
         return None
         
-    def create_page(self, space_key: str, title: str, content: str, 
-                   parent_id: Optional[str] = None) -> Optional[Dict]:
+    def create_page(self, space_key: str, title: str, content: str,
+                   parent_id: Optional[str] = None, validate_html: bool = True) -> Optional[Dict]:
         """
-        Create a new Confluence page with validation
+        Create a new Confluence page with HTML validation
+
+        Args:
+            space_key: Confluence space key
+            title: Page title
+            content: Confluence storage format HTML content
+            parent_id: Optional parent page ID
+            validate_html: Run HTML validation before creating (default: True)
+
+        Returns:
+            Dict with page_id, title, url, version or None if failed
         """
         # Input validation
         if not space_key or not title or not content:
             logger.error("Missing required parameters: space_key, title, or content")
             return None
-            
+
+        # HTML validation (Phase 122 enhancement)
+        if validate_html and HTML_BUILDER_AVAILABLE:
+            validation_result = validate_confluence_html(content)
+            if not validation_result.is_valid:
+                logger.error(f"HTML validation failed before API call:")
+                for error in validation_result.errors:
+                    logger.error(f"  - {error}")
+                raise ValueError(f"Invalid Confluence HTML: {validation_result.errors}")
+
+            # Log warnings
+            for warning in validation_result.warnings:
+                logger.warning(f"HTML validation warning: {warning}")
+
         # Build request body
         body = {
             "type": "page",
@@ -317,10 +357,10 @@ class ReliableConfluenceClient:
                 }
             }
         }
-        
+
         if parent_id:
             body["ancestors"] = [{"id": parent_id}]
-            
+
         # Create page
         response = self._make_request('POST', '/content', json=body)
         if response:
@@ -405,7 +445,89 @@ class ReliableConfluenceClient:
                 "parent_id": new_parent_id
             }
         return None
-        
+
+    def create_interview_prep_page(
+        self,
+        space_key: str,
+        candidate_name: str,
+        role: str,
+        assessment_data: Dict[str, Any]
+    ) -> Optional[str]:
+        """
+        Create interview prep page using validated HTML builder (Phase 122)
+
+        Args:
+            space_key: Confluence space key (e.g., "Orro")
+            candidate_name: Candidate's full name
+            role: Job role/title
+            assessment_data: Dict containing:
+                - score: int (0-100)
+                - summary: str (assessment summary)
+                - strengths: List[str]
+                - concerns: List[str]
+                - question_sections: Dict[str, List[Dict]]
+                - scoring_criteria: List[Dict]
+                - recommendation: str
+
+        Returns:
+            Page URL if successful, None otherwise
+
+        Example:
+            client = ReliableConfluenceClient()
+            url = client.create_interview_prep_page(
+                space_key="Orro",
+                candidate_name="John Doe",
+                role="Senior Engineer",
+                assessment_data={
+                    "score": 75,
+                    "summary": "Strong technical candidate",
+                    "strengths": ["10+ years experience", "Azure expert"],
+                    "concerns": ["Limited leadership"],
+                    "question_sections": {
+                        "Technical": [{"question": "...", "looking_for": "...", "red_flag": "..."}]
+                    },
+                    "scoring_criteria": [{"criteria": "Technical", "weight": "50%", "notes": "Must be 8+"}],
+                    "recommendation": "PROCEED TO INTERVIEW"
+                }
+            )
+        """
+        if not HTML_BUILDER_AVAILABLE:
+            logger.error("ConfluencePageBuilder not available - cannot create interview prep page")
+            return None
+
+        try:
+            # Generate HTML using validated builder
+            html_content = create_interview_prep_html(
+                candidate_name=candidate_name,
+                role=role,
+                score=assessment_data['score'],
+                assessment_summary=assessment_data['summary'],
+                strengths=assessment_data['strengths'],
+                concerns=assessment_data['concerns'],
+                question_sections=assessment_data['question_sections'],
+                scoring_criteria=assessment_data['scoring_criteria'],
+                recommendation=assessment_data['recommendation']
+            )
+
+            # Create page (validation happens automatically)
+            page_title = f"Interview Prep - {candidate_name} ({role})"
+            result = self.create_page(
+                space_key=space_key,
+                title=page_title,
+                content=html_content,
+                validate_html=True  # Force validation
+            )
+
+            if result:
+                logger.info(f"Interview prep page created: {result['url']}")
+                return result['url']
+
+            return None
+
+        except Exception as e:
+            logger.error(f"Failed to create interview prep page: {e}")
+            return None
+
     def search_content(self, query: str, space_key: Optional[str] = None, 
                       limit: int = 25) -> Optional[List[Dict]]:
         """

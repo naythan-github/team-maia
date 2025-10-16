@@ -28,6 +28,13 @@ try:
 except ImportError:
     MONITORING_AVAILABLE = False
 
+# Import routing accuracy analyzer (Phase 122)
+try:
+    from claude.tools.orchestration.accuracy_analyzer import AccuracyAnalyzer
+    ACCURACY_AVAILABLE = True
+except ImportError:
+    ACCURACY_AVAILABLE = False
+
 app = Flask(__name__)
 
 # Initialize monitoring
@@ -37,6 +44,17 @@ if MONITORING_AVAILABLE:
 else:
     collector = None
     analytics = None
+
+# Initialize accuracy analyzer (Phase 122)
+if ACCURACY_AVAILABLE:
+    try:
+        accuracy_analyzer = AccuracyAnalyzer()
+    except FileNotFoundError:
+        # Database doesn't exist yet
+        accuracy_analyzer = None
+        ACCURACY_AVAILABLE = False
+else:
+    accuracy_analyzer = None
 
 # HTML Template
 HTML_TEMPLATE = """
@@ -291,6 +309,66 @@ HTML_TEMPLATE = """
                 `;
             }
 
+            // Update accuracy metrics (Phase 122)
+            if (data.accuracy) {
+                const acceptanceRate = data.accuracy.overall.acceptance_rate || 0;
+                const acceptanceEl = document.getElementById('acceptance-rate');
+                acceptanceEl.textContent = (acceptanceRate * 100).toFixed(1) + '%';
+                acceptanceEl.className = 'metric-value ' + (acceptanceRate >= 0.80 ? 'success' : acceptanceRate >= 0.60 ? 'warning' : 'error');
+
+                document.getElementById('total-suggestions').textContent = data.accuracy.overall.total_suggestions || '0';
+
+                const confidence = data.accuracy.overall.avg_confidence || 0;
+                document.getElementById('avg-confidence').textContent = (confidence * 100).toFixed(1) + '%';
+
+                const lowPatterns = (data.accuracy.low_patterns || []).length;
+                const lowPatternsEl = document.getElementById('low-patterns');
+                lowPatternsEl.textContent = lowPatterns;
+                lowPatternsEl.className = 'metric-value ' + (lowPatterns === 0 ? 'success' : lowPatterns <= 2 ? 'warning' : 'error');
+
+                // Update accuracy by category
+                const categoryDiv = document.getElementById('accuracy-by-category');
+                if (data.accuracy.by_category && data.accuracy.by_category.length > 0) {
+                    categoryDiv.innerHTML = data.accuracy.by_category.map(cat => {
+                        const rate = cat.acceptance_rate;
+                        const statusClass = rate >= 0.80 ? 'excellent' : rate >= 0.60 ? 'good' : 'warning';
+                        const statusIndicator = rate >= 0.80 ? 'success' : rate >= 0.60 ? 'warning' : 'error';
+
+                        return `
+                            <div class="agent-item ${statusClass}">
+                                <div class="agent-name">
+                                    <span class="status-indicator ${statusIndicator}"></span>
+                                    ${cat.value}
+                                </div>
+                                <div class="agent-stats">
+                                    <div class="stat">
+                                        <span class="stat-label">Acceptance:</span>
+                                        <span>${(cat.acceptance_rate * 100).toFixed(1)}%</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-label">Samples:</span>
+                                        <span>${cat.sample_size}</span>
+                                    </div>
+                                    <div class="stat">
+                                        <span class="stat-label">Confidence:</span>
+                                        <span>${(cat.avg_confidence * 100).toFixed(1)}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    categoryDiv.innerHTML = `
+                        <div class="no-data">
+                            <div>📊 No routing accuracy data available yet</div>
+                            <div style="margin-top: 12px; font-size: 12px;">
+                                Data will appear once routing suggestions are tracked (Phase 122)
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
             // Update timestamp
             document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
         }
@@ -342,6 +420,32 @@ HTML_TEMPLATE = """
             </div>
         </div>
 
+        <div class="section">
+            <div class="section-title">🎯 Routing Accuracy (Phase 122)</div>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Acceptance Rate (7 days)</div>
+                    <div class="metric-value loading" id="acceptance-rate">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Total Suggestions</div>
+                    <div class="metric-value loading" id="total-suggestions">0</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Avg Confidence</div>
+                    <div class="metric-value loading" id="avg-confidence">0%</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">Low Accuracy Patterns</div>
+                    <div class="metric-value loading" id="low-patterns">0</div>
+                </div>
+            </div>
+
+            <div id="accuracy-by-category" style="margin-top: 16px;">
+                <div class="no-data loading">Loading accuracy data...</div>
+            </div>
+        </div>
+
         <div class="refresh-info">
             🔄 Auto-refreshing every 5 seconds | Last update: <span id="last-update">--:--:--</span>
         </div>
@@ -363,33 +467,69 @@ def health():
 @app.route('/api/metrics')
 def get_metrics():
     """API endpoint for metrics data"""
-    if not MONITORING_AVAILABLE or not analytics:
-        return jsonify({
-            'summary': {
-                'total_executions': 0,
-                'unique_agents': 0,
-                'overall_success_rate': 0,
-                'avg_execution_time_ms': 0
-            },
-            'agents': [],
-            'bottlenecks': [],
-            'failures': {},
-            'routing_strategies': {}
-        })
-
-    summary = analytics.get_performance_summary()
-    agent_stats = analytics.get_all_agent_statistics()
-    bottlenecks = analytics.identify_bottlenecks(threshold_ms=2000)
-
-    # Sort agents by executions
-    agent_stats.sort(key=lambda x: x['total_executions'], reverse=True)
-
-    return jsonify({
-        'summary': summary,
-        'agents': agent_stats,
-        'bottlenecks': bottlenecks,
+    # Base response structure
+    response = {
+        'summary': {
+            'total_executions': 0,
+            'unique_agents': 0,
+            'overall_success_rate': 0,
+            'avg_execution_time_ms': 0
+        },
+        'agents': [],
+        'bottlenecks': [],
+        'failures': {},
+        'routing_strategies': {},
         'timestamp': datetime.now().isoformat()
-    })
+    }
+
+    # Add performance data
+    if MONITORING_AVAILABLE and analytics:
+        summary = analytics.get_performance_summary()
+        agent_stats = analytics.get_all_agent_statistics()
+        bottlenecks = analytics.identify_bottlenecks(threshold_ms=2000)
+
+        # Sort agents by executions
+        agent_stats.sort(key=lambda x: x['total_executions'], reverse=True)
+
+        response['summary'] = summary
+        response['agents'] = agent_stats
+        response['bottlenecks'] = bottlenecks
+
+    # Add accuracy data (Phase 122)
+    if ACCURACY_AVAILABLE and accuracy_analyzer:
+        try:
+            overall_accuracy = accuracy_analyzer.get_overall_accuracy(days=7)
+            by_category = accuracy_analyzer.get_accuracy_by_category(days=7)
+            low_patterns = accuracy_analyzer.identify_low_accuracy_patterns(threshold=0.60, min_sample_size=3)
+
+            response['accuracy'] = {
+                'overall': overall_accuracy,
+                'by_category': [
+                    {
+                        'value': metric.value,
+                        'acceptance_rate': metric.acceptance_rate,
+                        'sample_size': metric.sample_size,
+                        'avg_confidence': metric.avg_confidence
+                    }
+                    for metric in by_category
+                ],
+                'low_patterns': [
+                    {
+                        'pattern_type': pattern.pattern_type,
+                        'pattern_value': pattern.pattern_value,
+                        'acceptance_rate': pattern.acceptance_rate,
+                        'severity': pattern.severity
+                    }
+                    for pattern in low_patterns
+                ]
+            }
+        except Exception as e:
+            # Accuracy data not available yet
+            response['accuracy'] = None
+    else:
+        response['accuracy'] = None
+
+    return jsonify(response)
 
 def main():
     """Start the web dashboard"""

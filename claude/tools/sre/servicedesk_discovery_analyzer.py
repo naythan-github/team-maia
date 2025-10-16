@@ -141,27 +141,26 @@ class ServiceDeskDiscoveryAnalyzer:
             # Get ticket IDs from results
             ticket_ids = []
             for result in comment_results + desc_results:
-                # Extract ticket ID from document ID (format: TKT-12345 or similar)
-                doc_id = result['id']
-                if 'TKT-' in doc_id:
-                    ticket_id = doc_id.split('_')[0]
-                    if ticket_id not in ticket_ids:
-                        ticket_ids.append(ticket_id)
+                # Doc IDs are [TKT-Ticket ID] values (numeric strings)
+                ticket_id = int(result['id'])
+                if ticket_id not in ticket_ids:
+                    ticket_ids.append(ticket_id)
 
-            # Get ticket details from SQLite
+            # Get ticket details from SQLite using [TKT-Ticket ID]
             if ticket_ids:
                 placeholders = ','.join(['?' for _ in ticket_ids])
                 cursor = self.conn.execute(f"""
                     SELECT
-                        "TKT-Key" as ticket_key,
-                        "TKT-Summary" as summary,
+                        "TKT-Ticket ID" as ticket_id,
+                        "TKT-Title" as title,
+                        "TKT-Description" as description,
                         "TKT-Account Name" as account,
                         "TKT-Status" as status,
                         "TKT-Priority" as priority,
                         "TKT-Created Time" as created,
                         "TKT-Closed Time" as closed
                     FROM tickets
-                    WHERE "TKT-Key" IN ({placeholders})
+                    WHERE "TKT-Ticket ID" IN ({placeholders})
                 """, ticket_ids)
 
                 tickets = [dict(row) for row in cursor.fetchall()]
@@ -246,7 +245,11 @@ class ServiceDeskDiscoveryAnalyzer:
             if data['sample_tickets']:
                 report_lines.append("**Sample Tickets**:")
                 for ticket in data['sample_tickets'][:3]:
-                    report_lines.append(f"- [{ticket['ticket_key']}] {ticket['summary']}")
+                    # Truncate title to 80 chars for readability
+                    title = ticket.get('title', 'No title')[:80]
+                    if len(ticket.get('title', '')) > 80:
+                        title += '...'
+                    report_lines.append(f"- [Ticket {ticket['ticket_id']}] {title}")
                 report_lines.append("")
 
             report_lines.append("---")

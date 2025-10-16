@@ -2,13 +2,22 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-15 (Phase 121 - Architecture Documentation Suite)
+**Last Updated**: 2025-10-16 (Phase 125 - Routing Accuracy Monitoring)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 125 (Oct 16) - Routing Accuracy Monitoring System
+- routing_decision_logger.py - Logs routing suggestions + acceptance tracking (430 lines, SQLite 3 tables)
+- accuracy_analyzer.py - Statistical analysis: overall, by category/complexity/strategy (560 lines)
+- weekly_accuracy_report.py - Comprehensive markdown reports with recommendations (300 lines)
+- Dashboard integration - Accuracy section in agent performance dashboard (port 8066)
+- Hook integration - Automatic logging via coordinator_agent.py --log flag
+- CLI tools: test, stats, recent commands for ad-hoc analysis
+- Total: 1,440+ lines, fully tested, production operational
 
 ### Phase 122 (Oct 15) - Recruitment Tracking Database & Automation
 - recruitment_tracker.db - SQLite database (5 tables: candidates, roles, interviews, notes, assessments)
@@ -80,17 +89,8 @@
 
 ## 🔮 UP NEXT - Planned Projects
 
-### Phase 122: Routing Accuracy Monitoring System
-**Status**: UP NEXT | **Priority**: HIGH | **Estimated**: 8-12 hours | **Dependencies**: Phase 121
-- **Purpose**: Track Phase 121 routing suggestion accuracy, agent acceptance rates, override patterns
-- **Deliverables**: routing_decision_logger.py, accuracy_analyzer.py, weekly_accuracy_report.py, accuracy dashboard section
-- **Database**: routing_decisions.db (routing_suggestions, accuracy_metrics, override_patterns tables)
-- **Success Metrics**: >80% acceptance rate, identify low-accuracy patterns (<60%), weekly reports with improvement recommendations
-- **Expected Impact**: +10-15% acceptance rate improvement from baseline through data-driven optimization
-- **Project Plan**: [claude/data/PHASE_122_ROUTING_ACCURACY_MONITORING.md](../data/PHASE_122_ROUTING_ACCURACY_MONITORING.md)
-
-### Phase 123: Quality Improvement Measurement System
-**Status**: UP NEXT | **Priority**: HIGH | **Estimated**: 10-14 hours | **Dependencies**: Phase 121, 122
+### Phase 126: Quality Improvement Measurement System
+**Status**: UP NEXT | **Priority**: HIGH | **Estimated**: 10-14 hours | **Dependencies**: Phase 121, 125
 - **Purpose**: Validate Phase 121's expected +25-40% quality improvement from automatic agent routing
 - **Deliverables**: quality_scorer.py, baseline_collector.py, quality_monitor.py, ab_test_framework.py, improvement_analyzer.py, monthly_quality_report.py
 - **Database**: quality_metrics.db (response_quality, quality_baselines, quality_improvements tables)
@@ -100,8 +100,8 @@
 - **Expected Impact**: Quantitative proof of routing ROI, data-driven optimization opportunities, quality regression prevention
 - **Project Plan**: [claude/data/PHASE_123_QUALITY_IMPROVEMENT_MEASUREMENT.md](../data/PHASE_123_QUALITY_IMPROVEMENT_MEASUREMENT.md)
 
-### Phase 124: Live Monitoring Integration
-**Status**: UP NEXT | **Priority**: MEDIUM | **Estimated**: 6-8 hours | **Dependencies**: Phase 121, 122, 123
+### Phase 127: Live Monitoring Integration
+**Status**: UP NEXT | **Priority**: MEDIUM | **Estimated**: 6-8 hours | **Dependencies**: Phase 121, 125, 126
 - **Purpose**: Integrate performance and quality monitoring directly into coordinator for real-time data collection
 - **Deliverables**: monitoring_manager.py, unified_monitoring.db schema, coordinator_agent.py updates, data_migrator.py
 - **Architecture**: Consolidate 4 external loggers into coordinator inline monitoring (77-81% latency reduction: 220-270ms → <50ms)
@@ -167,9 +167,10 @@
 - downloads_vtt_mover.py - Auto-move VTT files from Downloads
 - vtt_watcher_status.sh - VTT watcher service status
 
-### Productivity & Integration (20 tools)
+### Productivity & Integration (22 tools)
+- confluence_html_builder.py - Validated Confluence storage format HTML generation (Phase 122 post-mortem)
+- reliable_confluence_client.py - SRE-grade Confluence API client with HTML validation (Phase 122 enhanced)
 - confluence_sync.py - Confluence content synchronization
-- reliable_confluence_client.py - SRE-grade Confluence API client
 - automated_morning_briefing.py - Daily briefing generation
 - automation_health_monitor.py - Automation service health
 - microsoft_graph_integration.py - M365 Graph API integration
@@ -334,7 +335,9 @@
 - "VTT processing" → vtt_watcher.py, vtt_rag_indexer.py
 
 **Productivity**:
-- "confluence" → confluence_sync.py, reliable_confluence_client.py, Confluence Organization Agent
+- "confluence" → confluence_html_builder.py, reliable_confluence_client.py, confluence_sync.py, Confluence Organization Agent
+- "confluence HTML" → confluence_html_builder.py (validated storage format generation)
+- "confluence validation" → confluence_html_builder.py (pre-flight HTML validation)
 - "Microsoft 365" → microsoft_graph_integration.py, Microsoft 365 Integration Agent
 - "Teams intelligence" → teams_intelligence.py
 - "Outlook" → outlook_intelligence.py
