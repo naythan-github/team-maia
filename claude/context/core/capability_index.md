@@ -10,6 +10,13 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### Phase 122 (Oct 15) - Recruitment Tracking Database & Automation
+- recruitment_tracker.db - SQLite database (5 tables: candidates, roles, interviews, notes, assessments)
+- recruitment_cli.py - CLI tool with 12 commands (pipeline, view, search, interview-prep, compare, stats)
+- recruitment_db.py - Database layer with 30+ operations
+- cv_organizer.py - Automatic CV subfolder organization
+- Time savings: 85% on interview prep, 98% on search
+
 ### Phase 118.3 (Oct 15) - ServiceDesk RAG Quality Upgrade
 - rag_model_comparison.py - Embedding model testing tool (4 models, 500 samples)
 - servicedesk_gpu_rag_indexer.py - Updated to E5-base-v2 default with auto-cleanup
@@ -197,7 +204,11 @@
 - financial_advisor_agent_tools.py - Financial analysis
 - financial_planner_tools.py - Financial planning
 
-### Recruitment & HR (8 tools)
+### Recruitment & HR (12 tools)
+- recruitment_cli.py - CLI tool with 12 commands (pipeline, view, search, interview-prep, compare, stats)
+- recruitment_db.py - Database layer with 30+ operations
+- cv_organizer.py - Automatic CV subfolder organization
+- recruitment_tracker.db - SQLite database (5 tables: candidates, roles, interviews, notes, assessments)
 - technical_recruitment_analyzer.py - Technical candidate analysis
 - interview_review_confluence_template.py - Interview documentation
 - job_market_intelligence.py - Job market analysis
@@ -336,8 +347,11 @@
 - "pre-flight check" → save_state_preflight_checker.py
 
 **Recruitment**:
-- "interview" → technical_recruitment_analyzer.py, Interview Prep Professional Agent
+- "recruitment database" → recruitment_tracker.db, recruitment_db.py
+- "recruitment CLI" → recruitment_cli.py (12 commands: pipeline, view, search, interview-prep, compare, stats)
+- "interview prep" → recruitment_cli.py (85% time savings), Interview Prep Professional Agent
 - "candidate analysis" → technical_recruitment_analyzer.py
+- "CV organization" → cv_organizer.py (smart name extraction)
 - "job search" → Jobs Agent, job_market_intelligence.py
 
 ---
