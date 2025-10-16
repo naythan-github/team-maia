@@ -336,7 +336,39 @@ git add claude/context/core/agents.md
 git add [other specific files]
 ```
 
-#### 4.3 Security Validation (MANDATORY) ⭐ **PHASE 113 - AUTOMATED THREAT PREVENTION**
+#### 4.3 Context Compaction (Optional - Long Sessions) ⭐ **PHASE 126 - CONVERSATION LENGTH PROTECTION**
+
+**When to use**: Sessions with 50+ messages OR received "Prompt is too long" / "Conversation too long" errors
+
+**Why safe now** (Phase 120 protection):
+- Project recovery files preserve complete project state
+- SYSTEM_STATE.md documents full session context
+- Anti-breakage protocol prevents accidental cleanup
+- capability_index.md preserves tool/agent knowledge
+
+**Execute**:
+```
+/compact
+```
+
+**Validation immediately after compaction**:
+1. Test recall: "What phase are we on? What did we just accomplish?"
+2. Check recovery: Can you load project from recovery files if they exist?
+3. Verify context: SYSTEM_STATE.md + capability_index.md provide complete picture?
+
+**Expected result**: Conversation compacted, but you can resume work seamlessly from documentation
+
+**If compaction fails with "Conversation too long"**:
+- Execute save state WITHOUT compaction
+- Start new conversation
+- Load from recovery files: `claude/data/PROJECT_ID/PROJECT_ID_START_HERE.md`
+- Resume from checkpoint with fresh context
+
+**Skip if**: Session <50 messages AND no length warnings
+
+---
+
+#### 4.4 Security Validation (MANDATORY) ⭐ **PHASE 113 - AUTOMATED THREAT PREVENTION**
 **Run security checks before commit to prevent accidentally creating threats**:
 ```bash
 python3 claude/tools/sre/save_state_security_checker.py --verbose
@@ -360,7 +392,7 @@ python3 claude/tools/sre/save_state_security_checker.py --verbose
 
 **Security notes added to commit**: Warnings automatically added to commit message
 
-#### 4.4 Create Comprehensive Commit
+#### 4.5 Create Comprehensive Commit
 ```bash
 git commit -m "$(cat <<'EOF'
 [EMOJI] PHASE NNN: [Title] - [Subtitle]
@@ -398,7 +430,7 @@ EOF
 - Include quantitative metrics when available
 - Reference problem context (why this was needed)
 
-#### 4.5 Push to Remote
+#### 4.6 Push to Remote
 ```bash
 git push
 ```

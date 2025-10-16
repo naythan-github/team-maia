@@ -26,7 +26,15 @@ Only if you created a new tool or agent:
 - [tool_name.py] - [One-line description]
 ```
 
-### 3. Git commit with short message (1 min)
+### 3. Consider compaction every 3rd checkpoint (optional)
+
+**When**: This is your 3rd+ Tier 1 checkpoint AND session >40 messages
+
+**Execute**: `/compact` to prevent hitting conversation length limits
+
+**Skip**: First 2 checkpoints or session <40 messages
+
+### 4. Git commit with short message (1 min)
 ```bash
 git add -A
 git commit -m "🔧 Phase NNN: [what changed in 5-10 words]"

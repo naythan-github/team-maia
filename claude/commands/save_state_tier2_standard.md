@@ -49,14 +49,32 @@ Add any new tools/agents to Recent Capabilities section:
 
 **Skip if**: Internal refactoring, bug fixes, minor enhancements
 
-### 4. Run security check (1 min)
+### 4. Context compaction (optional - long sessions only) (1 min)
+
+**When to compact**: Session has 50+ messages OR you've received "conversation too long" warnings
+
+**Why safe now**:
+- Phase 120 recovery files protect against compaction drift
+- SYSTEM_STATE.md documents full context
+- Anti-breakage protocol prevents accidental deletions
+
+**Execute**:
+```
+/compact
+```
+
+**Validation immediately after**: Can you recall the current phase and recent work? If yes, compaction successful.
+
+**Skip if**: Session <50 messages or no length warnings
+
+### 5. Run security check (1 min)
 ```bash
 python3 claude/tools/sre/save_state_security_checker.py --verbose
 ```
 
 **Action on warnings**: Review and fix any critical issues before committing
 
-### 5. Git commit with structured message (3 min)
+### 6. Git commit with structured message (3 min)
 ```bash
 git add -A
 git commit -m "$(cat <<'EOF'
