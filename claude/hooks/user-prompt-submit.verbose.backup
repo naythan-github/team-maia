@@ -1,0 +1,290 @@
+#!/bin/bash
+# Enhanced user-prompt-submit hook with aggressive context validation
+# KAI-style Layer 2 enforcement for Maia context loading
+
+# Dynamic MAIA_ROOT detection (portable across environments)
+MAIA_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+
+# PHASE 126: Exempt /compact and internal commands from hook validation
+# Auto-compaction and internal Claude operations should not trigger validation
+if [[ "$CLAUDE_USER_MESSAGE" =~ ^/compact$ ]] || [[ "$CLAUDE_USER_MESSAGE" =~ ^/internal ]]; then
+    exit 0  # Skip all validation for compaction and internal commands
+fi
+
+# PHASE 126: Quiet mode - run enforcements silently unless violations detected
+CONTEXT_ENFORCER="$(dirname "$0")/context_loading_enforcer.py"
+if [[ -f "$CONTEXT_ENFORCER" ]]; then
+    ENFORCEMENT_RESULT=$(python3 "$CONTEXT_ENFORCER" check 2>&1)
+    ENFORCEMENT_CODE=$?
+    if [[ $ENFORCEMENT_CODE -ne 0 ]]; then
+        echo ""
+        echo "🚨 CONTEXT LOADING VIOLATION DETECTED 🚨"
+        echo "$ENFORCEMENT_RESULT"
+        exit 1
+    fi
+    # Silent success - context compliance verified
+fi
+
+# Stage 0.5: LLM Router Cost Protection - Silent mode
+ROUTER_HEALTH_MONITOR="$MAIA_ROOT/claude/tools/🛠️_general/llm_router_health_monitor.py"
+if [[ -f "$ROUTER_HEALTH_MONITOR" ]]; then
+    ROUTER_STATUS=$(python3 "$ROUTER_HEALTH_MONITOR" protect 2>&1)
+    ROUTER_CODE=$?
+    if [[ $ROUTER_CODE -ne 0 ]]; then
+        echo "⚠️  LLM Router not functional - code tasks may be expensive"
+    fi
+    # Silent success
+fi
+
+# Stage 0.7: Automated Capability Check (Phase 119 - Capability Amnesia Fix)
+# PHASE 126: Silent mode - only alert on high-confidence duplicates
+CAPABILITY_ENFORCER="$(dirname "$0")/capability_check_enforcer.py"
+if [[ -f "$CAPABILITY_ENFORCER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    CAPABILITY_CHECK=$(python3 "$CAPABILITY_ENFORCER" "$CLAUDE_USER_MESSAGE" 2>&1)
+    CAPABILITY_CODE=$?
+
+    if [[ $CAPABILITY_CODE -eq 1 ]]; then
+        # High confidence duplicate - show warning
+        echo "🔍 DUPLICATE CAPABILITY DETECTED:"
+        echo "$CAPABILITY_CHECK"
+    fi
+    # Silent for normal operations
+fi
+
+# Stage 0.8: Intelligent Agent Routing (Phase 121 - Automatic Specialist Engagement)
+# PHASE 126: Silent mode - routing runs but output suppressed to prevent context pollution
+COORDINATOR_CLI="$(dirname "$0")/../tools/orchestration/coordinator_agent.py"
+ROUTING_LOGGER="$(dirname "$0")/../tools/orchestration/routing_decision_logger.py"
+
+if [[ -f "$COORDINATOR_CLI" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    # Silent execution - only log to database, no output to conversation
+    python3 "$COORDINATOR_CLI" classify "$CLAUDE_USER_MESSAGE" --log 2>/dev/null || true
+fi
+# Routing active but silent - prevents context window pollution
+
+# Stage 1: Validate UFC FIRST (most critical file)
+UFC_FILE="$MAIA_ROOT/claude/context/ufc_system.md"
+if [[ -f "$UFC_FILE" ]]; then
+    echo "🚨 UFC SYSTEM: ✅ ACCESSIBLE - MUST LOAD FIRST"
+else
+    echo "🚨 UFC SYSTEM: ❌ MISSING - CRITICAL SYSTEM FAILURE"
+    echo "CANNOT PROCEED WITHOUT UFC SYSTEM"
+    exit 1
+fi
+
+# Stage 1b: Validate other context files
+CONTEXT_FILES=(
+    "$MAIA_ROOT/claude/context/core/identity.md"
+    "$MAIA_ROOT/claude/context/core/systematic_thinking_protocol.md"
+    "$MAIA_ROOT/claude/context/tools/available.md"
+    "$MAIA_ROOT/claude/context/core/agents.md"
+    "$MAIA_ROOT/claude/context/core/command_orchestration.md"
+    "$MAIA_ROOT/claude/context/personal/profile.md"
+)
+
+echo "🔍 VALIDATING CONTEXT FILE ACCESSIBILITY..."
+VALIDATION_FAILED=false
+
+for file in "${CONTEXT_FILES[@]}"; do
+    if [[ -f "$file" ]]; then
+        echo "  ✅ $(basename "$file") - accessible"
+    else
+        echo "  ❌ $(basename "$file") - MISSING OR INACCESSIBLE"
+        VALIDATION_FAILED=true
+    fi
+done
+
+# Stage 2: Force context loading reminder with UFC priority
+echo ""
+echo "⚡ MANDATORY CONTEXT LOADING SEQUENCE ⚡"
+echo ""
+echo "🚨🚨🚨 STEP 1 - NON-NEGOTIABLE 🚨🚨🚨"
+echo "   🏗️  UFC SYSTEM: $MAIA_ROOT/claude/context/ufc_system.md"
+echo "   ⚠️  THIS DEFINES THE ENTIRE CONTEXT ARCHITECTURE - LOAD FIRST!"
+echo ""
+echo "🔄 THEN load remaining core files:"
+echo "   2. 🤖 Identity (who you are as Maia)"
+echo "   3. 🧠 Systematic Thinking Protocol (MANDATORY optimization framework)"
+echo "   4. 🛠️  Tools Available (capabilities and commands)"
+echo "   5. 👥 Agents (specialized agent orchestration)"
+echo "   6. 🔗 Command Orchestration (advanced multi-agent workflows)"
+echo "   7. 👤 Personal Profile (user context and preferences)"
+echo ""
+
+# Stage 3: Validation checkpoint
+if [[ "$VALIDATION_FAILED" == true ]]; then
+    echo "🚨 CONTEXT VALIDATION FAILED 🚨"
+    echo "❌ Some context files are missing or inaccessible"
+    echo "⚠️  OPERATING IN DEGRADED MODE - CONTEXT MAY BE INCOMPLETE"
+else
+    echo "✅ CONTEXT VALIDATION PASSED"
+    echo "🎯 ALL CONTEXT FILES ACCESSIBLE - PROCEED WITH FULL CONTEXT LOADING"
+fi
+
+echo ""
+echo "🤖 Maia Context Enforcement: ACTIVE"
+echo "📊 Expected Response Format:"
+echo "   ✅ Context loaded. Ready to assist as Maia."
+echo "   📊 Context Status: [7/7 files loaded including Systematic Thinking Protocol]"
+echo "   🎯 Operating Mode: Full Context + Systematic Optimization Framework"
+echo "   🧠 Thinking Mode: Engineering Leadership Systematic Optimization (MANDATORY)"
+echo "   📈 Context Confidence: 100%"
+echo ""
+echo "⚠️  FAILURE TO LOAD CONTEXT = DEGRADED MODE OPERATION"
+echo "🔄 RETRY REQUIRED IF ANY CONTEXT FILES FAIL TO LOAD"
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
+echo "🎯 BEGIN MANDATORY CONTEXT LOADING SEQUENCE NOW"
+echo "═══════════════════════════════════════════════════════════════"
+
+# Stage 5: Model Selection Guidance and Token Usage Tracking
+echo ""
+echo "🧠 MODEL SELECTION GUIDANCE (Cost Optimization Active)..."
+
+# Check if we can detect current model (this is aspirational - may not work in all environments)
+CURRENT_MODEL="Unknown"
+if [[ -n "$CLAUDE_MODEL" ]]; then
+    CURRENT_MODEL="$CLAUDE_MODEL"
+elif [[ -n "$MODEL" ]]; then
+    CURRENT_MODEL="$MODEL"
+fi
+
+echo "   📊 Current Session Model: $CURRENT_MODEL"
+echo "   ⚡ Recommended Default: Sonnet (90% of tasks)"
+echo "   🎯 Target Cost Reduction: 50-60% vs previous Opus usage"
+echo ""
+echo "📝 MODEL SELECTION STRATEGY:"
+echo "   ✅ Sonnet: Complex workflows, agent orchestration, decision-making"
+echo "   ⚡ Haiku: Simple operations, data retrieval, template generation"
+echo "   🎯 Opus: REQUIRES PERMISSION - High-stakes reasoning, 6+ agent orchestration"
+echo ""
+echo "⚠️  OPUS PROTOCOL REMINDER:"
+echo "   1. Maia must ask: 'Would you like me to use Opus for [specific benefit]?'"
+echo "   2. Wait for explicit user confirmation"
+echo "   3. Default to Sonnet if no response"
+echo ""
+
+# Token usage tracking (basic implementation)
+USAGE_LOG="$MAIA_ROOT/claude/data/model_usage_log.txt"
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
+# Create usage log if it doesn't exist
+if [[ ! -f "$USAGE_LOG" ]]; then
+    mkdir -p "$(dirname "$USAGE_LOG")"
+    echo "# Maia Model Usage Tracking Log" > "$USAGE_LOG"
+    echo "# Format: timestamp,model,session_start" >> "$USAGE_LOG"
+fi
+
+# Log session start
+echo "$TIMESTAMP,$CURRENT_MODEL,session_start" >> "$USAGE_LOG"
+
+# Show recent usage summary (last 7 days)
+echo "📈 RECENT TOKEN USAGE SUMMARY:"
+if command -v tail >/dev/null && command -v wc >/dev/null; then
+    RECENT_SESSIONS=$(tail -100 "$USAGE_LOG" 2>/dev/null | grep -v "^#" | wc -l | tr -d ' ')
+    echo "   📊 Recent Sessions: $RECENT_SESSIONS"
+
+    # Count model usage in recent sessions
+    SONNET_COUNT=$(tail -100 "$USAGE_LOG" 2>/dev/null | grep -i sonnet | wc -l | tr -d ' ')
+    OPUS_COUNT=$(tail -100 "$USAGE_LOG" 2>/dev/null | grep -i opus | wc -l | tr -d ' ')
+
+    echo "   ⚡ Sonnet Usage: $SONNET_COUNT sessions"
+    echo "   🎯 Opus Usage: $OPUS_COUNT sessions"
+
+    if [[ $OPUS_COUNT -gt 0 && $SONNET_COUNT -gt 0 ]]; then
+        echo "   💰 Cost Efficiency: Tracking active"
+    fi
+else
+    echo "   📊 Usage tracking initialized"
+fi
+
+echo ""
+
+# Stage 4: Model Enforcement and Cost Protection
+echo ""
+echo "🔒 MODEL ENFORCEMENT AND COST PROTECTION..."
+
+# Check for continue commands that often trigger Opus usage
+if [[ "${CLAUDE_USER_MESSAGE,,}" =~ ^(continue|cont|more|keep going|carry on|finish|complete|elaborate|expand|detail) ]]; then
+    echo "🚨 CONTINUE/COMPLETION COMMAND DETECTED"
+    echo "   💡 These commands often trigger unwanted Opus usage"
+    echo "   🔒 Enforcing Sonnet to prevent cost escalation"
+    
+    # Run continue command protection
+    source "$(dirname "$0")/continue-command-protection.sh"
+fi
+
+# Run model enforcement check
+if [[ -n "$CLAUDE_USER_MESSAGE" ]]; then
+    MODEL_ENFORCEMENT=$(python3 "$(dirname "$0")/model_enforcement_webhook.py" --check-task "$CLAUDE_USER_MESSAGE" 2>/dev/null || echo "")
+    if [[ -n "$MODEL_ENFORCEMENT" ]]; then
+        echo "$MODEL_ENFORCEMENT"
+    fi
+fi
+
+# Stage 5.5: Systematic Thinking Enforcement Reminder
+echo ""
+echo "🧠 SYSTEMATIC THINKING ENFORCEMENT ACTIVE..."
+echo "   📋 Every response MUST follow systematic optimization framework:"
+echo "   🔍 Phase 0: Capability Check (search existing solutions FIRST) ⭐ NEW"
+echo "   🔍 Phase 1: Problem Analysis (stakeholders, constraints, success criteria)"
+echo "   💡 Phase 2: Solution Exploration (minimum 2-3 approaches with trade-offs)"
+echo "   ✅ Phase 3: Optimized Implementation (validation, risks, success metrics)"
+echo ""
+echo "   ⚠️  ENFORCEMENT: Responses that jump to solutions will be flagged"
+echo "   🎯 REQUIREMENT: Visible reasoning chains and systematic analysis"
+echo "   📊 SCORING: Systematic thinking compliance monitored and tracked"
+
+echo ""
+
+# Stage 0.6: Capability Check Protocol Reminder
+echo "🔍 PHASE 0: CAPABILITY CHECK PROTOCOL ACTIVE..."
+echo "   📚 Before recommending solutions, search existing capabilities:"
+echo "   📇 capability_index.md: ALWAYS-LOADED registry (200+ tools, 49 agents) ⭐ SEARCH HERE FIRST"
+echo "   📋 SYSTEM_STATE.md: Recent work details (intent-aware phases)"
+echo "   🔎 capability_checker.py: Deep search tool (if index search insufficient)"
+echo ""
+echo "   ⚠️  ANTI-DUPLICATION: Check capability_index.md FIRST via Cmd/Ctrl+F"
+echo "   ✅ USE EXISTING when found, enhance when partial match"
+echo "   🚨 DOCUMENT justification if building new vs extending existing"
+echo ""
+
+# Stage 5: Tool Usage Logging and Enhanced Discovery Enforcement
+echo ""
+echo "🔧 TOOL USAGE MONITORING AND DISCOVERY ENFORCEMENT..."
+
+# Log tool usage patterns and provide domain-specific guidance
+if [[ -n "$CLAUDE_USER_MESSAGE" ]]; then
+    # Tool usage logging
+    python3 "$(dirname "$0")/tool_usage_logger.py" "$CLAUDE_USER_MESSAGE" 2>/dev/null || echo "📊 Tool usage monitoring initialized"
+
+    # Enhanced tool discovery enforcement
+    TOOL_CHECK_RESULT=$(python3 "$(dirname "$0")/tool_discovery_enforcer.py" "$CLAUDE_USER_MESSAGE" 2>/dev/null || echo "")
+    if [[ -n "$TOOL_CHECK_RESULT" ]]; then
+        echo "$TOOL_CHECK_RESULT"
+        echo ""
+        echo "⚡ RUNTIME VALIDATION ACTIVE:"
+        echo "   🔍 All tool selections will be validated against available specialized tools"
+        echo "   🚨 Generic tools blocked when specialized alternatives exist"
+        echo "   💡 Best tool suggestions provided automatically"
+    fi
+else
+    echo "🔍 Enhanced tool discovery will check for:"
+    echo "   🎯 Research Domain → Researcher Agent, Holiday Research Agent, Company Research Agent"
+    echo "   💼 Job Search Domain → Jobs Agent, LinkedIn Optimizer, Interview Prep Agent"
+    echo "   💰 Financial Domain → Financial Advisor Agent, Financial Planner Agent"
+    echo "   🔒 Security Domain → Security Specialist Agent, Local Security Scanner"
+    echo "   📝 Content Domain → Blog Writer Agent, LinkedIn AI Advisor"
+    echo "   🔧 Technical Domain → Azure Architect Agent, Developer Agent"
+fi
+
+# Stage 6: Conversation Detection (Phase 102) - Passive monitoring
+# Note: Lightweight check only - main detection happens via Maia responses
+echo ""
+echo "💾 CONVERSATION PERSISTENCE ACTIVE (Phase 102)..."
+echo "   📊 Automatic detection of significant conversations"
+echo "   💡 Will prompt to save important discussions"
+echo "   🔧 Use /save-conversation for manual save anytime"
+
+echo ""
+echo "═══════════════════════════════════════════════════════════════"
