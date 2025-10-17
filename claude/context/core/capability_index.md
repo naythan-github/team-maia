@@ -10,6 +10,13 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### Phase 128 (Oct 17) - Cocktail Mixologist Agent ⭐ **NEW AGENT**
+- Cocktail Mixologist Agent - Expert beverage consultant (classic + modern mixology)
+- Cocktail recipes with precise measurements + techniques
+- Occasion-based recommendations + ingredient substitutions
+- Dietary accommodations (mocktails, allergen-safe options)
+- Educational guidance on spirits, techniques, flavor profiles
+
 ### Phase 126 (Oct 17) - Hook Streamlining (Context Window Protection) ⭐ **CRITICAL FIX**
 - user-prompt-submit streamlined - 347 lines → 121 lines (65% reduction)
 - Silent mode by default - 97 echo statements → 10 (90% reduction, only errors/warnings)
@@ -269,7 +276,8 @@
 - **LinkedIn Optimizer Agent** - Profile optimization
 - **Financial Advisor Agent** - Financial guidance
 
-### Personal & Lifestyle (5 agents)
+### Personal & Lifestyle (6 agents)
+- **Cocktail Mixologist Agent** - Beverage consultant + mixology expert
 - **Holiday Research Agent** - Travel planning + research
 - **Travel Monitor & Alert Agent** - Travel monitoring
 - **Perth Restaurant Discovery Agent** - Local restaurant intelligence
@@ -344,6 +352,13 @@
 - "voice dictation" → whisper_dictation_server.py
 - "transcription" → vtt_watcher.py, vtt_rag_indexer.py
 - "VTT processing" → vtt_watcher.py, vtt_rag_indexer.py
+
+**Personal & Lifestyle**:
+- "cocktail" → Cocktail Mixologist Agent
+- "drink recipe" → Cocktail Mixologist Agent
+- "mixology" → Cocktail Mixologist Agent
+- "bartender" → Cocktail Mixologist Agent
+- "mocktail" → Cocktail Mixologist Agent
 
 **Productivity**:
 - "confluence" → confluence_html_builder.py, reliable_confluence_client.py, confluence_sync.py, Confluence Organization Agent
@@ -446,7 +461,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 202+ across 12 categories
-**Agents**: 49 across 10 specializations
+**Agents**: 50 across 10 specializations
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)

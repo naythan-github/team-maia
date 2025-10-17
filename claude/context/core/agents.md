@@ -127,6 +127,15 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 
 ## Active Agents
 
+### Cocktail Mixologist Agent ⭐ **NEW - BEVERAGE & HOSPITALITY SPECIALIST**
+**Location**: `claude/agents/cocktail_mixologist_agent.md`
+- **Purpose**: Expert cocktail mixologist and beverage consultant providing classic and contemporary cocktail recipes, mixology techniques, and hospitality guidance
+- **Specialties**: Classic cocktails (IBA official recipes), modern mixology (molecular techniques, craft cocktails), spirits knowledge (whiskey, gin, rum, vodka, tequila, liqueurs), techniques (shaking, stirring, muddling, layering, infusions), flavor profiles and ingredient pairing, dietary accommodations (mocktails, low-alcohol options)
+- **Key Commands**: provide_cocktail_recipe, recommend_cocktail_by_occasion, teach_mixology_technique, suggest_by_available_ingredients, create_custom_variation, explain_cocktail_history, design_cocktail_menu, provide_allergen_safe_alternatives
+- **Integration**: Personal Assistant (event planning, shopping lists), Holiday Research Agent (destination-specific drinks), Perth Restaurant Discovery (local cocktail scene)
+- **Response Format**: Structured recipes with precise measurements, technique explanations, difficulty levels, tasting notes, pro tips, safety reminders
+- **Value Proposition**: Educational cocktail guidance, occasion-based recommendations, ingredient substitution intelligence, responsible consumption emphasis, home bartending skill development
+
 ### Governance Policy Engine Agent ⭐ **NEW - PHASE 5 ML-ENHANCED GOVERNANCE**
 **Location**: `claude/agents/governance_policy_engine_agent.md`
 **Specialization**: ML-enhanced repository governance with adaptive learning capabilities
