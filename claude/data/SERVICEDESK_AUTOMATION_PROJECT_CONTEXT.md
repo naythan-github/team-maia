@@ -341,11 +341,13 @@ Transform ServiceDesk operations through intelligent automation, with **primary 
 
 ### Next Session Actions
 1. ✅ **Fill knowledge gaps**: User answered all 14 critical questions (documented in this file)
-2. **Execute XLSX re-import**: Clean import to fix CSV corruption
-3. **Validate data integrity**: Post-import validation (record counts, spot checks)
-4. **Re-establish baselines**: Verify FCR, ticket counts, date ranges
-5. **Validate priorities**: User approval on Top 5 automation patterns
-6. **Begin Phase 1 design**: Password reset + email diagnostics workflows
+2. **Execute XLSX re-import + Re-RAG**: See detailed plan in `SERVICEDESK_XLSX_REIMPORT_PLAN.md`
+   - 10-step recovery plan documented
+   - Estimated time: 4-5 hours total
+   - Critical validation: CT-VISIBLE-CUSTOMER field population
+3. **Re-establish baselines**: Verify FCR, ticket counts, date ranges post-import
+4. **Validate priorities**: User approval on Top 5 automation patterns
+5. **Begin Phase 1 design**: Password reset + email diagnostics workflows
 
 ---
 

@@ -5,6 +5,12 @@
 # Dynamic MAIA_ROOT detection (portable across environments)
 MAIA_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
+# PHASE 126: Exempt /compact and internal commands from hook validation
+# Auto-compaction and internal Claude operations should not trigger validation
+if [[ "$CLAUDE_USER_MESSAGE" =~ ^/compact$ ]] || [[ "$CLAUDE_USER_MESSAGE" =~ ^/internal ]]; then
+    exit 0  # Skip all validation for compaction and internal commands
+fi
+
 echo ""
 echo "🚨🚨🚨 MAIA UFC ENFORCEMENT - CRITICAL FOUNDATION 🚨🚨🚨"
 echo "⚡⚡⚡ UFC SYSTEM MANDATORY - NO EXCEPTIONS ⚡⚡⚡"
