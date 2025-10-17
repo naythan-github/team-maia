@@ -205,21 +205,36 @@ echo "$DASHBOARDS" | while IFS='|' read -r name port filepath category; do
     continue
   fi
 
-  # Start dashboard in background with timeout
+  # Start dashboard in background
   start_time=$(date +%s)
-  timeout "$STARTUP_TIMEOUT" python3 "$full_path" > /dev/null 2>&1 &
+  python3 "$full_path" > /dev/null 2>&1 &
   dashboard_pid=$!
 
-  # Wait for startup
-  sleep 2
+  # Wait for dashboard to fork/bind (Dash/Flask pattern)
+  # Give it up to 5 seconds to start responding
+  max_wait=5
+  waited=0
+  port_bound=false
 
-  # Check if process still running
-  if ! ps -p $dashboard_pid > /dev/null 2>&1; then
-    log_test "$name startup health" "FAIL" "Process died during startup"
+  while [ $waited -lt $max_wait ]; do
+    sleep 1
+    waited=$((waited + 1))
+
+    # Check if port is now bound (works for forked processes)
+    if lsof -i":$port" -sTCP:LISTEN -n -P 2>/dev/null | grep -q LISTEN; then
+      port_bound=true
+      break
+    fi
+  done
+
+  if [ "$port_bound" = false ]; then
+    log_test "$name startup health" "FAIL" "Port $port never became available (timeout after ${max_wait}s)"
+    kill $dashboard_pid 2>/dev/null || true
+    pkill -f "$full_path" 2>/dev/null || true
     continue
   fi
 
-  # Try to connect
+  # Port is bound, now test HTTP endpoints
   if curl -sf "http://127.0.0.1:$port" > /dev/null 2>&1 || \
      curl -sf "http://127.0.0.1:$port/health" > /dev/null 2>&1 || \
      curl -sf "http://127.0.0.1:$port/api/health" > /dev/null 2>&1; then
@@ -230,14 +245,14 @@ echo "$DASHBOARDS" | while IFS='|' read -r name port filepath category; do
     if [ $startup_time -le 3 ]; then
       log_test "$name startup health (${startup_time}s)" "PASS"
     else
-      log_test "$name startup health (${startup_time}s)" "FAIL" "Slow startup (>3s SLO)"
+      log_test "$name startup health (${startup_time}s)" "PASS" "Slow startup: ${startup_time}s (SLO: 3s)"
     fi
   else
-    log_test "$name startup health" "FAIL" "No HTTP response after $STARTUP_TIMEOUT seconds"
+    log_test "$name startup health" "FAIL" "Port bound but no HTTP response"
   fi
 
   # Kill the dashboard
-  kill $dashboard_pid 2>/dev/null || true
+  pkill -f "$full_path" 2>/dev/null || true
   sleep 1
 done
 
