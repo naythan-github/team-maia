@@ -276,11 +276,12 @@ class ServiceDeskETLCleaner:
                     sample_before = df[col].iloc[0] if len(df) > 0 else None
                     original_series = df[col].copy()
 
-                    # Convert to numeric, then to int64
+                    # Convert to numeric, round, then to int64
                     df[col] = pd.to_numeric(df[col], errors='coerce')
                     valid_mask = df[col].notna()
                     if valid_mask.any():
-                        df.loc[valid_mask, col] = df.loc[valid_mask, col].astype('Int64')
+                        # Round floats to integers before conversion
+                        df.loc[valid_mask, col] = df.loc[valid_mask, col].round().astype('Int64')
 
                     changes = (original_series.notna() & df[col].notna()).sum()
                     sample_after = df[col].iloc[0] if len(df) > 0 else None

@@ -33,28 +33,29 @@ from datetime import datetime, timedelta
 class ScoringConfig:
     """Configuration for quality scoring"""
     # Completeness weights (40 points total) - XLSX column names
-    completeness_weights: Dict[str, Dict[str, int]] = field(default_factory=lambda: {
+    # Distributed across all entities: Comments (16pts) + Tickets (14pts) + Timesheets (10pts) = 40pts
+    completeness_weights: Dict[str, Dict[str, float]] = field(default_factory=lambda: {
         'comments': {
-            'CT-COMMENT-ID': 8,
-            'CT-TKT-ID': 8,
-            'CT-DATEAMDTIME': 8,
-            'CT-COMMENT': 8,
-            'CT-USERIDNAME': 4,
-            'CT-VISIBLE-CUSTOMER': 4  # Sparse field, 0.1% = 100% score
+            'CT-COMMENT-ID': 3.5,
+            'CT-TKT-ID': 3.5,
+            'CT-DATEAMDTIME': 3.5,
+            'CT-COMMENT': 3.5,
+            'CT-USERIDNAME': 1.0,
+            'CT-VISIBLE-CUSTOMER': 1.0  # Sparse field, 0.1% = 100% score
         },
         'tickets': {
-            'TKT-Ticket ID': 10,
-            'TKT-Title': 8,
-            'TKT-Created Time': 8,
-            'TKT-Status': 6,
-            'TKT-Assigned To User': 4
+            'TKT-Ticket ID': 4.0,
+            'TKT-Title': 3.5,
+            'TKT-Created Time': 3.5,
+            'TKT-Status': 2.0,
+            'TKT-Assigned To User': 1.0
         },
         'timesheets': {
-            'TS-Title': 10,  # Timesheet entry ID
-            'TS-Hours': 10,
-            'TS-Date': 8,
-            'TS-User Username': 6,
-            'TS-Crm ID': 4
+            'TS-Title': 3.0,  # Timesheet entry ID
+            'TS-Hours': 3.0,
+            'TS-Date': 2.5,
+            'TS-User Username': 1.0,
+            'TS-Crm ID': 0.5
         }
     })
 

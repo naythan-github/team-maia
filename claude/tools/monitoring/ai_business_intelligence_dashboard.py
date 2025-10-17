@@ -41,7 +41,8 @@ except ImportError:
 
 try:
     # DEPRECATED: Message bus replaced by Swarm framework
-# from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
+    # from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
+    pass  # Placeholder for removed import
 except ImportError:
     def get_message_bus(): return None
     class MessageType: pass

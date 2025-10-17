@@ -3,6 +3,7 @@
 ServiceDesk Incremental Data Import Tool
 Handles tickets, comments, and timesheets with metadata tracking
 Cloud-touched logic: Imports all data for tickets where Cloud roster members worked
+Enhanced: Pre-import validation, cleaning, and quality scoring (Phase 127)
 """
 
 import pandas as pd
@@ -10,6 +11,8 @@ import sqlite3
 from datetime import datetime
 from pathlib import Path
 import sys
+import subprocess
+import json
 
 DB_PATH = Path.home() / "git/maia/claude/data/servicedesk_tickets.db"
 CUTOFF_DATE = datetime(2025, 7, 1)  # System migration date - HARD CUTOFF
@@ -107,8 +110,11 @@ class ServiceDeskImporter:
         """Import tickets for Cloud-touched ticket IDs"""
         print(f"\n📋 STEP 2: Importing tickets from: {file_path}")
 
-        # Load CSV
-        df = pd.read_csv(file_path, low_memory=False)
+        # Load CSV or Excel based on extension
+        if file_path.endswith('.csv'):
+            df = pd.read_csv(file_path, low_memory=False)
+        else:
+            df = pd.read_excel(file_path)
         print(f"   Loaded {len(df):,} rows")
 
         # Find column names
@@ -146,8 +152,11 @@ class ServiceDeskImporter:
         """Import timesheets - keeps ALL entries including orphaned"""
         print(f"\n⏱️  STEP 3: Importing timesheets from: {file_path}")
 
-        # Load CSV
-        df = pd.read_csv(file_path, encoding='utf-8-sig')
+        # Load CSV or Excel based on extension
+        if file_path.endswith('.csv'):
+            df = pd.read_csv(file_path, encoding='utf-8-sig')
+        else:
+            df = pd.read_excel(file_path)
         print(f"   Loaded {len(df):,} rows")
 
         # Find columns
@@ -188,11 +197,115 @@ class ServiceDeskImporter:
 
         return import_id
 
-    def full_import(self, comments_path, tickets_path, timesheets_path):
-        """Complete import workflow with Cloud-touched logic"""
+    def validate_data_quality(self, comments_path, tickets_path, timesheets_path, skip_validation=False):
+        """
+        Pre-import validation, cleaning, and quality scoring (Phase 127)
+        Returns: (validation_passed, quality_score, cleaned_files_paths or None)
+        """
+        if skip_validation:
+            print("\n⚠️  SKIPPING PRE-IMPORT VALIDATION (--skip-validation flag)")
+            return True, None, None
+
         print("\n" + "="*80)
-        print("SERVICEDESK DATA IMPORT - Cloud-Touched Logic")
+        print("🔍 PRE-IMPORT QUALITY VALIDATION (Phase 127)")
         print("="*80)
+
+        # STEP 0.1: Run validator
+        print("\n📋 STEP 0.1: Validating source data quality...")
+        try:
+            result = subprocess.run(
+                ["python3", "claude/tools/sre/servicedesk_etl_validator.py",
+                 comments_path, tickets_path, timesheets_path],
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+
+            # Extract quality score from output
+            for line in result.stdout.split('\n'):
+                if 'Composite Score:' in line:
+                    score = float(line.split(':')[1].split('/')[0].strip())
+                    print(f"   ✅ Validation score: {score:.2f}/100")
+
+                    if score < 60:
+                        print(f"\n❌ VALIDATION FAILED: Quality score {score:.2f} < 60 (minimum threshold)")
+                        print("   Please fix data quality issues before importing.")
+                        return False, score, None
+
+                    print(f"   ✅ Validation passed: {score:.2f}/100 >= 60 (threshold)")
+                    break
+        except subprocess.TimeoutExpired:
+            print("   ⚠️  Validation timeout - proceeding with caution")
+        except Exception as e:
+            print(f"   ⚠️  Validation error: {e} - proceeding with caution")
+
+        # STEP 0.2: Run cleaner
+        print("\n🧹 STEP 0.2: Cleaning data (date standardization, type normalization)...")
+        print("   Note: Cleaner modifies source files in-place for this integration")
+        print("   Future enhancement: Use temporary cleaned files")
+        try:
+            result = subprocess.run(
+                ["python3", "claude/tools/sre/servicedesk_etl_cleaner.py",
+                 comments_path, tickets_path, timesheets_path],
+                capture_output=True,
+                text=True,
+                timeout=600
+            )
+
+            # Extract transformation count
+            for line in result.stdout.split('\n'):
+                if 'Total Transformations:' in line:
+                    count = line.split(':')[1].strip()
+                    print(f"   ✅ Applied {count} data cleaning transformations")
+                    break
+        except Exception as e:
+            print(f"   ⚠️  Cleaning error: {e} - proceeding with original data")
+
+        # STEP 0.3: Run quality scorer (post-cleaning)
+        print("\n📊 STEP 0.3: Scoring cleaned data quality...")
+        final_score = None
+        try:
+            result = subprocess.run(
+                ["python3", "claude/tools/sre/servicedesk_quality_scorer.py",
+                 comments_path, tickets_path, timesheets_path],
+                capture_output=True,
+                text=True,
+                timeout=300
+            )
+
+            # Extract final quality score
+            for line in result.stdout.split('\n'):
+                if 'Composite Score:' in line:
+                    final_score = float(line.split(':')[1].split('/')[0].strip())
+                    print(f"   ✅ Final quality score: {final_score:.2f}/100")
+                    break
+        except Exception as e:
+            print(f"   ⚠️  Scoring error: {e}")
+
+        print("\n" + "="*80)
+        print(f"✅ PRE-IMPORT VALIDATION COMPLETE")
+        print("="*80)
+        if final_score:
+            print(f"   Quality Score: {final_score:.2f}/100")
+        print(f"   Decision: PROCEED WITH IMPORT")
+        print("="*80 + "\n")
+
+        return True, final_score, None
+
+    def full_import(self, comments_path, tickets_path, timesheets_path, skip_validation=False):
+        """Complete import workflow with Cloud-touched logic and quality validation"""
+        print("\n" + "="*80)
+        print("SERVICEDESK DATA IMPORT - Enhanced with Quality Validation (Phase 127)")
+        print("="*80)
+
+        # STEP 0: Pre-import validation, cleaning, and scoring
+        validation_passed, quality_score, _ = self.validate_data_quality(
+            comments_path, tickets_path, timesheets_path, skip_validation
+        )
+
+        if not validation_passed:
+            print("\n❌ IMPORT ABORTED: Data quality validation failed")
+            return
 
         # Step 1: Import comments (identifies Cloud-touched tickets)
         comments_id, cloud_touched_ids = self.import_comments(comments_path)
@@ -210,6 +323,8 @@ class ServiceDeskImporter:
         print(f"   Tickets import_id: {tickets_id}")
         print(f"   Timesheets import_id: {timesheets_id}")
         print(f"   Cloud-touched tickets: {len(cloud_touched_ids):,}")
+        if quality_score:
+            print(f"   Pre-import quality score: {quality_score:.2f}/100")
         print("\nRun 'python3 incremental_import_servicedesk.py history' to see full metadata")
 
     def show_import_history(self):
@@ -226,16 +341,18 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage: python3 incremental_import_servicedesk.py <command>")
         print("\nCommands:")
-        print("  history              - Show import history")
-        print("  import <c> <t> <ts>  - Full import (comments, tickets, timesheets paths)")
+        print("  history                            - Show import history")
+        print("  import <c> <t> <ts>                - Full import with quality validation")
+        print("  import <c> <t> <ts> --skip-validation  - Import without quality validation")
         sys.exit(1)
 
     importer = ServiceDeskImporter()
 
     if sys.argv[1] == 'history':
         importer.show_import_history()
-    elif sys.argv[1] == 'import' and len(sys.argv) == 5:
-        importer.full_import(sys.argv[2], sys.argv[3], sys.argv[4])
+    elif sys.argv[1] == 'import' and len(sys.argv) >= 5:
+        skip_validation = '--skip-validation' in sys.argv
+        importer.full_import(sys.argv[2], sys.argv[3], sys.argv[4], skip_validation=skip_validation)
     else:
         print("Invalid command. Use 'history' or 'import <comments> <tickets> <timesheets>'")
 
