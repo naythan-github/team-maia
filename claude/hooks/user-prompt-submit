@@ -8,9 +8,11 @@ MAIA_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # Set to "true" to enable verbose output (for debugging)
 VERBOSE_MODE="${MAIA_HOOK_VERBOSE:-false}"
 
-# PHASE 126: Exempt /compact and internal commands from hook validation
-if [[ "$CLAUDE_USER_MESSAGE" =~ ^/compact$ ]] || [[ "$CLAUDE_USER_MESSAGE" =~ ^/internal ]]; then
-    exit 0  # Skip all validation for compaction and internal commands
+# PHASE 127: Exempt ALL slash commands from hook validation (consistency fix)
+# Rationale: Any slash command (/compact, /save, /help, etc.) should bypass validation
+# to prevent hook interference with system commands
+if [[ "$CLAUDE_USER_MESSAGE" =~ ^/ ]]; then
+    exit 0  # Skip all validation for slash commands
 fi
 
 # Stage 0: Context Loading Enforcement - Silent unless violations
@@ -40,10 +42,12 @@ if [[ -f "$CAPABILITY_ENFORCER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
     fi
 fi
 
-# Stage 0.8: Intelligent Agent Routing - Silent logging only
+# Stage 0.8: Intelligent Agent Routing - Background logging (non-blocking)
+# PHASE 127: Async logging to eliminate 40ms blocking wait
 COORDINATOR_CLI="$(dirname "$0")/../tools/orchestration/coordinator_agent.py"
 if [[ -f "$COORDINATOR_CLI" && -n "$CLAUDE_USER_MESSAGE" ]]; then
-    python3 "$COORDINATOR_CLI" classify "$CLAUDE_USER_MESSAGE" --log 2>/dev/null || true
+    # Run in background with output suppression
+    (python3 "$COORDINATOR_CLI" classify "$CLAUDE_USER_MESSAGE" --log 2>/dev/null || true) &
 fi
 
 # Verbose mode output (only if explicitly enabled)
@@ -103,7 +107,9 @@ echo "$TIMESTAMP,$CURRENT_MODEL,session_start" >> "$USAGE_LOG" 2>/dev/null || tr
 
 # Stage 3: Model enforcement - Silent unless issues
 if [[ -n "$CLAUDE_USER_MESSAGE" ]]; then
-    if [[ "${CLAUDE_USER_MESSAGE,,}" =~ ^(continue|cont|more|keep going|finish|complete) ]]; then
+    # Convert to lowercase for matching (bash 3.x compatible)
+    LOWER_MESSAGE=$(echo "$CLAUDE_USER_MESSAGE" | tr '[:upper:]' '[:lower:]')
+    if [[ "$LOWER_MESSAGE" =~ ^(continue|cont|more|keep\ going|finish|complete) ]]; then
         # Continue commands - enforce Sonnet silently
         true  # Enforcement happens via continue-command-protection.sh if present
     fi
