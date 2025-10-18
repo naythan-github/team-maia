@@ -1,4 +1,3 @@
-import os
 #!/usr/bin/env python3
 """
 Executive-Grade AI Business Intelligence Dashboard - Engineering Manager Focus
@@ -6,9 +5,17 @@ Redesigned for strategic decision-making with mobile-first responsive design.
 
 Architecture: 3-Section Executive Layout
 - Command Center: Critical alerts and situational awareness
-- Strategic Intelligence: Team performance and resource optimization 
+- Strategic Intelligence: Team performance and resource optimization
 - Operational Analytics: Deep-dive metrics and ROI analysis
 """
+
+import os
+import sys
+from pathlib import Path
+
+# Add Maia root to Python path for module imports
+MAIA_ROOT = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(MAIA_ROOT))
 
 import dash
 from dash import dcc, html, callback, Input, Output, State
@@ -20,7 +27,6 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 import json
-from pathlib import Path
 from typing import Dict, List, Any
 import logging
 from claude.tools.core.path_manager import get_maia_root
