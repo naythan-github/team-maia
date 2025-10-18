@@ -10,6 +10,18 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### Phase 131 (Oct 18) - Asian Low-Sodium Cooking Agent ⭐ **NEW CULINARY SPECIALIST**
+- Asian Low-Sodium Cooking Agent - Multi-cuisine sodium reduction specialist
+- Expertise: Chinese, Japanese, Thai, Korean, Vietnamese cooking with 60-80% sodium reduction
+- Capabilities: Ingredient substitution ratios, umami enhancement, flavor balancing, recipe modification
+- Knowledge base: Low-sodium alternatives (soy sauce, fish sauce, miso, curry paste, salt strategies)
+- Cuisine-specific strategies: Tailored approaches for each Asian cuisine's sodium profile
+- Practical guidance: Step-by-step recipe adaptation with authenticity ratings (X/10 scale)
+- Flavor troubleshooting: Solutions for bland, missing depth, unbalanced dishes
+- Health-conscious: FDA/AHA sodium targets, balanced approach, quality ingredient emphasis
+- Complements: Cocktail Mixologist, Restaurant Discovery agents (lifestyle ecosystem)
+- Status: ✅ Production Ready | Model: Claude Sonnet
+
 ### Phase 130 (Oct 18) - ServiceDesk Operations Intelligence Database ⭐ **INSTITUTIONAL MEMORY**
 - servicedesk_operations_intelligence.py - SQLite database foundation (920 lines, 6 tables, full CLI) - Phase 130.0
 - servicedesk_ops_intel_hybrid.py - Hybrid SQLite + ChromaDB semantic layer (450 lines) - Phase 130.1 ⭐ USE THIS
@@ -45,12 +57,13 @@
 - Production features: Quality gate (score ≥60), fail-safe operation, complete audit trail
 - Total: 2,360 lines (4 tools + integration), 3 bugs fixed, end-to-end tested
 
-### Phase 128 (Oct 17) - Cocktail Mixologist Agent ⭐ **NEW AGENT**
+### Phase 128 (Oct 17) - Cocktail Mixologist Agent ⭐ **LIFESTYLE AGENT**
 - Cocktail Mixologist Agent - Expert beverage consultant (classic + modern mixology)
 - Cocktail recipes with precise measurements + techniques
 - Occasion-based recommendations + ingredient substitutions
 - Dietary accommodations (mocktails, allergen-safe options)
 - Educational guidance on spirits, techniques, flavor profiles
+- **Lifestyle Ecosystem**: Now complemented by Asian Low-Sodium Cooking Agent (Phase 131)
 
 ### Phase 126 (Oct 17) - Hook Streamlining (Context Window Protection) ⭐ **CRITICAL FIX**
 - user-prompt-submit streamlined - 347 lines → 121 lines (65% reduction)
@@ -325,7 +338,8 @@
 - **LinkedIn Optimizer Agent** - Profile optimization
 - **Financial Advisor Agent** - Financial guidance
 
-### Personal & Lifestyle (6 agents)
+### Personal & Lifestyle (7 agents)
+- **Asian Low-Sodium Cooking Agent** - Asian cuisine sodium reduction specialist ⭐ **NEW - Phase 131**
 - **Cocktail Mixologist Agent** - Beverage consultant + mixology expert
 - **Holiday Research Agent** - Travel planning + research
 - **Travel Monitor & Alert Agent** - Travel monitoring
@@ -409,6 +423,14 @@
 - "VTT processing" → vtt_watcher.py, vtt_rag_indexer.py
 
 **Personal & Lifestyle**:
+- "asian cooking" → Asian Low-Sodium Cooking Agent ⭐ NEW
+- "low sodium" → Asian Low-Sodium Cooking Agent ⭐ NEW
+- "salt reduction" → Asian Low-Sodium Cooking Agent ⭐ NEW
+- "healthy asian recipes" → Asian Low-Sodium Cooking Agent ⭐ NEW
+- "soy sauce alternative" → Asian Low-Sodium Cooking Agent ⭐ NEW
+- "fish sauce substitute" → Asian Low-Sodium Cooking Agent ⭐ NEW
+- "umami without salt" → Asian Low-Sodium Cooking Agent ⭐ NEW
+- "recipe modification" → Asian Low-Sodium Cooking Agent ⭐ NEW
 - "cocktail" → Cocktail Mixologist Agent
 - "drink recipe" → Cocktail Mixologist Agent
 - "mixology" → Cocktail Mixologist Agent
@@ -520,7 +542,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 202+ across 12 categories
-**Agents**: 50 across 10 specializations
+**Agents**: 51 across 10 specializations
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)

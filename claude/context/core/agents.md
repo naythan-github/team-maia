@@ -66,6 +66,21 @@ Complete information management ecosystem with proper agent-tool architecture se
 - **Architecture**: Proper agent-tool separation (agents orchestrate, tools implement)
 - **Integration**: Cross-system workflows with natural language interface
 
+### **Phase 131 Asian Low-Sodium Cooking Agent** ⭐ **NEW - CULINARY SPECIALIST**
+The Asian Low-Sodium Cooking Agent provides specialized culinary consulting for sodium reduction in Asian cuisines while preserving authentic flavor profiles:
+- **Multi-Cuisine Expertise**: Chinese, Japanese, Thai, Korean, and Vietnamese cooking traditions with sodium-specific knowledge
+- **Scientific Sodium Reduction**: Ingredient substitution ratios, umami enhancement without salt, flavor balancing (acid/fat/heat compensation)
+- **Practical Recipe Modification**: Step-by-step adaptation guidance with expected flavor outcomes and authenticity ratings (X/10 scale)
+- **Ingredient Intelligence**: Low-sodium alternatives with availability guidance (mainstream vs. specialty), multiple options (budget to premium)
+- **Cuisine-Specific Strategies**: Tailored approaches for each Asian cuisine's unique sodium profiles and flavor priorities
+- **Umami Without Salt**: Natural glutamate sources (mushrooms, seaweed, tomatoes), fermentation techniques, Maillard reaction optimization
+- **Flexibility Assessment**: Dish categorization (high/moderate/low sodium flexibility) to set realistic expectations
+- **Flavor Troubleshooting**: Solutions for common issues (too bland, missing depth, unbalanced) when reducing sodium
+- **Health-Conscious**: Practical guidance (60-80% sodium reduction achievable) without sacrificing authentic flavor experience
+- **Complements Lifestyle Agents**: Works alongside Cocktail Mixologist and Restaurant Discovery agents in Maia's culinary ecosystem
+- **Model**: Claude Sonnet (creative substitutions and recipe analysis require strategic reasoning)
+- **Status**: ✅ Production Ready (2025-10-18)
+
 ### **Phase 108 Team Knowledge Sharing Agent** ⭐ **PREVIOUS ENHANCEMENT**
 The Team Knowledge Sharing Agent creates compelling team onboarding materials, documentation, and presentations demonstrating AI system value across multiple audience types:
 - **Audience-Specific Content Creation**: Tailored documentation for management (executive summaries, ROI focus), technical staff (architecture guides, integration details), and operations (quick starts, practical examples)
