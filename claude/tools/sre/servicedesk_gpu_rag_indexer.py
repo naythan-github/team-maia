@@ -524,18 +524,25 @@ class GPURAGIndexer:
 
         collection = self.client.get_collection(name='servicedesk_comments')
 
-        # Build ChromaDB where clause
-        where_clause = {}
+        # Build ChromaDB where clause (must use $and for multiple conditions)
+        where_conditions = []
 
         # Only search comments with quality analysis
         if quality_tier or min_quality_score or min_empathy_score or min_clarity_score:
-            where_clause['has_quality_analysis'] = 1
+            where_conditions.append({'has_quality_analysis': 1})
 
         if quality_tier:
-            where_clause['quality_tier'] = quality_tier
+            where_conditions.append({'quality_tier': quality_tier})
 
         if team:
-            where_clause['team'] = team
+            where_conditions.append({'team': team})
+
+        # Build final where clause
+        where_clause = None
+        if len(where_conditions) == 1:
+            where_clause = where_conditions[0]
+        elif len(where_conditions) > 1:
+            where_clause = {'$and': where_conditions}
 
         # ChromaDB doesn't support >= for metadata, so we filter post-query
         # Build query
@@ -544,7 +551,9 @@ class GPURAGIndexer:
         }
 
         if query_text:
-            query_params['query_texts'] = [query_text]
+            # Encode query text with same model used for indexing
+            query_embedding = self.model.encode([query_text], convert_to_numpy=True)[0]
+            query_params['query_embeddings'] = [query_embedding.tolist()]
 
         if where_clause:
             query_params['where'] = where_clause
