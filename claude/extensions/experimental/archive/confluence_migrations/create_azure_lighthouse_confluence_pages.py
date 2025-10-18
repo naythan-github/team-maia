@@ -1,9 +1,35 @@
 #!/usr/bin/env python3
 """
+⚠️  ARCHIVED - MIGRATION COMPLETE ⚠️
+
+This was a one-time migration script for Azure Lighthouse documentation.
+Migration has been completed and this script is no longer needed.
+
+PURPOSE: Migrated Azure Lighthouse docs to Confluence Orro space (completed ~Jan 2025)
+STATUS: Archived to claude/extensions/experimental/archive/confluence_migrations/ (Phase 129)
+REPLACEMENT: Use reliable_confluence_client.py + confluence_html_builder.py for new page creation
+
+For ongoing Confluence operations:
+- Create pages: claude/tools/reliable_confluence_client.py
+- Generate HTML: claude/tools/confluence_html_builder.py
+- See guide: claude/documentation/CONFLUENCE_TOOLING_GUIDE.md
+
+ORIGINAL DESCRIPTION (for historical reference):
 Create complete Azure Lighthouse documentation in Confluence Orro space
 """
 
 import sys
+import warnings
+
+# Deprecation warning
+warnings.warn(
+    "create_azure_lighthouse_confluence_pages.py is ARCHIVED (migration complete). "
+    "Use reliable_confluence_client.py for new page creation. "
+    "See claude/documentation/CONFLUENCE_TOOLING_GUIDE.md",
+    DeprecationWarning,
+    stacklevel=2
+)
+
 sys.path.insert(0, '/Users/naythandawe/git/maia/claude/tools')
 from reliable_confluence_client import ReliableConfluenceClient
 import time

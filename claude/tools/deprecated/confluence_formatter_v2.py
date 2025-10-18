@@ -1,5 +1,20 @@
 #!/usr/bin/env python3
 """
+⚠️  DEPRECATED - DO NOT USE ⚠️
+
+This tool has been superseded by confluence_html_builder.py
+
+REASON: Naive string replacement causes malformed HTML (same issues as v1)
+INCIDENT: Phase 122 - Abdullah Kazim interview prep had malformed HTML
+ROOT CAUSE: String replacement cannot handle paired markers, creates orphaned tags
+NOTE: V2 attempted improvements but still suffers from same fundamental issues
+REPLACEMENT: Use ConfluencePageBuilder for validated, template-based HTML generation
+MIGRATION GUIDE: See claude/documentation/CONFLUENCE_TOOLING_GUIDE.md
+
+Production Tool: claude/tools/reliable_confluence_client.py + confluence_html_builder.py
+Status: Moved to claude/tools/deprecated/ (Phase 129)
+
+ORIGINAL DESCRIPTION (for historical reference):
 Confluence Storage Format Formatter V2
 Based on actual working Confluence pages
 Uses proper macros and table structure that renders correctly
@@ -7,6 +22,15 @@ Uses proper macros and table structure that renders correctly
 
 import re
 import html as html_lib
+import warnings
+
+# Deprecation warning
+warnings.warn(
+    "confluence_formatter_v2.py is DEPRECATED. Use confluence_html_builder.py instead. "
+    "See claude/documentation/CONFLUENCE_TOOLING_GUIDE.md for migration guide.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 
 def markdown_to_confluence_storage(markdown_text: str) -> str:

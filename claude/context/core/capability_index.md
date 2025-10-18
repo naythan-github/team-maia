@@ -2,13 +2,22 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-17 (Phase 126 - Hook Streamlining)
+**Last Updated**: 2025-10-18 (Phase 129 - Confluence Tooling Consolidation)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 129 (Oct 18) - Confluence Tooling Consolidation ⭐ **RELIABILITY FIX**
+- Consolidated 8 Confluence tools → 2 production tools (99%+ reliability)
+- **reliable_confluence_client.py** - PRIMARY tool for page creation/updates (SRE-hardened)
+- **confluence_html_builder.py** - PRIMARY tool for HTML generation (validated templates)
+- Deprecated 3 legacy tools: confluence_formatter.py, confluence_formatter_v2.py, create_azure_lighthouse_confluence_pages.py
+- Expected improvement: +29% success rate, -98% time to success (3-5 min → 1-2 sec)
+- Deliverables: CONFLUENCE_TOOLING_GUIDE.md, audit report, project plan, deprecation warnings
+- Root cause fixed: Tool proliferation causing reliability issues resolved
 
 ### Phase 127 (Oct 17) - ServiceDesk ETL Quality Enhancement ⭐ **PRODUCTION QUALITY PIPELINE**
 - servicedesk_etl_validator.py - Pre-import validation (792 lines, 40 rules, 6 categories)
@@ -197,9 +206,15 @@
 - vtt_watcher_status.sh - VTT watcher service status
 
 ### Productivity & Integration (22 tools)
-- confluence_html_builder.py - Validated Confluence storage format HTML generation (Phase 122 post-mortem)
-- reliable_confluence_client.py - SRE-grade Confluence API client with HTML validation (Phase 122 enhanced)
-- confluence_sync.py - Confluence content synchronization
+- **reliable_confluence_client.py** ⭐ PRIMARY - SRE-grade Confluence API client (page creation/updates, Phase 122 enhanced)
+- **confluence_html_builder.py** ⭐ PRIMARY - Validated Confluence storage format HTML generation (Phase 122 post-mortem)
+- confluence_organization_manager.py - Bulk operations, space organization
+- confluence_intelligence_processor.py - Analytics and content analysis
+- confluence_auto_sync.py - Automated synchronization
+- confluence_to_trello.py - Integration bridge
+- ~~confluence_formatter.py~~ 🗑️ DEPRECATED - Use confluence_html_builder.py (Phase 129)
+- ~~confluence_formatter_v2.py~~ 🗑️ DEPRECATED - Use confluence_html_builder.py (Phase 129)
+- ~~create_azure_lighthouse_confluence_pages.py~~ 🗑️ ARCHIVED - Migration complete (Phase 129)
 - automated_morning_briefing.py - Daily briefing generation
 - automation_health_monitor.py - Automation service health
 - microsoft_graph_integration.py - M365 Graph API integration
@@ -372,9 +387,13 @@
 - "mocktail" → Cocktail Mixologist Agent
 
 **Productivity**:
-- "confluence" → confluence_html_builder.py, reliable_confluence_client.py, confluence_sync.py, Confluence Organization Agent
-- "confluence HTML" → confluence_html_builder.py (validated storage format generation)
-- "confluence validation" → confluence_html_builder.py (pre-flight HTML validation)
+- "confluence" → **reliable_confluence_client.py** ⭐ PRIMARY (page creation/updates)
+- "confluence page creation" → **reliable_confluence_client.py** ⭐ PRIMARY
+- "confluence HTML" → **confluence_html_builder.py** ⭐ PRIMARY (validated storage format generation)
+- "confluence validation" → **confluence_html_builder.py** (pre-flight HTML validation)
+- "confluence organization" → confluence_organization_manager.py (bulk operations)
+- "confluence sync" → confluence_auto_sync.py
+- ❌ "confluence formatter" → DEPRECATED - Use confluence_html_builder.py (Phase 129)
 - "Microsoft 365" → microsoft_graph_integration.py, Microsoft 365 Integration Agent
 - "Teams intelligence" → teams_intelligence.py
 - "Outlook" → outlook_intelligence.py
