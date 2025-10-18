@@ -64,6 +64,9 @@ class GPURAGIndexer:
         self.rag_db_path = os.path.expanduser("~/.maia/servicedesk_rag")
         os.makedirs(self.rag_db_path, exist_ok=True)
 
+        # Initialize ChromaDB client
+        self.client = chromadb.PersistentClient(path=self.rag_db_path)
+
         # Check for Apple Silicon GPU
         self.device = self._get_device()
 
@@ -93,7 +96,14 @@ class GPURAGIndexer:
                 "table": "comments",
                 "id_field": "comment_id",
                 "text_field": "comment_text",
-                "metadata_fields": ["ticket_id", "user_name", "team", "created_time", "visible_to_customer", "comment_type"]
+                "metadata_fields": [
+                    "ticket_id", "user_name", "team", "created_time",
+                    "visible_to_customer", "comment_type",
+                    # Quality metadata (NULL if not analyzed)
+                    "professionalism_score", "clarity_score", "empathy_score",
+                    "actionability_score", "quality_score", "quality_tier",
+                    "content_tags", "red_flags", "intent_summary", "has_quality_analysis"
+                ]
             },
             "descriptions": {
                 "description": "Ticket problem descriptions (10.9K entries, avg 1,266 chars)",
@@ -147,24 +157,49 @@ class GPURAGIndexer:
         config = self.collections[collection_name]
 
         # Build SQL query
-        metadata_select = ", ".join(config['metadata_fields'])
-
         if collection_name == "comments":
-            where_clause = "WHERE comment_text IS NOT NULL AND comment_text != ''"
+            # Special handling for comments - LEFT JOIN with quality analysis
+            query = f"""
+                SELECT
+                    c.comment_id as id,
+                    c.comment_text as text,
+                    c.ticket_id,
+                    c.user_name,
+                    c.team,
+                    c.created_time,
+                    c.visible_to_customer,
+                    c.comment_type,
+                    -- Quality metadata (NULL if not analyzed)
+                    cq.professionalism_score,
+                    cq.clarity_score,
+                    cq.empathy_score,
+                    cq.actionability_score,
+                    cq.quality_score,
+                    cq.quality_tier,
+                    cq.content_tags,
+                    cq.red_flags,
+                    cq.intent_summary,
+                    CASE WHEN cq.quality_score IS NOT NULL THEN 1 ELSE 0 END as has_quality_analysis
+                FROM comments c
+                LEFT JOIN comment_quality cq ON c.comment_id = cq.comment_id
+                WHERE c.comment_text IS NOT NULL AND c.comment_text != ''
+                {f"LIMIT {limit}" if limit else ""}
+            """
         else:
+            # Standard query for other collections
+            metadata_select = ", ".join(config['metadata_fields'])
             where_clause = f"WHERE {config['text_field']} IS NOT NULL AND {config['text_field']} != ''"
+            limit_clause = f"LIMIT {limit}" if limit else ""
 
-        limit_clause = f"LIMIT {limit}" if limit else ""
-
-        query = f"""
-            SELECT
-                {config['id_field']} as id,
-                {config['text_field']} as text,
-                {metadata_select}
-            FROM {config['table']}
-            {where_clause}
-            {limit_clause}
-        """
+            query = f"""
+                SELECT
+                    {config['id_field']} as id,
+                    {config['text_field']} as text,
+                    {metadata_select}
+                FROM {config['table']}
+                {where_clause}
+                {limit_clause}
+            """
 
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         conn.row_factory = sqlite3.Row
@@ -448,13 +483,177 @@ class GPURAGIndexer:
         shutil.rmtree(test_rag_path, ignore_errors=True)
 
 
+    def search_by_quality(
+        self,
+        query_text: str = None,
+        quality_tier: str = None,        # 'excellent', 'good', 'acceptable', 'poor'
+        min_quality_score: float = None,  # 1.0-5.0
+        min_empathy_score: int = None,    # 1-5
+        min_clarity_score: int = None,    # 1-5
+        team: str = None,
+        limit: int = 10
+    ) -> dict:
+        """
+        Quality-aware semantic search in comments collection
+
+        Examples:
+            # Find excellent empathy examples from Cloud-Kirby team
+            results = indexer.search_by_quality(
+                query_text='customer escalation response',
+                quality_tier='excellent',
+                min_empathy_score=4,
+                team='Cloud-Kirby',
+                limit=10
+            )
+
+            # Find all high-quality VPN responses
+            results = indexer.search_by_quality(
+                query_text='VPN connectivity issue',
+                min_quality_score=4.0,
+                limit=20
+            )
+
+        Returns:
+            {
+                'ids': [['comment_id_1', 'comment_id_2', ...]],
+                'documents': [['comment_text_1', 'comment_text_2', ...]],
+                'metadatas': [[{metadata_1}, {metadata_2}, ...]],
+                'distances': [[distance_1, distance_2, ...]]
+            }
+        """
+
+        collection = self.client.get_collection(name='servicedesk_comments')
+
+        # Build ChromaDB where clause
+        where_clause = {}
+
+        # Only search comments with quality analysis
+        if quality_tier or min_quality_score or min_empathy_score or min_clarity_score:
+            where_clause['has_quality_analysis'] = 1
+
+        if quality_tier:
+            where_clause['quality_tier'] = quality_tier
+
+        if team:
+            where_clause['team'] = team
+
+        # ChromaDB doesn't support >= for metadata, so we filter post-query
+        # Build query
+        query_params = {
+            'n_results': limit * 3 if (min_quality_score or min_empathy_score or min_clarity_score) else limit
+        }
+
+        if query_text:
+            query_params['query_texts'] = [query_text]
+
+        if where_clause:
+            query_params['where'] = where_clause
+
+        # Execute search
+        results = collection.query(**query_params)
+
+        # Post-filter for numeric thresholds (ChromaDB limitation)
+        if min_quality_score or min_empathy_score or min_clarity_score:
+            filtered_ids = []
+            filtered_docs = []
+            filtered_metas = []
+            filtered_distances = []
+
+            for i, meta in enumerate(results['metadatas'][0]):
+                # Check thresholds
+                passes = True
+
+                if min_quality_score and (not meta.get('quality_score') or float(meta['quality_score']) < min_quality_score):
+                    passes = False
+
+                if min_empathy_score and (not meta.get('empathy_score') or int(meta['empathy_score']) < min_empathy_score):
+                    passes = False
+
+                if min_clarity_score and (not meta.get('clarity_score') or int(meta['clarity_score']) < min_clarity_score):
+                    passes = False
+
+                if passes:
+                    filtered_ids.append(results['ids'][0][i])
+                    filtered_docs.append(results['documents'][0][i])
+                    filtered_metas.append(meta)
+                    filtered_distances.append(results['distances'][0][i])
+
+                if len(filtered_ids) >= limit:
+                    break
+
+            # Reconstruct results
+            results = {
+                'ids': [filtered_ids],
+                'documents': [filtered_docs],
+                'metadatas': [filtered_metas],
+                'distances': [filtered_distances]
+            }
+
+        return results
+
+    def get_quality_statistics(self) -> dict:
+        """Get quality analysis statistics from ChromaDB metadata"""
+
+        collection = self.client.get_collection(name='servicedesk_comments')
+
+        # Get all metadata (ChromaDB doesn't have aggregation, so we sample)
+        sample = collection.get(
+            where={'has_quality_analysis': 1},
+            limit=10000,  # Sample up to 10K analyzed comments
+            include=['metadatas']
+        )
+
+        if not sample['metadatas']:
+            return {
+                'total_analyzed': 0,
+                'error': 'No quality analysis found in ChromaDB'
+            }
+
+        metadatas = sample['metadatas']
+
+        # Calculate statistics
+        quality_scores = [float(m['quality_score']) for m in metadatas if m.get('quality_score')]
+        empathy_scores = [int(m['empathy_score']) for m in metadatas if m.get('empathy_score')]
+
+        quality_tiers = {}
+        for m in metadatas:
+            tier = m.get('quality_tier', 'unknown')
+            quality_tiers[tier] = quality_tiers.get(tier, 0) + 1
+
+        teams = {}
+        for m in metadatas:
+            team = m.get('team', 'unknown')
+            teams[team] = teams.get(team, 0) + 1
+
+        import statistics as stats
+
+        return {
+            'total_analyzed': len(metadatas),
+            'quality_score': {
+                'avg': stats.mean(quality_scores) if quality_scores else 0,
+                'min': min(quality_scores) if quality_scores else 0,
+                'max': max(quality_scores) if quality_scores else 0,
+                'stdev': stats.stdev(quality_scores) if len(quality_scores) > 1 else 0
+            },
+            'empathy_score': {
+                'avg': stats.mean(empathy_scores) if empathy_scores else 0,
+                'min': min(empathy_scores) if empathy_scores else 0,
+                'max': max(empathy_scores) if empathy_scores else 0
+            },
+            'quality_tiers': quality_tiers,
+            'teams': teams
+        }
+
+
 def main():
     parser = argparse.ArgumentParser(description="GPU-Accelerated ServiceDesk RAG Indexer")
     parser.add_argument('--index', type=str, help="Index specific collection")
     parser.add_argument('--index-all', action='store_true', help="Index all collections")
     parser.add_argument('--benchmark', action='store_true', help="Benchmark GPU vs Ollama")
-    parser.add_argument('--model', type=str, default='all-MiniLM-L6-v2',
-                       help="sentence-transformers model (default: all-MiniLM-L6-v2)")
+    parser.add_argument('--search-quality', action='store_true', help="Test quality-aware search")
+    parser.add_argument('--quality-stats', action='store_true', help="Show quality statistics")
+    parser.add_argument('--model', type=str, default='intfloat/e5-base-v2',
+                       help="sentence-transformers model (default: intfloat/e5-base-v2)")
     parser.add_argument('--batch-size', type=int, default=64,
                        help="GPU batch size (default: 64, try 128-256 for M4)")
     parser.add_argument('--sample-size', type=int, default=1000,
@@ -467,6 +666,48 @@ def main():
 
     if args.benchmark:
         indexer.benchmark_gpu_vs_ollama(sample_size=args.sample_size)
+    elif args.search_quality:
+        # Test quality-aware search
+        print("\n🔍 Testing Quality-Aware Search")
+        print("="*70)
+
+        results = indexer.search_by_quality(
+            query_text='customer escalation empathy',
+            quality_tier='excellent',
+            min_empathy_score=4,
+            limit=5
+        )
+
+        print(f"\nFound {len(results['documents'][0])} excellent empathy examples:\n")
+        for i, (doc, meta) in enumerate(zip(results['documents'][0], results['metadatas'][0]), 1):
+            print(f"{i}. User: {meta.get('user_name', 'unknown')} | Team: {meta.get('team', 'unknown')}")
+            print(f"   Empathy: {meta.get('empathy_score', 'N/A')}/5 | Quality: {meta.get('quality_score', 'N/A')}/5")
+            print(f"   {doc[:200]}...")
+            print()
+
+    elif args.quality_stats:
+        # Show quality statistics
+        print("\n📊 Quality Analysis Statistics")
+        print("="*70)
+
+        stats = indexer.get_quality_statistics()
+
+        print(f"\nTotal Analyzed: {stats['total_analyzed']:,} comments")
+        print(f"\nQuality Scores:")
+        print(f"   Average: {stats['quality_score']['avg']:.2f}/5.0")
+        print(f"   Range: {stats['quality_score']['min']:.2f} - {stats['quality_score']['max']:.2f}")
+        print(f"   Std Dev: {stats['quality_score']['stdev']:.2f}")
+
+        print(f"\nQuality Tiers:")
+        for tier, count in sorted(stats['quality_tiers'].items(), key=lambda x: x[1], reverse=True):
+            pct = (count / stats['total_analyzed'] * 100) if stats['total_analyzed'] > 0 else 0
+            print(f"   {tier:12s}: {count:4d} ({pct:5.1f}%)")
+
+        print(f"\nTop Teams (by analyzed comments):")
+        for team, count in sorted(stats['teams'].items(), key=lambda x: x[1], reverse=True)[:5]:
+            pct = (count / stats['total_analyzed'] * 100) if stats['total_analyzed'] > 0 else 0
+            print(f"   {team:20s}: {count:4d} ({pct:5.1f}%)")
+
     elif args.index:
         indexer.index_collection_gpu(args.index, limit=args.limit)
     elif args.index_all:
