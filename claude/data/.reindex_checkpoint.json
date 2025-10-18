@@ -1,7 +1,8 @@
 {
-  "last_processed": 46000,
-  "timestamp": "2025-10-18T19:03:50.643711",
-  "status": "in_progress",
+  "last_processed": 108084,
+  "timestamp": "2025-10-18T19:26:20.135944",
+  "status": "complete",
   "mode": "full",
-  "total_docs": 108084
+  "total_docs": 108084,
+  "total_time": 2276.183933734894
 }
