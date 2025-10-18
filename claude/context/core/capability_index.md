@@ -2,13 +2,28 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-18 (Phase 129 - Confluence Tooling Consolidation)
+**Last Updated**: 2025-10-18 (Phase 130 - ServiceDesk Operations Intelligence Database)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 130 (Oct 18) - ServiceDesk Operations Intelligence Database ⭐ **INSTITUTIONAL MEMORY**
+- servicedesk_operations_intelligence.py - SQLite database foundation (920 lines, 6 tables, full CLI) - Phase 130.0
+- servicedesk_ops_intel_hybrid.py - Hybrid SQLite + ChromaDB semantic layer (450 lines) - Phase 130.1 ⭐ USE THIS
+- sdm_agent_ops_intel_integration.py - SDM Agent integration helper (430 lines, 6 workflow methods) - Phase 130.2
+- 6-table SQLite database: insights, recommendations, actions, outcomes, patterns, learning_log
+- ChromaDB collections: ops_intelligence_insights (10 embeddings), ops_intelligence_learnings (3 embeddings)
+- Solves context amnesia: Persistent memory across conversations for SDM Agent
+- Semantic search: 85% similarity threshold, auto-embedding on record creation
+- CLI commands: dashboard, search, show-insights, show-recommendations, show-outcomes, show-learning
+- Python API: Integration helper provides 6 workflow methods (start_complaint_analysis, record_insight, record_recommendation, log_action, track_outcome, record_learning)
+- Integration tested: 4/4 scenarios passed (new complaint, pattern recognition, learning retrieval, complete workflow)
+- Expected benefits: Zero context amnesia, evidence-based recommendations, ROI tracking, continuous learning
+- Project plan: SERVICEDESK_OPERATIONS_INTELLIGENCE_PROJECT.md (480 lines)
+- Test framework: test_ops_intelligence.py (380 lines, validated operational)
 
 ### Phase 129 (Oct 18) - Confluence Tooling Consolidation ⭐ **RELIABILITY FIX**
 - Consolidated 8 Confluence tools → 2 production tools (99%+ reliability)
@@ -179,7 +194,10 @@
 - intelligent_product_grouper.py - Product standardization (32.9% variance reduction)
 - generate_recovery_files.py - Project recovery file generator (interactive + config modes, 630 lines)
 
-### ServiceDesk & Analytics (12 tools)
+### ServiceDesk & Analytics (13 tools)
+- **servicedesk_ops_intel_hybrid.py** ⭐ PRIMARY - Hybrid operational intelligence (SQLite + ChromaDB, 450 lines, Phase 130.1)
+- **sdm_agent_ops_intel_integration.py** - SDM Agent integration helper (430 lines, 6 methods, Phase 130.2)
+- servicedesk_operations_intelligence.py - SQLite foundation (920 lines, 6 tables, CLI, Phase 130.0)
 - servicedesk_multi_rag_indexer.py - Multi-collection RAG (tickets, comments, knowledge)
 - servicedesk_gpu_rag_indexer.py - GPU-accelerated RAG indexing (E5-base-v2, 768-dim)
 - rag_model_comparison.py - Embedding model quality testing (4 models, 500 samples)
@@ -187,6 +205,11 @@
 - servicedesk_operations_dashboard.py - Flask analytics dashboard (FCR, resolution time)
 - servicedesk_cloud_team_roster.py - Cloud team roster management
 - servicedesk_etl_system.py - Incremental ETL with metadata tracking
+- servicedesk_etl_validator.py - Pre-import validation (792 lines, 40 rules, Phase 127)
+- servicedesk_etl_cleaner.py - Data cleaning (612 lines, 5 operations, Phase 127)
+- servicedesk_quality_scorer.py - Quality scoring (705 lines, 5 dimensions, Phase 127)
+- servicedesk_column_mappings.py - XLSX→Database mappings (139 lines, Phase 127)
+- incremental_import_servicedesk.py - Enhanced ETL pipeline (354 lines, quality gate, Phase 127)
 
 ### Information Management (15 tools)
 - executive_information_manager.py - 5-tier priority system (critical→noise)
@@ -353,10 +376,16 @@
 - "handoff pattern" → agent_swarm.py (explicit handoffs)
 
 **ServiceDesk & Support**:
+- "operational intelligence" → **servicedesk_ops_intel_hybrid.py** ⭐ PRIMARY (hybrid SQLite + ChromaDB, semantic search)
+- "complaint patterns" → **servicedesk_ops_intel_hybrid.py** (pattern tracking with 85% similarity threshold)
+- "recommendation tracking" → **servicedesk_ops_intel_hybrid.py** (recommendations + outcomes + learnings)
+- "SDM agent memory" → **sdm_agent_ops_intel_integration.py** (6 workflow methods, automatic integration)
+- "institutional memory" → **servicedesk_ops_intel_hybrid.py** (learning log with semantic retrieval)
 - "service desk" → servicedesk_multi_rag_indexer.py, servicedesk_operations_dashboard.py
 - "ticket analysis" → servicedesk_multi_rag_indexer.py
 - "FCR analysis" → servicedesk_operations_dashboard.py
 - "comment quality" → servicedesk_complete_quality_analyzer.py
+- "escalation tracking" → **servicedesk_ops_intel_hybrid.py** (escalation_bottleneck insights with semantic matching)
 
 **Information Management**:
 - "stakeholder" → stakeholder_intelligence.py, Stakeholder Intelligence Agent
