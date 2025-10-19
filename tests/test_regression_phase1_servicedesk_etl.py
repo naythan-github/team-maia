@@ -28,6 +28,7 @@ sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.sre.servicedesk_etl_data_profiler import profile_database
 from claude.tools.sre.servicedesk_etl_data_cleaner_enhanced import clean_database
+from conftest import normalize_profiler_result, normalize_cleaner_result, assert_profiler_success, assert_cleaner_success
 
 
 # ==============================================================================
@@ -110,6 +111,7 @@ class TestTimestampTypeMismatch:
     def test_profiler_detects_text_in_timestamp_column(self, phase1_issue_database):
         """Verify profiler detects TIMESTAMP column actually contains TEXT"""
         result = profile_database(phase1_issue_database, sample_size=100)
+        result = normalize_profiler_result(result)
 
         # Check profiling results
         tables = result.get('tables', {})
@@ -140,6 +142,7 @@ class TestTimestampTypeMismatch:
     def test_profiler_confidence_scoring(self, phase1_issue_database):
         """Verify profiler uses confidence scoring (≥95%) for type detection"""
         result = profile_database(phase1_issue_database, sample_size=100)
+        result = normalize_profiler_result(result)
 
         tables = result.get('tables', {})
         tickets_table = tables.get('tickets', {})
@@ -169,6 +172,7 @@ class TestDDMMYYYYDateFormat:
     def test_profiler_detects_ddmmyyyy_format(self, phase1_issue_database):
         """Verify profiler detects DD/MM/YYYY date patterns"""
         result = profile_database(phase1_issue_database, sample_size=100)
+        result = normalize_profiler_result(result)
 
         # Check for date format issues
         issues = result.get('issues', [])
@@ -193,13 +197,16 @@ class TestDDMMYYYYDateFormat:
         try:
             # Clean database
             result = clean_database(
-                phase1_issue_database, output_db,
-                date_columns=[
+            phase1_issue_database,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[]
-            )
+                'empty_to_null_columns': []
+            }
+        )
 
             assert result['status'] == 'success'
 
@@ -264,10 +271,13 @@ class TestDDMMYYYYDateFormat:
         try:
             # Clean database
             result = clean_database(
-                db_path, output_db,
-                date_columns=[('tickets', 'date')],
-                empty_string_columns=[]
-            )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'date')],
+                'empty_to_null_columns': []
+            }
+        )
 
             assert result['status'] == 'success'
 
@@ -305,6 +315,7 @@ class TestEmptyStringVsNull:
     def test_profiler_detects_empty_strings(self, phase1_issue_database):
         """Verify profiler detects empty strings in date columns"""
         result = profile_database(phase1_issue_database, sample_size=100)
+        result = normalize_profiler_result(result)
 
         # Check for empty string issues
         issues = result.get('issues', [])
@@ -325,15 +336,18 @@ class TestEmptyStringVsNull:
         try:
             # Clean database with empty string conversion
             result = clean_database(
-                phase1_issue_database, output_db,
-                date_columns=[
+            phase1_issue_database,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[
+                'empty_to_null_columns': [
                     ('tickets', 'TKT-Actual Resolution Date')
                 ]
-            )
+            }
+        )
 
             assert result['status'] == 'success'
 
@@ -393,10 +407,13 @@ class TestEmptyStringVsNull:
         try:
             # Clean database
             result = clean_database(
-                db_path, output_db,
-                date_columns=[('tickets', 'date')],
-                empty_string_columns=[('tickets', 'date')]
-            )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'date')],
+                'empty_to_null_columns': [('tickets', 'date')]
+            }
+        )
 
             # Verify NULL count
             conn = sqlite3.connect(output_db)
@@ -465,6 +482,7 @@ class TestPostgreSQLRoundCasting:
     def test_profiler_validates_numeric_columns(self, phase1_issue_database):
         """Verify profiler identifies REAL columns that need casting in PostgreSQL"""
         result = profile_database(phase1_issue_database, sample_size=100)
+        result = normalize_profiler_result(result)
 
         tables = result.get('tables', {})
         tickets_table = tables.get('tickets', {})
@@ -496,6 +514,7 @@ class TestFullPhase1IssueResolution:
         """End-to-end test: Profile → Clean → Verify all issues resolved"""
         # Step 1: Profile and detect issues
         profile_result = profile_database(phase1_issue_database, sample_size=100)
+        profile_result = normalize_profiler_result(profile_result)
 
         print("\n  === PROFILING RESULTS ===")
         print(f"  Status: {profile_result['status']}")
@@ -512,15 +531,18 @@ class TestFullPhase1IssueResolution:
 
         try:
             clean_result = clean_database(
-                phase1_issue_database, output_db,
-                date_columns=[
+            phase1_issue_database,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[
+                'empty_to_null_columns': [
                     ('tickets', 'TKT-Actual Resolution Date')
                 ]
-            )
+            }
+        )
 
             print("\n  === CLEANING RESULTS ===")
             print(f"  Status: {clean_result['status']}")
@@ -531,6 +553,7 @@ class TestFullPhase1IssueResolution:
 
             # Step 3: Re-profile cleaned database
             cleaned_profile = profile_database(output_db, sample_size=100)
+            cleaned_profile = normalize_profiler_result(cleaned_profile)
 
             print("\n  === CLEANED PROFILING RESULTS ===")
             print(f"  Status: {cleaned_profile['status']}")

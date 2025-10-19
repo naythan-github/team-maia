@@ -33,6 +33,7 @@ from claude.tools.sre.servicedesk_etl_data_profiler import profile_database
 from claude.tools.sre.servicedesk_etl_data_cleaner_enhanced import (
     clean_database, CleaningError
 )
+from conftest import normalize_profiler_result, normalize_cleaner_result, assert_profiler_success, assert_cleaner_success
 
 
 # ==============================================================================
@@ -133,9 +134,12 @@ class TestTransactionRollback:
             # Attempt cleaning with invalid configuration (should fail)
             with pytest.raises(Exception):
                 clean_database(
-                    test_db, output_db,
-                    date_columns=[('nonexistent_table', 'nonexistent_column')],
-                    empty_string_columns=[]
+                    test_db,
+                    output_db,
+                    config={
+                        'date_columns': [('nonexistent_table', 'nonexistent_column')],
+                        'empty_to_null_columns': []
+                    }
                 )
 
         except Exception:
@@ -160,9 +164,12 @@ class TestTransactionRollback:
             # Force an error mid-cleaning by using invalid column
             with pytest.raises(Exception):
                 clean_database(
-                    test_db, output_db,
-                    date_columns=[('tickets', 'nonexistent_column')],
-                    empty_string_columns=[]
+                    test_db,
+                    output_db,
+                    config={
+                        'date_columns': [('tickets', 'nonexistent_column')],
+                        'empty_to_null_columns': []
+                    }
                 )
 
         except Exception:
@@ -211,27 +218,30 @@ class TestDiskSpaceFailures:
         output_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False).name
 
         # Mock psutil to simulate low disk space
-        with patch('claude.tools.sre.servicedesk_etl_data_cleaner_enhanced.check_disk_space_health') as mock_disk:
-            mock_disk.return_value = {
-                'healthy': False,
-                'available_gb': 0.5,
-                'threshold_gb': 1.0,
-                'message': 'Disk space critically low'
-            }
+        try:
+            with patch('claude.tools.sre.servicedesk_etl_data_cleaner_enhanced.check_disk_space_health') as mock_disk:
+                mock_disk.return_value = {
+                    'healthy': False,
+                    'available_gb': 0.5,
+                    'threshold_gb': 1.0,
+                    'message': 'Disk space critically low'
+                }
 
-            try:
                 result = clean_database(
-                    test_db, output_db,
-                    date_columns=[('tickets', 'TKT-Created Time')],
-                    empty_string_columns=[]
+                    test_db,
+                    output_db,
+                    config={
+                        'date_columns': [('tickets', 'TKT-Created Time')],
+                        'empty_to_null_columns': []
+                    }
                 )
 
                 # Should halt on disk space check
                 assert result['status'] == 'error', "Should halt on low disk space"
 
-            except CleaningError as e:
-                assert 'disk' in str(e).lower() or 'space' in str(e).lower()
-                print(f"\n  ✅ Correctly halted on low disk: {e}")
+        except CleaningError as e:
+            assert 'disk' in str(e).lower() or 'space' in str(e).lower()
+            print(f"\n  ✅ Correctly halted on low disk: {e}")
 
         finally:
             if os.path.exists(output_db):
@@ -249,6 +259,7 @@ class TestDiskSpaceFailures:
 
             # Should succeed with adequate disk space
             result = profile_database(test_db, sample_size=500)
+            result = normalize_profiler_result(result)
             assert result['status'] == 'success'
 
             # Verify health check was called
@@ -268,27 +279,30 @@ class TestMemoryExhaustion:
         output_db = tempfile.NamedTemporaryFile(suffix='.db', delete=False).name
 
         # Mock psutil to simulate high memory usage
-        with patch('claude.tools.sre.servicedesk_etl_data_cleaner_enhanced.check_memory_health') as mock_memory:
-            mock_memory.return_value = {
-                'healthy': False,
-                'usage_percent': 95.0,
-                'threshold_percent': 90.0,
-                'message': 'Memory usage critically high'
-            }
+        try:
+            with patch('claude.tools.sre.servicedesk_etl_data_cleaner_enhanced.check_memory_health') as mock_memory:
+                mock_memory.return_value = {
+                    'healthy': False,
+                    'usage_percent': 95.0,
+                    'threshold_percent': 90.0,
+                    'message': 'Memory usage critically high'
+                }
 
-            try:
                 result = clean_database(
-                    test_db, output_db,
-                    date_columns=[('tickets', 'TKT-Created Time')],
-                    empty_string_columns=[]
+                    test_db,
+                    output_db,
+                    config={
+                        'date_columns': [('tickets', 'TKT-Created Time')],
+                        'empty_to_null_columns': []
+                    }
                 )
 
                 # Should halt on memory check
                 assert result['status'] == 'error', "Should halt on high memory usage"
 
-            except CleaningError as e:
-                assert 'memory' in str(e).lower()
-                print(f"\n  ✅ Correctly halted on high memory: {e}")
+        except CleaningError as e:
+            assert 'memory' in str(e).lower()
+            print(f"\n  ✅ Correctly halted on high memory: {e}")
 
         finally:
             if os.path.exists(output_db):
@@ -306,6 +320,7 @@ class TestCircuitBreaker:
         """Verify circuit breaker halts when >20% dates corrupt"""
         try:
             result = profile_database(corrupt_db, sample_size=1000)
+            result = normalize_profiler_result(result)
 
             # Should trigger circuit breaker
             assert result.get('circuit_breaker', {}).get('should_halt', False), \
@@ -341,6 +356,7 @@ class TestCircuitBreaker:
 
         try:
             result = profile_database(db_path, sample_size=1000)
+            result = normalize_profiler_result(result)
 
             # Check for type mismatch detection
             issues = result.get('issues', [])
@@ -376,6 +392,7 @@ class TestCircuitBreaker:
 
         try:
             result = profile_database(db_path, sample_size=1000)
+            result = normalize_profiler_result(result)
 
             # Should NOT halt (dates are fixable)
             circuit_breaker = result.get('circuit_breaker', {})
@@ -404,8 +421,11 @@ class TestIdempotency:
         """Verify profiler can be run multiple times with same results"""
         # Run profiler 3 times
         result1 = profile_database(test_db, sample_size=500)
+        result1 = normalize_profiler_result(result1)
         result2 = profile_database(test_db, sample_size=500)
+        result2 = normalize_profiler_result(result2)
         result3 = profile_database(test_db, sample_size=500)
+        result3 = normalize_profiler_result(result3)
 
         # Results should be consistent
         assert result1['status'] == result2['status'] == result3['status']
@@ -425,9 +445,12 @@ class TestIdempotency:
         # Clean database first time
         output1 = tempfile.NamedTemporaryFile(suffix='.db', delete=False).name
         result1 = clean_database(
-            test_db, output1,
-            date_columns=[('tickets', 'TKT-Created Time')],
-            empty_string_columns=[]
+            test_db,
+            output1,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
         )
 
         # Clean the cleaned database again (should be no-op)
@@ -435,10 +458,13 @@ class TestIdempotency:
 
         try:
             result2 = clean_database(
-                output1, output2,
-                date_columns=[('tickets', 'TKT-Created Time')],
-                empty_string_columns=[]
-            )
+            output1,
+            output2,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
 
             # Second cleaning should convert 0 dates (already clean)
             assert result2.get('dates_converted', 0) == 0, \
@@ -467,10 +493,13 @@ class TestIdempotency:
             with patch('claude.tools.sre.servicedesk_etl_data_cleaner_enhanced.check_disk_space_health') as mock:
                 mock.return_value = {'healthy': False, 'available_gb': 0.1, 'threshold_gb': 1.0}
                 result = clean_database(
-                    test_db, output_db,
-                    date_columns=[('tickets', 'TKT-Created Time')],
-                    empty_string_columns=[]
-                )
+            test_db,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
         except Exception:
             pass  # Expected to fail
 
@@ -479,9 +508,12 @@ class TestIdempotency:
 
         # Second attempt: Succeed
         result = clean_database(
-            test_db, output_db,
-            date_columns=[('tickets', 'TKT-Created Time')],
-            empty_string_columns=[]
+            test_db,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
         )
 
         try:
@@ -531,10 +563,13 @@ class TestDataCorruptionHandling:
         try:
             # Should handle NULLs gracefully
             result = clean_database(
-                db_path, output_db,
-                date_columns=[('tickets', 'date')],
-                empty_string_columns=[('tickets', 'date')]
-            )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'date')],
+                'empty_to_null_columns': [('tickets', 'date')]
+            }
+        )
 
             assert result['status'] == 'success'
             print("\n  ✅ Handled NULL and empty string values gracefully")
@@ -575,10 +610,13 @@ class TestDataCorruptionHandling:
         try:
             # Should handle malformed dates without crashing
             result = clean_database(
-                db_path, output_db,
-                date_columns=[('tickets', 'date')],
-                empty_string_columns=[]
-            )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'date')],
+                'empty_to_null_columns': []
+            }
+        )
 
             # May succeed or fail depending on implementation
             # Key: should not crash, should provide useful error
@@ -609,6 +647,7 @@ class TestPermissionFailures:
         try:
             # Profiler should still work (read-only operation)
             result = profile_database(test_db, sample_size=100)
+            result = normalize_profiler_result(result)
             assert result['status'] == 'success'
             print("\n  ✅ Profiler works with read-only source")
 

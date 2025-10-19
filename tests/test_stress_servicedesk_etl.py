@@ -33,6 +33,7 @@ from claude.tools.sre.servicedesk_etl_data_profiler import profile_database
 from claude.tools.sre.servicedesk_etl_data_cleaner_enhanced import (
     clean_database, CleaningError
 )
+from conftest import normalize_profiler_result, normalize_cleaner_result, assert_profiler_success, assert_cleaner_success
 
 
 # ==============================================================================
@@ -103,6 +104,7 @@ class TestLinearScaling:
         # Baseline: Profile full 50K rows
         start = time.time()
         result = profile_database(test_db_large, sample_size=5000)
+        result = normalize_profiler_result(result)
         time_50k = time.time() - start
 
         # Extrapolate to 2x volume (100K rows)
@@ -127,13 +129,16 @@ class TestLinearScaling:
             # Baseline: Clean full 50K rows
             start = time.time()
             result = clean_database(
-                test_db_large, output_db,
-                date_columns=[
+            test_db_large,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[('tickets', 'TKT-Actual Resolution Date')]
-            )
+                'empty_to_null_columns': [('tickets', 'TKT-Actual Resolution Date')]
+            }
+        )
             time_50k = time.time() - start
 
             # Extrapolate to 2x volume
@@ -173,6 +178,7 @@ class TestMemoryPressure:
 
         # Run profiler
         result = profile_database(test_db_large, sample_size=5000)
+        result = normalize_profiler_result(result)
 
         # Check memory usage
         current, peak = tracemalloc.get_traced_memory()
@@ -213,10 +219,13 @@ class TestMemoryPressure:
 
             # Run cleaner
             result = clean_database(
-                test_db_large, output_db,
-                date_columns=[('tickets', 'TKT-Created Time')],
-                empty_string_columns=[]
-            )
+            test_db_large,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
 
             # Check memory usage
             current, peak = tracemalloc.get_traced_memory()
@@ -265,6 +274,8 @@ class TestMemoryPressure:
         try:
             # Normal operation should succeed
             result = profile_database(db_path, sample_size=100)
+            result = normalize_profiler_result(result)
+
             assert result['status'] == 'success'
 
             print("\n  ✅ Profiler health check integration verified")
@@ -301,6 +312,7 @@ class TestConcurrentOperations:
         def run_profiler():
             try:
                 result = profile_database(db_path, sample_size=5000)
+                result = normalize_profiler_result(result)
                 results.append(result)
             except Exception as e:
                 errors.append(str(e))
@@ -351,10 +363,13 @@ class TestConcurrentOperations:
             try:
                 output_db = f"{db_path}.{output_suffix}.cleaned"
                 result = clean_database(
-                    db_path, output_db,
-                    date_columns=[('tickets', 'date')],
-                    empty_string_columns=[]
-                )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'date')],
+                'empty_to_null_columns': []
+            }
+        )
                 results.append((output_suffix, result))
                 if os.path.exists(output_db):
                     os.remove(output_db)
@@ -409,10 +424,13 @@ class TestResourceExhaustion:
         try:
             # Normal operation should check disk space
             result = clean_database(
-                db_path, output_db,
-                date_columns=[],
-                empty_string_columns=[]
-            )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [],
+                'empty_to_null_columns': []
+            }
+        )
 
             assert result['status'] == 'success'
 
@@ -438,10 +456,13 @@ class TestResourceExhaustion:
             # Clean database
             start = time.time()
             result = clean_database(
-                test_db_large, output_db,
-                date_columns=[('tickets', 'TKT-Created Time')],
-                empty_string_columns=[]
-            )
+            test_db_large,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
             elapsed = time.time() - start
 
             # Get output database size
@@ -494,10 +515,13 @@ class TestEdgeCaseStress:
         try:
             # Clean database
             result = clean_database(
-                db_path, output_db,
-                date_columns=[('tickets', 'date')],
-                empty_string_columns=[]
-            )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'date')],
+                'empty_to_null_columns': []
+            }
+        )
 
             assert result['status'] == 'success'
             assert result.get('dates_converted', 0) == 10000, "Should convert all 10K dates"
@@ -540,10 +564,13 @@ class TestEdgeCaseStress:
             # Clean database (should be no-op)
             start = time.time()
             result = clean_database(
-                db_path, output_db,
-                date_columns=[('tickets', 'date')],
-                empty_string_columns=[]
-            )
+            db_path,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'date')],
+                'empty_to_null_columns': []
+            }
+        )
             elapsed = time.time() - start
 
             assert result['status'] == 'success'

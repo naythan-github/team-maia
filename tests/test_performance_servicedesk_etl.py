@@ -177,16 +177,18 @@ class TestPerformanceBaselines:
         try:
             start = time.time()
             result = clean_database(
-                test_db_small,
-                output_db,
-                date_columns=[
+            test_db_small,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[
+                'empty_to_null_columns': [
                     ('tickets', 'TKT-Actual Resolution Date')
                 ]
-            )
+            }
+        )
             elapsed = time.time() - start
 
             result = normalize_profiler_result(result)
@@ -212,16 +214,18 @@ class TestPerformanceBaselines:
         try:
             start = time.time()
             result = clean_database(
-                test_db_medium,
-                output_db,
-                date_columns=[
+            test_db_medium,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[
+                'empty_to_null_columns': [
                     ('tickets', 'TKT-Actual Resolution Date')
                 ]
-            )
+            }
+        )
             elapsed = time.time() - start
 
             result = normalize_profiler_result(result)
@@ -277,19 +281,25 @@ class TestPerformanceScaling:
             # Test 1K rows
             start = time.time()
             clean_database(
-                test_db_small, output_small,
-                date_columns=[('tickets', 'TKT-Created Time')],
-                empty_string_columns=[]
-            )
+            test_db_small,
+            output_small,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
             time_1k = time.time() - start
 
             # Test 10K rows
             start = time.time()
             clean_database(
-                test_db_medium, output_medium,
-                date_columns=[('tickets', 'TKT-Created Time')],
-                empty_string_columns=[]
-            )
+            test_db_medium,
+            output_medium,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
             time_10k = time.time() - start
 
             # Verify linear scaling
@@ -344,10 +354,13 @@ class TestOverheadMeasurement:
         try:
             start = time.time()
             result = clean_database(
-                test_db_medium, output_db,
-                date_columns=[('tickets', 'TKT-Created Time')],
-                empty_string_columns=[]
-            )
+            test_db_medium,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
             total_time = time.time() - start
 
             # Progress tracking happens every batch (~1000 rows)
@@ -406,13 +419,16 @@ class TestSLAValidation:
         try:
             start = time.time()
             result = clean_database(
-                test_db_medium, output_db,
-                date_columns=[
+            test_db_medium,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[('tickets', 'TKT-Actual Resolution Date')]
-            )
+                'empty_to_null_columns': [('tickets', 'TKT-Actual Resolution Date')]
+            }
+        )
             time_10k = time.time() - start
 
             # Extrapolate to 260K rows
@@ -447,10 +463,13 @@ class TestSLAValidation:
             # Cleaner
             start_cleaner = time.time()
             clean_result = clean_database(
-                test_db_medium, output_db,
-                date_columns=[('tickets', 'TKT-Created Time')],
-                empty_string_columns=[]
-            )
+            test_db_medium,
+            output_db,
+            config={
+                'date_columns': [('tickets', 'TKT-Created Time')],
+                'empty_to_null_columns': []
+            }
+        )
             cleaner_time = time.time() - start_cleaner
 
             # Migration (estimate 5 min for 260K based on Phase 127 baseline)
@@ -531,13 +550,16 @@ class TestProductionPerformance:
 
             start = time.time()
             result = clean_database(
-                db_path, output_db,
-                date_columns=[
+            db_path,
+            output_db,
+            config={
+                'date_columns': [
                     ('tickets', 'TKT-Created Time'),
                     ('tickets', 'TKT-Actual Resolution Date')
                 ],
-                empty_string_columns=[('tickets', 'TKT-Actual Resolution Date')]
-            )
+                'empty_to_null_columns': [('tickets', 'TKT-Actual Resolution Date')]
+            }
+        )
             elapsed = time.time() - start
 
             result = normalize_profiler_result(result)
