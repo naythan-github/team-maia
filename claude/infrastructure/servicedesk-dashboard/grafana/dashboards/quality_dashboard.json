@@ -3,26 +3,49 @@
     "id": null,
     "uid": "servicedesk-quality",
     "title": "ServiceDesk Quality Dashboard",
-    "tags": ["servicedesk", "quality", "training"],
+    "tags": [
+      "servicedesk",
+      "quality",
+      "training"
+    ],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 0,
     "refresh": "1d",
-    "time": {"from": "now-90d", "to": "now"},
-    "timepicker": {"refresh_intervals": ["1d", "7d"]},
+    "time": {
+      "from": "now-90d",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": [
+        "1d",
+        "7d"
+      ]
+    },
     "editable": true,
     "panels": [
       {
         "id": 1,
         "type": "gauge",
         "title": "Overall Quality Score",
-        "description": "Average quality score (0-5 scale)\n⚠️ Coverage: 0.5% (517/108,129 comments)",
-        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT ROUND(AVG(quality_score)::numeric, 2) as \"Quality Score\" FROM servicedesk.comment_quality WHERE quality_score IS NOT NULL;",
-          "refId": "A"
-        }],
+        "description": "Average quality score (0-5 scale)\n\u26a0\ufe0f Coverage: 0.5% (517/108,129 comments)",
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 0,
+          "y": 0
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "format": "table",
+            "rawSql": "SELECT ROUND(AVG(quality_score)::numeric, 2) as \"Quality Score\" FROM servicedesk.comment_quality WHERE quality_score IS NOT NULL;",
+            "refId": "A"
+          }
+        ],
         "fieldConfig": {
           "defaults": {
             "unit": "short",
@@ -31,27 +54,50 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 3, "color": "yellow"},
-                {"value": 4, "color": "green"}
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 3,
+                  "color": "yellow"
+                },
+                {
+                  "value": 4,
+                  "color": "green"
+                }
               ]
             },
             "decimals": 2
           }
         },
-        "options": {"showThresholdLabels": true, "showThresholdMarkers": true}
+        "options": {
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true
+        }
       },
       {
         "id": 2,
         "type": "stat",
         "title": "Professionalism",
         "description": "Average professionalism score",
-        "gridPos": {"h": 4, "w": 4, "x": 6, "y": 0},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT ROUND(AVG(professionalism_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-          "refId": "A"
-        }],
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 6,
+          "y": 0
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "rawSql": "SELECT ROUND(AVG(professionalism_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
         "fieldConfig": {
           "defaults": {
             "unit": "short",
@@ -59,116 +105,346 @@
             "max": 5,
             "thresholds": {
               "mode": "absolute",
-              "steps": [{"value": 0, "color": "red"}, {"value": 3, "color": "yellow"}, {"value": 4, "color": "green"}]
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 3,
+                  "color": "yellow"
+                },
+                {
+                  "value": 4,
+                  "color": "green"
+                }
+              ]
             }
           }
         },
-        "options": {"colorMode": "background", "graphMode": "none"}
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none"
+        }
       },
       {
         "id": 3,
         "type": "stat",
         "title": "Clarity",
-        "gridPos": {"h": 4, "w": 4, "x": 10, "y": 0},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT ROUND(AVG(clarity_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-          "refId": "A"
-        }],
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 10,
+          "y": 0
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "rawSql": "SELECT ROUND(AVG(clarity_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
         "fieldConfig": {
           "defaults": {
             "unit": "short",
             "min": 0,
             "max": 5,
-            "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "red"}, {"value": 3, "color": "yellow"}, {"value": 4, "color": "green"}]}
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 3,
+                  "color": "yellow"
+                },
+                {
+                  "value": 4,
+                  "color": "green"
+                }
+              ]
+            }
           }
         },
-        "options": {"colorMode": "background", "graphMode": "none"}
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none"
+        }
       },
       {
         "id": 4,
         "type": "stat",
         "title": "Empathy",
-        "gridPos": {"h": 4, "w": 4, "x": 14, "y": 0},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT ROUND(AVG(empathy_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-          "refId": "A"
-        }],
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 14,
+          "y": 0
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "rawSql": "SELECT ROUND(AVG(empathy_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
         "fieldConfig": {
           "defaults": {
             "unit": "short",
             "min": 0,
             "max": 5,
-            "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "red"}, {"value": 3, "color": "yellow"}, {"value": 4, "color": "green"}]}
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 3,
+                  "color": "yellow"
+                },
+                {
+                  "value": 4,
+                  "color": "green"
+                }
+              ]
+            }
           }
         },
-        "options": {"colorMode": "background", "graphMode": "none"}
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none"
+        }
       },
       {
         "id": 5,
         "type": "stat",
         "title": "Actionability",
-        "gridPos": {"h": 4, "w": 4, "x": 18, "y": 0},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT ROUND(AVG(actionability_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-          "refId": "A"
-        }],
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 18,
+          "y": 0
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "rawSql": "SELECT ROUND(AVG(actionability_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
         "fieldConfig": {
           "defaults": {
             "unit": "short",
             "min": 0,
             "max": 5,
-            "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "red"}, {"value": 3, "color": "yellow"}, {"value": 4, "color": "green"}]}
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 3,
+                  "color": "yellow"
+                },
+                {
+                  "value": 4,
+                  "color": "green"
+                }
+              ]
+            }
           }
         },
-        "options": {"colorMode": "background", "graphMode": "none"}
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none"
+        }
       },
       {
         "id": 6,
         "type": "stat",
         "title": "Quality Analysis Coverage",
         "description": "% of comments analyzed for quality",
-        "gridPos": {"h": 4, "w": 4, "x": 22, "y": 0},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT ROUND(100.0 * COUNT(DISTINCT cq.comment_id) / (SELECT COUNT(*) FROM servicedesk.comments), 2) as \"Coverage %\" FROM servicedesk.comment_quality cq;",
-          "refId": "A"
-        }],
+        "gridPos": {
+          "h": 4,
+          "w": 4,
+          "x": 22,
+          "y": 0
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "rawSql": "SELECT ROUND(100.0 * COUNT(DISTINCT cq.comment_id) / (SELECT COUNT(*) FROM servicedesk.comments), 2) as \"Coverage %\" FROM servicedesk.comment_quality cq;",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
         "fieldConfig": {
           "defaults": {
             "unit": "percent",
-            "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "red"}, {"value": 5, "color": "yellow"}, {"value": 10, "color": "green"}]}
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 5,
+                  "color": "yellow"
+                },
+                {
+                  "value": 10,
+                  "color": "green"
+                }
+              ]
+            }
           }
         },
-        "options": {"colorMode": "background", "graphMode": "none"}
+        "options": {
+          "colorMode": "background",
+          "graphMode": "none"
+        }
       },
       {
         "id": 7,
         "type": "piechart",
         "title": "Quality Tier Distribution",
         "description": "Distribution of quality ratings (Excellent/Good/Acceptable/Poor)",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT quality_tier as \"Tier\", COUNT(*) as \"Count\" FROM servicedesk.comment_quality WHERE quality_tier IS NOT NULL GROUP BY quality_tier ORDER BY CASE quality_tier WHEN 'excellent' THEN 1 WHEN 'good' THEN 2 WHEN 'acceptable' THEN 3 WHEN 'poor' THEN 4 END;",
-          "refId": "A"
-        }],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 8
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "rawSql": "SELECT quality_tier as \"Tier\", COUNT(*) as \"Count\" FROM servicedesk.comment_quality WHERE quality_tier IS NOT NULL GROUP BY quality_tier ORDER BY CASE quality_tier WHEN 'excellent' THEN 1 WHEN 'good' THEN 2 WHEN 'acceptable' THEN 3 WHEN 'poor' THEN 4 END;",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
         "options": {
           "pieType": "donut",
-          "legend": {"showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["sum", "percent"], "values": ["value", "percent"]},
-          "displayLabels": ["name", "percent"]
+          "legend": {
+            "showLegend": true,
+            "displayMode": "table",
+            "placement": "right",
+            "calcs": [
+              "sum",
+              "percent"
+            ],
+            "values": [
+              "value",
+              "percent"
+            ]
+          },
+          "displayLabels": [
+            "name",
+            "percent"
+          ]
         },
         "fieldConfig": {
           "defaults": {
-            "mappings": [
-              {"type": "value", "value": "excellent", "color": "dark-green"},
-              {"type": "value", "value": "good", "color": "green"},
-              {"type": "value", "value": "acceptable", "color": "yellow"},
-              {"type": "value", "value": "poor", "color": "red"}
-            ]
-          }
+            "unit": "short",
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              }
+            },
+            "mappings": []
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "excellent"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "dark-green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "good"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "acceptable"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "yellow",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "poor"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
         }
       },
       {
@@ -176,12 +452,23 @@
         "type": "bargauge",
         "title": "Quality Dimension Breakdown",
         "description": "Average scores across all quality dimensions",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-        "targets": [{
-          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
-          "rawSql": "SELECT 'Professionalism' as dimension, ROUND(AVG(professionalism_score)::numeric, 2) as score FROM servicedesk.comment_quality UNION ALL SELECT 'Clarity', ROUND(AVG(clarity_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Empathy', ROUND(AVG(empathy_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Actionability', ROUND(AVG(actionability_score)::numeric, 2) FROM servicedesk.comment_quality;",
-          "refId": "A"
-        }],
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 8
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "rawSql": "SELECT 'Professionalism' as dimension, ROUND(AVG(professionalism_score)::numeric, 2) as score FROM servicedesk.comment_quality UNION ALL SELECT 'Clarity', ROUND(AVG(clarity_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Empathy', ROUND(AVG(empathy_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Actionability', ROUND(AVG(actionability_score)::numeric, 2) FROM servicedesk.comment_quality;",
+            "refId": "A",
+            "format": "table"
+          }
+        ],
         "options": {
           "orientation": "horizontal",
           "displayMode": "gradient",
@@ -192,7 +479,23 @@
             "unit": "short",
             "min": 0,
             "max": 5,
-            "thresholds": {"mode": "absolute", "steps": [{"value": 0, "color": "red"}, {"value": 3, "color": "yellow"}, {"value": 4, "color": "green"}]}
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 3,
+                  "color": "yellow"
+                },
+                {
+                  "value": 4,
+                  "color": "green"
+                }
+              ]
+            }
           }
         }
       }
