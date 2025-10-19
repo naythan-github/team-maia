@@ -68,7 +68,7 @@ test_metric "1.4 Customer Communication Coverage" \
 
 # 1.5 Overall Quality Score
 test_metric "1.5 Overall Quality Score" \
-"SELECT ROUND(AVG(quality_score), 2) as value FROM servicedesk.comment_quality WHERE quality_score IS NOT NULL;" \
+"SELECT ROUND(AVG(quality_score)::numeric, 2) as value FROM servicedesk.comment_quality WHERE quality_score IS NOT NULL;" \
 "number"
 
 echo ""
@@ -77,7 +77,7 @@ echo "-------------------------------------------------------------------"
 
 # 2.1 Ticket Reassignment Rate
 test_metric "2.1 Reassignment Rate" \
-"WITH reassignments AS (SELECT ticket_id, COUNT(DISTINCT \"TS-User Full Name\") as agent_count FROM servicedesk.timesheets GROUP BY ticket_id) SELECT ROUND(100.0 * SUM(CASE WHEN COALESCE(r.agent_count, 1) > 1 THEN 1 ELSE 0 END) / COUNT(*), 2) as value FROM servicedesk.tickets t LEFT JOIN reassignments r ON t.\"TKT-Ticket ID\" = r.ticket_id WHERE t.\"TKT-Status\" IN ('Closed', 'Resolved');" \
+"WITH reassignments AS (SELECT \"TS-Ticket Project Master Code\" as ticket_id, COUNT(DISTINCT \"TS-User Full Name\") as agent_count FROM servicedesk.timesheets GROUP BY \"TS-Ticket Project Master Code\") SELECT ROUND(100.0 * SUM(CASE WHEN COALESCE(r.agent_count, 1) > 1 THEN 1 ELSE 0 END) / COUNT(*), 2) as value FROM servicedesk.tickets t LEFT JOIN reassignments r ON t.\"TKT-Ticket ID\" = r.ticket_id WHERE t.\"TKT-Status\" IN ('Closed', 'Resolved');" \
 "percentage"
 
 # 2.2 Total Ticket Volume
@@ -121,7 +121,7 @@ echo "-------------------------------------------------------------------"
 
 # 3.1 Quality Score by Dimension
 test_metric "3.1 Professionalism Score" \
-"SELECT ROUND(AVG(professionalism_score), 2) as value FROM servicedesk.comment_quality WHERE professionalism_score IS NOT NULL;" \
+"SELECT ROUND(AVG(professionalism_score)::numeric, 2) as value FROM servicedesk.comment_quality WHERE professionalism_score IS NOT NULL;" \
 "number"
 
 # 3.2 Quality Tier Distribution
@@ -131,17 +131,17 @@ test_metric "3.2 Quality Tier Counts" \
 
 # 3.3 Clarity Score
 test_metric "3.3 Clarity Score" \
-"SELECT ROUND(AVG(clarity_score), 2) as value FROM servicedesk.comment_quality WHERE clarity_score IS NOT NULL;" \
+"SELECT ROUND(AVG(clarity_score)::numeric, 2) as value FROM servicedesk.comment_quality WHERE clarity_score IS NOT NULL;" \
 "number"
 
 # 3.4 Empathy Score
 test_metric "3.4 Empathy Score" \
-"SELECT ROUND(AVG(empathy_score), 2) as value FROM servicedesk.comment_quality WHERE empathy_score IS NOT NULL;" \
+"SELECT ROUND(AVG(empathy_score)::numeric, 2) as value FROM servicedesk.comment_quality WHERE empathy_score IS NOT NULL;" \
 "number"
 
 # 3.5 Actionability Score
 test_metric "3.5 Actionability Score" \
-"SELECT ROUND(AVG(actionability_score), 2) as value FROM servicedesk.comment_quality WHERE actionability_score IS NOT NULL;" \
+"SELECT ROUND(AVG(actionability_score)::numeric, 2) as value FROM servicedesk.comment_quality WHERE actionability_score IS NOT NULL;" \
 "number"
 
 # 3.6 Quality Coverage
