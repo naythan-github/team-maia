@@ -10,7 +10,15 @@ set -e  # Exit on error
 # Configuration
 GRAFANA_URL="${GRAFANA_URL:-http://localhost:3000}"
 GRAFANA_USER="${GRAFANA_USER:-admin}"
+
+# Load password from .env if available
+SCRIPT_DIR="$(dirname "$0")"
+ENV_FILE="$SCRIPT_DIR/../.env"
+if [ -f "$ENV_FILE" ]; then
+  export $(grep -v '^#' "$ENV_FILE" | grep GRAFANA_ADMIN_PASSWORD | xargs)
+fi
 GRAFANA_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-admin}"
+
 DASHBOARD_DIR="$(dirname "$0")/../grafana/dashboards"
 
 # Colors for output
