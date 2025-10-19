@@ -63,3 +63,4 @@ temp/
 *.tmp
 claude/data/model_usage_log.txt
 claude/data/dashboard_service.pid
+claude/infrastructure/servicedesk-dashboard/.env

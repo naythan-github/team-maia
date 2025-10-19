@@ -1,0 +1,20 @@
+apiVersion: 1
+
+datasources:
+  - name: ServiceDesk PostgreSQL
+    type: postgres
+    access: proxy
+    url: servicedesk-postgres:5432
+    database: servicedesk
+    user: servicedesk_user
+    secureJsonData:
+      password: 'ServiceDesk2025!SecurePass'
+    jsonData:
+      sslmode: 'disable'
+      maxOpenConns: 10
+      maxIdleConns: 5
+      connMaxLifetime: 14400
+      postgresVersion: 1500
+      timescaledb: false
+    editable: true
+    isDefault: true
