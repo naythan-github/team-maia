@@ -27,23 +27,30 @@ DB_PATH = MAIA_ROOT / "claude/data/servicedesk_tickets.db"
 try:
     import chromadb
     from chromadb.config import Settings
-except ImportError:
-    print("❌ Missing chromadb. Install: pip3 install chromadb")
+    from sentence_transformers import SentenceTransformer
+except ImportError as e:
+    print("❌ Missing dependencies. Install: pip3 install chromadb sentence-transformers")
+    print(f"   Error: {e}")
     sys.exit(1)
 
 
 class ServiceDeskCommentAnalyzer:
     """Analyze ServiceDesk comment quality using Ollama LLM"""
 
-    def __init__(self, db_path: str = None, embedding_model: str = "nomic-embed-text", llm_model: str = "llama3.2:3b"):
-        """Initialize analyzer"""
+    def __init__(self, db_path: str = None, embedding_model: str = "intfloat/e5-base-v2", llm_model: str = "llama3.2:3b"):
+        """Initialize analyzer (default: intfloat/e5-base-v2, 768-dim, matches RAG database)"""
         self.db_path = db_path or str(DB_PATH)
         self.embedding_model = embedding_model
         self.llm_model = llm_model
         self.ollama_url = "http://localhost:11434"
 
+        # Load sentence-transformers model (e5-base-v2, 768-dim)
+        print(f"Loading embedding model: {embedding_model}...")
+        self.embedder = SentenceTransformer(embedding_model)
+        print(f"✅ Embeddings loaded: {embedding_model} ({self.embedder.get_sentence_embedding_dimension()}-dim)")
+
         # Initialize ChromaDB for comment storage/similarity
-        self.rag_db_path = os.path.expanduser("~/.maia/servicedesk_comment_rag")
+        self.rag_db_path = os.path.expanduser("~/.maia/servicedesk_rag")
         os.makedirs(self.rag_db_path, exist_ok=True)
 
         self.chroma_client = chromadb.PersistentClient(
@@ -53,7 +60,7 @@ class ServiceDeskCommentAnalyzer:
 
         self.collection = self.chroma_client.get_or_create_collection(
             name="servicedesk_comments",
-            metadata={"description": "ServiceDesk comments with quality analysis"}
+            metadata={"description": "ServiceDesk comments with quality analysis", "model": embedding_model}
         )
 
         # Create quality results table if not exists
@@ -61,7 +68,6 @@ class ServiceDeskCommentAnalyzer:
 
         print(f"✅ ServiceDesk Comment Analyzer initialized")
         print(f"   LLM: {llm_model}")
-        print(f"   Embeddings: {embedding_model}")
         print(f"   Database: {self.db_path}")
 
     def _init_quality_table(self):
@@ -353,7 +359,7 @@ Respond ONLY with valid JSON. No markdown formatting, no explanations.
                     "stream": False,
                     "options": {
                         "temperature": 0.1,  # Low temp for consistent classifications
-                        "num_predict": 500,
+                        "num_predict": 1000,  # Increased from 500 to prevent JSON truncation
                         "format": "json"  # Force JSON output
                     }
                 },
@@ -372,7 +378,16 @@ Respond ONLY with valid JSON. No markdown formatting, no explanations.
             if json_match:
                 llm_output = json_match.group(0)
 
-            analysis = json.loads(llm_output)
+            # Parse JSON with repair logic for truncation
+            try:
+                analysis = json.loads(llm_output)
+            except json.JSONDecodeError:
+                # Repair truncated JSON by adding missing closing braces
+                fixed = llm_output.rstrip()
+                open_braces = fixed.count('{') - fixed.count('}')
+                if open_braces > 0:
+                    fixed += '\n' + ('}' * open_braces)
+                analysis = json.loads(fixed)  # Retry with repaired JSON
 
             # Calculate average quality score
             scores = [
@@ -381,7 +396,19 @@ Respond ONLY with valid JSON. No markdown formatting, no explanations.
                 analysis.get('empathy', 3),
                 analysis.get('actionability', 3)
             ]
-            analysis['quality_score'] = round(sum(scores) / len(scores), 2)
+            quality_score = round(sum(scores) / len(scores), 2)
+            analysis['quality_score'] = quality_score
+
+            # Calculate quality_tier if not provided by LLM
+            if 'quality_tier' not in analysis:
+                if quality_score >= 4.0:
+                    analysis['quality_tier'] = 'excellent'
+                elif quality_score >= 3.0:
+                    analysis['quality_tier'] = 'good'
+                elif quality_score >= 2.0:
+                    analysis['quality_tier'] = 'acceptable'
+                else:
+                    analysis['quality_tier'] = 'poor'
 
             return analysis
 
