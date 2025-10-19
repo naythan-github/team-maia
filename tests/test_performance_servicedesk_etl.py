@@ -31,6 +31,7 @@ from claude.tools.sre.servicedesk_etl_data_profiler import profile_database
 from claude.tools.sre.servicedesk_etl_data_cleaner_enhanced import (
     clean_database, CleaningError
 )
+from conftest import normalize_profiler_result, assert_profiler_success, assert_cleaner_success
 
 
 # ==============================================================================
@@ -140,6 +141,9 @@ class TestPerformanceBaselines:
         result = profile_database(test_db_small, sample_size=500)
         elapsed = time.time() - start
 
+        result = normalize_profiler_result(result)
+
+
         assert result['status'] == 'success'
         assert elapsed < 1.0, f"Profiler took {elapsed:.2f}s for 1K rows (expected <1s)"
 
@@ -153,6 +157,9 @@ class TestPerformanceBaselines:
         start = time.time()
         result = profile_database(test_db_medium, sample_size=5000)
         elapsed = time.time() - start
+
+        result = normalize_profiler_result(result)
+
 
         assert result['status'] == 'success'
         assert elapsed < 10.0, f"Profiler took {elapsed:.2f}s for 10K rows (expected <10s)"
@@ -181,6 +188,9 @@ class TestPerformanceBaselines:
                 ]
             )
             elapsed = time.time() - start
+
+            result = normalize_profiler_result(result)
+
 
             assert result['status'] == 'success'
             assert elapsed < 2.0, f"Cleaner took {elapsed:.2f}s for 1K rows (expected <2s)"
@@ -213,6 +223,9 @@ class TestPerformanceBaselines:
                 ]
             )
             elapsed = time.time() - start
+
+            result = normalize_profiler_result(result)
+
 
             assert result['status'] == 'success'
             assert elapsed < 20.0, f"Cleaner took {elapsed:.2f}s for 10K rows (expected <20s)"
@@ -494,6 +507,9 @@ class TestProductionPerformance:
         result = profile_database(db_path, sample_size=5000)
         elapsed = time.time() - start
 
+        result = normalize_profiler_result(result)
+
+
         assert result['status'] == 'success'
         assert elapsed < 300, f"Profiler took {elapsed:.1f}s ({elapsed/60:.1f}m), exceeds 5m SLA"
 
@@ -523,6 +539,9 @@ class TestProductionPerformance:
                 empty_string_columns=[('tickets', 'TKT-Actual Resolution Date')]
             )
             elapsed = time.time() - start
+
+            result = normalize_profiler_result(result)
+
 
             assert result['status'] == 'success'
             assert elapsed < 900, f"Cleaner took {elapsed:.1f}s ({elapsed/60:.1f}m), exceeds 15m SLA"
