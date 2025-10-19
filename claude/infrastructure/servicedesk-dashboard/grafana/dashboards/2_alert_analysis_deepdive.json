@@ -1,0 +1,422 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "servicedesk-alert-analysis",
+    "title": "Dashboard 2: Alert Analysis Deep-Dive",
+    "tags": ["servicedesk", "alerts", "automation", "patterns"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 0,
+    "refresh": "5m",
+    "time": {
+      "from": "2025-07-01T00:00:00.000Z",
+      "to": "2025-10-13T23:59:59.000Z"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5m", "15m", "30m", "1h"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "panels": [
+      {
+        "id": 1,
+        "type": "timeseries",
+        "title": "Motion/Sensor Alerts (Highest Volume)",
+        "description": "Motion and sensor detection alerts over time - 960 tickets",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Motion/Sensor Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 30,
+              "showPoints": "auto",
+              "pointSize": 5
+            },
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "mean", "max"]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "timeseries",
+        "title": "Patch Deployment Failures",
+        "description": "Failed patch deployments and update failures - 555 tickets",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Patch Failures\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "bars",
+              "lineWidth": 1,
+              "fillOpacity": 80
+            },
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "mean"]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "timeseries",
+        "title": "Network/VPN Issues",
+        "description": "Network connectivity and VPN problems - 490 tickets",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Network/VPN Issues\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 20
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "single"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "mean"]
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "timeseries",
+        "title": "Azure Resource Health Alerts",
+        "description": "Azure infrastructure and resource health issues - 678 tickets",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Azure Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 30
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "single"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "max"]
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "SSL/Certificate Expiring Alerts",
+        "description": "SSL certificate expiration warnings - 248 tickets",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"SSL/Cert Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "bars",
+              "lineWidth": 1,
+              "fillOpacity": 80
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "single"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "mean"]
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "heatmap",
+        "title": "Alert Volume Heatmap (Day of Week x Hour)",
+        "description": "Shows when alerts are most frequent for staffing optimization",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "table",
+            "rawSql": "SELECT \n  EXTRACT(DOW FROM \"TKT-Created Time\") as \"Day\",\n  EXTRACT(HOUR FROM \"TKT-Created Time\") as \"Hour\",\n  COUNT(*) as \"Alert Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1, 2\nORDER BY 1, 2;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              },
+              "scaleDistribution": {
+                "type": "linear"
+              }
+            }
+          }
+        },
+        "options": {
+          "calculate": false,
+          "cellGap": 2,
+          "color": {
+            "mode": "scheme",
+            "scheme": "Spectral",
+            "exponent": 0.5,
+            "fill": "dark-orange"
+          },
+          "yAxis": {
+            "axisPlacement": "left",
+            "reverse": false
+          },
+          "legend": {
+            "show": true
+          },
+          "tooltip": {
+            "show": true,
+            "yHistogram": false
+          },
+          "exemplars": {
+            "color": "rgba(255,0,255,0.7)"
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": "table",
+        "title": "Top 10 Repetitive Alert Titles",
+        "description": "Most common alert patterns - prime automation candidates",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "table",
+            "rawSql": "SELECT \n  \"TKT-Title\" as \"Alert Title\",\n  COUNT(*) as \"Occurrences\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365, 0) as \"Projected Annual\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5 * 80 / 1000, 1) || 'K' as \"Est. Savings (30min avg)\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto",
+              "filterable": false
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Occurrences"
+              },
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "gradient-gauge"
+                },
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "continuous-GrYlRd"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "Occurrences",
+              "desc": true
+            }
+          ]
+        }
+      },
+      {
+        "id": 8,
+        "type": "piechart",
+        "title": "Alert Distribution by Pattern Type",
+        "description": "Breakdown of all alert categories",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 26},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "table",
+            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' THEN 'Motion/Sensor'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' THEN 'Patch Failures'\n    WHEN \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' THEN 'Network/VPN'\n    WHEN \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' THEN 'Azure Resource'\n    WHEN \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' THEN 'SSL/Certificate'\n    ELSE 'Other Alerts'\n  END as \"Alert Type\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {},
+            "unit": "short"
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "pieType": "donut",
+          "tooltip": {
+            "mode": "single",
+            "sort": "none"
+          },
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "values": ["value", "percent"]
+          },
+          "displayLabels": ["percent"]
+        }
+      },
+      {
+        "id": 9,
+        "type": "stat",
+        "title": "Alert Automation ROI Summary",
+        "description": "Total potential savings from automating all alert patterns",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 26},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "table",
+            "rawSql": "SELECT \n  COUNT(*) as \"Total Alerts\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5 * 80 / 1000, 0) || 'K' as \"Annual Savings (30min avg)\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5, 0) as \"Hours Saved/Year\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert';",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "thresholds"
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"}
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "label": "Data Source",
+          "type": "datasource",
+          "query": "postgres",
+          "current": {
+            "value": "ServiceDesk PostgreSQL",
+            "text": "ServiceDesk PostgreSQL"
+          }
+        }
+      ]
+    }
+  },
+  "overwrite": true
+}

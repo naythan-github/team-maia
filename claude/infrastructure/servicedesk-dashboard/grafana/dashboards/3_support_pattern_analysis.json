@@ -1,0 +1,409 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "servicedesk-support-patterns",
+    "title": "Dashboard 3: Support Ticket Pattern Analysis",
+    "tags": ["servicedesk", "support", "patterns", "automation"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 0,
+    "refresh": "5m",
+    "time": {
+      "from": "2025-07-01T00:00:00.000Z",
+      "to": "2025-10-13T23:59:59.000Z"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5m", "15m", "30m", "1h"]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "panels": [
+      {
+        "id": 1,
+        "type": "timeseries",
+        "title": "Email/Mailbox Issues (Top Support Pattern)",
+        "description": "Email configuration, access, and troubleshooting - 526 tickets",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Email Issues\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 30,
+              "showPoints": "auto"
+            },
+            "color": {
+              "mode": "palette-classic"
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "mean", "max"]
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "timeseries",
+        "title": "Access/Permission Requests",
+        "description": "Software access and permission management - 908 tickets",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Access Requests\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "bars",
+              "lineWidth": 1,
+              "fillOpacity": 80
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "multi"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "mean"]
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "timeseries",
+        "title": "Password Reset/Unlock Requests",
+        "description": "Password resets and account unlock requests - 196 tickets",
+        "gridPos": {"h": 8, "w": 8, "x": 0, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Password Resets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 20
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "single"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum", "mean"]
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "timeseries",
+        "title": "License/Subscription Management",
+        "description": "Software license assignment and tracking - 94 tickets",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"License Requests\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "bars",
+              "lineWidth": 1,
+              "fillOpacity": 70
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "single"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum"]
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "Software Installation Requests",
+        "description": "Application deployment and installation - 125 tickets",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Install Requests\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%')\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 30
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "single"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["sum"]
+          }
+        }
+      },
+      {
+        "id": 6,
+        "type": "piechart",
+        "title": "Support Pattern Distribution",
+        "description": "Breakdown of support ticket types by automation potential",
+        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "table",
+            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Access/Permissions'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'Email Issues'\n    WHEN \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' THEN 'Password Reset'\n    WHEN \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%' THEN 'Software Install'\n    WHEN \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' THEN 'License Management'\n    ELSE 'Other Support'\n  END as \"Pattern\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Support Tickets'\nGROUP BY 1\nORDER BY 2 DESC;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "pieType": "donut",
+          "tooltip": {
+            "mode": "single"
+          },
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "showLegend": true,
+            "values": ["value", "percent"]
+          },
+          "displayLabels": ["percent"]
+        }
+      },
+      {
+        "id": 7,
+        "type": "timeseries",
+        "title": "Pattern Growth/Decline (Week-over-Week)",
+        "description": "Trend analysis showing which patterns are increasing or decreasing",
+        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "time_series",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  SUM(CASE WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 1 ELSE 0 END) as \"Email\",\n  SUM(CASE WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 1 ELSE 0 END) as \"Access\",\n  SUM(CASE WHEN \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' THEN 1 ELSE 0 END) as \"Password\",\n  SUM(CASE WHEN \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' THEN 1 ELSE 0 END) as \"License\",\n  SUM(CASE WHEN \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%' THEN 1 ELSE 0 END) as \"Install\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Support Tickets'\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "lineWidth": 2,
+              "fillOpacity": 10,
+              "showPoints": "auto"
+            },
+            "color": {
+              "mode": "palette-classic"
+            }
+          }
+        },
+        "options": {
+          "tooltip": {
+            "mode": "multi",
+            "sort": "desc"
+          },
+          "legend": {
+            "showLegend": true,
+            "displayMode": "table",
+            "placement": "bottom",
+            "calcs": ["mean", "last", "delta"]
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "table",
+        "title": "Pattern Details with Automation Recommendations",
+        "description": "Detailed breakdown with automation complexity and ROI estimates",
+        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 26},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "format": "table",
+            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Access/Permissions'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'Email Issues'\n    WHEN \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' THEN 'Password Reset'\n    WHEN \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%' THEN 'Software Install'\n    WHEN \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' THEN 'License Management'\n  END as \"Pattern\",\n  COUNT(*) as \"Ticket Count\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365, 0) as \"Annual Projection\",\n  CASE \n    WHEN \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' THEN 'Self-Service Portal'\n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Workflow Automation'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'Email Auto-Triage'\n    WHEN \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' THEN 'License Management Portal'\n    WHEN \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%' THEN 'Package Manager Integration'\n  END as \"Automation Approach\",\n  CASE \n    WHEN \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' THEN 'Low'\n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Medium'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'High'\n    WHEN \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' THEN 'Low'\n    WHEN \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%' THEN 'Medium'\n  END as \"Complexity\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 1.5 * 80 / 1000, 0) || 'K' as \"Est. Annual Savings\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  (\"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%') OR\n  (\"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%') OR\n  (\"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%') OR\n  (\"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%') OR\n  (\"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%')\n)\nGROUP BY 1, 4, 5\nORDER BY 2 DESC;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Ticket Count"
+              },
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "gradient-gauge"
+                },
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "continuous-GrYlRd"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "Complexity"
+              },
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "mappings",
+                  "value": [
+                    {
+                      "type": "value",
+                      "options": {
+                        "Low": {
+                          "color": "green",
+                          "index": 0
+                        }
+                      }
+                    },
+                    {
+                      "type": "value",
+                      "options": {
+                        "Medium": {
+                          "color": "yellow",
+                          "index": 1
+                        }
+                      }
+                    },
+                    {
+                      "type": "value",
+                      "options": {
+                        "High": {
+                          "color": "orange",
+                          "index": 2
+                        }
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": [
+            {
+              "displayName": "Ticket Count",
+              "desc": true
+            }
+          ]
+        }
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "label": "Data Source",
+          "type": "datasource",
+          "query": "postgres",
+          "current": {
+            "value": "ServiceDesk PostgreSQL",
+            "text": "ServiceDesk PostgreSQL"
+          }
+        }
+      ]
+    }
+  },
+  "overwrite": true
+}
