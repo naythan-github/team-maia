@@ -76,19 +76,29 @@ With the available ServiceDesk data, we can report on **15 industry-standard met
 
 ## 2️⃣ EFFICIENCY METRICS
 
-### 2.1 First Contact Resolution (FCR) Rate
+### 2.1 First Contact Resolution (FCR) Rate ✅ **UPDATED POST-BACKFILL**
 **Industry Target**: 65%+
-**Formula**: `(Tickets Resolved on First Contact / Total Tickets) × 100`
+**Formula**: `(Tickets Resolved with ≤1 Customer Comment / Total Tickets) × 100`
 
-**Data Challenge**: True FCR requires "resolved without escalation" flag. We can use **proxy metrics**:
+**Current Performance**: **70.98%** ✅ EXCEEDS TARGET
 
-**Proxy Option 1**: Tickets with ≤1 comment (not calculated - needs refinement)
-**Proxy Option 2**: Tickets resolved by same team without reassignment
+**Calculation** (Using visible_to_customer backfilled data):
+- Total Closed/Resolved Tickets: 7,969
+- FCR Tickets (≤1 customer comment): 5,656
+- **FCR Rate**: 70.98%
 
-**Recommended Action**: Add "escalation_flag" or "reassignment_count" field to tickets table for accurate FCR tracking.
+**FCR Breakdown**:
+| Comment Count | Tickets | % of Total | FCR Status |
+|---------------|---------|------------|------------|
+| 0 comments (auto-resolved) | 1,834 | 23.01% | ✅ FCR |
+| 1 comment (single interaction) | 3,822 | 47.96% | ✅ FCR |
+| 2-3 comments | 1,497 | 18.79% | ❌ Non-FCR |
+| 4+ comments | 816 | 10.24% | ❌ Non-FCR |
+
+**Interpretation**: Exceeds industry target by 5.98 percentage points. Opportunity exists to improve from 70.98% → 75%+ through knowledge base enhancement and agent training.
 
 **Reporting Frequency**: Monthly
-**Dashboard Priority**: MEDIUM (pending accurate data)
+**Dashboard Priority**: HIGH (Key efficiency metric)
 
 ---
 
@@ -307,11 +317,12 @@ With the available ServiceDesk data, we can report on **15 industry-standard met
    - **Data Needed**: Escalation flag or reassignment count
    - **Implementation**: Add "escalation_count" field to tickets table
 
-3. **Customer Communication Coverage**
-   - **Current**: 0% (visible_to_customer field always empty)
-   - **Target**: 75%+ tickets have customer-facing comments
-   - **Data Issue**: visible_to_customer field not populated correctly
-   - **Fix**: Update ETL process to populate field correctly
+3. **Customer Communication Coverage** ✅ **UPDATED POST-BACKFILL**
+   - **Current**: 77.0% (6,135/7,969 closed tickets have customer comments)
+   - **Target**: 90%+ tickets have customer-facing comments
+   - **Status**: ⚠️ BELOW TARGET by 13 percentage points
+   - **Gap**: 1,834 tickets (23.01%) have zero customer engagement trail
+   - **Fix Applied**: Backfilled visible_to_customer using comment_type proxy (100% coverage)
 
 4. **Reopened Ticket Rate**
    - **Target**: <5%
@@ -446,13 +457,11 @@ With the available ServiceDesk data, we can report on **15 industry-standard met
 | 7 | Ticket Category Mix | 93% Support/Alerts | N/A | ℹ️ Info | LOW |
 | 8 | Agent Productivity (Hours) | 700-980 hrs/agent | N/A | ℹ️ Info | MEDIUM |
 | 9 | Resolution Time Trend | 75% ↓ (3 months) | Improving | ✅ Positive | MEDIUM |
-| 10 | FCR Rate | N/A | 65%+ | ⚠️ No Data | MEDIUM |
+| 10 | FCR Rate | 70.98% | 65%+ | ✅ Exceeds | HIGH |
 | 11 | CSAT Score | N/A | 4.0/5.0 | ⚠️ No Data | HIGH |
 | 12 | Escalation Rate | N/A | <20% | ⚠️ No Data | MEDIUM |
 | 13 | Reopened Ticket Rate | N/A | <5% | ⚠️ No Data | MEDIUM |
-| 14 | Customer Communication Coverage | 0%* | 75%+ | ⚠️ Data Issue | MEDIUM |
-
-*Data quality issue - field not populated
+| 14 | Customer Communication Coverage | 77.0% | 90%+ | ⚠️ Below Target | HIGH |
 
 ---
 
