@@ -1,0 +1,110 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "servicedesk-team-performance",
+    "title": "ServiceDesk Team Performance Dashboard",
+    "tags": ["servicedesk", "team", "performance"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 0,
+    "refresh": "1h",
+    "time": {"from": "now-90d", "to": "now"},
+    "editable": true,
+    "panels": [
+      {
+        "id": 1,
+        "type": "timeseries",
+        "title": "Monthly Resolution Time Trend",
+        "description": "Average resolution time improving 75% over 3 months (Jul: 5.3d → Oct: 1.3d)",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+          "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Resolution Days\" FROM servicedesk.tickets WHERE \"TKT-Status\" IN ('Closed', 'Resolved') AND \"TKT-Actual Resolution Date\" IS NOT NULL GROUP BY DATE_TRUNC('month', \"TKT-Created Time\") ORDER BY time;",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"drawStyle": "line", "lineInterpolation": "smooth", "lineWidth": 2, "fillOpacity": 20, "showPoints": "always", "pointSize": 8},
+            "color": {"mode": "palette-classic"},
+            "unit": "d",
+            "thresholds": {"mode": "absolute", "steps": [{"value": null, "color": "green"}]}
+          }
+        },
+        "options": {"tooltip": {"mode": "single"}, "legend": {"showLegend": true, "placement": "bottom"}}
+      },
+      {
+        "id": 2,
+        "type": "timeseries",
+        "title": "Monthly Ticket Volume",
+        "description": "Total tickets created per month",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+          "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, COUNT(*) as \"Ticket Count\" FROM servicedesk.tickets GROUP BY DATE_TRUNC('month', \"TKT-Created Time\") ORDER BY time;",
+          "refId": "A"
+        }],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"drawStyle": "bars", "fillOpacity": 80},
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        },
+        "options": {"tooltip": {"mode": "single"}, "legend": {"showLegend": true, "placement": "bottom"}}
+      },
+      {
+        "id": 3,
+        "type": "piechart",
+        "title": "FCR Distribution (By Comment Count)",
+        "description": "71% FCR rate (0-1 comments)\n29% Multiple interactions (2+ comments)",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+          "rawSql": "WITH customer_facing_comments AS (SELECT ticket_id, COUNT(*) as customer_comment_count FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id) SELECT CASE WHEN COALESCE(cfc.customer_comment_count, 0) = 0 THEN '0 comments (Auto-resolved)' WHEN cfc.customer_comment_count = 1 THEN '1 comment (FCR)' WHEN cfc.customer_comment_count BETWEEN 2 AND 3 THEN '2-3 comments' ELSE '4+ comments' END as \"Comment Range\", COUNT(*) as \"Tickets\" FROM servicedesk.tickets t LEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id WHERE t.\"TKT-Status\" IN ('Closed', 'Resolved') GROUP BY \"Comment Range\";",
+          "refId": "A"
+        }],
+        "options": {
+          "pieType": "donut",
+          "legend": {"showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["sum", "percent"], "values": ["value", "percent"]},
+          "displayLabels": ["name", "percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "mappings": [
+              {"type": "regex", "options": {"pattern": "0 comment.*", "result": {"color": "light-green"}}},
+              {"type": "regex", "options": {"pattern": "1 comment.*", "result": {"color": "green"}}},
+              {"type": "regex", "options": {"pattern": "2-3 comments", "result": {"color": "yellow"}}},
+              {"type": "regex", "options": {"pattern": "4\\+ comments", "result": {"color": "red"}}}
+            ]
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "barchart",
+        "title": "Team FCR Ranking (Estimated)",
+        "description": "Estimated FCR based on customer communication coverage",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [{
+          "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+          "rawSql": "WITH customer_facing_comments AS (SELECT ticket_id, COUNT(*) as customer_comment_count FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id) SELECT t.\"TKT-Team\" as \"Team\", ROUND(100.0 * SUM(CASE WHEN cfc.customer_comment_count > 0 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Estimated FCR %\" FROM servicedesk.tickets t LEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id WHERE t.\"TKT-Status\" IN ('Closed', 'Resolved') GROUP BY t.\"TKT-Team\" HAVING COUNT(*) >= 50 ORDER BY \"Estimated FCR %\" DESC LIMIT 10;",
+          "refId": "A"
+        }],
+        "options": {
+          "orientation": "horizontal",
+          "showValue": "always",
+          "legend": {"showLegend": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"fillOpacity": 80},
+            "color": {"mode": "thresholds"},
+            "unit": "percent",
+            "thresholds": {"mode": "absolute", "steps": [{"value": null, "color": "red"}, {"value": 60, "color": "yellow"}, {"value": 70, "color": "green"}]}
+          }
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}

@@ -1,0 +1,293 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "servicedesk-executive",
+    "title": "ServiceDesk Executive Dashboard",
+    "tags": ["servicedesk", "executive", "kpi"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 0,
+    "refresh": "1h",
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["1h", "6h", "1d"]
+    },
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "SLA Compliance Rate",
+        "description": "Percentage of tickets meeting SLA targets\nTarget: ≥95% (Green)\nAcceptable: 90-94% (Yellow)\nCritical: <90% (Red)",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  ROUND(100.0 * SUM(CASE WHEN \"TKT-SLA Met\" = 'yes' THEN 1 ELSE 0 END) / COUNT(*), 2) as \"SLA Compliance %\"\nFROM servicedesk.tickets\nWHERE \"TKT-SLA Met\" IS NOT NULL;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 90, "color": "yellow"},
+                {"value": 95, "color": "green"}
+              ]
+            },
+            "mappings": [],
+            "decimals": 2
+          },
+          "overrides": []
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Average Resolution Time",
+        "description": "Average time from ticket creation to resolution\nTarget: ≤3 days (Green)\nAcceptable: 3-5 days (Yellow)\nCritical: >5 days (Red)",
+        "gridPos": {"h": 8, "w": 6, "x": 6, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Resolution Days\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Actual Resolution Date\" IS NOT NULL\n  AND \"TKT-Created Time\" IS NOT NULL;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "d",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 3, "color": "yellow"},
+                {"value": 5, "color": "red"}
+              ]
+            },
+            "mappings": [],
+            "decimals": 2
+          },
+          "overrides": []
+        }
+      },
+      {
+        "id": 3,
+        "type": "stat",
+        "title": "First Contact Resolution Rate",
+        "description": "Percentage of tickets resolved with ≤1 customer comment\nTarget: ≥70% (Green)\nAcceptable: 60-69% (Yellow)\nCritical: <60% (Red)",
+        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "WITH customer_facing_comments AS (\n  SELECT ticket_id, COUNT(*) as customer_comment_count\n  FROM servicedesk.comments\n  WHERE visible_to_customer = 'Yes'\n  GROUP BY ticket_id\n)\nSELECT\n  ROUND(100.0 * SUM(CASE WHEN COALESCE(cfc.customer_comment_count, 0) <= 1 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"FCR %\"\nFROM servicedesk.tickets t\nLEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id\nWHERE t.\"TKT-Status\" IN ('Closed', 'Resolved');",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 60, "color": "yellow"},
+                {"value": 70, "color": "green"}
+              ]
+            },
+            "mappings": [],
+            "decimals": 2
+          },
+          "overrides": []
+        }
+      },
+      {
+        "id": 4,
+        "type": "stat",
+        "title": "Customer Communication Coverage",
+        "description": "Percentage of tickets with at least one customer-facing comment\nTarget: ≥90% (Green)\nAcceptable: 80-89% (Yellow)\nCritical: <80% (Red)",
+        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "WITH customer_facing_comments AS (\n  SELECT ticket_id, COUNT(*) as customer_comment_count\n  FROM servicedesk.comments\n  WHERE visible_to_customer = 'Yes'\n  GROUP BY ticket_id\n)\nSELECT\n  ROUND(100.0 * SUM(CASE WHEN cfc.customer_comment_count > 0 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Coverage %\"\nFROM servicedesk.tickets t\nLEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id\nWHERE t.\"TKT-Status\" IN ('Closed', 'Resolved');",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 80, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            },
+            "mappings": [],
+            "decimals": 2
+          },
+          "overrides": []
+        }
+      },
+      {
+        "id": 5,
+        "type": "stat",
+        "title": "Overall Quality Score",
+        "description": "Average quality score across all dimensions\nTarget: ≥4.0/5.0 (Green)\nAcceptable: 3.0-3.9 (Yellow)\nCritical: <3.0 (Red)\n\n⚠️ Coverage: 0.5% (517/108,129 comments)",
+        "gridPos": {"h": 8, "w": 6, "x": 0, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  ROUND(AVG(quality_score)::numeric, 2) as \"Quality Score\"\nFROM servicedesk.comment_quality\nWHERE quality_score IS NOT NULL;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "min": 0,
+            "max": 5,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 3, "color": "yellow"},
+                {"value": 4, "color": "green"}
+              ]
+            },
+            "mappings": [],
+            "decimals": 2
+          },
+          "overrides": []
+        }
+      },
+      {
+        "id": 6,
+        "type": "timeseries",
+        "title": "Resolution Time Trend (30 Days)",
+        "description": "Average resolution time trend over the last 30 days",
+        "gridPos": {"h": 8, "w": 18, "x": 6, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "time_series",
+            "rawSql": "SELECT\n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Resolution Days\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Actual Resolution Date\" IS NOT NULL\n  AND \"TKT-Created Time\" >= NOW() - INTERVAL '30 days'\nGROUP BY DATE_TRUNC('day', \"TKT-Created Time\")\nORDER BY time;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "barAlignment": 0,
+              "lineWidth": 2,
+              "fillOpacity": 20,
+              "gradientMode": "none",
+              "spanNulls": false,
+              "showPoints": "auto",
+              "pointSize": 5,
+              "stacking": {"mode": "none", "group": "A"},
+              "axisPlacement": "auto",
+              "axisLabel": "",
+              "scaleDistribution": {"type": "linear"},
+              "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+              "thresholdsStyle": {"mode": "off"}
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "d",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"}
+              ]
+            },
+            "decimals": 2
+          },
+          "overrides": []
+        },
+        "options": {
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []},
+          "timezone": ["browser"]
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}

@@ -1,0 +1,333 @@
+{
+  "dashboard": {
+    "id": null,
+    "uid": "servicedesk-operations",
+    "title": "ServiceDesk Operations Dashboard",
+    "tags": ["servicedesk", "operations", "managers"],
+    "timezone": "browser",
+    "schemaVersion": 38,
+    "version": 0,
+    "refresh": "1h",
+    "time": {
+      "from": "now-90d",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["1h", "6h", "1d"]
+    },
+    "annotations": {
+      "list": []
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 1,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "id": 1,
+        "type": "stat",
+        "title": "Reassignment Rate",
+        "description": "Percentage of tickets requiring reassignment (multiple agents)\nTarget: ≤20% (Green)\nAcceptable: 21-30% (Yellow)\nCritical: >30% (Red)\n\n⚠️ Coverage: 9.6% (762/7,969 tickets with timesheet data)",
+        "gridPos": {"h": 6, "w": 4, "x": 0, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "WITH ticket_agent_counts AS (\n  SELECT\n    \"TS-Ticket Project Master Code\" as ticket_id,\n    COUNT(DISTINCT \"TS-User Full Name\") as agent_count\n  FROM servicedesk.timesheets\n  WHERE \"TS-Ticket Project Master Code\" IS NOT NULL\n  GROUP BY \"TS-Ticket Project Master Code\"\n)\nSELECT\n  ROUND(100.0 * SUM(CASE WHEN agent_count > 1 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Reassignment %\"\nFROM ticket_agent_counts;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 21, "color": "yellow"},
+                {"value": 31, "color": "red"}
+              ]
+            },
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 2,
+        "type": "stat",
+        "title": "Total Ticket Volume (90d)",
+        "description": "Total tickets created in last 90 days",
+        "gridPos": {"h": 6, "w": 4, "x": 4, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= NOW() - INTERVAL '90 days';",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "orientation": "auto",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "area",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "blue"}
+              ]
+            },
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "id": 3,
+        "type": "barchart",
+        "title": "Top 10 Root Cause Categories",
+        "description": "Distribution of tickets by root cause category",
+        "gridPos": {"h": 8, "w": 8, "x": 8, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  \"TKT-Root Cause Category\" as \"Root Cause\",\n  COUNT(*) as \"Ticket Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Root Cause Category\" IS NOT NULL\n  AND \"TKT-Root Cause Category\" != ''\nGROUP BY \"TKT-Root Cause Category\"\nORDER BY COUNT(*) DESC\nLIMIT 10;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "xTickLabelSpacing": 100,
+          "showValue": "always",
+          "stacking": "none",
+          "groupWidth": 0.7,
+          "barWidth": 0.97,
+          "fullHighlight": false,
+          "legend": {"showLegend": false, "displayMode": "list", "placement": "bottom", "calcs": []}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "line",
+              "fillOpacity": 80,
+              "gradientMode": "none",
+              "hideFrom": {"tooltip": false, "viz": false, "legend": false},
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {"type": "linear"},
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {"group": "A", "mode": "none"},
+              "thresholdsStyle": {"mode": "off"}
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 4,
+        "type": "piechart",
+        "title": "Team Workload Distribution",
+        "description": "Ticket volume by team (Top 10)",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 0},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  \"TKT-Team\" as \"Team\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Team\" IS NOT NULL\nGROUP BY \"TKT-Team\"\nORDER BY COUNT(*) DESC\nLIMIT 10;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {"values": false, "calcs": ["lastNotNull"]},
+          "pieType": "pie",
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["sum"], "values": ["value"]},
+          "displayLabels": ["percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "id": 5,
+        "type": "timeseries",
+        "title": "Monthly Ticket Volume Trend",
+        "description": "Total tickets created per month",
+        "gridPos": {"h": 8, "w": 16, "x": 0, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "time_series",
+            "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Ticket Volume\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= NOW() - INTERVAL '90 days'\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\")\nORDER BY time;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "bars",
+              "lineInterpolation": "linear",
+              "barAlignment": 0,
+              "lineWidth": 1,
+              "fillOpacity": 80,
+              "gradientMode": "none",
+              "spanNulls": false,
+              "showPoints": "auto",
+              "pointSize": 5,
+              "stacking": {"mode": "none", "group": "A"},
+              "axisPlacement": "auto",
+              "axisLabel": "",
+              "scaleDistribution": {"type": "linear"}
+            },
+            "color": {"mode": "palette-classic"},
+            "unit": "short",
+            "decimals": 0
+          }
+        },
+        "options": {
+          "tooltip": {"mode": "single", "sort": "none"},
+          "legend": {"showLegend": true, "displayMode": "list", "placement": "bottom", "calcs": []}
+        }
+      },
+      {
+        "id": 6,
+        "type": "barchart",
+        "title": "Resolution Time by Team (Days)",
+        "description": "Average resolution time per team (teams with ≥50 tickets)",
+        "gridPos": {"h": 8, "w": 8, "x": 16, "y": 8},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  \"TKT-Team\" as \"Team\",\n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Days\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Actual Resolution Date\" IS NOT NULL\n  AND \"TKT-Team\" IS NOT NULL\nGROUP BY \"TKT-Team\"\nHAVING COUNT(*) >= 50\nORDER BY \"Avg Days\" ASC\nLIMIT 10;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "showValue": "always",
+          "stacking": "none",
+          "groupWidth": 0.7,
+          "barWidth": 0.97,
+          "legend": {"showLegend": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"fillOpacity": 80},
+            "color": {"mode": "thresholds"},
+            "unit": "d",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 3, "color": "yellow"},
+                {"value": 7, "color": "red"}
+              ]
+            },
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 7,
+        "type": "barchart",
+        "title": "Team Customer Communication Coverage",
+        "description": "% of tickets with customer-facing comments by team",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "WITH customer_facing_comments AS (\n  SELECT ticket_id, COUNT(*) as customer_comment_count\n  FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id\n)\nSELECT\n  t.\"TKT-Team\" as \"Team\",\n  ROUND(100.0 * SUM(CASE WHEN cfc.customer_comment_count > 0 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Coverage %\"\nFROM servicedesk.tickets t\nLEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id\nWHERE t.\"TKT-Status\" IN ('Closed', 'Resolved')\nGROUP BY t.\"TKT-Team\"\nHAVING COUNT(*) >= 50\nORDER BY \"Coverage %\" DESC\nLIMIT 10;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "showValue": "always",
+          "stacking": "none",
+          "legend": {"showLegend": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"fillOpacity": 80},
+            "color": {"mode": "thresholds"},
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 75, "color": "yellow"},
+                {"value": 90, "color": "green"}
+              ]
+            },
+            "decimals": 2
+          }
+        }
+      },
+      {
+        "id": 8,
+        "type": "piechart",
+        "title": "Quality Tier Distribution",
+        "description": "Distribution of comment quality ratings\n\n⚠️ Coverage: 0.5% (517/108,129 comments)",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  quality_tier as \"Quality Tier\",\n  COUNT(*) as \"Comments\"\nFROM servicedesk.comment_quality\nWHERE quality_tier IS NOT NULL\nGROUP BY quality_tier\nORDER BY CASE quality_tier\n  WHEN 'excellent' THEN 1\n  WHEN 'good' THEN 2\n  WHEN 'acceptable' THEN 3\n  WHEN 'poor' THEN 4\nEND;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "pieType": "donut",
+          "tooltip": {"mode": "single"},
+          "legend": {"showLegend": true, "displayMode": "table", "placement": "right", "calcs": ["sum", "percent"], "values": ["value", "percent"]},
+          "displayLabels": ["name", "percent"]
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0,
+            "color": {
+              "mode": "fixed",
+              "fixedColor": "semi-dark-red"
+            },
+            "mappings": [
+              {"type": "value", "value": "excellent", "text": "Excellent", "color": "dark-green"},
+              {"type": "value", "value": "good", "text": "Good", "color": "green"},
+              {"type": "value", "value": "acceptable", "text": "Acceptable", "color": "yellow"},
+              {"type": "value", "value": "poor", "text": "Poor", "color": "red"}
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "overwrite": true
+}
