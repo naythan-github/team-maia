@@ -12,7 +12,7 @@ def normalize_profiler_result(result):
     """
     Normalize profiler result to include 'status' key for easier testing
 
-    Profiler returns: {tables, issues, circuit_breaker, summary}
+    Profiler returns: {database, timestamp, columns, issues, circuit_breaker, summary}
     Tests expect: {status: success|error, ...}
 
     Args:
@@ -31,8 +31,8 @@ def normalize_profiler_result(result):
         else:
             return {'status': 'success', **result}
 
-    # Fallback: if we got tables back, assume success
-    if 'tables' in result:
+    # Fallback: if we got columns back, assume success
+    if 'columns' in result or 'database' in result:
         return {'status': 'success', **result}
 
     return {'status': 'error', **result}
