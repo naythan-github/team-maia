@@ -454,6 +454,78 @@ Create "Team Knowledge Sharing Agent" v2.2 Enhanced with specialization in:
 
 ---
 
+## Mandatory TDD + Agent Pairing Enforcement
+*Established: 2025-10-19*
+*Decision: "proceed" - Make TDD + agent pairing mandatory for ALL development*
+
+### Problem Context
+User wants TDD methodology to be MANDATORY standard practice for all development work, with automatic best-fit agent pairing (domain specialist + SRE agent) to ensure both quality implementation AND production reliability.
+
+### Requirements Confirmed
+1. **TDD Scope**: ALL development (tools, agents, features, bug fixes, schema changes)
+2. **Exemptions**: Documentation-only, configuration-only changes (no code logic)
+3. **Agent Selection**: Self-consultation pattern - Maia asks internally "Which agent would Naythan want?" then proceeds with recommendation
+4. **SRE Role**: Full lifecycle (define requirements → collaborate during → review after)
+5. **Enforcement**: No skip option - TDD is mandatory, period
+
+### Implementation Approach
+**All 4 core guidance files updated**:
+
+1. **tdd_development_protocol.md**:
+   - Changed from "triggered by user" to "MANDATORY for all development"
+   - Added Agent Pairing Protocol section with self-consultation process
+   - Added SRE lifecycle integration (Phase 1-4)
+   - Added clear exemptions list (docs-only, config-only)
+   - Added domain specialist examples (ServiceDesk→SDM Agent, Security→Security Specialist, etc.)
+
+2. **CLAUDE.md** (Working Principles):
+   - Added Principle #16: "MANDATORY TDD + AGENT PAIRING"
+   - Added TDD Enforcement to Enforcement Requirements section
+   - References tdd_development_protocol.md for complete workflow
+
+3. **systematic_thinking_protocol.md**:
+   - Added Phase 0.5: "Development Mode Check" (TDD trigger detection)
+   - Updated PRE-RESPONSE CHECKLIST with TDD requirement check
+   - Added agent pairing selection template
+   - Integrated TDD workflow into systematic framework
+
+4. **identity.md** (Personality Traits):
+   - Added "TDD-First" trait to core personality
+   - References tdd_development_protocol.md
+
+### Agent Pairing Formula
+**Domain Specialist + SRE Principal Engineer Agent (ALWAYS)**
+
+**Self-Consultation Process**:
+1. Detect development task type (ServiceDesk, Security, Cloud, Data, etc.)
+2. Internally ask: "Which domain specialist would Naythan want for this?"
+3. Analyze options (90% domain match, 10% past success)
+4. Present recommendation with reasoning
+5. Proceed with selected pairing (no approval wait)
+
+### SRE Lifecycle Integration
+- **Phase 1 (Requirements)**: Define reliability requirements (observability, error handling, SLOs, data quality)
+- **Phase 2-3 (Design/Implementation)**: Collaborate on test coverage, error paths, instrumentation
+- **Phase 4 (Review)**: Production readiness, performance validation, security review
+
+### Success Criteria
+- 100% of development tasks go through TDD workflow (or documented exemption)
+- 100% of TDD projects engage domain specialist + SRE agent
+- Zero production deployments without tests
+- Zero SRE-critical issues missed (memory leaks, error handling, observability)
+
+### Files Modified
+- `claude/context/core/tdd_development_protocol.md` (now 210 lines, +80 lines)
+- `claude/context/core/identity.md` (added TDD-First personality trait)
+- `CLAUDE.md` (added Working Principle #16 + TDD Enforcement requirement)
+- `claude/context/core/systematic_thinking_protocol.md` (added Phase 0.5 TDD trigger)
+- `claude/context/core/development_decisions.md` (this entry)
+
+### Enforcement Status
+✅ **PRODUCTION ACTIVE** - All new context windows will enforce mandatory TDD + agent pairing
+
+---
+
 ## Future Decision Categories
 
 ### Development Workflows

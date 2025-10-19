@@ -1,13 +1,20 @@
 # TDD Development Protocol - Maia Standard Workflow
 
+## 🚨 **MANDATORY ENFORCEMENT** 🚨
+**STATUS**: REQUIRED for ALL development work (tools, agents, features, bug fixes, schema changes)
+**EXEMPTIONS**: Documentation-only changes, configuration-only changes (no code logic)
+**AGENT PAIRING**: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)
+
 ## Overview
-Established protocol for Test-Driven Development projects to prevent requirements drift and ensure comprehensive coverage before implementation.
+MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift and ensure production-ready, SRE-hardened implementations before deployment.
 
 ## Key Problems Addressed
 - Requirements drift during implementation
-- Premature test creation before complete requirements gathering  
+- Premature test creation before complete requirements gathering
 - Lost decisions and requirements through conversation
 - Better outcomes consistently observed with TDD approach
+- Production reliability issues from missing SRE review
+- Domain expertise gaps without specialist agent involvement
 
 ## Standard TDD Workflow
 
@@ -62,12 +69,67 @@ Established protocol for Test-Driven Development projects to prevent requirement
 3. Regular verification against requirements.md
 4. Update documentation if requirements evolve
 
+## 🤖 **AGENT PAIRING PROTOCOL** 🤖
+
+### Automatic Agent Selection
+**TRIGGER**: ANY development task (tool, agent, feature, bug fix, schema change)
+
+**AGENT PAIRING FORMULA**:
+1. **Domain Specialist Agent** - Primary domain expertise
+2. **SRE Principal Engineer Agent** - Production reliability, observability, error handling
+
+### Agent Selection Process (Self-Consultation)
+**Maia's Internal Process**:
+1. Detect development task type (ServiceDesk, Security, Cloud, Data, etc.)
+2. Ask internally: "Which domain specialist would Naythan want for this?"
+3. Analyze options using systematic framework:
+   - Domain expertise match (90% weight)
+   - Past success with similar tasks (10% weight)
+4. Present recommendation with reasoning
+5. Proceed with selected pairing (no approval wait)
+
+**Example Output**:
+> "This ServiceDesk ETL work needs the **Service Desk Manager Agent** (domain expertise in ticket analysis patterns) + **SRE Principal Engineer Agent** (pipeline reliability, circuit breakers, observability). Proceeding with this pairing."
+
+### SRE Agent Lifecycle Integration
+**Phase 1 (Requirements)**: SRE defines reliability requirements
+- Observability needs (logging, metrics, tracing)
+- Error handling requirements (circuit breakers, retries, fallbacks)
+- Performance SLOs (latency, throughput, resource limits)
+- Data quality gates (validation, cleaning, profiling)
+- Operational requirements (health checks, graceful degradation)
+
+**Phase 2-3 (Test Design & Implementation)**: SRE collaborates during development
+- Review test coverage for failure modes
+- Validate error handling paths
+- Ensure observability instrumentation
+- Co-design reliability patterns
+
+**Phase 4 (Review)**: SRE reviews implementation
+- Production readiness assessment
+- Performance validation
+- Security review
+- Operational runbook validation
+
+### Domain Specialist Examples
+- **ServiceDesk work** → Service Desk Manager Agent
+- **Security analysis** → Security Specialist Agent
+- **Cloud infrastructure** → Azure Solutions Architect Agent
+- **Data pipelines** → Data Analyst Agent
+- **Recruitment tools** → Technical Recruitment Agent
+- **Information management** → Information Management Orchestrator Agent
+
 ## Conversation Management
 
-### Starting a TDD Project
-- User: "Let's do TDD" or "Let's do TDD with requirements tracking"
-- Maia: Initiates Phase 1 discovery questions
-- Maia: Creates requirements.md and test files only after confirmation
+### Starting a TDD Project (AUTOMATIC TRIGGER)
+**OLD BEHAVIOR** (deprecated): User says "Let's do TDD"
+**NEW BEHAVIOR** (mandatory): Maia auto-detects development work and initiates TDD
+
+**Maia's Automatic Workflow**:
+1. Detect development task (code changes, new tools, bug fixes, schema changes)
+2. **Agent Pairing**: Select domain specialist + SRE (announce selection)
+3. **Phase 1**: Initiate requirements discovery questions
+4. **Phase 2-4**: Execute TDD workflow with both agents
 
 ### During Development
 - Start each session: "Let me read the requirements file"
@@ -76,12 +138,10 @@ Established protocol for Test-Driven Development projects to prevent requirement
 - Regular checkpoint: "Are we still aligned with requirements?"
 
 ### Key Phrases
-- **"Let's do TDD"** - Triggers full discovery protocol
 - **"Requirements complete"** - User signal to proceed to test phase
 - **"Check requirements"** - Prompts re-reading of requirements.md
 - **"Update requirements"** - Captures new decisions
 - **"Show me the tests"** - Validates test coverage
-- **"Start coding"** - Bypasses discovery (only if user wants to skip)
 
 ## File Structure for TDD Projects
 ```
@@ -124,7 +184,27 @@ project_name/
 - **Continuous Learning**: Update protocol based on project outcomes
 - **Documentation-First**: Always update requirements when decisions change
 
+## TDD Scope & Exemptions
+
+### REQUIRES TDD (Mandatory)
+✅ New tools, agents, features
+✅ Bug fixes to existing code
+✅ Database schema changes
+✅ API modifications
+✅ Data pipeline changes
+✅ Integration work
+
+### EXEMPT FROM TDD
+❌ Documentation-only changes (no code logic)
+❌ Configuration-only changes (no code logic)
+❌ README/markdown updates
+❌ Comment-only changes
+
+### Grey Areas (Use Judgment)
+⚠️ **Small typo fixes in code**: Generally exempt, but if touching critical logic → TDD
+⚠️ **Config with logic**: If config changes affect behavior → TDD required
+
 ---
-*Last Updated: 2025-01-22*
-*Status: Active Protocol*
-*Usage: Standard for all TDD development projects*
+*Last Updated: 2025-10-19*
+*Status: MANDATORY Protocol - Enforced for ALL Development*
+*Agent Pairing: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)*

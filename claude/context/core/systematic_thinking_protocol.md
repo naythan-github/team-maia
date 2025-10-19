@@ -69,6 +69,7 @@ python3 claude/tools/capability_checker.py --json "task description"
 Before ANY recommendation or action:
 - [ ] **Am I already in EXECUTION MODE?** ⭐ **CHECK FIRST** - If YES, skip to implementation
 - [ ] **Have I completed Phase 0 capability check?** ⭐ **NEW - MANDATORY** (Only in DISCOVERY MODE)
+- [ ] **Is this a development task?** ⭐ **Phase 0.5 - TDD TRIGGER** - If YES, initiate TDD + agent pairing
 - [ ] Have I decomposed the actual problem? (Only in DISCOVERY MODE)
 - [ ] Have I identified all stakeholders and constraints? (Only in DISCOVERY MODE)
 - [ ] Have I explored multiple solution paths? (Only in DISCOVERY MODE)
@@ -99,6 +100,27 @@ Before ANY recommendation or action:
 
 **Result:** [Existing solution found/No existing solution/Partial match - enhancement needed]
 **Decision:** [Use existing/Enhance existing/Build new with justification]
+```
+
+#### 0.5. **DEVELOPMENT MODE CHECK** (DISCOVERY MODE Only) ⭐ **TDD TRIGGER**
+```
+🧬 **Phase 0.5: TDD Requirement Detection**
+- Task type: [New tool/Bug fix/Schema change/Feature/Other]
+- Code changes involved: [YES/NO]
+- TDD required: [YES (mandatory) / NO (docs/config-only exempt)]
+
+**IF TDD REQUIRED:**
+🤖 **Agent Pairing Selection** (Self-Consultation):
+- Domain analysis: [ServiceDesk/Security/Cloud/Data/etc.]
+- Domain Specialist: [Agent Name] (reasoning: [domain expertise match])
+- SRE Agent: SRE Principal Engineer Agent (reliability, observability, error handling)
+- **Proceeding with**: [Domain Specialist] + SRE Principal Engineer Agent
+
+**TDD Workflow Initiated:**
+- Phase 1: Requirements Discovery (SRE defines reliability requirements)
+- Phase 2: Requirements Documentation
+- Phase 3: Test Design (SRE validates failure mode coverage)
+- Phase 4: Implementation (SRE collaborates + reviews)
 ```
 
 #### 1. **PROBLEM ANALYSIS** (DISCOVERY MODE Only)
