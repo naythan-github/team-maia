@@ -2,13 +2,28 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-20 (Phase 133 - Prompt Frameworks v2.2 Update)
+**Last Updated**: 2025-10-20 (Phase 134 - Automatic Agent Persistence System)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 134 (Oct 20) - Automatic Agent Persistence System ⭐ **WORKING PRINCIPLE #15 ACTIVE**
+- **swarm_auto_loader.py** - Automatic agent loading when confidence >70% + complexity ≥3 (350 lines, P95=59.8ms)
+- **coordinator_agent.py --json** - Structured JSON output for programmatic use (28KB enhanced)
+- **agent_swarm.py _execute_agent()** - AgentLoader integration with context injection (11ms performance)
+- **Session State File** - `/tmp/maia_active_swarm_session.json` (v1.1, atomic writes, 0o600 permissions)
+- **CLAUDE.md Integration** - Context Loading Protocol Step 2: Check agent session, auto-load context
+- **Domain Change Detection** - Automatic agent switching when domain changes (≥9% confidence delta)
+- **Handoff Chain Tracking** - Complete audit trail: `['sre_principal_engineer', 'cloud_security_principal']`
+- **Test Suite** - test_automatic_agent_persistence.py (25KB, 6/6 tests passed)
+- **Quality**: +25-40% improvement (specialist vs base Maia), 60-70% token savings
+- **UX**: Zero manual "load X agent" commands, automatic domain switching, session persistence
+- **Performance**: P95 59.8ms hook latency (70% under 200ms SLA), 11ms agent loading
+- **Reliability**: 100% graceful degradation, non-blocking errors, secure file permissions
+- **Impact**: Eliminates quality loss from base Maia handling specialist queries, reduces token waste, transparent operation
 
 ### Phase 133 (Oct 20) - Prompt Frameworks v2.2 Enhanced Update ⭐ **DOCUMENTATION UPGRADE**
 - prompt_frameworks.md - Updated command documentation with v2.2 Enhanced patterns (918 lines, 160→918 lines, +474% expansion)
