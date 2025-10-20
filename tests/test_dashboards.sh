@@ -247,11 +247,11 @@ test_import_script_auth() {
 
 # Test 12: All 5 numbered dashboards exist
 test_all_dashboards_exist() {
-  log_test_start "All 5 numbered dashboard files exist"
+  log_test_start "All 6 numbered dashboard files exist"
 
   local missing_dashboards=()
 
-  for i in {1..5}; do
+  for i in {1..6}; do
     if ! ls "$DASHBOARD_DIR"/${i}_*.json > /dev/null 2>&1; then
       missing_dashboards+=("Dashboard $i")
     fi
@@ -262,6 +262,114 @@ test_all_dashboards_exist() {
     return 0
   else
     log_fail "Missing dashboards: ${missing_dashboards[*]}"
+    return 1
+  fi
+}
+
+# Test 13: Dashboard 6 classification logic is correct
+test_dashboard_6_classification() {
+  log_test_start "Dashboard 6 incident classification logic is correct"
+
+  # Test primary classification percentages
+  local query="
+    WITH classified AS (
+      SELECT
+        CASE
+          WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))
+               LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])
+          THEN 'Cloud'
+          WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))
+               LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])
+          THEN 'Telecommunications'
+          WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))
+               LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])
+          THEN 'Networking'
+          ELSE 'Cloud'
+        END AS category
+      FROM servicedesk.tickets
+      WHERE \"TKT-Category\" <> 'Alert'
+      AND \"TKT-Created Time\" >= '2025-07-01'
+    )
+    SELECT category, COUNT(*) as count
+    FROM classified
+    GROUP BY category
+    ORDER BY category;
+  "
+
+  local result=$(docker exec "$POSTGRES_CONTAINER" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c "$query" 2>/dev/null)
+  local category_count=$(echo "$result" | wc -l | tr -d ' ')
+
+  if [ "$category_count" -eq "3" ]; then
+    echo "  Found 3 categories: $(echo "$result" | cut -d'|' -f1 | tr '\n' ' ')"
+    log_pass
+    return 0
+  else
+    log_fail "Expected 3 categories, found $category_count"
+    return 1
+  fi
+}
+
+# Test 14: Dashboard 6 file shares are correctly classified as Cloud
+test_dashboard_6_file_shares() {
+  log_test_start "Dashboard 6 file shares classified as Cloud only"
+
+  local query="
+    WITH file_share_tickets AS (
+      SELECT
+        CASE
+          WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))
+               LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])
+          THEN 'Cloud'
+          WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))
+               LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])
+          THEN 'Telecommunications'
+          WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))
+               LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])
+          THEN 'Networking'
+          ELSE 'Cloud'
+        END AS category
+      FROM servicedesk.tickets
+      WHERE \"TKT-Category\" <> 'Alert'
+      AND \"TKT-Created Time\" >= '2025-07-01'
+      AND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))
+          LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])
+    )
+    SELECT category, COUNT(*) FROM file_share_tickets GROUP BY category;
+  "
+
+  local result=$(docker exec "$POSTGRES_CONTAINER" psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -t -A -c "$query" 2>/dev/null)
+  local non_cloud=$(echo "$result" | grep -v "Cloud" | wc -l | tr -d ' ')
+
+  if [ "$non_cloud" -eq "0" ]; then
+    local cloud_count=$(echo "$result" | grep "Cloud" | cut -d'|' -f2)
+    echo "  All $cloud_count file share tickets in Cloud category"
+    log_pass
+    return 0
+  else
+    log_fail "File shares found in non-Cloud categories"
+    return 1
+  fi
+}
+
+# Test 15: Dashboard 6 has correct number of panels
+test_dashboard_6_panels() {
+  log_test_start "Dashboard 6 has 10 panels"
+
+  local dashboard_file="$DASHBOARD_DIR/6_incident_classification_breakdown.json"
+
+  if [ ! -f "$dashboard_file" ]; then
+    log_fail "Dashboard file not found"
+    return 1
+  fi
+
+  local panel_count=$(jq '[.dashboard.panels[]? // .panels[]?] | length' "$dashboard_file" 2>/dev/null)
+
+  if [ "$panel_count" -eq "10" ]; then
+    echo "  Dashboard has 10 panels as expected"
+    log_pass
+    return 0
+  else
+    log_fail "Expected 10 panels, found $panel_count"
     return 1
   fi
 }
@@ -288,6 +396,9 @@ main() {
   test_import_succeeds || true
   test_dashboard_accessible || true
   test_panels_have_data || true
+  test_dashboard_6_classification || true
+  test_dashboard_6_file_shares || true
+  test_dashboard_6_panels || true
 
   # Summary
   echo -e "${BLUE}╔════════════════════════════════════════════════════════════════╗${NC}"

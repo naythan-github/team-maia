@@ -16,7 +16,7 @@ cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
 ./scripts/import_dashboards.sh
 ```
 
-**Expected Output**: 5 dashboards imported successfully
+**Expected Output**: 6 dashboards imported successfully
 
 **Access Dashboards**:
 - Open http://localhost:3000
@@ -27,7 +27,7 @@ cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
 
 ## What's Included
 
-### 5 Production-Ready Dashboards
+### 6 Production-Ready Dashboards
 
 1. **Automation Executive Overview** (`servicedesk-automation-exec`)
    - Single-pane-of-glass automation opportunity summary
@@ -53,6 +53,12 @@ cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
    - Baseline metrics and post-automation ROI tracking framework
    - Tracks: Baseline vs actual savings, automation deployment dates
    - 13 panels: Baseline KPIs, trends, post-automation placeholders, ROI calculator
+
+6. **Incident Classification Breakdown** (`servicedesk-incident-classification`)
+   - Technology stack distribution: Cloud, Telecommunications, Networking infrastructure
+   - 6,903 incidents classified: 78.56% Cloud, 18.56% Telecom, 2.88% Networking
+   - 10 panels: Primary classification pie chart, category stats, sub-category breakdowns, time-series trends, recent incident tables
+   - Key insights: File shares (738) correctly classified as Cloud, VPN dominates networking (51.58%), calling issues dominate telecom (98.22%)
 
 ### Complete Documentation (4 files)
 
@@ -105,7 +111,8 @@ servicedesk-dashboard/
 │       ├── 2_alert_analysis_deepdive.json
 │       ├── 3_support_pattern_analysis.json
 │       ├── 4_team_performance_tasklevel.json
-│       └── 5_improvement_tracking_roi.json
+│       ├── 5_improvement_tracking_roi.json
+│       └── 6_incident_classification_breakdown.json
 └── scripts/
     └── import_dashboards.sh (automated import)
 ```
@@ -141,7 +148,7 @@ docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c "SEL
 ```
 
 **Duration**: 2 minutes
-**Result**: All 5 dashboards imported and ready to use
+**Result**: All 6 dashboards imported and ready to use
 
 ### Method 2: Manual Import
 
@@ -163,6 +170,7 @@ docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c "SEL
 3. **Support Patterns**: http://localhost:3000/d/servicedesk-support-patterns
 4. **Team Performance**: http://localhost:3000/d/servicedesk-team-performance
 5. **Improvement Tracking**: http://localhost:3000/d/servicedesk-improvement-tracking
+6. **Incident Classification**: http://localhost:3000/d/servicedesk-incident-classification
 
 ---
 
@@ -294,7 +302,7 @@ Or use relative: `from: "now-6M"`, `to: "now"`
 ## Success Criteria ✅
 
 **All deliverables complete**:
-- [x] 5 dashboards created (47 panels total)
+- [x] 6 dashboards created (57 panels total)
 - [x] Real-time PostgreSQL integration
 - [x] All key findings visualized
 - [x] ROI calculations implemented
@@ -314,4 +322,4 @@ cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
 open http://localhost:3000
 ```
 
-**That's it!** All 5 dashboards will be imported and ready to explore.
+**That's it!** All 6 dashboards will be imported and ready to explore.

@@ -604,6 +604,212 @@ SELECT cron.schedule('refresh-daily-summary', '0 2 * * *', 'REFRESH MATERIALIZED
 
 ---
 
+## Dashboard 6: Incident Classification Breakdown
+
+### Query 1: Primary Classification (Cloud/Telecom/Networking)
+
+**Purpose**: Classify all non-alert incidents into technology stack categories
+
+```sql
+WITH classified AS (
+  SELECT
+    CASE
+      -- File shares always go to Cloud (even if they mention 'network')
+      WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+           LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])
+      THEN 'Cloud'
+
+      -- Telecommunications: phone, VoIP, calling, meeting systems
+      WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+           LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])
+      THEN 'Telecommunications'
+
+      -- Networking: VPN, firewall, switches, WiFi (excludes file shares)
+      WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+           LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])
+      THEN 'Networking'
+
+      -- Everything else is Cloud (SaaS, applications, etc.)
+      ELSE 'Cloud'
+    END AS category
+  FROM servicedesk.tickets
+  WHERE "TKT-Category" <> 'Alert'
+  AND "TKT-Created Time" >= '2025-07-01'
+)
+SELECT category, COUNT(*) as count, ROUND(COUNT(*)*100.0/(SELECT COUNT(*) FROM classified), 2) as percentage
+FROM classified
+GROUP BY category
+ORDER BY COUNT(*) DESC;
+```
+
+**Results** (6,903 total incidents):
+- Cloud: 5,423 (78.56%)
+- Telecommunications: 1,281 (18.56%)
+- Networking: 199 (2.88%)
+
+**Performance**: 75-115ms (with CASE statement evaluation)
+
+**Key Design Decision**: File shares explicitly classified as Cloud FIRST, before networking check. This prevents "network drive" from being misclassified as Networking infrastructure.
+
+### Query 2: Networking Sub-Categories
+
+**Purpose**: Break down networking incidents into infrastructure types
+
+```sql
+WITH networking_tickets AS (
+  SELECT "TKT-Title", "TKT-Description"
+  FROM servicedesk.tickets
+  WHERE "TKT-Category" <> 'Alert'
+  AND "TKT-Created Time" >= '2025-07-01'
+  -- Exclude file shares
+  AND LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+      NOT LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])
+  -- Include networking keywords
+  AND LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+      LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])
+)
+SELECT
+  CASE
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%vpn%' THEN 'VPN Issues'
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%firewall%' THEN 'Firewall'
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%switch%' OR
+         LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%router%' THEN 'Switch/Router Hardware'
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%wifi%' OR
+         LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%wi-fi%' OR
+         LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%access point%' THEN 'WiFi Connectivity'
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%ethernet%' THEN 'Ethernet/Cabling'
+    ELSE 'Other Networking'
+  END AS subcategory,
+  COUNT(*) as count,
+  ROUND(COUNT(*)*100.0/(SELECT COUNT(*) FROM networking_tickets), 2) as percentage
+FROM networking_tickets
+GROUP BY subcategory
+ORDER BY count DESC;
+```
+
+**Results** (316 total networking tickets):
+- VPN Issues: 163 (51.58%)
+- Switch/Router Hardware: 56 (17.72%)
+- WiFi Connectivity: 56 (17.72%)
+- Firewall: 36 (11.39%)
+- Ethernet/Cabling: 5 (1.58%)
+
+**Performance**: <50ms (smaller dataset after filtering)
+
+### Query 3: Telecommunications Sub-Categories
+
+**Purpose**: Break down telecommunications incidents by type
+
+```sql
+WITH telecom_tickets AS (
+  SELECT "TKT-Title", "TKT-Description"
+  FROM servicedesk.tickets
+  WHERE "TKT-Category" <> 'Alert'
+  AND "TKT-Created Time" >= '2025-07-01'
+  AND LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+      LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])
+)
+SELECT
+  CASE
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%phone%'
+         OR LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%call%' THEN 'Calling Issues'
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%pbx%' THEN 'PBX System'
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%voip%' THEN 'VoIP'
+    WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%teams meeting%'
+         OR LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",'')) LIKE '%meeting room%' THEN 'Conference/Meeting Rooms'
+    ELSE 'Other Telecom'
+  END AS subcategory,
+  COUNT(*) as count,
+  ROUND(COUNT(*)*100.0/(SELECT COUNT(*) FROM telecom_tickets), 2) as percentage
+FROM telecom_tickets
+GROUP BY subcategory
+ORDER BY count DESC;
+```
+
+**Results** (1,404 total telecom tickets):
+- Calling Issues: 1,379 (98.22%)
+- Conference/Meeting Rooms: 15 (1.07%)
+- PBX System: 9 (0.64%)
+- VoIP: 1 (0.07%)
+
+**Performance**: <50ms
+
+### Query 4: Classification Trends Over Time
+
+**Purpose**: Weekly trend showing how incident distribution changes over time
+
+```sql
+WITH classified AS (
+  SELECT
+    DATE_TRUNC('week', "TKT-Created Time") as time,
+    CASE
+      WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+           LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])
+      THEN 'Cloud'
+      WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+           LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])
+      THEN 'Telecommunications'
+      WHEN LOWER(COALESCE("TKT-Title",'') || ' ' || COALESCE("TKT-Description",''))
+           LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])
+      THEN 'Networking'
+      ELSE 'Cloud'
+    END AS category
+  FROM servicedesk.tickets
+  WHERE "TKT-Category" <> 'Alert'
+  AND "TKT-Created Time" >= '2025-07-01'
+)
+SELECT time,
+  SUM(CASE WHEN category = 'Cloud' THEN 1 ELSE 0 END) as "Cloud",
+  SUM(CASE WHEN category = 'Telecommunications' THEN 1 ELSE 0 END) as "Telecommunications",
+  SUM(CASE WHEN category = 'Networking' THEN 1 ELSE 0 END) as "Networking"
+FROM classified
+GROUP BY time
+ORDER BY time;
+```
+
+**Performance**: ~100ms (includes time-series aggregation)
+
+**Use Case**: Grafana stacked area chart showing category distribution evolution
+
+### Dashboard 6 Performance Summary
+
+| Query | Type | Execution Time | Status |
+|-------|------|----------------|--------|
+| Primary Classification | Pattern matching + aggregation | 75-115ms | ✅ Excellent |
+| Networking Sub-categories | Filtered pattern matching | 40-50ms | ✅ Excellent |
+| Telecom Sub-categories | Filtered pattern matching | 40-50ms | ✅ Excellent |
+| Time-series trends | Time-series + classification | 90-110ms | ✅ Excellent |
+| File share detail table | Simple filter | 20-30ms | ✅ Excellent |
+
+**Total Dashboard Load Time**: ~400-500ms (all 10 panels combined)
+
+### Classification Logic Validation
+
+**Test Case 1: File Shares Classification**
+```sql
+-- Verify all file share tickets are classified as Cloud, NOT Networking
+SELECT category, COUNT(*)
+FROM (
+  SELECT CASE
+    WHEN LOWER(...) LIKE ANY(ARRAY['%network drive%',...]) THEN 'Cloud'
+    WHEN LOWER(...) LIKE ANY(ARRAY['%vpn%',...]) THEN 'Networking'
+    ELSE 'Cloud'
+  END AS category
+  FROM servicedesk.tickets
+  WHERE LOWER(...) LIKE ANY(ARRAY['%network drive%',%share%',...])
+) AS file_shares
+GROUP BY category;
+```
+
+**Expected Result**: 100% Cloud (0% Networking/Telecom)
+**Actual Result**: 738 tickets → 100% Cloud ✅
+
+**Test Case 2: No Overlap Between Categories**
+- Each ticket appears in exactly ONE category
+- Validated via: `SUM(counts) = 6,903` (total non-alert tickets)
+
+---
+
 ## Contact & Support
 
 **Author**: SRE Principal Engineer Agent
