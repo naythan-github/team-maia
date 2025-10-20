@@ -13,6 +13,7 @@ from pathlib import Path
 import json
 from datetime import datetime
 from typing import Dict, List
+import subprocess
 
 MAIA_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
@@ -37,6 +38,9 @@ class EnhancedDailyBriefing:
             "generated_at": datetime.now().isoformat(),
             "sections": {}
         }
+
+        # Section 0: System Health (NEW - Option B)
+        briefing["sections"]["system_health"] = self._get_system_health()
 
         # Section 1: Top Priorities Today
         briefing["sections"]["priorities"] = self._get_top_priorities()
@@ -111,12 +115,112 @@ class EnhancedDailyBriefing:
         vtt_actions = self.vtt_intel.get_pending_actions_for_owner("Naythan")
         return [f"{a['action']} (from meeting)" for a in vtt_actions[:5]]
 
+    def _get_system_health(self) -> Dict:
+        """
+        Check Maia background service health status.
+
+        NEW - Option B: Daily health check integration
+        Runs launchagent_health_monitor.py and returns status summary
+        """
+        try:
+            # Run health monitor with JSON output
+            health_monitor_path = MAIA_ROOT / "claude" / "tools" / "sre" / "launchagent_health_monitor.py"
+            result = subprocess.run(
+                ['python3', str(health_monitor_path), '--json', '/tmp/maia_health.json'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+
+            # Read JSON output
+            health_file = Path('/tmp/maia_health.json')
+            if health_file.exists():
+                with open(health_file, 'r') as f:
+                    health_data = json.load(f)
+
+                healthy_count = health_data.get('healthy_count', 0)
+                degraded_count = health_data.get('degraded_count', 0)
+                failed_count = health_data.get('failed_count', 0)
+                total_count = health_data.get('total_services', 0)
+
+                # Determine status icon and message
+                if failed_count == 0 and degraded_count == 0:
+                    status = "✅ HEALTHY"
+                    message = f"All {healthy_count} services operational"
+                    alert_level = "none"
+                elif failed_count > 0:
+                    status = "🔴 ATTENTION NEEDED"
+                    message = f"{failed_count} service(s) down, {degraded_count} degraded"
+                    alert_level = "high"
+                    # Send macOS notification for failures
+                    self._send_health_alert(failed_count, degraded_count)
+                else:
+                    status = "⚠️ DEGRADED"
+                    message = f"{degraded_count} service(s) degraded"
+                    alert_level = "medium"
+
+                return {
+                    "status": status,
+                    "message": message,
+                    "alert_level": alert_level,
+                    "healthy": healthy_count,
+                    "degraded": degraded_count,
+                    "failed": failed_count,
+                    "total": total_count,
+                    "details_available": True
+                }
+            else:
+                return {
+                    "status": "⚠️ UNKNOWN",
+                    "message": "Health check completed but no data file",
+                    "alert_level": "low",
+                    "details_available": False
+                }
+
+        except subprocess.TimeoutExpired:
+            return {
+                "status": "⚠️ TIMEOUT",
+                "message": "Health check timed out (>10s)",
+                "alert_level": "medium",
+                "details_available": False
+            }
+        except Exception as e:
+            return {
+                "status": "❌ ERROR",
+                "message": f"Health check failed: {str(e)[:50]}",
+                "alert_level": "medium",
+                "details_available": False
+            }
+
+    def _send_health_alert(self, failed_count: int, degraded_count: int):
+        """Send macOS notification for service failures"""
+        try:
+            title = "⚠️ Maia Service Alert"
+            message = f"{failed_count} service(s) down"
+            if degraded_count > 0:
+                message += f", {degraded_count} degraded"
+
+            subprocess.run([
+                'osascript', '-e',
+                f'display notification "{message}" with title "{title}" sound name "Basso"'
+            ], check=False, capture_output=True, timeout=5)
+        except Exception:
+            pass  # Notification failure should not break briefing
+
     def format_for_display(self, briefing: Dict) -> str:
         """Format briefing as readable text"""
         output = []
         output.append(f"\n{'='*70}")
         output.append(f"🎯 EXECUTIVE BRIEFING - {briefing['date']}")
         output.append(f"{'='*70}\n")
+
+        # System Health (NEW - Option B)
+        health = briefing['sections'].get('system_health', {})
+        output.append(f"🏥 SYSTEM HEALTH: {health.get('status', 'UNKNOWN')}")
+        output.append(f"   {health.get('message', 'No health data available')}")
+        if health.get('details_available'):
+            output.append(f"   Run: python3 ~/git/maia/claude/tools/sre/launchagent_health_monitor.py --dashboard")
+        output.append("")
 
         # Priorities
         output.append("📌 TOP PRIORITIES TODAY:")
