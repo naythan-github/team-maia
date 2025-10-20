@@ -42,12 +42,14 @@ if [[ -f "$CAPABILITY_ENFORCER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
     fi
 fi
 
-# Stage 0.8: Intelligent Agent Routing - Background logging (non-blocking)
-# PHASE 127: Async logging to eliminate 40ms blocking wait
-COORDINATOR_CLI="$(dirname "$0")/../tools/orchestration/coordinator_agent.py"
-if [[ -f "$COORDINATOR_CLI" && -n "$CLAUDE_USER_MESSAGE" ]]; then
-    # Run in background with output suppression
-    (python3 "$COORDINATOR_CLI" classify "$CLAUDE_USER_MESSAGE" --log 2>/dev/null || true) &
+# Stage 0.8: Automatic Agent Persistence - Swarm Auto-Loader (Phase 134)
+# Invokes SwarmOrchestrator when routing confidence >70% and complexity >3
+# Creates session state file for Maia agent context loading
+# Performance SLA: <200ms, Reliability SLA: 100% graceful degradation
+SWARM_AUTO_LOADER="$(dirname "$0")/swarm_auto_loader.py"
+if [[ -f "$SWARM_AUTO_LOADER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    # Run in background (non-blocking, graceful degradation)
+    (python3 "$SWARM_AUTO_LOADER" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true) &
 fi
 
 # Verbose mode output (only if explicitly enabled)

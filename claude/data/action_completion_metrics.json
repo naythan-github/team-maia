@@ -2,57 +2,6 @@
   "tracking_started": "2025-10-04T08:47:53.525389",
   "weekly_completion": [
     {
-      "week_of": "2025-10-13",
-      "synced_at": "2025-10-13T22:16:18.740244",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 3
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 0,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 5,
-      "total_overdue": 3
-    },
-    {
-      "week_of": "2025-10-14",
-      "synced_at": "2025-10-14T02:16:28.619661",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 3
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 0,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 5,
-      "total_overdue": 3
-    },
-    {
-      "week_of": "2025-10-14",
-      "synced_at": "2025-10-14T06:16:35.694433",
-      "vtt": {
-        "completed": 0,
-        "pending": 5,
-        "overdue": 3
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 0,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 5,
-      "total_overdue": 3
-    },
-    {
       "week_of": "2025-10-14",
       "synced_at": "2025-10-14T10:16:42.147260",
       "vtt": {
@@ -204,51 +153,60 @@
       "total_completed": 2,
       "total_pending": 3,
       "total_overdue": 2
+    },
+    {
+      "week_of": "2025-10-20",
+      "synced_at": "2025-10-20T19:54:06.667569",
+      "vtt": {
+        "completed": 0,
+        "pending": 3,
+        "overdue": 2
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 3,
+      "total_overdue": 2
+    },
+    {
+      "week_of": "2025-10-20",
+      "synced_at": "2025-10-20T23:54:14.968365",
+      "vtt": {
+        "completed": 0,
+        "pending": 3,
+        "overdue": 2
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 3,
+      "total_overdue": 2
+    },
+    {
+      "week_of": "2025-10-21",
+      "synced_at": "2025-10-21T03:54:22.430716",
+      "vtt": {
+        "completed": 0,
+        "pending": 3,
+        "overdue": 2
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 3,
+      "total_overdue": 2
     }
   ],
   "overdue_alerts": [
-    {
-      "action": "Provide subcategory list to Mariel for customer spreadsheet update",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-13T00:45:37.499771"
-    },
-    {
-      "action": "Get services team to audit Intune deployments via Lighthouse",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-13T00:45:37.500000"
-    },
-    {
-      "action": "Provide Intune deployment status report",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-13T00:45:37.500217"
-    },
-    {
-      "action": "Provide subcategory list to Mariel for customer spreadsheet update",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-13T04:45:45.902442"
-    },
-    {
-      "action": "Get services team to audit Intune deployments via Lighthouse",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-13T04:45:45.902677"
-    },
-    {
-      "action": "Provide Intune deployment status report",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-10-13T04:45:45.902884"
-    },
     {
       "action": "Provide subcategory list to Mariel for customer spreadsheet update",
       "due_date": "2025-10-10T19:28:29.629Z",
@@ -556,6 +514,48 @@
       "owner": "Naythan",
       "source": "vtt",
       "checked_at": "2025-10-20T15:53:44.248934"
+    },
+    {
+      "action": "Get services team to audit Intune deployments via Lighthouse",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-20T19:54:00.135840"
+    },
+    {
+      "action": "Provide Intune deployment status report",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-20T19:54:00.136093"
+    },
+    {
+      "action": "Get services team to audit Intune deployments via Lighthouse",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-20T23:54:10.335861"
+    },
+    {
+      "action": "Provide Intune deployment status report",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-20T23:54:10.336091"
+    },
+    {
+      "action": "Get services team to audit Intune deployments via Lighthouse",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-21T03:54:17.711516"
+    },
+    {
+      "action": "Provide Intune deployment status report",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-10-21T03:54:17.711756"
     }
   ]
 }

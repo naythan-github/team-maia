@@ -577,9 +577,13 @@ def format_routing_output(routing: RoutingDecision) -> str:
     return "\n".join(output)
 
 
-def cli_classify(query: str) -> int:
+def cli_classify(query: str, json_output: bool = False) -> int:
     """
     CLI classify command for hook integration.
+
+    Args:
+        query: User query to classify
+        json_output: If True, output JSON instead of human-readable format
 
     Returns:
         0: Routing suggestion available
@@ -595,15 +599,52 @@ def cli_classify(query: str) -> int:
         # Only display routing for non-trivial queries (complexity > 3, confidence > 70%)
         if intent.complexity < 3 or intent.confidence < 0.70:
             # General query - no specific routing needed
+            if json_output:
+                import json
+                print(json.dumps({
+                    "routing_needed": False,
+                    "intent": {
+                        "category": intent.category,
+                        "domains": intent.domains,
+                        "complexity": intent.complexity,
+                        "confidence": intent.confidence
+                    }
+                }))
             return 2
 
         # Get routing decision
         routing = coordinator.agent_selector.select(intent, query)
 
         if not routing or not routing.agents:
+            if json_output:
+                import json
+                print(json.dumps({"routing_needed": False}))
             return 2
 
-        # Format output
+        # JSON output format (Phase 134 - Swarm Auto-Loader integration)
+        if json_output:
+            import json
+            output_data = {
+                "routing_needed": True,
+                "intent": {
+                    "category": intent.category,
+                    "domains": intent.domains,
+                    "complexity": intent.complexity,
+                    "confidence": intent.confidence,
+                    "primary_domain": intent.domains[0] if intent.domains else "general"
+                },
+                "routing": {
+                    "strategy": routing.strategy,
+                    "agents": routing.agents,
+                    "initial_agent": routing.initial_agent,
+                    "confidence": routing.confidence,
+                    "reasoning": routing.reasoning
+                }
+            }
+            print(json.dumps(output_data))
+            return 0
+
+        # Human-readable output format (original)
         output = []
         output.append(f"   Intent: {intent.category}")
         output.append(f"   Domains: {', '.join(intent.domains)}")
@@ -695,11 +736,12 @@ def main():
     import sys
 
     if len(sys.argv) < 2:
-        print("Usage: coordinator_agent.py classify <query> [--log]", file=sys.stderr)
+        print("Usage: coordinator_agent.py classify <query> [--log] [--json]", file=sys.stderr)
         print("", file=sys.stderr)
         print("Commands:", file=sys.stderr)
-        print("  classify <query>       - Classify query and suggest agent routing", file=sys.stderr)
-        print("  classify <query> --log - Classify and log to database (Phase 122)", file=sys.stderr)
+        print("  classify <query>        - Classify query and suggest agent routing", file=sys.stderr)
+        print("  classify <query> --log  - Classify and log to database (Phase 125)", file=sys.stderr)
+        print("  classify <query> --json - Output JSON format (Phase 134)", file=sys.stderr)
         sys.exit(1)
 
     command = sys.argv[1]
@@ -711,11 +753,15 @@ def main():
 
         query = sys.argv[2]
 
-        # Check for --log flag (Phase 122)
-        if len(sys.argv) > 3 and sys.argv[3] == "--log":
+        # Check for flags (Phase 125: --log, Phase 134: --json)
+        flags = sys.argv[3:] if len(sys.argv) > 3 else []
+
+        if "--log" in flags:
             exit_code = cli_classify_and_log(query)
+        elif "--json" in flags:
+            exit_code = cli_classify(query, json_output=True)
         else:
-            exit_code = cli_classify(query)
+            exit_code = cli_classify(query, json_output=False)
 
         sys.exit(exit_code)
 
