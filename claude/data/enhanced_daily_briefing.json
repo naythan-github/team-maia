@@ -1,7 +1,13 @@
 {
-  "date": "Wednesday, October 15, 2025",
-  "generated_at": "2025-10-15T07:00:05.657912",
+  "date": "Monday, October 20, 2025",
+  "generated_at": "2025-10-20T12:43:51.060439",
   "sections": {
+    "system_health": {
+      "status": "\u26a0\ufe0f UNKNOWN",
+      "message": "Health check completed but no data file",
+      "alert_level": "low",
+      "details_available": false
+    },
     "priorities": [
       "\ud83d\udcc5 Provide subcategory list to Mariel for customer spreadsheet update (Due: Next week)",
       "\ud83d\udcc5 Get services team to audit Intune deployments via Lighthouse (Due: Next week)"

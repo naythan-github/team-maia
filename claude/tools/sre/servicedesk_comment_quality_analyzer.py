@@ -389,15 +389,38 @@ Respond ONLY with valid JSON. No markdown formatting, no explanations.
                     fixed += '\n' + ('}' * open_braces)
                 analysis = json.loads(fixed)  # Retry with repaired JSON
 
-            # Calculate average quality score
+            # Extract scores from nested or flat structure
+            # LLM may return {"qualityScores": {...}} or flat {"professionalism": ...}
+            if 'qualityScores' in analysis:
+                quality_scores = analysis['qualityScores']
+            else:
+                quality_scores = analysis
+
+            # Extract individual scores with fallback
             scores = [
-                analysis.get('professionalism', 3),
-                analysis.get('clarity', 3),
-                analysis.get('empathy', 3),
-                analysis.get('actionability', 3)
+                quality_scores.get('professionalism', 3),
+                quality_scores.get('clarity', 3),
+                quality_scores.get('empathy', 3),
+                quality_scores.get('actionability', 3)
             ]
             quality_score = round(sum(scores) / len(scores), 2)
+
+            # Flatten scores to top level (database expects flat structure)
+            analysis['professionalism_score'] = scores[0]
+            analysis['clarity_score'] = scores[1]
+            analysis['empathy_score'] = scores[2]
+            analysis['actionability_score'] = scores[3]
             analysis['quality_score'] = quality_score
+
+            # Normalize key names (camelCase → snake_case)
+            if 'contentTags' in analysis:
+                analysis['content_tags'] = analysis.pop('contentTags')
+            if 'redFlags' in analysis:
+                analysis['red_flags'] = analysis.pop('redFlags')
+            if 'intentSummary' in analysis:
+                analysis['intent_summary'] = analysis.pop('intentSummary')
+            if 'qualityTier' in analysis:
+                analysis['quality_tier'] = analysis.pop('qualityTier')
 
             # Calculate quality_tier if not provided by LLM
             if 'quality_tier' not in analysis:
