@@ -3,15 +3,21 @@ SERVICEDESK COMMENT QUALITY ANALYSIS - EXECUTIVE SUMMARY
 ================================================================================
 
 📊 OVERALL QUALITY DISTRIBUTION:
-   GOOD                4 comments ( 40.0%)
-   POOR                6 comments ( 60.0%)
+   EXCELLENT           1 comments (  1.0%)
+   GOOD               31 comments ( 31.0%)
+   ACCEPTABLE          3 comments (  3.0%)
+   POOR               65 comments ( 65.0%)
 
 🏆 TOP 10 AGENTS BY QUALITY SCORE:
    Agent           Comments   Quality    Prof     Clarity  Empathy  Action  
    ---------------------------------------------------------------------------
+   brian           68         1.11       1.13     1.18     1.09     1.04    
 
 🚩 RED FLAG FREQUENCY:
-   meaningless_content                6 occurrences (100.0%)
+   meaningless_content               65 occurrences (100.0%)
+
+⚠️  AGENTS REQUIRING INTERVENTION (>30% poor quality):
+   brian              68 comments,  95.6% poor quality, avg score: 1.11
 
 ================================================================================
 Analysis complete. Detailed results in comment_quality table.
