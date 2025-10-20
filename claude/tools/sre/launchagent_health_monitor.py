@@ -646,9 +646,25 @@ def main():
         monitor.print_dashboard(report, failed_only=args.failed_only)
 
     if args.json:
+        import json
         json_path = Path(args.json)
-        json_path.write_text(json.dumps(report, indent=2))
-        print(f"📄 Report saved to: {json_path}")
+
+        # Prepare JSON-serializable report
+        json_report = {
+            'timestamp': report['timestamp'],
+            'summary': report['summary'],
+            'services': report.get('services', []),
+            'healthy_count': report['summary']['running'],
+            'degraded_count': report['summary'].get('degraded', 0),
+            'failed_count': report['summary']['failed'],
+            'total_services': report['summary']['total_services']
+        }
+
+        # Write JSON to file
+        with open(json_path, 'w') as f:
+            json.dump(json_report, f, indent=2)
+
+        print(f"✅ Health report saved to: {json_path}")
 
     # Exit code based on health
     if report['summary']['health_status'] in ['CRITICAL', 'DEGRADED']:

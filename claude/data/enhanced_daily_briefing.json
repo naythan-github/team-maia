@@ -1,12 +1,16 @@
 {
   "date": "Monday, October 20, 2025",
-  "generated_at": "2025-10-20T12:43:51.060439",
+  "generated_at": "2025-10-20T12:59:38.762362",
   "sections": {
     "system_health": {
-      "status": "\u26a0\ufe0f UNKNOWN",
-      "message": "Health check completed but no data file",
-      "alert_level": "low",
-      "details_available": false
+      "status": "\ud83d\udd34 ATTENTION NEEDED",
+      "message": "5 service(s) down, 1 degraded",
+      "alert_level": "high",
+      "healthy": 10,
+      "degraded": 1,
+      "failed": 5,
+      "total": 22,
+      "details_available": true
     },
     "priorities": [
       "\ud83d\udcc5 Provide subcategory list to Mariel for customer spreadsheet update (Due: Next week)",
