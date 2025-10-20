@@ -380,28 +380,64 @@ class SwarmOrchestrator:
                 execution_time_ms=response.latency_ms
             )
         """
-        agent_def = self.agent_registry[agent_name]
+        # Phase 134 - Production Implementation
+        import time
+        import sys
+        from pathlib import Path
 
-        # STUB IMPLEMENTATION
-        # TODO: Replace with actual agent execution (see integration instructions above)
-        print(f"  [STUB] Would execute {agent_name} with context: {list(context.keys())}")
+        # Add orchestration tools to path for AgentLoader import
+        orchestration_dir = Path(__file__).parent
+        if str(orchestration_dir) not in sys.path:
+            sys.path.insert(0, str(orchestration_dir))
 
-        # Mock output
-        mock_output = {
-            "agent": agent_name,
-            "status": "executed (stub)",
-            "context_received": list(context.keys()),
-            "note": "Replace _execute_agent stub with actual agent invocation"
+        from agent_loader import AgentLoader
+
+        start_time = time.time()
+
+        # Load agent via AgentLoader (it will normalize the name)
+        try:
+            loader = AgentLoader(self.agent_dir)
+            agent_prompt = loader.load_agent(agent_name)
+        except (FileNotFoundError, KeyError) as e:
+            raise AgentNotFound(f"Failed to load agent '{agent_name}': {e}")
+
+        # Extract handoff reason from context (if this is a handoff)
+        handoff_reason = context.get('_handoff_reason')
+
+        # Inject enriched context into agent prompt
+        full_prompt = loader.inject_context(
+            agent_prompt=agent_prompt,
+            context=context,
+            handoff_reason=handoff_reason
+        )
+
+        # Calculate execution time
+        execution_time_ms = int((time.time() - start_time) * 1000)
+
+        # For Phase 134: Agent "execution" means loading its prompt into session state
+        # The actual agent response happens when Maia reads the session state and responds
+        # with the agent's context loaded
+
+        # Return loaded agent prompt as output
+        output = {
+            "agent_name": agent_name,
+            "agent_prompt": full_prompt,
+            "agent_version": agent_prompt.version,
+            "has_handoff_support": agent_prompt.has_handoff_support,
+            "specialties": agent_prompt.specialties,
+            "context_size_bytes": len(json.dumps(context)),
+            "execution_mode": "conversation_driven",  # Not API-driven
+            "note": "Agent prompt loaded. Maia will respond with this context in conversation."
         }
 
-        # Mock handoff (in production, extracted from agent response via HandoffParser)
-        mock_handoff = None
+        # No handoff yet (handoffs will be detected from Maia's response in conversation)
+        # This is different from API-driven swarms where we'd parse the response here
 
         return AgentResult(
-            output=mock_output,
-            handoff=mock_handoff,
+            output=output,
+            handoff=None,  # Detected later from conversation response
             agent_name=agent_name,
-            execution_time_ms=0  # Mock
+            execution_time_ms=execution_time_ms
         )
 
     def _load_agent_registry(self) -> Dict[str, Any]:

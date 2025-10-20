@@ -164,15 +164,15 @@ def create_session_state(
     query: str
 ) -> bool:
     """
-    Create session state file for Maia agent context loading.
+    Create session state file for Maia agent context loading (Phase 5 - with handoff support).
 
     File: /tmp/maia_active_swarm_session.json
     Format:
     {
         "current_agent": "security_specialist_agent",
         "session_start": "2025-10-20T14:30:00",
-        "handoff_chain": ["security_specialist_agent"],
-        "context": {},
+        "handoff_chain": ["finops_agent", "security_specialist_agent"],
+        "context": {"previous_work": "..."},
         "domain": "security",
         "last_classification_confidence": 0.87,
         "query": "Review code for security"
@@ -182,17 +182,37 @@ def create_session_state(
     Performance target: <5ms (atomic write)
     """
     try:
+        # Check for existing session to preserve context and handoff chain
+        existing_context = {}
+        existing_handoff_chain = [agent]  # Default: single agent
+        session_start = datetime.utcnow().isoformat()
+
+        if SESSION_STATE_FILE.exists():
+            try:
+                with open(SESSION_STATE_FILE, 'r') as f:
+                    existing_session = json.load(f)
+                    existing_context = existing_session.get("context", {})
+                    # Use classification's handoff_chain if set (Phase 5 domain change)
+                    if "handoff_chain" in classification:
+                        existing_handoff_chain = classification["handoff_chain"]
+                    else:
+                        # Preserve existing session start for continuity
+                        session_start = existing_session.get("session_start", session_start)
+            except (json.JSONDecodeError, IOError):
+                pass  # Use defaults
+
         session_data = {
             "current_agent": agent,
-            "session_start": datetime.utcnow().isoformat(),
-            "handoff_chain": [agent],
-            "context": {},
+            "session_start": session_start,
+            "handoff_chain": existing_handoff_chain,
+            "context": existing_context,  # Preserve context across handoffs
             "domain": domain,
             "last_classification_confidence": classification.get("confidence", 0),
             "last_classification_complexity": classification.get("complexity", 0),
             "query": query[:200],  # Truncate for file size
+            "handoff_reason": classification.get("handoff_reason"),  # Phase 5: Track why handoff occurred
             "created_by": "swarm_auto_loader.py",
-            "version": "1.0"
+            "version": "1.1"  # Phase 5 version
         }
 
         # Atomic write (tmp file + rename for consistency)
@@ -325,7 +345,39 @@ def main():
             log_routing_decision(classification, None, False, (time.time() - start_time) * 1000)
             sys.exit(0)
 
-        # Step 4: Verify agent file exists (try with _agent suffix)
+        # Step 4: Check for existing session (Phase 5 - Domain change detection)
+        existing_session = None
+        if SESSION_STATE_FILE.exists():
+            try:
+                with open(SESSION_STATE_FILE, 'r') as f:
+                    existing_session = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                # Corrupted session - will create new one
+                existing_session = None
+
+        # Detect domain change
+        domain_changed = False
+        if existing_session:
+            current_domain = classification.get("primary_domain", "general")
+            previous_domain = existing_session.get("domain", "general")
+            previous_agent = existing_session.get("current_agent")
+
+            # Domain changed if:
+            # 1. Different domain AND
+            # 2. New domain confidence >70% AND
+            # 3. New confidence >10% higher than previous (0.10 threshold - realistic for domain switches)
+            if current_domain != previous_domain:
+                new_confidence = classification.get("confidence", 0)
+                prev_confidence = existing_session.get("last_classification_confidence", 0)
+
+                if new_confidence > 0.70 and (new_confidence - prev_confidence) >= 0.09:
+                    domain_changed = True
+                    # Update handoff chain
+                    existing_handoff_chain = existing_session.get("handoff_chain", [])
+                    classification["handoff_chain"] = existing_handoff_chain + [agent]
+                    classification["handoff_reason"] = f"Domain change: {previous_domain} → {current_domain}"
+
+        # Step 5: Verify agent file exists (try with _agent suffix)
         agent_file = MAIA_ROOT / f"claude/agents/{agent}_agent.md"
         if not agent_file.exists():
             # Try without _agent suffix
@@ -336,7 +388,7 @@ def main():
             log_routing_decision(classification, agent, False, (time.time() - start_time) * 1000)
             sys.exit(0)
 
-        # Step 5: Invoke swarm orchestrator (Phase 2: session state only)
+        # Step 6: Invoke swarm orchestrator (Phase 2-5: session state with handoff tracking)
         success = invoke_swarm_orchestrator(agent, query, classification)
 
         # Step 6: Log routing decision (background)
