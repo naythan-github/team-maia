@@ -37,8 +37,8 @@ except ImportError as e:
 class ServiceDeskCommentAnalyzer:
     """Analyze ServiceDesk comment quality using Ollama LLM"""
 
-    def __init__(self, db_path: str = None, embedding_model: str = "intfloat/e5-base-v2", llm_model: str = "llama3.2:3b"):
-        """Initialize analyzer (default: intfloat/e5-base-v2, 768-dim, matches RAG database)"""
+    def __init__(self, db_path: str = None, embedding_model: str = "intfloat/e5-base-v2", llm_model: str = "llama3.1:8b"):
+        """Initialize analyzer (default: intfloat/e5-base-v2, 768-dim, llama3.1:8b for quality scoring)"""
         self.db_path = db_path or str(DB_PATH)
         self.embedding_model = embedding_model
         self.llm_model = llm_model
