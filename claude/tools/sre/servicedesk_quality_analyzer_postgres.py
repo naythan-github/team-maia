@@ -49,15 +49,17 @@ class PostgreSQLQualityAnalyzer:
         print(f"✅ Connected to PostgreSQL: servicedesk database")
 
     def extract_comments(self, sample_size: int = 1000) -> List[Dict]:
-        """Extract random sample of comments from PostgreSQL"""
+        """Extract random sample of comments from PostgreSQL (excluding system users)"""
         cursor = self.pg_conn.cursor()
 
+        # Exclude system/automation users (brian = automation system)
         query = f"""
             SELECT
                 ticket_id, user_name, team, comment_type,
                 comment_text, created_time, visible_to_customer
             FROM servicedesk.comments
             WHERE comment_type = 'comments'
+                AND user_name != 'brian'
             ORDER BY RANDOM()
             LIMIT {sample_size}
         """
