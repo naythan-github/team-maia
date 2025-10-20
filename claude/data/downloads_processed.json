@@ -16,8 +16,10 @@
     "/Users/naythandawe/Downloads/FPB_ Monthly Audit - August 2025.eml",
     "/Users/naythandawe/Downloads/JabraDirectSetup.dmg",
     "/Users/naythandawe/Downloads/setup_downloader.dmg",
+    "/Users/naythandawe/Downloads/RE- Millenium Weekly Meeting - Updates.eml",
     "/Users/naythandawe/Downloads/GS1 - Powershell Transcription - Enable .cpt",
     "/Users/naythandawe/Downloads/unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/FW- WIndows 10 Upgrades.eml",
     "/Users/naythandawe/Downloads/Isalbi - August 2025 Monthly Audit - Service Desk monthly Report.eml",
     "/Users/naythandawe/Downloads/FRM012 Orro Company Asset Acceptance Form V1.1[93].docx",
     "/Users/naythandawe/Downloads/List G Banisters - For Invoicing - July and August 2025.eml",
@@ -286,6 +288,18 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/GS1 - Powershell Transcription - Enable .cpt",
       "timestamp": "2025-10-20T13:16:16.856773"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/FW- WIndows 10 Upgrades.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/FW- WIndows 10 Upgrades.eml",
+      "timestamp": "2025-10-20T14:27:54.325560"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/RE- Millenium Weekly Meeting - Updates.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/RE- Millenium Weekly Meeting - Updates.eml",
+      "timestamp": "2025-10-20T14:27:56.403155"
     }
   ]
 }
