@@ -33,9 +33,10 @@
             "owner": "Naythan",
             "action": "Provide subcategory list to Mariel for customer spreadsheet update",
             "deadline": "Next week",
-            "status": "pending",
+            "status": "completed",
             "created_at": "2025-10-03T19:22:47.164614",
-            "source": "vtt_summary"
+            "source": "vtt_summary",
+            "completed_at": "2025-10-20T15:53:52.296361"
           },
           {
             "owner": "Naythan",
@@ -49,9 +50,10 @@
             "owner": "Naythan",
             "action": "Address SDM boundary issues in fortnightly meeting (blameless)",
             "deadline": "Next fortnightly meeting",
-            "status": "pending",
+            "status": "completed",
             "created_at": "2025-10-03T19:22:47.164616",
-            "source": "vtt_summary"
+            "source": "vtt_summary",
+            "completed_at": "2025-10-20T15:53:50.757266"
           },
           {
             "owner": "Naythan",

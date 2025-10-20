@@ -1,6 +1,7 @@
 {
   "processed": [
     "/Users/naythandawe/Downloads/GS1 - Orro Onboarding - 21.2.25.xlsx",
+    "/Users/naythandawe/Downloads/TG Pro 2.98.dmg",
     "/Users/naythandawe/Downloads/Orro___Agent_Procedure_Export.xml",
     "/Users/naythandawe/Downloads/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
     "/Users/naythandawe/Downloads/Wayne Ash Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
@@ -300,6 +301,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/RE- Millenium Weekly Meeting - Updates.eml",
       "timestamp": "2025-10-20T14:27:56.403155"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/TG Pro 2.98.dmg",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/TG Pro 2.98.dmg",
+      "timestamp": "2025-10-20T16:32:17.796034"
     }
   ]
 }

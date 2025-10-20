@@ -244,6 +244,108 @@ class AutomatedHealthMonitor:
 
         return result
 
+    def check_backup_health(self) -> Dict:
+        """Check disaster recovery backup system health"""
+        # Detect OneDrive path
+        onedrive_path = self._detect_onedrive_path()
+        if not onedrive_path:
+            return {
+                "status": "CRITICAL",
+                "message": "OneDrive path not found",
+                "last_backup": None,
+                "age_hours": None
+            }
+
+        backup_dir = Path(onedrive_path) / "MaiaBackups"
+
+        if not backup_dir.exists():
+            return {
+                "status": "CRITICAL",
+                "message": "Backup directory not found",
+                "last_backup": None,
+                "age_hours": None
+            }
+
+        # Find latest backup
+        manifests = list(backup_dir.glob("*/backup_manifest.json"))
+        if not manifests:
+            return {
+                "status": "CRITICAL",
+                "message": "No backups found",
+                "last_backup": None,
+                "age_hours": None
+            }
+
+        latest_manifest = max(manifests, key=lambda p: p.stat().st_mtime)
+        try:
+            with open(latest_manifest) as f:
+                manifest = json.load(f)
+        except Exception as e:
+            return {
+                "status": "ERROR",
+                "message": f"Failed to read manifest: {e}",
+                "last_backup": None,
+                "age_hours": None
+            }
+
+        created_at = datetime.fromisoformat(manifest['created_at'])
+        age_hours = (datetime.now() - created_at).total_seconds() / 3600
+
+        # Determine status
+        if age_hours > 36:
+            status = "CRITICAL"
+            message = f"Backup is {age_hours:.1f} hours old (target: <36h)"
+            self.results["critical_issues"].append(
+                f"Disaster Recovery: Backup age {age_hours:.1f}h exceeds 36h threshold"
+            )
+        elif age_hours > 25:
+            status = "WARNING"
+            message = f"Backup is {age_hours:.1f} hours old (approaching threshold)"
+            self.results["warnings"].append(
+                f"Disaster Recovery: Backup age {age_hours:.1f}h approaching 36h threshold"
+            )
+        else:
+            status = "PASS"
+            message = f"Backup is {age_hours:.1f} hours old"
+
+        return {
+            "status": status,
+            "message": message,
+            "last_backup": manifest['backup_id'],
+            "age_hours": round(age_hours, 1),
+            "size_mb": self._calculate_backup_size_mb(latest_manifest.parent),
+            "components": len(manifest.get('components', {})),
+            "onedrive_synced": manifest.get('onedrive_sync_verified', False)
+        }
+
+    def _detect_onedrive_path(self) -> str:
+        """Auto-detect OneDrive path"""
+        import os
+
+        # Priority order
+        if os.environ.get('MAIA_ONEDRIVE_PATH'):
+            return os.environ['MAIA_ONEDRIVE_PATH']
+
+        cloudstorage = Path.home() / "Library" / "CloudStorage"
+        if cloudstorage.exists():
+            onedrive_dirs = list(cloudstorage.glob("OneDrive-*"))
+            if onedrive_dirs:
+                for od in onedrive_dirs:
+                    if 'ORROPTYLTD' in od.name:
+                        return str(od)
+                return str(onedrive_dirs[0])
+
+        onedrive_home = Path.home() / "OneDrive"
+        if onedrive_home.exists():
+            return str(onedrive_home)
+
+        return None
+
+    def _calculate_backup_size_mb(self, backup_path: Path) -> float:
+        """Calculate total backup size in MB"""
+        total_bytes = sum(f.stat().st_size for f in backup_path.glob('*') if f.is_file())
+        return round(total_bytes / (1024 * 1024), 1)
+
     def determine_overall_health(self):
         """Calculate overall system health status"""
         critical_count = len(self.results["critical_issues"])
@@ -294,13 +396,27 @@ class AutomatedHealthMonitor:
         print()
 
         # Check 4: UFC Compliance
-        print("📏 [4/4] Checking UFC Compliance...")
+        print("📏 [4/5] Checking UFC Compliance...")
         self.results["checks"]["ufc_compliance"] = self.check_ufc_compliance()
         ufc_status = self.results["checks"]["ufc_compliance"]["status"]
         print(f"   {'✅' if ufc_status == 'PASS' else '⚠️ ' if ufc_status == 'SKIP' else '❌'} {ufc_status}")
         if "compliant" in self.results["checks"]["ufc_compliance"]:
             compliant = self.results["checks"]["ufc_compliance"]["compliant"]
             print(f"   Compliant: {compliant}")
+        print()
+
+        # Check 5: Backup Health
+        print("💾 [5/5] Checking Disaster Recovery Backup Health...")
+        self.results["checks"]["backup_health"] = self.check_backup_health()
+        backup_status = self.results["checks"]["backup_health"]["status"]
+        print(f"   {'✅' if backup_status == 'PASS' else '⚠️ ' if backup_status == 'WARNING' else '❌'} {backup_status}")
+        if "age_hours" in self.results["checks"]["backup_health"] and self.results["checks"]["backup_health"]["age_hours"]:
+            age_hours = self.results["checks"]["backup_health"]["age_hours"]
+            print(f"   Backup Age: {age_hours}h (threshold: 36h)")
+        if "last_backup" in self.results["checks"]["backup_health"] and self.results["checks"]["backup_health"]["last_backup"]:
+            print(f"   Last Backup: {self.results['checks']['backup_health']['last_backup']}")
+        if "size_mb" in self.results["checks"]["backup_health"]:
+            print(f"   Size: {self.results['checks']['backup_health']['size_mb']} MB")
         print()
 
         # Determine overall health
