@@ -130,7 +130,7 @@
         "id": 4,
         "type": "stat",
         "title": "Average Comment Quality Score",
-        "description": "Average quality score from analyzed comments (1-3 scale)",
+        "description": "Average quality score from analyzed comments (1-4 scale, updated with improved LLM)",
         "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
         "targets": [
           {
@@ -147,8 +147,8 @@
               "mode": "absolute",
               "steps": [
                 {"value": null, "color": "red"},
-                {"value": 1.5, "color": "yellow"},
-                {"value": 2.5, "color": "green"}
+                {"value": 2.0, "color": "yellow"},
+                {"value": 3.0, "color": "green"}
               ]
             },
             "unit": "short",
