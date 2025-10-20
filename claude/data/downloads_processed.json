@@ -16,6 +16,7 @@
     "/Users/naythandawe/Downloads/FPB_ Monthly Audit - August 2025.eml",
     "/Users/naythandawe/Downloads/JabraDirectSetup.dmg",
     "/Users/naythandawe/Downloads/setup_downloader.dmg",
+    "/Users/naythandawe/Downloads/GS1 - Powershell Transcription - Enable .cpt",
     "/Users/naythandawe/Downloads/unique_descriptions.csv",
     "/Users/naythandawe/Downloads/Isalbi - August 2025 Monthly Audit - Service Desk monthly Report.eml",
     "/Users/naythandawe/Downloads/FRM012 Orro Company Asset Acceptance Form V1.1[93].docx",
@@ -279,6 +280,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/Orro___Policy_Export (1).xml",
       "timestamp": "2025-10-20T12:53:14.434361"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/GS1 - Powershell Transcription - Enable .cpt",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/GS1 - Powershell Transcription - Enable .cpt",
+      "timestamp": "2025-10-20T13:16:16.856773"
     }
   ]
 }
