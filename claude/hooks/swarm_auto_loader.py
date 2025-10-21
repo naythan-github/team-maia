@@ -2,10 +2,12 @@
 """
 Swarm Auto-Loader - Stage 0.8 Enhancement for Automatic Agent Persistence
 Phase 134 - Implement Working Principle #15
+Phase 134.3 - Per-Context Isolation (Multi-Context Concurrency Fix)
 
 Purpose:
 - Invoke SwarmOrchestrator when routing confidence >70% and complexity >3
 - Create session state file for Maia agent context loading
+- Per-context isolation (each Claude Code window has independent session)
 - Graceful degradation for all error scenarios
 - Background logging integration with Phase 125
 
@@ -23,11 +25,94 @@ import subprocess
 
 # Maia root detection (claude/hooks/swarm_auto_loader.py -> go up 2 levels to repo root)
 MAIA_ROOT = Path(__file__).parent.parent.parent.absolute()
-SESSION_STATE_FILE = Path("/tmp/maia_active_swarm_session.json")
 
 # Performance tracking
 import time
 start_time = time.time()
+
+
+def get_context_id() -> str:
+    """
+    Generate stable context ID for this Claude Code window.
+
+    Phase 134.3: Per-context isolation to prevent race conditions
+    when multiple Claude Code contexts are open simultaneously.
+
+    Strategy:
+    1. Check for CLAUDE_SESSION_ID env var (if Claude provides it)
+    2. Fall back to PPID (parent process ID - stable per window)
+    3. Ensures each context window has independent agent session
+
+    Returns:
+        Stable context identifier (e.g., "context_12345")
+    """
+    # Option 1: Claude-provided session ID (if available)
+    if session_id := os.getenv("CLAUDE_SESSION_ID"):
+        return session_id
+
+    # Option 2: Parent PID (stable per terminal/window)
+    # Each Claude Code window = different PPID = different context
+    ppid = os.getppid()
+    return f"context_{ppid}"
+
+
+def get_session_file_path() -> Path:
+    """
+    Get session state file path for current context.
+
+    Phase 134.3: Context-specific session files prevent concurrency issues.
+
+    Returns:
+        Path to session file for this context
+        Example: /tmp/maia_active_swarm_session_context_12345.json
+    """
+    context_id = get_context_id()
+    return Path(f"/tmp/maia_active_swarm_session_{context_id}.json")
+
+
+def migrate_legacy_session():
+    """
+    One-time migration: old global session → new context-specific session.
+
+    Phase 134.3: Backward compatibility for existing sessions.
+    Migrates /tmp/maia_active_swarm_session.json → context-specific file.
+    """
+    old_session = Path("/tmp/maia_active_swarm_session.json")
+    new_session = get_session_file_path()
+
+    # Only migrate if old exists and new doesn't
+    if old_session.exists() and not new_session.exists():
+        try:
+            old_session.rename(new_session)
+        except OSError:
+            pass  # Graceful degradation
+
+
+def cleanup_stale_sessions(max_age_hours: int = 24):
+    """
+    Remove session files older than max_age_hours.
+
+    Phase 134.3: Prevent /tmp pollution from abandoned contexts.
+    Runs on every startup (fast: glob + stat).
+
+    Args:
+        max_age_hours: Maximum session age in hours (default: 24)
+    """
+    cutoff_time = time.time() - (max_age_hours * 3600)
+
+    try:
+        for session_file in Path("/tmp").glob("maia_active_swarm_session_*.json"):
+            try:
+                if session_file.stat().st_mtime < cutoff_time:
+                    session_file.unlink()
+            except OSError:
+                pass  # Graceful degradation (file may be locked or deleted)
+    except Exception:
+        pass  # Graceful degradation
+
+
+# Session state file (context-specific)
+SESSION_STATE_FILE = get_session_file_path()
 
 
 def classify_query(query: str) -> Optional[Dict[str, Any]]:
@@ -328,6 +413,10 @@ def main():
         0: Success (agent loaded or gracefully degraded)
         Non-zero: Not used (all failures degrade gracefully)
     """
+    # Phase 134.3: Cleanup stale sessions + migrate legacy session
+    migrate_legacy_session()
+    cleanup_stale_sessions(max_age_hours=24)
+
     # Validate arguments
     if len(sys.argv) < 2:
         # No query provided - graceful exit (hook may call without query)
