@@ -244,15 +244,75 @@ class EnhancedDisasterRecoverySystem:
             'sha256': self._calculate_sha256(archive_path)
         }
 
+    def _validate_database_file(self, db_file: Path) -> Tuple[bool, Optional[str]]:
+        """
+        Validate database file before backup (LESSON LEARNED: Issue #3)
+
+        Returns: (is_valid, error_message)
+        """
+        import sqlite3
+
+        # Check 1: Non-empty
+        if db_file.stat().st_size == 0:
+            return (False, "Empty file (0 bytes)")
+
+        # Check 2: Valid SQLite format
+        try:
+            conn = sqlite3.connect(db_file)
+            cursor = conn.cursor()
+
+            # Check 3: Has tables
+            cursor.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'")
+            table_count = cursor.fetchone()[0]
+
+            if table_count == 0:
+                conn.close()
+                return (False, "No tables found")
+
+            # Check 4: Tables have data (warning only, not failure)
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            empty_tables = []
+            for (table_name,) in cursor.fetchall():
+                try:
+                    cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
+                    if cursor.fetchone()[0] == 0:
+                        empty_tables.append(table_name)
+                except:
+                    pass  # Some tables might not be queryable
+
+            conn.close()
+
+            if empty_tables:
+                # Warning but not failure
+                return (True, f"Warning: Empty tables: {', '.join(empty_tables[:3])}")
+
+            return (True, None)
+
+        except sqlite3.DatabaseError as e:
+            return (False, f"Corrupted database: {e}")
+
     def _backup_small_databases(self, backup_path: Path) -> Dict:
-        """Backup databases < 10MB"""
+        """Backup databases < 10MB (with validation - LESSON LEARNED)"""
         archive_path = backup_path / "maia_data_small.tar.gz"
         databases = []
+        skipped = []
+        warnings = []
 
         print("   Creating small databases archive...")
         with tarfile.open(archive_path, 'w:gz') as tar:
             for db_file in self.data_dir.glob('*.db'):
                 if db_file.stat().st_size < 10 * 1024 * 1024:  # < 10MB
+                    # LESSON LEARNED: Validate before backing up
+                    is_valid, error_msg = self._validate_database_file(db_file)
+
+                    if not is_valid:
+                        print(f"   ⚠️  Skipping {db_file.name}: {error_msg}")
+                        skipped.append({'file': db_file.name, 'reason': error_msg})
+                        continue
+
+                    if error_msg:  # Warning message
+                        warnings.append({'file': db_file.name, 'warning': error_msg})
+
                     arcname = f"claude/data/{db_file.name}"
                     tar.add(db_file, arcname=arcname)
                     databases.append(db_file.name)
@@ -264,7 +324,7 @@ class EnhancedDisasterRecoverySystem:
                     tar.add(json_file, arcname=arcname)
 
         size_bytes = archive_path.stat().st_size
-        return {
+        result = {
             'path': str(archive_path.name),
             'size_bytes': size_bytes,
             'size_mb': size_bytes / (1024 * 1024),
@@ -272,12 +332,40 @@ class EnhancedDisasterRecoverySystem:
             'databases': databases
         }
 
+        # LESSON LEARNED: Include validation results
+        if skipped:
+            result['skipped_files'] = skipped
+        if warnings:
+            result['warnings'] = warnings
+
+        return result
+
     def _backup_large_databases_chunked(self, backup_path: Path) -> Dict:
-        """Backup large databases in 50MB chunks for fast OneDrive sync"""
+        """Backup large databases in 50MB chunks (with validation - LESSON LEARNED)"""
         large_databases = []
+        skipped = []
+
+        # Exclude list: Databases migrated to other systems (PostgreSQL, etc.)
+        EXCLUDE_DATABASES = {
+            'servicedesk_tickets.db',  # Migrated to PostgreSQL (Phase 132)
+        }
 
         for db_file in self.data_dir.glob('*.db'):
             if db_file.stat().st_size >= 10 * 1024 * 1024:  # >= 10MB
+                # Check exclusion list
+                if db_file.name in EXCLUDE_DATABASES:
+                    print(f"   ℹ️  Excluding {db_file.name} (migrated to external system)")
+                    skipped.append({'file': db_file.name, 'reason': 'Excluded - migrated to PostgreSQL'})
+                    continue
+
+                # LESSON LEARNED: Validate before backing up
+                is_valid, error_msg = self._validate_database_file(db_file)
+
+                if not is_valid:
+                    print(f"   ⚠️  Skipping {db_file.name}: {error_msg}")
+                    skipped.append({'file': db_file.name, 'reason': error_msg})
+                    continue
+
                 print(f"   Chunking {db_file.name}...")
                 chunks = self._chunk_file(db_file, backup_path)
                 large_databases.append({
@@ -286,9 +374,15 @@ class EnhancedDisasterRecoverySystem:
                     'chunks': chunks
                 })
 
-        return {
+        result = {
             'databases': large_databases
         }
+
+        # LESSON LEARNED: Include validation results
+        if skipped:
+            result['skipped_files'] = skipped
+
+        return result
 
     def _chunk_file(self, file_path: Path, backup_path: Path) -> List[Dict]:
         """Split large file into chunks"""
@@ -572,20 +666,45 @@ echo ""
 detect_environment() {{
     echo "🔍 Detecting system environment..."
 
-    # Detect macOS version
-    MACOS_VERSION=$(sw_vers -productVersion)
-    echo "  macOS: $MACOS_VERSION"
+    # Detect if running in WSL (Windows Subsystem for Linux)
+    if grep -qi microsoft /proc/version 2>/dev/null || [ -d "/mnt/c/Windows" ]; then
+        IS_WSL=true
+        PLATFORM="WSL"
+        echo "  Platform: Windows Subsystem for Linux (WSL)"
 
-    # Detect OneDrive location
-    if [ -d "$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD" ]; then
-        ONEDRIVE_PATH="$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD"
-    elif [ -d "$HOME/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD" ]; then
-        ONEDRIVE_PATH="$HOME/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD"
-    elif [ -d "$HOME/OneDrive" ]; then
-        ONEDRIVE_PATH="$HOME/OneDrive"
+        # Detect Windows username from /mnt/c/Users/
+        WIN_USERNAME=$(ls -1 /mnt/c/Users/ 2>/dev/null | grep -v "Public\\|Default\\|All Users" | head -1)
+        echo "  Windows User: $WIN_USERNAME"
+
+        # WSL OneDrive paths (mounted from Windows)
+        if [ -d "/mnt/c/Users/$WIN_USERNAME/OneDrive - ORROPTYLTD" ]; then
+            ONEDRIVE_PATH="/mnt/c/Users/$WIN_USERNAME/OneDrive - ORROPTYLTD"
+        elif [ -d "/mnt/c/Users/$WIN_USERNAME/OneDrive" ]; then
+            ONEDRIVE_PATH="/mnt/c/Users/$WIN_USERNAME/OneDrive"
+        else
+            echo "⚠️  OneDrive not found on Windows filesystem."
+            echo "   Expected: /mnt/c/Users/$WIN_USERNAME/OneDrive"
+            read -p "OneDrive path (Windows mount): " ONEDRIVE_PATH
+        fi
     else
-        echo "⚠️  OneDrive not found. Please enter path manually:"
-        read -p "OneDrive path: " ONEDRIVE_PATH
+        IS_WSL=false
+        PLATFORM="macOS"
+
+        # Detect macOS version
+        MACOS_VERSION=$(sw_vers -productVersion)
+        echo "  macOS: $MACOS_VERSION"
+
+        # Detect OneDrive location
+        if [ -d "$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD" ]; then
+            ONEDRIVE_PATH="$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD"
+        elif [ -d "$HOME/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD" ]; then
+            ONEDRIVE_PATH="$HOME/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD"
+        elif [ -d "$HOME/OneDrive" ]; then
+            ONEDRIVE_PATH="$HOME/OneDrive"
+        else
+            echo "⚠️  OneDrive not found. Please enter path manually:"
+            read -p "OneDrive path: " ONEDRIVE_PATH
+        fi
     fi
 
     echo "  OneDrive: $ONEDRIVE_PATH"
@@ -596,15 +715,32 @@ detect_environment() {{
 choose_maia_location() {{
     echo ""
     echo "📁 Where should Maia be installed?"
-    echo "  1. ~/git/maia (recommended)"
-    echo "  2. Custom location"
 
-    read -p "Choice [1]: " LOCATION_CHOICE
+    if [ "$IS_WSL" = true ]; then
+        echo "  1. ~/maia (WSL home directory - recommended for VSCode)"
+        echo "  2. /mnt/c/Users/$WIN_USERNAME/maia (Windows filesystem)"
+        echo "  3. Custom location"
 
-    if [ "$LOCATION_CHOICE" = "2" ]; then
-        read -p "Enter custom path: " MAIA_ROOT
+        read -p "Choice [1]: " LOCATION_CHOICE
+
+        if [ "$LOCATION_CHOICE" = "2" ]; then
+            MAIA_ROOT="/mnt/c/Users/$WIN_USERNAME/maia"
+        elif [ "$LOCATION_CHOICE" = "3" ]; then
+            read -p "Enter custom path: " MAIA_ROOT
+        else
+            MAIA_ROOT="$HOME/maia"
+        fi
     else
-        MAIA_ROOT="$HOME/git/maia"
+        echo "  1. ~/git/maia (recommended)"
+        echo "  2. Custom location"
+
+        read -p "Choice [1]: " LOCATION_CHOICE
+
+        if [ "$LOCATION_CHOICE" = "2" ]; then
+            read -p "Enter custom path: " MAIA_ROOT
+        else
+            MAIA_ROOT="$HOME/git/maia"
+        fi
     fi
 
     echo "  Installing to: $MAIA_ROOT"
@@ -641,6 +777,15 @@ restore_databases() {{
 
 # Restore LaunchAgents
 restore_launchagents() {{
+    if [ "$IS_WSL" = true ]; then
+        echo ""
+        echo "⚙️  Skipping LaunchAgents (WSL environment - not applicable)"
+        echo "  ℹ️  For automated backups on WSL, use cron instead:"
+        echo "     crontab -e"
+        echo "     0 3 * * * cd $MAIA_ROOT && python3 claude/tools/sre/disaster_recovery_system.py backup"
+        return
+    fi
+
     echo ""
     echo "⚙️  Restoring LaunchAgents..."
 
@@ -664,17 +809,33 @@ restore_dependencies() {{
     echo "📦 Installing Python dependencies..."
     pip3 install -r "$BACKUP_DIR/requirements_freeze.txt"
 
-    echo ""
-    echo "🍺 Homebrew packages available at: $BACKUP_DIR/brew_packages.txt"
-    read -p "Install Homebrew packages now? (y/N): " INSTALL_BREW
+    if [ "$IS_WSL" = true ]; then
+        echo ""
+        echo "ℹ️  Homebrew not applicable on WSL"
+        echo "  Use apt/apt-get for system packages:"
+        echo "     sudo apt update && sudo apt install <package>"
+    else
+        echo ""
+        echo "🍺 Homebrew packages available at: $BACKUP_DIR/brew_packages.txt"
+        read -p "Install Homebrew packages now? (y/N): " INSTALL_BREW
 
-    if [ "$INSTALL_BREW" = "y" ]; then
-        cat "$BACKUP_DIR/brew_packages.txt" | xargs brew install
+        if [ "$INSTALL_BREW" = "y" ]; then
+            cat "$BACKUP_DIR/brew_packages.txt" | xargs brew install
+        fi
     fi
 }}
 
 # Restore shell configs
 restore_shell_configs() {{
+    if [ "$IS_WSL" = true ]; then
+        echo ""
+        echo "🐚 Skipping macOS shell configs (WSL environment)"
+        echo "  ℹ️  WSL typically uses bash. Create ~/.bashrc if needed:"
+        echo "     echo 'export MAIA_ROOT=$MAIA_ROOT' >> ~/.bashrc"
+        echo "     echo 'export PYTHONPATH=$MAIA_ROOT' >> ~/.bashrc"
+        return
+    fi
+
     echo ""
     echo "🐚 Restoring shell configurations..."
 
@@ -714,6 +875,127 @@ restore_credentials() {{
     fi
 }}
 
+# Rewrite config paths (LESSON LEARNED: Issue #2 - Hardcoded paths)
+rewrite_config_paths() {{
+    echo ""
+    echo "🔧 Updating configuration paths..."
+
+    # Fix .claude/hooks.json
+    HOOKS_JSON="$MAIA_ROOT/.claude/hooks.json"
+    if [ -f "$HOOKS_JSON" ]; then
+        echo "  📝 Updating .claude/hooks.json..."
+
+        # Use Python to properly update JSON
+        python3 << 'PYTHON_EOF'
+import json
+import sys
+import os
+
+hooks_json = os.environ["HOOKS_JSON"]
+maia_root = os.environ["MAIA_ROOT"]
+
+try:
+    with open(hooks_json) as f:
+        config = json.load(f)
+
+    # Update all hook environment paths and disable by default
+    for hook_name, hook_config in config.get("hooks", {{}}).items():
+        # Disable hooks in restored instance for safety
+        hook_config["enabled"] = False
+
+        # Add warning to description
+        if "description" in hook_config:
+            if "DISABLED in restored instance" not in hook_config["description"]:
+                hook_config["description"] += " (DISABLED in restored instance - verify paths before enabling)"
+
+        # Update environment paths
+        env = hook_config.get("environment", {{}})
+        if "MAIA_ROOT" in env:
+            env["MAIA_ROOT"] = maia_root
+        if "PYTHONPATH" in env:
+            env["PYTHONPATH"] = maia_root
+
+    with open(hooks_json, 'w') as f:
+        json.dump(config, f, indent=2)
+
+    print("    ✅ Updated %d hooks" % len(config.get('hooks', {{}})))
+
+except Exception as e:
+    print("    ⚠️  Failed to update hooks.json: %s" % e)
+    sys.exit(0)  # Don't fail restoration for this
+
+PYTHON_EOF
+
+        echo "  ✅ Hook paths updated and disabled for safety"
+    else
+        echo "  ℹ️  No .claude/hooks.json found"
+    fi
+
+    # Fix .claude/settings.local.json (NEW - Phase 134.5: Hook system upgrade compatibility)
+    SETTINGS_JSON="$MAIA_ROOT/.claude/settings.local.json"
+    if [ -f "$SETTINGS_JSON" ]; then
+        echo "  📝 Updating .claude/settings.local.json..."
+
+        python3 << 'PYTHON_EOF'
+import json
+import sys
+import os
+import re
+
+settings_json = os.environ["SETTINGS_JSON"]
+maia_root = os.environ["MAIA_ROOT"]
+
+try:
+    with open(settings_json) as f:
+        config = json.load(f)
+
+    # Update all permission paths
+    updated_count = 0
+    for permission_type in ["allow", "deny", "ask"]:
+        if permission_type in config.get("permissions", {{}}):
+            permissions = config["permissions"][permission_type]
+
+            for i, permission in enumerate(permissions):
+                original_perm = permission
+
+                # Replace any absolute paths with restore location
+                # Pattern: /Users/username/git/maia or similar
+                if "/Users/" in permission and "/git/maia" in permission:
+                    permission = re.sub(
+                        r'/Users/[^/]+/git/maia',
+                        maia_root,
+                        permission
+                    )
+
+                # Also handle OneDrive paths (from testing)
+                if "OneDrive" in permission and ("restore-test" in permission or "Documents" in permission):
+                    permission = re.sub(
+                        r'/Users/[^/]+/Library/CloudStorage/[^/]+/[^/]+/[^/]+',
+                        maia_root,
+                        permission
+                    )
+
+                if permission != original_perm:
+                    permissions[i] = permission
+                    updated_count += 1
+
+    with open(settings_json, 'w') as f:
+        json.dump(config, f, indent=2)
+
+    print("    ✅ Updated %d permission paths" % updated_count)
+
+except Exception as e:
+    print("    ⚠️  Failed to update settings.local.json: %s" % e)
+    sys.exit(0)  # Don't fail restoration for this
+
+PYTHON_EOF
+
+        echo "  ✅ Settings paths updated"
+    else
+        echo "  ℹ️  No .claude/settings.local.json found"
+    fi
+}}
+
 # Main restoration flow
 main() {{
     detect_environment
@@ -722,16 +1004,37 @@ main() {{
     restore_databases
     restore_launchagents
     restore_shell_configs
+    rewrite_config_paths  # LESSON LEARNED: Fix hardcoded paths
     restore_dependencies
     restore_credentials
 
     echo ""
     echo "🎉 Restoration complete!"
     echo ""
-    echo "Next steps:"
-    echo "  1. Load LaunchAgents: launchctl load ~/Library/LaunchAgents/com.maia.*.plist"
-    echo "  2. Verify health: cd $MAIA_ROOT && python3 claude/tools/services/health_monitor_service.py"
-    echo "  3. Check services: launchctl list | grep com.maia"
+
+    if [ "$IS_WSL" = true ]; then
+        echo "Next steps (WSL):"
+        echo "  1. Open VSCode: code $MAIA_ROOT"
+        echo "  2. Install VSCode WSL extension if not already installed"
+        echo "  3. Set environment variables in ~/.bashrc:"
+        echo "     echo 'export MAIA_ROOT=$MAIA_ROOT' >> ~/.bashrc"
+        echo "     echo 'export PYTHONPATH=$MAIA_ROOT' >> ~/.bashrc"
+        echo "     source ~/.bashrc"
+        echo "  4. Optional: Set up cron for automated backups:"
+        echo "     crontab -e"
+        echo "     0 3 * * * cd $MAIA_ROOT && python3 claude/tools/sre/disaster_recovery_system.py backup"
+        echo ""
+        echo "VSCode Remote - WSL Tips:"
+        echo "  - Open folder in WSL: code $MAIA_ROOT"
+        echo "  - Terminal uses WSL bash automatically"
+        echo "  - Extensions install in WSL context"
+        echo "  - Git works from WSL filesystem"
+    else
+        echo "Next steps (macOS):"
+        echo "  1. Load LaunchAgents: launchctl load ~/Library/LaunchAgents/com.maia.*.plist"
+        echo "  2. Verify health: cd $MAIA_ROOT && python3 claude/tools/services/health_monitor_service.py"
+        echo "  3. Check services: launchctl list | grep com.maia"
+    fi
     echo ""
 }}
 

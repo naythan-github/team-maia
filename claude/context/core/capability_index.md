@@ -14,6 +14,19 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### Phase 135.5 (Oct 21) - WSL Disaster Recovery Support ⭐ **CROSS-PLATFORM DR**
+- **disaster_recovery_system.py** - Enhanced with WSL auto-detection and platform-specific restoration (macOS + WSL)
+- **WSL Auto-Detection**: Checks `/proc/version` + `/mnt/c/Windows` to detect WSL environment
+- **Platform-Adaptive Restoration**: Single restore script adapts to macOS or WSL automatically
+- **WSL OneDrive Paths**: Auto-detects `/mnt/c/Users/{username}/OneDrive` (Business + Personal)
+- **Smart Component Skipping**: Skips LaunchAgents, Homebrew, macOS shell configs on WSL (uses cron, apt, bash instead)
+- **VSCode + WSL Integration**: Optimized paths (`~/maia`) for VSCode Remote - WSL performance
+- **Same Backup Format**: tar.gz created on macOS, restored on WSL (no separate backup system needed)
+- **Problem Solved**: Cannot restore Maia to Windows laptops with WSL + VSCode
+- **Use Cases**: Cross-platform disaster recovery, Windows+WSL development, team onboarding on Windows laptops
+- **Testing Status**: Backup generation tested (restore_maia.sh includes WSL detection), WSL restore pending
+- **Production Status**: ✅ Code complete, pending WSL testing
+
 ### Phase 135 (Oct 21) - Architecture Documentation Standards ⭐ **NEW STANDARD**
 - **architecture_standards.md** - Complete standards for documenting system architecture (22KB, ARCHITECTURE.md template + ADR template)
 - **ServiceDesk ARCHITECTURE.md** - Retroactive documentation of ServiceDesk Dashboard system (17KB, deployment model + topology + integration points)
@@ -312,7 +325,7 @@
 - dependency_graph_validator.py - Phantom tool detection + dependency analysis
 - rag_system_health_monitor.py - RAG data freshness monitoring
 - launchagent_health_monitor.py - Service availability monitoring
-- disaster_recovery_system.py - Full system backup + restoration
+- **disaster_recovery_system.py** - Cross-platform backup + restoration (macOS + WSL, OneDrive sync, platform-adaptive restore script)
 - smart_context_loader.py - Intent-aware SYSTEM_STATE loading
 - system_state_rag_indexer.py - RAG indexing for SYSTEM_STATE history
 - capability_checker.py - Existing capability search
@@ -522,8 +535,12 @@
 - "GTD workflow" → unified_action_tracker_gtd.py
 
 **Disaster Recovery**:
-- "backup system" → disaster_recovery_system.py
-- "restore maia" → disaster_recovery_system.py (OneDrive sync)
+- "backup system" → disaster_recovery_system.py (cross-platform: macOS + WSL)
+- "restore maia" → disaster_recovery_system.py (platform-adaptive restore script)
+- "wsl backup" → **disaster_recovery_system.py** ⭐ ENHANCED (auto-detects WSL, adapts paths and components)
+- "cross-platform backup" → disaster_recovery_system.py (macOS backup → WSL restore)
+- "wsl restore" → **disaster_recovery_system.py** (/mnt/c/Users/ paths, VSCode + WSL integration)
+- "windows wsl" → disaster_recovery_system.py (Windows Subsystem for Linux support)
 
 **Data & Search**:
 - "RAG search" → rag_enhanced_search.py, email_rag_system.py, document_rag_system.py
@@ -661,8 +678,8 @@ python3 claude/tools/capability_checker.py "your requirement description"
 
 ## 📈 Statistics
 
-**Tools**: 205+ across 12 categories (Phase 134.2: +3 monitoring tools)
-**Agents**: 51 across 10 specializations
+**Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
+**Agents**: 49 across 10 specializations
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
