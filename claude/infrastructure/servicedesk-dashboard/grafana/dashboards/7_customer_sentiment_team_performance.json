@@ -61,8 +61,8 @@
       {
         "id": 2,
         "type": "stat",
-        "title": "Positive Sentiment Rate",
-        "description": "Percentage of customer-facing comments containing positive keywords",
+        "title": "Positive Sentiment Rate (Keyword)",
+        "description": "Percentage of customer-facing comments containing positive keywords (legacy method)",
         "gridPos": {"h": 4, "w": 6, "x": 6, "y": 1},
         "targets": [
           {
@@ -162,10 +162,205 @@
         }
       },
       {
+        "id": 102,
+        "type": "row",
+        "title": "LLM Sentiment Analysis (gemma2:9b - 78% accuracy)",
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+        "collapsed": false
+      },
+      {
+        "id": 10,
+        "type": "stat",
+        "title": "LLM Positive Sentiment Rate",
+        "description": "Percentage of comments classified as positive by gemma2:9b model (78% accuracy, +46% vs keyword baseline)",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 6},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  CAST(SUM(CASE WHEN sentiment = 'positive' THEN 1 ELSE 0 END)*100.0/COUNT(*) AS NUMERIC(10,1)) as value\nFROM servicedesk.comment_sentiment\nWHERE created_time >= '2025-07-01';",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 40, "color": "yellow"},
+                {"value": 60, "color": "green"}
+              ]
+            },
+            "unit": "percent"
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "textMode": "value_and_name",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 11,
+        "type": "piechart",
+        "title": "LLM Sentiment Distribution",
+        "description": "Distribution of sentiment classifications by gemma2:9b model",
+        "gridPos": {"h": 8, "w": 8, "x": 6, "y": 6},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  sentiment as metric,\n  COUNT(*) as value\nFROM servicedesk.comment_sentiment\nWHERE created_time >= '2025-07-01'\nGROUP BY sentiment\nORDER BY value DESC;",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "palette-classic"}
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "positive"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "negative"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "neutral"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "mixed"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}]
+            }
+          ]
+        },
+        "options": {
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"]
+          },
+          "pieType": "pie",
+          "tooltip": {"mode": "single"},
+          "legend": {
+            "displayMode": "table",
+            "placement": "right",
+            "values": ["value", "percent"]
+          }
+        }
+      },
+      {
+        "id": 12,
+        "type": "stat",
+        "title": "Average Model Confidence",
+        "description": "Average confidence score from gemma2:9b sentiment analysis (0.0-1.0)",
+        "gridPos": {"h": 4, "w": 5, "x": 14, "y": 6},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  CAST(AVG(confidence)*100 AS NUMERIC(10,1)) as value\nFROM servicedesk.comment_sentiment\nWHERE created_time >= '2025-07-01';",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 70, "color": "yellow"},
+                {"value": 85, "color": "green"}
+              ]
+            },
+            "unit": "percent",
+            "decimals": 1
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "textMode": "value_and_name",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 13,
+        "type": "stat",
+        "title": "Total Comments Analyzed",
+        "description": "Number of comments analyzed by gemma2:9b model",
+        "gridPos": {"h": 4, "w": 5, "x": 19, "y": 6},
+        "targets": [
+          {
+            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "format": "table",
+            "rawSql": "SELECT\n  COUNT(*) as value\nFROM servicedesk.comment_sentiment\nWHERE created_time >= '2025-07-01';",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "blue"}
+              ]
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "textMode": "value_and_name",
+          "colorMode": "background"
+        }
+      },
+      {
+        "id": 14,
+        "type": "bargauge",
+        "title": "Sentiment Accuracy Comparison",
+        "description": "Keyword (32%) vs LLM gemma2:9b (78%) accuracy based on 100-comment validation test",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 10},
+        "targets": [
+          {
+            "datasource": {"type": "testdata", "uid": "PD8C576611E62080A"},
+            "scenarioId": "csv_content",
+            "csvContent": "method,accuracy\nKeyword Baseline,32\ngemma2:9b LLM,78",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "color": {"mode": "thresholds"},
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "red"},
+                {"value": 50, "color": "yellow"},
+                {"value": 70, "color": "green"}
+              ]
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "displayMode": "gradient",
+          "showUnfilled": true
+        }
+      },
+      {
         "id": 101,
         "type": "row",
         "title": "Team Performance Ranking",
-        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 5},
+        "gridPos": {"h": 1, "w": 24, "x": 0, "y": 14},
         "collapsed": false
       },
       {
@@ -173,7 +368,7 @@
         "type": "table",
         "title": "Ranked Team Performance (Composite Score)",
         "description": "Team members ranked by composite score: SLA (30%) + Resolution Speed (30%) + Customer Sentiment (40%)",
-        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 6},
+        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 15},
         "targets": [
           {
             "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
