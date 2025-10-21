@@ -1,9 +1,57 @@
 # Thoughts and notes
 
 **URL**: /spaces/Orro/pages/3113484297/Thoughts+and+notes
-**Updated**: 2025-10-11T08:00:04.991145
+**Updated**: 2025-10-21T08:00:06.123026
 
 
+
+ 
+
+Jono and OTC API future plans
+
+Zabbix – how does it connect to Azure?
+
+What can it report on?
+
+Check backlog for Cloud, not much in there, Talk to Harpreet
+
+ 
+
+ 
+
+Kaseya TAM
+
+Kaseya One – logon
+
+Cooper Copilot Smart Relate – AI
+
+Linking related items increases the ease of finding
+
+Key board shortcuts – D Q, control the range fo the search, can search in documents, not just the title
+
+Browser extension to find documents
+
+SOP creater extension
+
+Smart Assist - Document Review 1500 stale 400 never viewed
+
+Password sharing – includes password sharing
+
+SSO, zero trust, password reset
+
+SSL Tracker
+
+Domain tracker
+
+Import Word documents to ITGLue format
+
+ 
+
+ 
+
+Question
+
+Jaqi: S1 record – can that include services?
 
  
 

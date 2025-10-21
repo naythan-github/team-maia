@@ -2,11 +2,11 @@
   "pages": {
     "3113484297": {
       "title": "Thoughts and notes",
-      "content_hash": "2ac43e0743a9de3f89012134bc6f6b3816136e76d85033d34d3fdc3381602e8c",
-      "last_sync": "2025-10-11T08:00:11.748042",
+      "content_hash": "33cfa478c2561374b6d1d1fa071411c8535cc259b430d6f9ee260e10e7056636",
+      "last_sync": "2025-10-21T08:00:39.084505",
       "intelligence_summary": {
         "actions": 0,
-        "questions": 51,
+        "questions": 54,
         "strategic": 19,
         "decisions": 8
       }

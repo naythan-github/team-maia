@@ -3,365 +3,386 @@
     "Thoughts_and_notes_3113484297": {
       "file": "/Users/naythandawe/git/maia/claude/data/confluence_summaries/Thoughts_and_notes_3113484297.md",
       "url": "https://vivoemc.atlassian.net/wiki/spaces/Orro/pages/3113484297",
-      "processed_at": "2025-10-11T08:00:05.028744",
+      "processed_at": "2025-10-21T08:00:06.148335",
       "results": {
         "action_items": [],
         "questions": [
           {
+            "question": "Zabbix \u2013 how does it connect to Azure?",
+            "category": "process",
+            "priority": "low",
+            "created_at": "2025-10-21T08:00:06.135756",
+            "status": "unanswered"
+          },
+          {
+            "question": "What can it report on?",
+            "category": "general",
+            "priority": "low",
+            "created_at": "2025-10-21T08:00:06.135781",
+            "status": "unanswered"
+          },
+          {
+            "question": "Jaqi: S1 record \u2013 can that include services?",
+            "category": "general",
+            "priority": "low",
+            "created_at": "2025-10-21T08:00:06.135796",
+            "status": "unanswered"
+          },
+          {
             "question": "OTC SLA treatment, how are we actually working with it?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010319",
+            "created_at": "2025-10-21T08:00:06.135804",
             "status": "unanswered"
           },
           {
             "question": "why are we not changing the level?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010347",
+            "created_at": "2025-10-21T08:00:06.135812",
             "status": "unanswered"
           },
           {
             "question": "all comms to customer by default, it shouldn\u2019t be a question of \u2018should i?'",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010374",
+            "created_at": "2025-10-21T08:00:06.135823",
             "status": "unanswered"
           },
           {
             "question": "quality of updates, whats in an update, what training and guidance has been given?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010392",
+            "created_at": "2025-10-21T08:00:06.135831",
             "status": "unanswered"
           },
           {
             "question": "What is the current on-call process?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010408",
+            "created_at": "2025-10-21T08:00:06.135839",
             "status": "unanswered"
           },
           {
             "question": "Check servicedesk tickets with no comments, confirm data and look at what else is in that ticket?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010428",
+            "created_at": "2025-10-21T08:00:06.135849",
             "status": "unanswered"
           },
           {
             "question": "Follow up on AI in OTC post? How does it impact Cloud?",
             "category": "process",
             "priority": "medium",
-            "created_at": "2025-10-11T08:00:05.010442",
+            "created_at": "2025-10-21T08:00:06.135857",
             "status": "unanswered"
           },
           {
             "question": "What is the current user journey for support?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010458",
+            "created_at": "2025-10-21T08:00:06.135864",
             "status": "unanswered"
           },
           {
             "question": "What is the escalation process?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010470",
+            "created_at": "2025-10-21T08:00:06.135871",
             "status": "unanswered"
           },
           {
             "question": "? Converting to EA?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010485",
+            "created_at": "2025-10-21T08:00:06.135878",
             "status": "unanswered"
           },
           {
             "question": "Workload tracking, what do we do now?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010503",
+            "created_at": "2025-10-21T08:00:06.135886",
             "status": "unanswered"
           },
           {
             "question": "Pipeline tracking for PS, what are we using?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010517",
+            "created_at": "2025-10-21T08:00:06.135893",
             "status": "unanswered"
           },
           {
             "question": "Utilisation tracking, what are using?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010533",
+            "created_at": "2025-10-21T08:00:06.135900",
             "status": "unanswered"
           },
           {
             "question": "o\u00a0\u00a0 How often are we notifying the customer?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010557",
+            "created_at": "2025-10-21T08:00:06.135911",
             "status": "unanswered"
           },
           {
             "question": "o\u00a0\u00a0 Why might that be helpful for the customer?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010576",
+            "created_at": "2025-10-21T08:00:06.135920",
             "status": "unanswered"
           },
           {
             "question": "o\u00a0\u00a0 Why are we holding back?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010590",
+            "created_at": "2025-10-21T08:00:06.135927",
             "status": "unanswered"
           },
           {
             "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Who has had training so far?",
             "category": "team",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010605",
+            "created_at": "2025-10-21T08:00:06.135934",
             "status": "unanswered"
           },
           {
             "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 What training have they had?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010620",
+            "created_at": "2025-10-21T08:00:06.135942",
             "status": "unanswered"
           },
           {
             "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 What are the immediate gaps?",
             "category": "general",
             "priority": "high",
-            "created_at": "2025-10-11T08:00:05.010636",
+            "created_at": "2025-10-21T08:00:06.135949",
             "status": "unanswered"
           },
           {
             "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 User call routing, how is it handled now, what do they hear and how is it routed?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010658",
+            "created_at": "2025-10-21T08:00:06.135961",
             "status": "unanswered"
           },
           {
             "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Auvik: moving, who is using it?",
             "category": "team",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010674",
+            "created_at": "2025-10-21T08:00:06.135967",
             "status": "unanswered"
           },
           {
             "question": "What time do you want me to start?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010699",
+            "created_at": "2025-10-21T08:00:06.135980",
             "status": "unanswered"
           },
           {
             "question": "incidents ticketing, which system?",
             "category": "systems",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010710",
+            "created_at": "2025-10-21T08:00:06.135985",
             "status": "unanswered"
           },
           {
             "question": "what is OTC vs OTC 2?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010725",
+            "created_at": "2025-10-21T08:00:06.135992",
             "status": "unanswered"
           },
           {
             "question": "What CRM do we use?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010739",
+            "created_at": "2025-10-21T08:00:06.136000",
             "status": "unanswered"
           },
           {
             "question": "What other systems do I need to know about?",
             "category": "systems",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010751",
+            "created_at": "2025-10-21T08:00:06.136005",
             "status": "unanswered"
           },
           {
             "question": "Skills matrix?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010765",
+            "created_at": "2025-10-21T08:00:06.136012",
             "status": "unanswered"
           },
           {
             "question": "Training records?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010780",
+            "created_at": "2025-10-21T08:00:06.136019",
             "status": "unanswered"
           },
           {
             "question": "retros, have there been any at all or is there currently any knowledge sharing platform?",
             "category": "systems",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010793",
+            "created_at": "2025-10-21T08:00:06.136026",
             "status": "unanswered"
           },
           {
             "question": "mobile allowance - how do I claim it?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010806",
+            "created_at": "2025-10-21T08:00:06.136033",
             "status": "unanswered"
           },
           {
             "question": "Intune profile, do you know where the policy for BYOD devices is?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010825",
+            "created_at": "2025-10-21T08:00:06.136041",
             "status": "unanswered"
           },
           {
             "question": "Social events?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010840",
+            "created_at": "2025-10-21T08:00:06.136048",
             "status": "unanswered"
           },
           {
             "question": "Culture building?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010854",
+            "created_at": "2025-10-21T08:00:06.136056",
             "status": "unanswered"
           },
           {
             "question": "Channels for everyone in the team to work together?",
             "category": "team",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010867",
+            "created_at": "2025-10-21T08:00:06.136062",
             "status": "unanswered"
           },
           {
             "question": "Reporting - cost to service each incident type e.g. total hours time average rate service desk?",
             "category": "financial",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010886",
+            "created_at": "2025-10-21T08:00:06.136071",
             "status": "unanswered"
           },
           {
             "question": "timekeeping, what are they tracking in and how accurate is it? how much util versus actual available?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010902",
+            "created_at": "2025-10-21T08:00:06.136079",
             "status": "unanswered"
           },
           {
             "question": "Are any of the cloud team in the Philippines?",
             "category": "team",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010914",
+            "created_at": "2025-10-21T08:00:06.136085",
             "status": "unanswered"
           },
           {
             "question": "Are there plans for them to be?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010930",
+            "created_at": "2025-10-21T08:00:06.136093",
             "status": "unanswered"
           },
           {
             "question": "AI allowance?",
             "category": "financial",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010944",
+            "created_at": "2025-10-21T08:00:06.136100",
             "status": "unanswered"
           },
           {
             "question": "Do we have VPN software?",
             "category": "systems",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010955",
+            "created_at": "2025-10-21T08:00:06.136105",
             "status": "unanswered"
           },
           {
             "question": "will i need a corporate credit card?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010970",
+            "created_at": "2025-10-21T08:00:06.136114",
             "status": "unanswered"
           },
           {
             "question": "How are we planning on using IT Glue. Why are we planning on using it, what does it give us?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.010993",
+            "created_at": "2025-10-21T08:00:06.136133",
             "status": "unanswered"
           },
           {
             "question": "o\u00a0\u00a0 How are we scoring now?",
             "category": "process",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011015",
+            "created_at": "2025-10-21T08:00:06.136146",
             "status": "unanswered"
           },
           {
             "question": "Which Service Catalogues do I need to be aware of?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011032",
+            "created_at": "2025-10-21T08:00:06.136155",
             "status": "unanswered"
           },
           {
             "question": "BrightHR? \u2013 expenses? What else?",
             "category": "financial",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011049",
+            "created_at": "2025-10-21T08:00:06.136163",
             "status": "unanswered"
           },
           {
             "question": "Melbourne trip?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011064",
+            "created_at": "2025-10-21T08:00:06.136170",
             "status": "unanswered"
           },
           {
             "question": "AI policy? What am I allowed to do and not to do?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011079",
+            "created_at": "2025-10-21T08:00:06.136178",
             "status": "unanswered"
           },
           {
             "question": "AI budget \u2013 expenses?",
             "category": "financial",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011095",
+            "created_at": "2025-10-21T08:00:06.136185",
             "status": "unanswered"
           },
           {
             "question": "o\u00a0\u00a0 Sposorships?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011117",
+            "created_at": "2025-10-21T08:00:06.136196",
             "status": "unanswered"
           },
           {
             "question": "what is a blameless culture?",
             "category": "general",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011153",
+            "created_at": "2025-10-21T08:00:06.136214",
             "status": "unanswered"
           },
           {
             "question": "systems usage monitoring - do we have it, could we have it?",
             "category": "systems",
             "priority": "low",
-            "created_at": "2025-10-11T08:00:05.011165",
+            "created_at": "2025-10-21T08:00:06.136219",
             "status": "unanswered"
           }
         ],
@@ -369,115 +390,115 @@
           {
             "initiative": "quality of updates, whats in an update, what training and guidance has been given?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.011326",
+            "created_at": "2025-10-21T08:00:06.136394",
             "status": "identified"
           },
           {
             "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 OTC training",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.011513",
+            "created_at": "2025-10-21T08:00:06.136565",
             "status": "identified"
           },
           {
             "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Who else needs training",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.011532",
+            "created_at": "2025-10-21T08:00:06.136583",
             "status": "identified"
           },
           {
             "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Who has had training so far?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.011634",
+            "created_at": "2025-10-21T08:00:06.136634",
             "status": "identified"
           },
           {
             "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 What training have they had?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.011644",
+            "created_at": "2025-10-21T08:00:06.136639",
             "status": "identified"
           },
           {
             "initiative": "Training records?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012040",
+            "created_at": "2025-10-21T08:00:06.136855",
             "status": "identified"
           },
           {
             "initiative": "retros, have there been any at all or is there currently any knowledge sharing platform?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012066",
+            "created_at": "2025-10-21T08:00:06.136868",
             "status": "identified"
           },
           {
             "initiative": "Culture building?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012160",
+            "created_at": "2025-10-21T08:00:06.136915",
             "status": "identified"
           },
           {
             "initiative": "OKRs and KPI\u2019s, what do we have now",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012574",
+            "created_at": "2025-10-21T08:00:06.137230",
             "status": "identified"
           },
           {
             "initiative": "Engagement was 30%, now about 60%",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012610",
+            "created_at": "2025-10-21T08:00:06.137270",
             "status": "identified"
           },
           {
             "initiative": "Which Service Catalogues do I need to be aware of?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012657",
+            "created_at": "2025-10-21T08:00:06.137298",
             "status": "identified"
           },
           {
             "initiative": "Balanced Score Card",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012693",
+            "created_at": "2025-10-21T08:00:06.137317",
             "status": "identified"
           },
           {
             "initiative": "Jaqi \u2013 ITIL training \u2013 careful how we deploy here",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012704",
+            "created_at": "2025-10-21T08:00:06.137323",
             "status": "identified"
           },
           {
             "initiative": "No retros at the moment",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012713",
+            "created_at": "2025-10-21T08:00:06.137328",
             "status": "identified"
           },
           {
             "initiative": "Pods, how to build them, best practice, transition plans",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012739",
+            "created_at": "2025-10-21T08:00:06.137341",
             "status": "identified"
           },
           {
             "initiative": "Minimse ticket flicking between pods",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012746",
+            "created_at": "2025-10-21T08:00:06.137345",
             "status": "identified"
           },
           {
             "initiative": "Pods, try to resolve within the pod",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012771",
+            "created_at": "2025-10-21T08:00:06.137358",
             "status": "identified"
           },
           {
             "initiative": "Change control, internal cab, when is it, who is in it, how does it relate to the customer",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.012805",
+            "created_at": "2025-10-21T08:00:06.137376",
             "status": "identified"
           },
           {
             "initiative": "what is a blameless culture?",
             "category": "strategic",
-            "created_at": "2025-10-11T08:00:05.013183",
+            "created_at": "2025-10-21T08:00:06.137571",
             "status": "identified"
           }
         ],
@@ -485,153 +506,156 @@
           {
             "decision": "Check servicedesk tickets with no comments, confirm data and look at what else is in that ticket?",
             "urgency": "high",
-            "created_at": "2025-10-11T08:00:05.013467",
+            "created_at": "2025-10-21T08:00:06.137805",
             "status": "pending"
           },
           {
             "decision": "? Converting to EA?",
             "urgency": "medium",
-            "created_at": "2025-10-11T08:00:05.013512",
+            "created_at": "2025-10-21T08:00:06.137881",
             "status": "pending"
           },
           {
             "decision": "Workload tracking, what do we do now?",
             "urgency": "medium",
-            "created_at": "2025-10-11T08:00:05.013538",
+            "created_at": "2025-10-21T08:00:06.137903",
             "status": "pending"
           },
           {
             "decision": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Confluence: are we going to be able to get budget",
             "urgency": "high",
-            "created_at": "2025-10-11T08:00:05.013678",
+            "created_at": "2025-10-21T08:00:06.137977",
             "status": "pending"
           },
           {
             "decision": "Confirm Super payments",
             "urgency": "high",
-            "created_at": "2025-10-11T08:00:05.013790",
+            "created_at": "2025-10-21T08:00:06.138037",
             "status": "pending"
           },
           {
             "decision": "Confirm teams chats",
             "urgency": "high",
-            "created_at": "2025-10-11T08:00:05.013812",
+            "created_at": "2025-10-21T08:00:06.138049",
             "status": "pending"
           },
           {
             "decision": "OKRs and KPI\u2019s, what do we have now",
             "urgency": "medium",
-            "created_at": "2025-10-11T08:00:05.014365",
+            "created_at": "2025-10-21T08:00:06.138355",
             "status": "pending"
           },
           {
             "decision": "AI budget \u2013 expenses?",
             "urgency": "high",
-            "created_at": "2025-10-11T08:00:05.014447",
+            "created_at": "2025-10-21T08:00:06.138410",
             "status": "pending"
           }
         ],
         "team_members": [
-          "Zankrut Dhebar",
-          "Tash Dadimuni",
-          "Naythan Dawe",
-          "Devicie",
-          "Wenard Gonzal",
-          "Jason Singh",
-          "Sangeetha Murthy",
-          "Kristy Schaeffer",
-          "Dillon Loos",
-          "Janice Tablarin",
-          "Project Orchestration",
+          "Lakmal Marasinghe",
+          "Steve Daalmeyer",
           "Jennelyn Puno",
-          "Confluence",
-          "Dion Jewell",
-          "Anil Kumar",
-          "Rajat",
-          "Observation",
-          "Probe",
+          "Franz Canizares",
+          "Mamta Sharma",
+          "Devicie",
+          "Dillon Loos",
+          "Nigel",
+          "Olli Ojala",
+          "Tash Dadimuni",
+          "Lance Letran",
+          "Eric Expression",
           "Debbie Pender",
           "Ashish Negi",
-          "Foram Pandya",
-          "Deepika Sharma",
-          "Franz Canizares",
-          "Lance Letran",
-          "Peter Mustow",
+          "Michael Vilafore",
+          "Llewellyn Booth",
+          "Dion Jewell",
+          "Probe",
+          "Question\n\nJaqi",
+          "Chris Kemp",
+          "Abdallah Ziadeh",
+          "Anil Kumar",
           "Harpreet Kaur",
-          "Jira\n\n\u00a0\n\nQuestions",
+          "Robert Quito",
+          "Observation",
+          "Jason Singh",
+          "Trevour",
+          "Kristy Schaeffer",
+          "Naythan Dawe",
           "Daniel Dignadice",
           "Mandeep Lally",
-          "Hamish Ridland",
-          "Amrit Sohal",
-          "Ehab Moazzam",
-          "Yao Loh",
           "Jake Stones",
-          "Prasanta Panta",
-          "Donovan Carr",
-          "Lakmal Marasinghe",
-          "Alex Olver",
-          "Robert Quito",
-          "Trevour",
-          "Llewellyn Booth",
-          "Nigel",
-          "Pawan Kaur",
-          "Michael Vilafore",
-          "Hannah Youssef",
-          "Olli Ojala",
-          "Manikrishna Suddala",
           "Michael Villaflor",
-          "Steve Daalmeyer",
-          "Auvik",
-          "Luke Mason",
-          "Mamta Sharma",
-          "Deo Manalata",
-          "Eric Expression",
+          "Manikrishna Suddala",
+          "Yao Loh",
           "Daksha Jain",
-          "Chris Kemp",
-          "Abdallah Ziadeh"
+          "Project Orchestration",
+          "Wenard Gonzal",
+          "Prasanta Panta",
+          "Sangeetha Murthy",
+          "Peter Mustow",
+          "Amrit Sohal",
+          "Alex Olver",
+          "Hamish Ridland",
+          "Jira\n\n\u00a0\n\nQuestions",
+          "Donovan Carr",
+          "Foram Pandya",
+          "Pawan Kaur",
+          "Zankrut Dhebar",
+          "Auvik",
+          "Deepika Sharma",
+          "Deo Manalata",
+          "Luke Mason",
+          "Rajat",
+          "Ehab Moazzam",
+          "Janice Tablarin",
+          "Confluence",
+          "Hannah Youssef"
         ],
         "tools_systems": [
-          "sharing",
           "RMM",
-          "Devicie",
-          "Questions",
-          "Engineer",
-          "which",
-          "Nerdio",
-          "Argos",
-          "log",
-          "VPN",
-          "Kasaya",
-          "other",
-          "IT Glue",
-          "Confluence",
-          "Observation",
-          "Probe",
-          "monitoring",
-          "Xian",
-          "bceb",
-          "Touch",
-          "addd",
-          "team",
-          "OneNote",
-          "migration",
-          "our",
-          "allowance",
-          "Jira",
-          "acbb",
-          "bccf",
-          "Trevour",
-          "Vilafore",
-          "management",
-          "Orchestration",
           "OTC",
-          "ITGLue",
+          "OneNote",
+          "sharing",
+          "Devicie",
+          "Nigel",
+          "monitoring",
+          "acbb",
+          "Touch",
+          "bceb",
+          "Questions",
+          "management",
+          "Nerdio",
+          "Probe",
+          "which",
+          "Observation",
           "Management",
-          "Auvik",
+          "Xian",
+          "Trevour",
+          "our",
           "project",
+          "Assist",
+          "team",
+          "migration",
+          "Vilafore",
+          "bccf",
+          "Kasaya",
           "Dion",
+          "other",
+          "log",
+          "Argos",
+          "addd",
+          "Jira",
+          "Jaqi",
           "Reporting",
-          "Nigel"
+          "ITGLue",
+          "Auvik",
+          "allowance",
+          "IT Glue",
+          "Orchestration",
+          "Engineer",
+          "VPN",
+          "Confluence"
         ],
         "key_themes": [
           "Thoughts and notes"
@@ -2503,6 +2527,384 @@
       "priority": "low",
       "created_at": "2025-10-11T08:00:05.011165",
       "status": "unanswered"
+    },
+    {
+      "question": "Zabbix \u2013 how does it connect to Azure?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135756",
+      "status": "unanswered"
+    },
+    {
+      "question": "What can it report on?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135781",
+      "status": "unanswered"
+    },
+    {
+      "question": "Jaqi: S1 record \u2013 can that include services?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135796",
+      "status": "unanswered"
+    },
+    {
+      "question": "OTC SLA treatment, how are we actually working with it?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135804",
+      "status": "unanswered"
+    },
+    {
+      "question": "why are we not changing the level?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135812",
+      "status": "unanswered"
+    },
+    {
+      "question": "all comms to customer by default, it shouldn\u2019t be a question of \u2018should i?'",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135823",
+      "status": "unanswered"
+    },
+    {
+      "question": "quality of updates, whats in an update, what training and guidance has been given?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135831",
+      "status": "unanswered"
+    },
+    {
+      "question": "What is the current on-call process?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135839",
+      "status": "unanswered"
+    },
+    {
+      "question": "Check servicedesk tickets with no comments, confirm data and look at what else is in that ticket?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135849",
+      "status": "unanswered"
+    },
+    {
+      "question": "Follow up on AI in OTC post? How does it impact Cloud?",
+      "category": "process",
+      "priority": "medium",
+      "created_at": "2025-10-21T08:00:06.135857",
+      "status": "unanswered"
+    },
+    {
+      "question": "What is the current user journey for support?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135864",
+      "status": "unanswered"
+    },
+    {
+      "question": "What is the escalation process?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135871",
+      "status": "unanswered"
+    },
+    {
+      "question": "? Converting to EA?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135878",
+      "status": "unanswered"
+    },
+    {
+      "question": "Workload tracking, what do we do now?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135886",
+      "status": "unanswered"
+    },
+    {
+      "question": "Pipeline tracking for PS, what are we using?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135893",
+      "status": "unanswered"
+    },
+    {
+      "question": "Utilisation tracking, what are using?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135900",
+      "status": "unanswered"
+    },
+    {
+      "question": "o\u00a0\u00a0 How often are we notifying the customer?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135911",
+      "status": "unanswered"
+    },
+    {
+      "question": "o\u00a0\u00a0 Why might that be helpful for the customer?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135920",
+      "status": "unanswered"
+    },
+    {
+      "question": "o\u00a0\u00a0 Why are we holding back?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135927",
+      "status": "unanswered"
+    },
+    {
+      "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Who has had training so far?",
+      "category": "team",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135934",
+      "status": "unanswered"
+    },
+    {
+      "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 What training have they had?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135942",
+      "status": "unanswered"
+    },
+    {
+      "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 What are the immediate gaps?",
+      "category": "general",
+      "priority": "high",
+      "created_at": "2025-10-21T08:00:06.135949",
+      "status": "unanswered"
+    },
+    {
+      "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 User call routing, how is it handled now, what do they hear and how is it routed?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135961",
+      "status": "unanswered"
+    },
+    {
+      "question": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Auvik: moving, who is using it?",
+      "category": "team",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135967",
+      "status": "unanswered"
+    },
+    {
+      "question": "What time do you want me to start?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135980",
+      "status": "unanswered"
+    },
+    {
+      "question": "incidents ticketing, which system?",
+      "category": "systems",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135985",
+      "status": "unanswered"
+    },
+    {
+      "question": "what is OTC vs OTC 2?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.135992",
+      "status": "unanswered"
+    },
+    {
+      "question": "What CRM do we use?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136000",
+      "status": "unanswered"
+    },
+    {
+      "question": "What other systems do I need to know about?",
+      "category": "systems",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136005",
+      "status": "unanswered"
+    },
+    {
+      "question": "Skills matrix?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136012",
+      "status": "unanswered"
+    },
+    {
+      "question": "Training records?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136019",
+      "status": "unanswered"
+    },
+    {
+      "question": "retros, have there been any at all or is there currently any knowledge sharing platform?",
+      "category": "systems",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136026",
+      "status": "unanswered"
+    },
+    {
+      "question": "mobile allowance - how do I claim it?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136033",
+      "status": "unanswered"
+    },
+    {
+      "question": "Intune profile, do you know where the policy for BYOD devices is?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136041",
+      "status": "unanswered"
+    },
+    {
+      "question": "Social events?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136048",
+      "status": "unanswered"
+    },
+    {
+      "question": "Culture building?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136056",
+      "status": "unanswered"
+    },
+    {
+      "question": "Channels for everyone in the team to work together?",
+      "category": "team",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136062",
+      "status": "unanswered"
+    },
+    {
+      "question": "Reporting - cost to service each incident type e.g. total hours time average rate service desk?",
+      "category": "financial",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136071",
+      "status": "unanswered"
+    },
+    {
+      "question": "timekeeping, what are they tracking in and how accurate is it? how much util versus actual available?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136079",
+      "status": "unanswered"
+    },
+    {
+      "question": "Are any of the cloud team in the Philippines?",
+      "category": "team",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136085",
+      "status": "unanswered"
+    },
+    {
+      "question": "Are there plans for them to be?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136093",
+      "status": "unanswered"
+    },
+    {
+      "question": "AI allowance?",
+      "category": "financial",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136100",
+      "status": "unanswered"
+    },
+    {
+      "question": "Do we have VPN software?",
+      "category": "systems",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136105",
+      "status": "unanswered"
+    },
+    {
+      "question": "will i need a corporate credit card?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136114",
+      "status": "unanswered"
+    },
+    {
+      "question": "How are we planning on using IT Glue. Why are we planning on using it, what does it give us?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136133",
+      "status": "unanswered"
+    },
+    {
+      "question": "o\u00a0\u00a0 How are we scoring now?",
+      "category": "process",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136146",
+      "status": "unanswered"
+    },
+    {
+      "question": "Which Service Catalogues do I need to be aware of?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136155",
+      "status": "unanswered"
+    },
+    {
+      "question": "BrightHR? \u2013 expenses? What else?",
+      "category": "financial",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136163",
+      "status": "unanswered"
+    },
+    {
+      "question": "Melbourne trip?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136170",
+      "status": "unanswered"
+    },
+    {
+      "question": "AI policy? What am I allowed to do and not to do?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136178",
+      "status": "unanswered"
+    },
+    {
+      "question": "AI budget \u2013 expenses?",
+      "category": "financial",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136185",
+      "status": "unanswered"
+    },
+    {
+      "question": "o\u00a0\u00a0 Sposorships?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136196",
+      "status": "unanswered"
+    },
+    {
+      "question": "what is a blameless culture?",
+      "category": "general",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136214",
+      "status": "unanswered"
+    },
+    {
+      "question": "systems usage monitoring - do we have it, could we have it?",
+      "category": "systems",
+      "priority": "low",
+      "created_at": "2025-10-21T08:00:06.136219",
+      "status": "unanswered"
     }
   ],
   "strategic_initiatives": [
@@ -3201,6 +3603,120 @@
       "category": "strategic",
       "created_at": "2025-10-11T08:00:05.013183",
       "status": "identified"
+    },
+    {
+      "initiative": "quality of updates, whats in an update, what training and guidance has been given?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136394",
+      "status": "identified"
+    },
+    {
+      "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 OTC training",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136565",
+      "status": "identified"
+    },
+    {
+      "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Who else needs training",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136583",
+      "status": "identified"
+    },
+    {
+      "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Who has had training so far?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136634",
+      "status": "identified"
+    },
+    {
+      "initiative": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 What training have they had?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136639",
+      "status": "identified"
+    },
+    {
+      "initiative": "Training records?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136855",
+      "status": "identified"
+    },
+    {
+      "initiative": "retros, have there been any at all or is there currently any knowledge sharing platform?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136868",
+      "status": "identified"
+    },
+    {
+      "initiative": "Culture building?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.136915",
+      "status": "identified"
+    },
+    {
+      "initiative": "OKRs and KPI\u2019s, what do we have now",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137230",
+      "status": "identified"
+    },
+    {
+      "initiative": "Engagement was 30%, now about 60%",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137270",
+      "status": "identified"
+    },
+    {
+      "initiative": "Which Service Catalogues do I need to be aware of?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137298",
+      "status": "identified"
+    },
+    {
+      "initiative": "Balanced Score Card",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137317",
+      "status": "identified"
+    },
+    {
+      "initiative": "Jaqi \u2013 ITIL training \u2013 careful how we deploy here",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137323",
+      "status": "identified"
+    },
+    {
+      "initiative": "No retros at the moment",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137328",
+      "status": "identified"
+    },
+    {
+      "initiative": "Pods, how to build them, best practice, transition plans",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137341",
+      "status": "identified"
+    },
+    {
+      "initiative": "Minimse ticket flicking between pods",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137345",
+      "status": "identified"
+    },
+    {
+      "initiative": "Pods, try to resolve within the pod",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137358",
+      "status": "identified"
+    },
+    {
+      "initiative": "Change control, internal cab, when is it, who is in it, how does it relate to the customer",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137376",
+      "status": "identified"
+    },
+    {
+      "initiative": "what is a blameless culture?",
+      "category": "strategic",
+      "created_at": "2025-10-21T08:00:06.137571",
+      "status": "identified"
     }
   ],
   "decisions_needed": [
@@ -3485,9 +4001,57 @@
       "urgency": "high",
       "created_at": "2025-10-11T08:00:05.014447",
       "status": "pending"
+    },
+    {
+      "decision": "Check servicedesk tickets with no comments, confirm data and look at what else is in that ticket?",
+      "urgency": "high",
+      "created_at": "2025-10-21T08:00:06.137805",
+      "status": "pending"
+    },
+    {
+      "decision": "? Converting to EA?",
+      "urgency": "medium",
+      "created_at": "2025-10-21T08:00:06.137881",
+      "status": "pending"
+    },
+    {
+      "decision": "Workload tracking, what do we do now?",
+      "urgency": "medium",
+      "created_at": "2025-10-21T08:00:06.137903",
+      "status": "pending"
+    },
+    {
+      "decision": "\u00b7\u00a0\u00a0\u00a0\u00a0\u00a0 Confluence: are we going to be able to get budget",
+      "urgency": "high",
+      "created_at": "2025-10-21T08:00:06.137977",
+      "status": "pending"
+    },
+    {
+      "decision": "Confirm Super payments",
+      "urgency": "high",
+      "created_at": "2025-10-21T08:00:06.138037",
+      "status": "pending"
+    },
+    {
+      "decision": "Confirm teams chats",
+      "urgency": "high",
+      "created_at": "2025-10-21T08:00:06.138049",
+      "status": "pending"
+    },
+    {
+      "decision": "OKRs and KPI\u2019s, what do we have now",
+      "urgency": "medium",
+      "created_at": "2025-10-21T08:00:06.138355",
+      "status": "pending"
+    },
+    {
+      "decision": "AI budget \u2013 expenses?",
+      "urgency": "high",
+      "created_at": "2025-10-21T08:00:06.138410",
+      "status": "pending"
     }
   ],
   "team_members": [],
   "tools_systems": [],
-  "last_processed": "2025-10-11T08:00:05.028801"
+  "last_processed": "2025-10-21T08:00:06.148386"
 }

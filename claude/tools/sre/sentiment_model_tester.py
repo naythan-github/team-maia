@@ -147,25 +147,56 @@ class SentimentModelTester:
         }
 
     def analyze_sentiment(self, model: str, text: str) -> Tuple[str, float, str, int]:
-        """Analyze sentiment using Ollama model"""
-        prompt = f"""Analyze the sentiment of this customer service comment.
+        """Analyze sentiment using Ollama model with few-shot prompting"""
+        prompt = f"""Analyze the sentiment of this customer support comment.
 
-Comment: "{text}"
+IMPORTANT INSTRUCTIONS:
+1. DEFAULT to positive, negative, or neutral - only use "mixed" when CLEARLY both sentiments exist
+2. MIXED requires BOTH: explicit gratitude/appreciation AND explicit frustration/problem
+3. "Thanks but [problem still exists]" = mixed
+4. "Working on it, please test" = neutral (NOT mixed - just uncertainty)
+5. Standard acknowledgments with no emotion = neutral (NOT positive)
+6. Respond ONLY with valid JSON (no markdown, no extra text)
 
-Respond ONLY with valid JSON in this exact format:
+EXAMPLES OF EACH SENTIMENT:
+
+POSITIVE - Problem resolved successfully:
+Comment: "We successfully reset the password. Please refer to the following link for the credentials."
 {{
-    "sentiment": "positive" or "negative" or "neutral" or "mixed",
-    "confidence": 0.0 to 1.0,
-    "reasoning": "brief explanation"
+    "sentiment": "positive",
+    "confidence": 0.95,
+    "reasoning": "Problem resolved, credentials provided, successful outcome"
 }}
 
-Rules:
-- positive: Customer is happy, satisfied, thankful
-- negative: Customer is frustrated, angry, reporting problems
-- neutral: Informational, no clear emotion
-- mixed: Contains both positive and negative elements
+NEGATIVE - Problem unresolved despite efforts:
+Comment: "Thanks for sending through the credentials. Tried all of them, none worked."
+{{
+    "sentiment": "negative",
+    "confidence": 0.85,
+    "reasoning": "Despite thanks, credentials failed, problem persists"
+}}
 
-Response:"""
+NEUTRAL - Standard informational update:
+Comment: "This is to acknowledge receiving your request. Ticket has been assigned to the relevant group."
+{{
+    "sentiment": "neutral",
+    "confidence": 0.90,
+    "reasoning": "Standard acknowledgment template, no emotion expressed"
+}}
+
+MIXED - Appreciation with ongoing concern (RARE - only when BOTH present):
+Comment: "Thanks Nish, Sorry I should clarify, we can login to Magento but there is not application setting page."
+{{
+    "sentiment": "mixed",
+    "confidence": 0.80,
+    "reasoning": "Gratitude expressed (positive) but issue still exists (negative)"
+}}
+
+NOW ANALYZE THIS COMMENT:
+
+Comment: {text}
+
+JSON response:"""
 
         start = time.time()
 

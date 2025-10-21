@@ -184,20 +184,30 @@ def create_session_state(
     try:
         # Check for existing session to preserve context and handoff chain
         existing_context = {}
-        existing_handoff_chain = [agent]  # Default: single agent
         session_start = datetime.utcnow().isoformat()
+
+        # Determine handoff chain (priority order):
+        # 1. Classification has handoff_chain (domain change already calculated it)
+        # 2. No existing session (first agent load)
+        # 3. Existing session, same domain (preserve existing chain)
+        if "handoff_chain" in classification:
+            # Domain change case: classification already computed new chain
+            existing_handoff_chain = classification["handoff_chain"]
+        else:
+            # Default: single agent (will be overridden if session exists)
+            existing_handoff_chain = [agent]
 
         if SESSION_STATE_FILE.exists():
             try:
                 with open(SESSION_STATE_FILE, 'r') as f:
                     existing_session = json.load(f)
                     existing_context = existing_session.get("context", {})
-                    # Use classification's handoff_chain if set (Phase 5 domain change)
-                    if "handoff_chain" in classification:
-                        existing_handoff_chain = classification["handoff_chain"]
-                    else:
-                        # Preserve existing session start for continuity
-                        session_start = existing_session.get("session_start", session_start)
+                    # Preserve session start for continuity
+                    session_start = existing_session.get("session_start", session_start)
+
+                    # If classification didn't set handoff_chain, preserve existing
+                    if "handoff_chain" not in classification:
+                        existing_handoff_chain = existing_session.get("handoff_chain", [agent])
             except (json.JSONDecodeError, IOError):
                 pass  # Use defaults
 
@@ -365,12 +375,18 @@ def main():
             # Domain changed if:
             # 1. Different domain AND
             # 2. New domain confidence >70% AND
-            # 3. New confidence >10% higher than previous (0.10 threshold - realistic for domain switches)
+            # 3. Either: a) New confidence ≥9% higher than previous, OR
+            #            b) Both confidences are ≥70% (both high-confidence classifications)
             if current_domain != previous_domain:
                 new_confidence = classification.get("confidence", 0)
                 prev_confidence = existing_session.get("last_classification_confidence", 0)
 
-                if new_confidence > 0.70 and (new_confidence - prev_confidence) >= 0.09:
+                # Accept domain change if new domain is high confidence
+                # Allow if: new much higher than old, OR both are high confidence
+                confidence_delta_significant = (new_confidence - prev_confidence) >= 0.09
+                both_high_confidence = new_confidence >= 0.70 and prev_confidence >= 0.70
+
+                if new_confidence > 0.70 and (confidence_delta_significant or both_high_confidence):
                     domain_changed = True
                     # Update handoff chain
                     existing_handoff_chain = existing_session.get("handoff_chain", [])
