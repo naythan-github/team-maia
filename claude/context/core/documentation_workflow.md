@@ -4,29 +4,34 @@
 
 ### When ANY of these happen, documentation MUST be updated:
 
-1. **System Architecture Changes**
+1. **System Architecture Changes** ⭐ **PHASE 135 ENHANCED**
    - Path structure modifications
    - New core components added/removed
    - Migration or major refactoring
    - Import system changes
+   - **NEW**: Infrastructure deployments (Docker, databases, services) → Update ARCHITECTURE.md
+   - **NEW**: Technical decisions (technology choices, patterns) → Create ADR
+   - **NEW**: Integration points (APIs, databases, message queues) → Update ARCHITECTURE.md
 
 2. **File Structure Changes**
    - New directories created
    - Files moved or renamed
    - Core tools added/modified
-   - Database schema changes
+   - Database schema changes → Update ARCHITECTURE.md (data flow section)
 
 3. **User-Facing Changes**
    - New commands or tools
    - Changed usage patterns
    - Modified configuration requirements
    - Updated workflows
+   - **NEW**: New system deployments → Update active_deployments.md
 
 4. **Task Completion**
    - Major phases completed (like migrations)
    - Critical bug fixes
    - New integrations working
    - System validation results
+   - **NEW**: Production deployments → Update active_deployments.md + ARCHITECTURE.md
 
 ## 📝 DOCUMENTATION CHECKLIST
 
@@ -35,6 +40,14 @@
 - [ ] **CLAUDE.md** - User instructions and examples (if usage changed)
 - [ ] **claude/context/tools/available.md** - Tool inventory and capabilities
 - [ ] **Relevant command/agent documentation** - If workflow changed
+- [ ] **ARCHITECTURE.md** (if infrastructure/deployment changes) ⭐ **PHASE 135**
+- [ ] **active_deployments.md** (if new system deployed) ⭐ **PHASE 135**
+
+### CREATE ADR IF ⭐ **PHASE 135**:
+- [ ] **Made significant technical decision** (PostgreSQL vs MySQL, Docker vs local)
+- [ ] **Chose one technology over alternatives** (Grafana vs Power BI vs Tableau)
+- [ ] **Designed new architecture pattern** (ETL pipeline, microservices, etc.)
+- [ ] **Changed integration approach** (API vs file-based, sync vs async)
 
 ### UPDATE IF APPLICABLE:
 - [ ] **README.md** - If fundamental setup changed

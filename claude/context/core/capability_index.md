@@ -2,13 +2,29 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-21 (Phase 134.4 - Context ID Stability Fix)
+**Last Updated**: 2025-10-21 (Phase 135 - Architecture Documentation Standards)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
+
+**Related Documentation**:
+- **Architecture Standards**: `claude/context/core/architecture_standards.md` ⭐ **PHASE 135**
+- **Active Deployments**: `claude/context/core/active_deployments.md` ⭐ **PHASE 135**
 
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 135 (Oct 21) - Architecture Documentation Standards ⭐ **NEW STANDARD**
+- **architecture_standards.md** - Complete standards for documenting system architecture (22KB, ARCHITECTURE.md template + ADR template)
+- **ServiceDesk ARCHITECTURE.md** - Retroactive documentation of ServiceDesk Dashboard system (17KB, deployment model + topology + integration points)
+- **ADR-001: PostgreSQL Docker** - Why Docker container vs local/cloud (8KB, 4 alternatives considered, decision criteria scoring)
+- **ADR-002: Grafana Visualization** - Why Grafana vs Power BI/Tableau/custom (9KB, 5 alternatives, cost analysis)
+- **active_deployments.md** - Global registry of all running systems (6KB, ServiceDesk + Ollama + infrastructure components)
+- **Problem Solved**: 10-20 min lost searching "how does X work?", trial-and-error implementations (5 DB write attempts), breaking changes from unknown dependencies
+- **Documentation Triggers**: Infrastructure deployments → ARCHITECTURE.md, technical decisions → ADR, integration points → ARCHITECTURE.md
+- **Mandatory Checklist**: Added to documentation_workflow.md (ARCHITECTURE.md + active_deployments.md + ADR creation)
+- **Expected ROI**: 2.7-6h/month saved (8-18 min/task × 20 tasks), pays back in first month
+- **Production Status**: ✅ Standards active, ServiceDesk retroactively documented, enforcement in documentation_workflow.md
 
 ### Phase 134.4 (Oct 21) - Context ID Stability Fix ⭐ **CRITICAL BUG FIX**
 - **Root Cause Fixed** - PPID instability across subprocess invocations (5530 vs 5601 vs 81961) broke persistence
