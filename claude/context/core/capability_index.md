@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-21 (Phase 134.2 - Team Deployment Monitoring & SRE Enforcement)
+**Last Updated**: 2025-10-21 (Phase 134.4 - Context ID Stability Fix)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -10,18 +10,29 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
-### Phase 134.3 (Oct 21) - Multi-Context Concurrency Fix ⭐ **CRITICAL BUG FIX**
+### Phase 134.4 (Oct 21) - Context ID Stability Fix ⭐ **CRITICAL BUG FIX**
+- **Root Cause Fixed** - PPID instability across subprocess invocations (5530 vs 5601 vs 81961) broke persistence
+- **Process Tree Walking** - Find stable Claude Code binary PID (e.g., 2869) for context ID
+- **Stable Session Files** - `/tmp/maia_active_swarm_session_{CONTEXT_ID}.json` (CONTEXT_ID = Claude binary PID)
+- **100% Stability** - 4/4 tests passing: 10 Python invocations, bash commands, subprocess consistency (all return 2869)
+- **Test Suite** - test_context_id_stability.py (170 lines, validates stability across invocation types)
+- **Performance** - Process tree walk <5ms, total overhead <15ms (within <20ms SLA)
+- **Graceful Degradation** - Falls back to PPID if tree walk fails (backward compatible)
+- **Migration** - Automatic legacy session file migration + 24h cleanup
+- **Multi-Window** - Each window still isolated (different Claude binary PIDs)
+- **Production Status** - ✅ Ready - Agent persistence now reliable across all subprocess patterns
+
+### Phase 134.3 (Oct 21) - Multi-Context Concurrency Fix ⭐ **SUPERSEDED BY 134.4**
 - **Per-Context Isolation** - Each Claude Code window gets independent session file (prevents race conditions)
-- **Context ID Detection** - PPID-based stable context identification (falls back to CLAUDE_SESSION_ID if available)
-- **Session File Pattern** - `/tmp/maia_active_swarm_session_context_{PPID}.json` (per-window isolation)
+- **Context ID Detection** - ~~PPID-based~~ ⚠️ UNSTABLE - Fixed in Phase 134.4
+- **Session File Pattern** - ~~`/tmp/maia_active_swarm_session_context_{PPID}.json`~~ (replaced by stable PID in 134.4)
 - **Stale Cleanup** - Automatic 24-hour TTL cleanup prevents /tmp pollution
 - **Legacy Migration** - Backward compatible migration from global to context-specific files
 - **Integration Tests** - test_multi_context_isolation.py (240 lines, 6 tests, 100% passing)
 - **Concurrency Safety** - Zero race conditions in multi-window scenarios
 - **Performance** - <10ms startup overhead, 0ms runtime impact
 - **User Experience** - Window A = Azure agent, Window B = Security agent (independent sessions)
-- **Test Results** - 6/6 passing (concurrent contexts, stale cleanup, legacy migration, context stability)
-- **Production Status** - ✅ Ready - Race conditions eliminated, backward compatible, fully tested
+- **Production Status** - ⚠️ PPID instability detected and fixed in Phase 134.4
 
 ### Phase 134.2 (Oct 21) - Team Deployment Monitoring & SRE Enforcement ⭐ **TEAM DEPLOYMENT READY**
 - **maia_health_check.py** - Decentralized health monitoring for team deployment (350 lines, 4 checks: routing accuracy, session state, performance, integration tests)

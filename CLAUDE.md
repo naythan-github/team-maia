@@ -9,13 +9,15 @@
 **MANDATORY SEQUENCE** (MUST execute in order):
 1. **FIRST**: Load `${MAIA_ROOT}/claude/context/ufc_system.md` - This IS the foundation
 2. **CHECK AGENT SESSION**: Check for active agent session state (Phase 134 - Automatic Agent Persistence)
-   - **File**: `/tmp/maia_active_swarm_session_context_{PPID}.json` (Phase 134.3: per-context isolation)
-   - **Detection**: Try reading context-specific file first, fall back to legacy `/tmp/maia_active_swarm_session.json`
+   - **File**: `/tmp/maia_active_swarm_session_{CONTEXT_ID}.json` (Phase 134.4: stable context ID)
+   - **Context ID**: Stable Claude Code window PID (walks process tree to find native-binary/claude process)
+   - **Detection**: Use swarm_auto_loader.py `get_context_id()` for stable ID, fall back to PPID if detection fails
    - **If exists**: Load specified agent context + enriched context from session
    - **Agent loading**: Read `${MAIA_ROOT}/claude/agents/{current_agent}.md` OR `${MAIA_ROOT}/claude/agents/{current_agent}_agent.md`
    - **Behavior**: Respond AS the loaded agent with agent's expertise and behavioral patterns
    - **Context preservation**: Use enriched context from `context` field in session state
    - **Multi-context**: Each Claude Code window has independent agent session (prevents race conditions)
+   - **Stability**: Context ID stable across all subprocess invocations (Phase 134.4 fix)
    - **If missing/corrupted**: Continue with base Maia context (graceful degradation)
 3. **THEN**: Follow smart context loading for remaining files (if no agent session active)
 - **Details**: See `claude/context/core/smart_context_loading.md`

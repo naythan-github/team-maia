@@ -37,11 +37,13 @@ def get_context_id() -> str:
 
     Phase 134.3: Per-context isolation to prevent race conditions
     when multiple Claude Code contexts are open simultaneously.
+    Phase 134.4: Fix PPID instability by walking process tree to Claude binary
 
     Strategy:
     1. Check for CLAUDE_SESSION_ID env var (if Claude provides it)
-    2. Fall back to PPID (parent process ID - stable per window)
-    3. Ensures each context window has independent agent session
+    2. Walk process tree to find stable Claude Code binary PID
+    3. Fall back to PPID if tree walk fails
+    4. Ensures each context window has independent agent session
 
     Returns:
         Stable context identifier (e.g., "context_12345")
@@ -50,10 +52,55 @@ def get_context_id() -> str:
     if session_id := os.getenv("CLAUDE_SESSION_ID"):
         return session_id
 
-    # Option 2: Parent PID (stable per terminal/window)
-    # Each Claude Code window = different PPID = different context
+    # Option 2: Walk process tree to find stable Claude Code binary
+    # This PID is stable across all subprocess invocations in same window
+    try:
+        current_pid = os.getpid()
+        visited = set()  # Prevent infinite loops
+
+        # Walk up process tree looking for Claude Code binary
+        for _ in range(10):  # Max 10 levels
+            if current_pid in visited or current_pid <= 1:
+                break
+            visited.add(current_pid)
+
+            # Get parent and command
+            try:
+                result = subprocess.run(
+                    ['ps', '-p', str(current_pid), '-o', 'ppid=,comm='],
+                    capture_output=True,
+                    text=True,
+                    timeout=0.1
+                )
+                if result.returncode != 0:
+                    break
+
+                output = result.stdout.strip()
+                if not output:
+                    break
+
+                parts = output.split(None, 1)
+                if len(parts) < 2:
+                    break
+
+                ppid = int(parts[0])
+                comm = parts[1]
+
+                # Found Claude Code binary (stable PID)
+                if 'claude' in comm.lower() and 'native-binary' in comm:
+                    return str(current_pid)
+
+                current_pid = ppid
+
+            except (subprocess.TimeoutExpired, ValueError, IndexError):
+                break
+
+    except Exception:
+        pass  # Fall back to PPID
+
+    # Option 3: Fall back to PPID (may be unstable but better than nothing)
     ppid = os.getppid()
-    return f"context_{ppid}"
+    return str(ppid)
 
 
 def get_session_file_path() -> Path:
