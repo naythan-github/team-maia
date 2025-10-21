@@ -129,12 +129,20 @@ Comment: "We successfully reset the password. Please refer to the following link
     "reasoning": "Problem resolved, credentials provided, successful outcome"
 }}
 
-NEGATIVE - Problem unresolved despite efforts:
+NEGATIVE - Complete failure explicitly stated (RARE - only when stating total failure):
 Comment: "Thanks for sending through the credentials. Tried all of them, none worked."
 {{
     "sentiment": "negative",
     "confidence": 0.85,
-    "reasoning": "Despite thanks, credentials failed, problem persists"
+    "reasoning": "Despite politeness, complete failure stated - nothing worked at all"
+}}
+
+NEUTRAL - Issue not resolved yet, no frustration (NOT negative):
+Comment: "Could you please let me know when you're online so that I can look into this? We may be able to rectify the issue with a simple reboot."
+{{
+    "sentiment": "neutral",
+    "confidence": 0.90,
+    "reasoning": "Problem exists but no frustration, just coordinating next steps"
 }}
 
 NEUTRAL - Standard informational update:
@@ -145,7 +153,7 @@ Comment: "This is to acknowledge receiving your request. Ticket has been assigne
     "reasoning": "Standard acknowledgment template, no emotion expressed"
 }}
 
-MIXED - Appreciation with ongoing concern:
+MIXED - Appreciation with ongoing concern (RARE - only when BOTH present):
 Comment: "Thanks Nish, Sorry I should clarify, we can login to Magento but there is not application setting page."
 {{
     "sentiment": "mixed",
