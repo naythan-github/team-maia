@@ -2,13 +2,29 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-21 (Phase 134.1 - Agent Persistence Testing & Bug Fix)
+**Last Updated**: 2025-10-21 (Phase 134.2 - Team Deployment Monitoring & SRE Enforcement)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 134.2 (Oct 21) - Team Deployment Monitoring & SRE Enforcement ⭐ **TEAM DEPLOYMENT READY**
+- **maia_health_check.py** - Decentralized health monitoring for team deployment (350 lines, 4 checks: routing accuracy, session state, performance, integration tests)
+- **test_agent_quality_spot_check.py** - Agent quality validation suite (330 lines, 10 agents, v2.2 pattern validation)
+- **weekly_health_check.sh** - Automated weekly monitoring orchestrator (80 lines, 3 checks: health + quality + routing)
+- **TEAM_DEPLOYMENT_GUIDE.md** - Complete onboarding documentation for team members (400 lines)
+- **SRE Enforcement** - coordinator_agent.py routing rules for reliability work (~50 line modifications)
+- **Health Checks**: Routing accuracy (>80% target), performance (P95 <200ms), session state (600 perms), integration tests (critical subset)
+- **Quality Validation**: Top 10 agents tested for v2.2 patterns (Few-Shot, Self-Reflection, CoT principles)
+- **SRE Keywords**: 16 keywords auto-route to SRE Principal Engineer (test, testing, reliability, monitoring, slo, sli, observability, incident, health check, performance, validation, integration test, spot-check, quality check, deployment, ci/cd)
+- **Routing Enforcement**: 3-layer enforcement (routing rule + complexity boost + confidence boost to 0.95)
+- **Validation**: 6/8 test queries correctly route to SRE agent (75% enforcement)
+- **CLI Usage**: `python3 claude/tools/sre/maia_health_check.py` (quick), `--detailed` (includes integration tests), `--fix` (auto-repair, future)
+- **Exit Codes**: 0 (healthy), 1 (warnings), 2 (degraded) for CI/CD integration
+- **Team Architecture**: Decentralized monitoring (no central logging), per-user validation, weekly automation via cron
+- **Production Status**: ✅ Ready for team sharing - Health monitoring operational, quality validation active, SRE enforcement functional
 
 ### Phase 134.1 (Oct 21) - Agent Persistence Integration Testing & Bug Fix ⭐ **VALIDATION + CRITICAL FIX**
 - **test_agent_persistence_integration.py** - Comprehensive integration test suite (650 lines, 16 tests, 81% pass rate)
@@ -246,7 +262,10 @@
 - secure_web_tools.py - Web tool security validation
 - pre_commit_ufc.py - UFC compliance pre-commit hook
 
-### SRE & Reliability (29 tools)
+### SRE & Reliability (33 tools)
+- **maia_health_check.py** ⭐ NEW - Team deployment health monitoring (350 lines, 4 checks, Phase 134.2)
+- **test_agent_quality_spot_check.py** ⭐ NEW - Agent quality validation (330 lines, 10 agents, Phase 134.2)
+- **weekly_health_check.sh** ⭐ NEW - Automated weekly monitoring (80 lines, orchestrates health + quality + routing, Phase 134.2)
 - save_state_preflight_checker.py - Pre-commit validation (161 checks)
 - save_state_security_checker.py - Pre-commit security validation (secrets, CVEs, code security)
 - automated_health_monitor.py - System health validation (dependency, RAG, service, UFC)
@@ -504,7 +523,14 @@
 - "Outlook" → outlook_intelligence.py
 
 **SRE & Reliability**:
-- "health check" → automated_health_monitor.py
+- "team deployment" → **maia_health_check.py** ⭐ NEW (decentralized monitoring, Phase 134.2)
+- "health check" → **maia_health_check.py** ⭐ NEW (routing + performance + session state), automated_health_monitor.py
+- "agent quality" → **test_agent_quality_spot_check.py** ⭐ NEW (v2.2 pattern validation)
+- "weekly monitoring" → **weekly_health_check.sh** ⭐ NEW (automated health + quality + routing)
+- "routing accuracy" → **maia_health_check.py** (>80% acceptance target, last 7 days)
+- "performance monitoring" → **maia_health_check.py** (P95 <200ms SLA)
+- "sre enforcement" → coordinator_agent.py (16 keywords, auto-route to SRE agent)
+- "quality validation" → **test_agent_quality_spot_check.py** (10 top agents)
 - "dependency check" → dependency_graph_validator.py
 - "phantom tools" → dependency_graph_validator.py
 - "service monitoring" → launchagent_health_monitor.py
@@ -595,7 +621,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 
 ## 📈 Statistics
 
-**Tools**: 202+ across 12 categories
+**Tools**: 205+ across 12 categories (Phase 134.2: +3 monitoring tools)
 **Agents**: 51 across 10 specializations
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)

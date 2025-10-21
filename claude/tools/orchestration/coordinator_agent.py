@@ -70,7 +70,7 @@ class IntentClassifier:
         'servicedesk': ['ticket', 'complaint', 'service desk', 'incident', 'request', 'helpdesk'],
         'career': ['job', 'interview', 'resume', 'linkedin', 'career', 'recruiter', 'hiring'],
         'data': ['analytics', 'dashboard', 'report', 'metrics', 'kpi', 'visualization', 'data'],
-        'sre': ['monitoring', 'slo', 'sli', 'reliability', 'incident', 'postmortem', 'observability'],
+        'sre': ['monitoring', 'slo', 'sli', 'reliability', 'incident', 'postmortem', 'observability', 'testing', 'test', 'validation', 'health check', 'quality check', 'performance', 'deployment', 'production', 'regression'],
         'endpoint': ['laptop', 'macos', 'windows', 'endpoint', 'device', 'intune', 'jamf'],
     }
 
@@ -195,8 +195,20 @@ class IntentClassifier:
         - Number of domains (1 domain = simple, 2+ = complex)
         - Complexity indicators (migration, integration, etc.)
         - Query length (longer = more complex)
+        - SRE/reliability work (always considered complex)
         """
         complexity = 3  # Base complexity
+
+        # 🚨 SRE ENFORCEMENT BOOST (Phase 134.2)
+        # Reliability/testing work is inherently complex - boost to ensure routing
+        sre_keywords = [
+            'test', 'testing', 'reliability', 'production', 'monitoring',
+            'slo', 'sli', 'observability', 'incident', 'health check',
+            'regression', 'performance', 'validation', 'integration test',
+            'spot-check', 'quality check', 'deployment', 'ci/cd'
+        ]
+        if any(keyword in query_lower for keyword in sre_keywords):
+            complexity = max(complexity, 5)  # Boost to at least 5 for SRE work
 
         # Multiple domains increase complexity
         if len(domains) > 1:
@@ -256,6 +268,11 @@ class IntentClassifier:
     def _calculate_confidence(self, domains: List[str], category: str) -> float:
         """Calculate confidence in classification"""
         confidence = 0.8  # Base confidence
+
+        # 🚨 SRE ENFORCEMENT BOOST (Phase 134.2)
+        # High confidence for SRE domain (reliability work is clear-cut)
+        if 'sre' in domains:
+            confidence = 0.9
 
         # Lower confidence if no specific domains detected
         if domains == ['general']:
@@ -326,6 +343,37 @@ class AgentSelector:
         Returns:
             RoutingDecision with strategy, agents, context
         """
+        # 🚨 SRE ENFORCEMENT RULE (Phase 134.2)
+        # For reliability/testing/production work, ALWAYS route to SRE Principal Engineer
+        # Other agents can be consulted, but SRE delivers the final implementation
+        sre_keywords = [
+            'test', 'testing', 'reliability', 'production', 'monitoring',
+            'slo', 'sli', 'observability', 'incident', 'health check',
+            'regression', 'performance', 'validation', 'integration test',
+            'spot-check', 'quality check', 'deployment', 'ci/cd'
+        ]
+
+        query_lower = user_query.lower()
+        if any(keyword in query_lower for keyword in sre_keywords):
+            # Route to SRE Principal Engineer for reliability work
+            context = {
+                'query': user_query,
+                'intent_category': intent.category,
+                'complexity': intent.complexity,
+                'entities': intent.entities,
+                'enforcement_reason': 'SRE enforcement rule - reliability/testing work'
+            }
+
+            return RoutingDecision(
+                strategy='single_agent',
+                agents=['sre_principal_engineer'],
+                initial_agent='sre_principal_engineer',
+                confidence=0.95,  # High confidence for enforced routing
+                reasoning="SRE enforcement: reliability/testing work requires SRE Principal Engineer",
+                context=context
+            )
+
+        # Normal routing logic for other queries
         # Determine strategy based on complexity and domains
         if intent.complexity <= 3 and len(intent.domains) == 1:
             # Simple single-domain task
