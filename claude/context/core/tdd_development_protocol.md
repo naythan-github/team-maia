@@ -18,6 +18,28 @@ MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift
 
 ## Standard TDD Workflow
 
+### Phase 0: Pre-Discovery Architecture Review ⭐ **PHASE 135**
+**CRITICAL**: Check architecture BEFORE starting requirements
+
+1. **Architecture Documentation Check**
+   - Does `PROJECT/ARCHITECTURE.md` exist for this system?
+   - If YES: Read it to understand deployment model, integration points, operational commands
+   - If NO + infrastructure work: Plan to create ARCHITECTURE.md after implementation
+
+2. **Review Relevant ADRs**
+   - Check `PROJECT/ADRs/` directory for related decisions
+   - Understand: Why current architecture? What alternatives were rejected?
+   - Identify architectural constraints (e.g., "MUST use docker exec, NOT direct connection")
+
+3. **Verify Active Deployments**
+   - Check `claude/context/core/active_deployments.md`
+   - Understand: What systems are running? How to access them?
+   - Avoid: Duplicate deployments, conflicting ports, incompatible versions
+
+**Gate**: Understand current architecture before proceeding to requirements
+
+---
+
 ### Phase 1: Requirements Discovery (NO CODING/TESTS)
 **CRITICAL**: No tests or code until requirements are complete and confirmed
 
