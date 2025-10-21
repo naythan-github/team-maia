@@ -3,7 +3,13 @@
     "id": null,
     "uid": "servicedesk-improvement-tracking",
     "title": "Dashboard 5: Improvement Tracking & ROI Calculator",
-    "tags": ["servicedesk", "improvement", "roi", "baseline", "tracking"],
+    "tags": [
+      "servicedesk",
+      "improvement",
+      "roi",
+      "baseline",
+      "tracking"
+    ],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 0,
@@ -13,7 +19,12 @@
       "to": "2025-10-13T23:59:59.000Z"
     },
     "timepicker": {
-      "refresh_intervals": ["5m", "15m", "30m", "1h"]
+      "refresh_intervals": [
+        "5m",
+        "15m",
+        "30m",
+        "1h"
+      ]
     },
     "annotations": {
       "list": [
@@ -36,14 +47,42 @@
     "graphTooltip": 1,
     "panels": [
       {
+        "id": 999,
+        "type": "text",
+        "title": "\ud83d\udcd8 Dashboard Guide",
+        "gridPos": {
+          "h": 4,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "mode": "markdown",
+          "content": "**Dashboard Purpose**: Track automation implementation progress and measure ROI against baseline metrics.\n\n**Baseline Period**: July-October 2025 (pre-automation)\n**Status**: Currently showing baseline metrics - will update as automation is deployed\n\n**Tracked Metrics**:\n- Ticket volume reduction (automation vs manual handling)\n- Resolution time improvements\n- Cost savings (actual vs estimated)\n- Automation deployment dates and effectiveness\n\n**Use Cases**: ROI validation, automation effectiveness tracking, before/after comparison, executive reporting"
+        },
+        "transparent": false,
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        }
+      },
+      {
         "id": 1,
         "type": "stat",
         "title": "Baseline: Total Tickets (Jul-Oct 2025)",
         "description": "Current state - 10,939 tickets analyzed",
-        "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 0,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT COUNT(*) as \"Baseline Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13';",
             "refId": "A"
@@ -52,7 +91,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -68,7 +109,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "blue"}
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
               ]
             }
           }
@@ -79,10 +123,18 @@
         "type": "stat",
         "title": "Baseline: Avg Resolution Time",
         "description": "Current average time to resolve tickets",
-        "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 6,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400.0), 2) as \"Baseline Avg Days\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Actual Resolution Date\" IS NOT NULL;",
             "refId": "A"
@@ -91,7 +143,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -107,7 +161,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "blue"}
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
               ]
             }
           }
@@ -118,10 +175,18 @@
         "type": "stat",
         "title": "Baseline: Automation Potential",
         "description": "Tickets identified for automation (82.2% coverage)",
-        "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 12,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT COUNT(*) as \"Automation Candidates\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n);",
             "refId": "A"
@@ -130,7 +195,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -146,7 +213,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "green"}
+                {
+                  "value": 0,
+                  "color": "green"
+                }
               ]
             }
           }
@@ -157,10 +227,18 @@
         "type": "stat",
         "title": "Baseline: Team Workload Distribution",
         "description": "Tickets per assignee avg (excluding PendingAssignment)",
-        "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+        "gridPos": {
+          "h": 6,
+          "w": 6,
+          "x": 18,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "WITH assignee_counts AS (\n  SELECT \n    \"TKT-Assigned To User\",\n    COUNT(*) as tickets\n  FROM servicedesk.tickets\n  WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\n  AND \"TKT-Assigned To User\" IS NOT NULL \n  AND \"TKT-Assigned To User\" <> 'PendingAssignment'\n  GROUP BY 1\n)\nSELECT ROUND(AVG(tickets), 0) as \"Avg Tickets/Person\"\nFROM assignee_counts;",
             "refId": "A"
@@ -169,7 +247,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -185,7 +265,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "blue"}
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
               ]
             }
           }
@@ -196,10 +279,18 @@
         "type": "timeseries",
         "title": "Baseline: Ticket Volume Trend (Daily)",
         "description": "Current state - daily ticket creation rate",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 10
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "time_series",
             "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Baseline Volume\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
@@ -228,7 +319,11 @@
             "showLegend": true,
             "displayMode": "list",
             "placement": "bottom",
-            "calcs": ["mean", "max", "min"]
+            "calcs": [
+              "mean",
+              "max",
+              "min"
+            ]
           }
         }
       },
@@ -237,10 +332,18 @@
         "type": "timeseries",
         "title": "Baseline: Resolution Time Trend",
         "description": "Current state - weekly average resolution time",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 10
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "time_series",
             "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400.0) as \"Baseline Avg Days\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Actual Resolution Date\" IS NOT NULL\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
@@ -268,7 +371,10 @@
             "showLegend": true,
             "displayMode": "list",
             "placement": "bottom",
-            "calcs": ["mean", "last"]
+            "calcs": [
+              "mean",
+              "last"
+            ]
           }
         }
       },
@@ -277,10 +383,18 @@
         "type": "stat",
         "title": "After Automation: Tickets (Placeholder)",
         "description": "Will populate once daily ETL implemented - expected 30-50% reduction",
-        "gridPos": {"h": 6, "w": 8, "x": 0, "y": 14},
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 0,
+          "y": 18
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  'N/A - Not Yet Implemented' as \"Post-Automation Tickets\";",
             "refId": "A"
@@ -289,7 +403,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value",
@@ -305,7 +421,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "yellow"}
+                {
+                  "value": 0,
+                  "color": "yellow"
+                }
               ]
             }
           }
@@ -316,10 +435,18 @@
         "type": "stat",
         "title": "After Automation: Avg Resolution (Placeholder)",
         "description": "Will populate post-implementation - target <1 day for automated tickets",
-        "gridPos": {"h": 6, "w": 8, "x": 8, "y": 14},
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 8,
+          "y": 18
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  'N/A - Not Yet Implemented' as \"Post-Automation Avg\";",
             "refId": "A"
@@ -328,7 +455,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value",
@@ -344,7 +473,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "yellow"}
+                {
+                  "value": 0,
+                  "color": "yellow"
+                }
               ]
             }
           }
@@ -355,10 +487,18 @@
         "type": "stat",
         "title": "After Automation: Team Capacity (Placeholder)",
         "description": "Will show freed capacity - expected 30-40% workload reduction",
-        "gridPos": {"h": 6, "w": 8, "x": 16, "y": 14},
+        "gridPos": {
+          "h": 6,
+          "w": 8,
+          "x": 16,
+          "y": 18
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  'N/A - Not Yet Implemented' as \"Post-Automation Capacity\";",
             "refId": "A"
@@ -367,7 +507,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value",
@@ -383,7 +525,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "yellow"}
+                {
+                  "value": 0,
+                  "color": "yellow"
+                }
               ]
             }
           }
@@ -394,10 +539,18 @@
         "type": "table",
         "title": "ROI Calculator - Estimated vs Actual Savings",
         "description": "Financial impact tracking - will show $0 actual until automation implemented",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 20},
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 0,
+          "y": 24
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' THEN 'Motion/Sensor Alerts'\n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Access/Permissions'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' THEN 'Patch Failures'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'Email Issues'\n    WHEN \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' THEN 'Password Reset'\n  END as \"Automation Pattern\",\n  COUNT(*) as \"Tickets (Jul-Oct)\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365, 0) as \"Annual Projection\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 1.5 * 80 / 1000, 0) || 'K' as \"Est. Annual Savings\",\n  '$0K' as \"Actual Savings YTD\",\n  'Not Implemented' as \"Status\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%') OR\n  (\"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%') OR\n  (\"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%') OR\n  (\"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%') OR\n  (\"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%')\n)\nGROUP BY 1\nORDER BY 2 DESC;",
             "refId": "A"
@@ -457,10 +610,18 @@
         "type": "bargauge",
         "title": "Cumulative ROI Tracker",
         "description": "Total estimated vs actual savings - will update as automations deploy",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 20},
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 12,
+          "y": 24
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  'Estimated Annual Savings' as \"Metric\",\n  ROUND(SUM(COUNT(*)) OVER () * 1.0 / 104 * 365 * 1.5 * 80 / 1000, 0) as \"Value\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n)\nGROUP BY ()\nUNION ALL\nSELECT \n  'Actual Savings YTD' as \"Metric\",\n  0 as \"Value\";",
             "refId": "A"
@@ -477,9 +638,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 100000, "color": "yellow"},
-                {"value": 500000, "color": "green"}
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 100000,
+                  "color": "yellow"
+                },
+                {
+                  "value": 500000,
+                  "color": "green"
+                }
               ]
             }
           }
@@ -487,7 +657,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "horizontal",
           "displayMode": "gradient",
@@ -499,10 +671,18 @@
         "type": "stat",
         "title": "Implementation Status",
         "description": "Current automation implementation progress",
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 30},
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 34
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  'Baseline Phase - Pre-Automation' as \"Current Status\",\n  0 as \"Automations Deployed\",\n  10939 as \"Total Tickets Analyzed\",\n  '$0' as \"Actual Savings\",\n  'Ready for daily ETL implementation' as \"Next Step\";",
             "refId": "A"
@@ -511,7 +691,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "vertical",
           "textMode": "value_and_name",
@@ -527,7 +709,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "yellow"}
+                {
+                  "value": 0,
+                  "color": "yellow"
+                }
               ]
             }
           }
@@ -537,7 +722,12 @@
         "id": 13,
         "type": "text",
         "title": "Dashboard Usage Instructions",
-        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 38},
+        "gridPos": {
+          "h": 8,
+          "w": 24,
+          "x": 0,
+          "y": 42
+        },
         "options": {
           "mode": "markdown",
           "content": "# Improvement Tracking Dashboard - Usage Guide\n\n## Current State (Baseline Phase)\nThis dashboard shows **baseline metrics** from Jul 1 - Oct 13, 2025 (10,939 tickets analyzed).\n\n### Baseline Metrics Captured\n- Total ticket volume trends\n- Average resolution times\n- Automation opportunity counts (4,842 tickets identified)\n- Team workload distribution\n- Estimated annual savings potential: **~$952K**\n\n### After Automation (Future)\nOnce daily ETL is implemented and automation deployed, this dashboard will show:\n- **Before/After comparisons** for ticket volume\n- **Actual savings** vs estimated savings\n- **Resolution time improvements** for automated patterns\n- **Team capacity freed** through automation\n- **ROI tracking** with implementation dates as annotations\n\n### How to Use Annotations\n1. Click **Add Annotation** button when automation is deployed\n2. Tag with automation type (e.g., \"Motion Alert Automation\")\n3. Dashboard will automatically show before/after metrics\n4. Actual savings will populate from reduced ticket counts\n\n### Customization\nTo adjust ROI calculations:\n- Edit panel queries to change hourly rate (currently $80/hr)\n- Modify average hours per ticket (currently 1.5 hours)\n- Update automation coverage % estimates\n\n**Status**: Baseline captured, ready for automation implementation tracking."

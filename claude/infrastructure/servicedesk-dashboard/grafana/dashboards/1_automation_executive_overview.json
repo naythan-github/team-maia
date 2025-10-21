@@ -3,7 +3,12 @@
     "id": null,
     "uid": "servicedesk-automation-exec",
     "title": "Dashboard 1: Automation Executive Overview",
-    "tags": ["servicedesk", "automation", "executive", "roi"],
+    "tags": [
+      "servicedesk",
+      "automation",
+      "executive",
+      "roi"
+    ],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 0,
@@ -13,7 +18,12 @@
       "to": "2025-10-13T23:59:59.000Z"
     },
     "timepicker": {
-      "refresh_intervals": ["5m", "15m", "30m", "1h"]
+      "refresh_intervals": [
+        "5m",
+        "15m",
+        "30m",
+        "1h"
+      ]
     },
     "annotations": {
       "list": [
@@ -38,14 +48,42 @@
     "liveNow": false,
     "panels": [
       {
+        "id": 999,
+        "type": "text",
+        "title": "\ud83d\udcd8 Dashboard Guide",
+        "gridPos": {
+          "h": 4,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "mode": "markdown",
+          "content": "**Dashboard Purpose**: Single-pane executive view of ServiceDesk automation opportunities and potential cost savings.\n\n**Key Metrics**:\n- **Total Tickets**: 10,939 tickets analyzed (July-October 2025 baseline)\n- **Automation Opportunities**: 4,842 tickets (82.2% of total) identified as automatable\n- **Annual Savings Potential**: ~$952K based on $80/hr labor cost, 2-hour average handling time\n\n**Top Quick Wins**:\n1. Motion/Sensor Alerts: 960 tickets \u2192 $268K/year\n2. Access/Permission Requests: 908 tickets \u2192 $253K/year\n3. Azure Resource Health: 678 tickets \u2192 $189K/year\n\n**Use Cases**: Executive reporting, ROI justification, automation prioritization, baseline establishment"
+        },
+        "transparent": false,
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        }
+      },
+      {
         "id": 1,
         "type": "stat",
         "title": "Total Tickets Analyzed",
-        "description": "Total tickets in analysis period (Jul 1 - Oct 13, 2025)",
-        "gridPos": {"h": 6, "w": 4, "x": 0, "y": 0},
+        "description": "Total tickets in July-October 2025 baseline period. This establishes the pre-automation baseline for measuring future improvements.",
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 0,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13';",
             "refId": "A"
@@ -54,7 +92,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -71,7 +111,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "blue"}
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
               ]
             }
           }
@@ -81,11 +124,19 @@
         "id": 2,
         "type": "stat",
         "title": "Automation Opportunities",
-        "description": "Tickets identified with automation potential across all patterns",
-        "gridPos": {"h": 6, "w": 4, "x": 4, "y": 0},
+        "description": "Tickets identified as automation candidates using pattern matching. Represents potential workload reduction through automation.",
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 4,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT COUNT(*) as \"Automation Candidates\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n);",
             "refId": "A"
@@ -94,7 +145,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -111,9 +164,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 5000, "color": "yellow"},
-                {"value": 8000, "color": "orange"}
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 5000,
+                  "color": "yellow"
+                },
+                {
+                  "value": 8000,
+                  "color": "orange"
+                }
               ]
             }
           }
@@ -123,11 +185,19 @@
         "id": 3,
         "type": "gauge",
         "title": "Automation Coverage %",
-        "description": "Percentage of tickets that could be automated",
-        "gridPos": {"h": 6, "w": 4, "x": 8, "y": 0},
+        "description": "Percentage of tickets that could be automated. Green zone (>70%) indicates high automation potential. Target: 80%+.",
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 8,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  ROUND(100.0 * \n    SUM(CASE WHEN (\n      \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n      \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n      \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n      \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n      \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n      \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n      \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n      \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n      \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n      \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n    ) THEN 1 ELSE 0 END) / COUNT(*), 2\n  ) as \"Coverage %\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13';",
             "refId": "A"
@@ -136,7 +206,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "showThresholdLabels": true,
@@ -153,9 +225,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 50, "color": "yellow"},
-                {"value": 70, "color": "green"}
+                {
+                  "value": 0,
+                  "color": "red"
+                },
+                {
+                  "value": 50,
+                  "color": "yellow"
+                },
+                {
+                  "value": 70,
+                  "color": "green"
+                }
               ]
             }
           }
@@ -165,11 +246,19 @@
         "id": 4,
         "type": "stat",
         "title": "Annual Savings Potential",
-        "description": "Estimated annual cost savings from automation (based on $80/hr avg, 2hr avg resolution)",
-        "gridPos": {"h": 6, "w": 4, "x": 12, "y": 0},
+        "description": "Estimated annual cost savings from automating identified opportunities. Calculation: automatable tickets \u00d7 $80/hr \u00d7 2hr average \u00d7 365-day projection.",
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 12,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  '$' || ROUND(\n    COUNT(*) * 1.0 / 104 * 365 * 2.0 * 80 / 1000, 0\n  ) || 'K' as \"Annual Savings\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n);",
             "refId": "A"
@@ -178,7 +267,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value",
@@ -195,7 +286,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "green"}
+                {
+                  "value": 0,
+                  "color": "green"
+                }
               ]
             }
           }
@@ -205,11 +299,19 @@
         "id": 5,
         "type": "stat",
         "title": "Quick Wins (Motion Alerts)",
-        "description": "Motion/Sensor alerts - highest volume, easiest to automate",
-        "gridPos": {"h": 6, "w": 4, "x": 16, "y": 0},
+        "description": "Highest volume automation opportunity. Motion/sensor alerts are repetitive, rule-based, and ideal for automation.",
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 16,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT COUNT(*) as \"Motion/Sensor Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%');",
             "refId": "A"
@@ -218,7 +320,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -235,7 +339,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "blue"}
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
               ]
             }
           }
@@ -245,11 +352,19 @@
         "id": 6,
         "type": "stat",
         "title": "Status: Pre-Automation",
-        "description": "Baseline state - automation implementations will update this",
-        "gridPos": {"h": 6, "w": 4, "x": 20, "y": 0},
+        "description": "Current implementation phase. Changes to 'In Progress' or 'Implemented' as automation is deployed.",
+        "gridPos": {
+          "h": 6,
+          "w": 4,
+          "x": 20,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT 'Baseline' as \"Status\";",
             "refId": "A"
@@ -258,7 +373,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value",
@@ -275,7 +392,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "yellow"}
+                {
+                  "value": 0,
+                  "color": "yellow"
+                }
               ]
             }
           }
@@ -285,11 +405,19 @@
         "id": 7,
         "type": "timeseries",
         "title": "Ticket Volume Trend (Daily)",
-        "description": "Total tickets created per day - shows workload over time",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 6},
+        "description": "Daily ticket volume over baseline period. Shows workload patterns (spiky, 50-167/day) and helps capacity planning.",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 10
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "time_series",
             "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
@@ -332,7 +460,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "green"}
+                {
+                  "value": 0,
+                  "color": "green"
+                }
               ]
             }
           }
@@ -346,7 +477,10 @@
             "showLegend": true,
             "displayMode": "list",
             "placement": "bottom",
-            "calcs": ["mean", "max"]
+            "calcs": [
+              "mean",
+              "max"
+            ]
           }
         }
       },
@@ -354,11 +488,19 @@
         "id": 8,
         "type": "timeseries",
         "title": "Automation Opportunity Trend (Weekly)",
-        "description": "Weekly count of automation-candidate tickets",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 6},
+        "description": "Weekly count of automation candidates. Consistent ~300-400/week indicates stable automation potential.",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 10
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "time_series",
             "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Automation Candidates\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n)\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
@@ -401,7 +543,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "green"}
+                {
+                  "value": 0,
+                  "color": "green"
+                }
               ]
             }
           }
@@ -415,7 +560,10 @@
             "showLegend": true,
             "displayMode": "list",
             "placement": "bottom",
-            "calcs": ["mean", "last"]
+            "calcs": [
+              "mean",
+              "last"
+            ]
           }
         }
       },
@@ -424,10 +572,18 @@
         "type": "barchart",
         "title": "Top 5 Automation Opportunities (By Volume)",
         "description": "Highest volume patterns with estimated annual savings",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 14},
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 18
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' THEN 'Motion/Sensor Alerts'\n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Access/Permission Requests'\n    WHEN \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' THEN 'Azure Resource Health'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' THEN 'Patch Deployment Failures'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'Email/Mailbox Issues'\n  END as \"Pattern\",\n  COUNT(*) as \"Ticket Count\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 2.0 * 80 / 1000, 0) || 'K' as \"Est. Annual Savings\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%') OR\n  (\"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%') OR\n  (\"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%') OR\n  (\"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%') OR\n  (\"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%')\n)\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 5;",
             "refId": "A"

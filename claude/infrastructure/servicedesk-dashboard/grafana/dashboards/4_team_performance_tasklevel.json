@@ -3,7 +3,12 @@
     "id": null,
     "uid": "servicedesk-team-performance",
     "title": "Dashboard 4: Team Performance & Task-Level Analysis",
-    "tags": ["servicedesk", "team", "performance", "workload"],
+    "tags": [
+      "servicedesk",
+      "team",
+      "performance",
+      "workload"
+    ],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 0,
@@ -13,21 +18,54 @@
       "to": "2025-10-13T23:59:59.000Z"
     },
     "timepicker": {
-      "refresh_intervals": ["5m", "15m", "30m", "1h"]
+      "refresh_intervals": [
+        "5m",
+        "15m",
+        "30m",
+        "1h"
+      ]
     },
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 1,
     "panels": [
       {
+        "id": 999,
+        "type": "text",
+        "title": "\ud83d\udcd8 Dashboard Guide",
+        "gridPos": {
+          "h": 4,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "mode": "markdown",
+          "content": "**Dashboard Purpose**: Analyze team workload distribution, performance metrics, and identify bottlenecks.\n\n**Key Findings**:\n- **PendingAssignment Backlog**: 3,131 tickets (28.6%) - Critical bottleneck requiring attention\n- **Resolution Time Improvement**: 75% faster (5.3 days \u2192 1.09 days, July\u2192October)\n- **Task Distribution**: 41.4% Communications, 25% Administration, 31.9% Technical, 1.8% Expert\n- **Top Performer**: Robert Quito (1,002 tickets, 88.9% close rate)\n\n**Use Cases**: Workload balancing, performance evaluation, bottleneck identification, capacity planning"
+        },
+        "transparent": false,
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        }
+      },
+      {
         "id": 1,
         "type": "barchart",
         "title": "Ticket Volume by Assignee (Top 15)",
         "description": "Total tickets handled by each team member",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 0,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  \"TKT-Assigned To User\" as \"Assignee\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" IS NOT NULL \nAND \"TKT-Assigned To User\" <> 'PendingAssignment'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 15;",
             "refId": "A"
@@ -62,10 +100,18 @@
         "type": "piechart",
         "title": "Task-Level Distribution (All Tickets)",
         "description": "Communication/Collab: 41.4%, Admin: 25%, Technical: 31.9%, Expert: 1.8%",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 0},
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 12,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%call%' OR \"TKT-Title\" ILIKE '%pbx%' OR \"TKT-Title\" ILIKE '%teams%' OR \"TKT-Title\" ILIKE '%meeting%' THEN 'Communication/Collaboration'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%license%' THEN 'Administrative/Operational'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%troubleshoot%' OR \"TKT-Title\" ILIKE '%fix%' OR \"TKT-Title\" ILIKE '%issue%' THEN 'Technical (Implementation + Troubleshooting)'\n    WHEN \"TKT-Title\" ILIKE '%azure%' OR \"TKT-Title\" ILIKE '%architect%' OR \"TKT-Title\" ILIKE '%design%' OR \"TKT-Title\" ILIKE '%security%' THEN 'Specialized/Expert'\n    ELSE 'Other'\n  END as \"Task Level\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1\nORDER BY 2 DESC;",
             "refId": "A"
@@ -79,7 +125,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "pieType": "donut",
           "tooltip": {
@@ -89,9 +137,15 @@
             "displayMode": "table",
             "placement": "right",
             "showLegend": true,
-            "values": ["value", "percent"]
+            "values": [
+              "value",
+              "percent"
+            ]
           },
-          "displayLabels": ["name", "percent"]
+          "displayLabels": [
+            "name",
+            "percent"
+          ]
         }
       },
       {
@@ -99,10 +153,18 @@
         "type": "timeseries",
         "title": "Average Resolution Time by Week",
         "description": "Weekly average time from ticket creation to resolution",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 14
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "time_series",
             "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400.0) as \"Avg Days to Resolve\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Actual Resolution Date\" IS NOT NULL\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
@@ -131,7 +193,11 @@
             "showLegend": true,
             "displayMode": "list",
             "placement": "bottom",
-            "calcs": ["mean", "min", "max"]
+            "calcs": [
+              "mean",
+              "min",
+              "max"
+            ]
           }
         }
       },
@@ -140,10 +206,18 @@
         "type": "stat",
         "title": "PendingAssignment Backlog",
         "description": "Tickets awaiting assignment - workload distribution bottleneck",
-        "gridPos": {"h": 8, "w": 6, "x": 12, "y": 10},
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 12,
+          "y": 14
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  COUNT(*) as \"Unassigned Tickets\",\n  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM servicedesk.tickets WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'), 2) as \"% of Total\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" = 'PendingAssignment';",
             "refId": "A"
@@ -152,7 +226,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -168,9 +244,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "green"},
-                {"value": 1000, "color": "yellow"},
-                {"value": 2000, "color": "red"}
+                {
+                  "value": 0,
+                  "color": "green"
+                },
+                {
+                  "value": 1000,
+                  "color": "yellow"
+                },
+                {
+                  "value": 2000,
+                  "color": "red"
+                }
               ]
             }
           }
@@ -181,10 +266,18 @@
         "type": "stat",
         "title": "Calling/PBX Communication Tickets",
         "description": "Communication/Collaboration category - 2,648 tickets (24.2%)",
-        "gridPos": {"h": 8, "w": 6, "x": 18, "y": 10},
+        "gridPos": {
+          "h": 8,
+          "w": 6,
+          "x": 18,
+          "y": 14
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  COUNT(*) as \"Comms Tickets\",\n  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM servicedesk.tickets WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'), 2) as \"% of Total\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%call%' OR \"TKT-Title\" ILIKE '%pbx%' OR \"TKT-Title\" ILIKE '%teams%' OR \"TKT-Title\" ILIKE '%3cx%');",
             "refId": "A"
@@ -193,7 +286,9 @@
         "options": {
           "reduceOptions": {
             "values": false,
-            "calcs": ["lastNotNull"]
+            "calcs": [
+              "lastNotNull"
+            ]
           },
           "orientation": "auto",
           "textMode": "value_and_name",
@@ -209,7 +304,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": 0, "color": "blue"}
+                {
+                  "value": 0,
+                  "color": "blue"
+                }
               ]
             }
           }
@@ -220,10 +318,18 @@
         "type": "heatmap",
         "title": "Ticket Volume Heatmap (Assignee x Category)",
         "description": "Shows workload distribution across team and ticket categories",
-        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 18},
+        "gridPos": {
+          "h": 12,
+          "w": 24,
+          "x": 0,
+          "y": 22
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "WITH top_assignees AS (\n  SELECT \"TKT-Assigned To User\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\n  AND \"TKT-Assigned To User\" IS NOT NULL AND \"TKT-Assigned To User\" <> 'PendingAssignment'\n  GROUP BY 1\n  ORDER BY COUNT(*) DESC\n  LIMIT 10\n)\nSELECT \n  t.\"TKT-Assigned To User\" as \"Assignee\",\n  t.\"TKT-Category\" as \"Category\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets t\nINNER JOIN top_assignees ta ON t.\"TKT-Assigned To User\" = ta.\"TKT-Assigned To User\"\nWHERE t.\"TKT-Created Time\" >= '2025-07-01' AND t.\"TKT-Created Time\" <= '2025-10-13'\nAND t.\"TKT-Category\" IS NOT NULL\nGROUP BY 1, 2\nORDER BY 1, 3 DESC;",
             "refId": "A"
@@ -270,10 +376,18 @@
         "type": "table",
         "title": "Top Assignees with Performance Metrics",
         "description": "Detailed assignee statistics with resolution times and workload",
-        "gridPos": {"h": 12, "w": 24, "x": 0, "y": 30},
+        "gridPos": {
+          "h": 12,
+          "w": 24,
+          "x": 0,
+          "y": 34
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "table",
             "rawSql": "SELECT \n  \"TKT-Assigned To User\" as \"Assignee\",\n  COUNT(*) as \"Total Tickets\",\n  COUNT(CASE WHEN \"TKT-Status\" = 'Closed' THEN 1 END) as \"Closed\",\n  ROUND(100.0 * COUNT(CASE WHEN \"TKT-Status\" = 'Closed' THEN 1 END) / NULLIF(COUNT(*), 0), 1) as \"Close Rate %\",\n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 3600.0), 2) as \"Avg Hours to Resolve\",\n  COUNT(CASE WHEN \"TKT-Category\" = 'Alert' THEN 1 END) as \"Alerts\",\n  COUNT(CASE WHEN \"TKT-Category\" = 'Support Tickets' THEN 1 END) as \"Support\",\n  COUNT(CASE WHEN \"TKT-Severity\" = 'Priority 1' THEN 1 END) as \"P1 Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" IS NOT NULL \nAND \"TKT-Assigned To User\" <> 'PendingAssignment'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 15;",
             "refId": "A"
@@ -366,10 +480,18 @@
         "type": "timeseries",
         "title": "Team Workload Trends (Top 5 Assignees)",
         "description": "Weekly ticket assignment trends for busiest team members",
-        "gridPos": {"h": 10, "w": 24, "x": 0, "y": 42},
+        "gridPos": {
+          "h": 10,
+          "w": 24,
+          "x": 0,
+          "y": 46
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "${datasource}"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "${datasource}"
+            },
             "format": "time_series",
             "rawSql": "WITH top_5 AS (\n  SELECT \"TKT-Assigned To User\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\n  AND \"TKT-Assigned To User\" IS NOT NULL AND \"TKT-Assigned To User\" <> 'PendingAssignment'\n  GROUP BY 1\n  ORDER BY COUNT(*) DESC\n  LIMIT 5\n)\nSELECT \n  DATE_TRUNC('week', t.\"TKT-Created Time\") as time,\n  t.\"TKT-Assigned To User\" as metric,\n  COUNT(*) as value\nFROM servicedesk.tickets t\nINNER JOIN top_5 ON t.\"TKT-Assigned To User\" = top_5.\"TKT-Assigned To User\"\nWHERE t.\"TKT-Created Time\" >= '2025-07-01' AND t.\"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1, 2\nORDER BY 1, 2;",
             "refId": "A"
@@ -399,7 +521,11 @@
             "showLegend": true,
             "displayMode": "table",
             "placement": "bottom",
-            "calcs": ["mean", "max", "last"]
+            "calcs": [
+              "mean",
+              "max",
+              "last"
+            ]
           }
         }
       }

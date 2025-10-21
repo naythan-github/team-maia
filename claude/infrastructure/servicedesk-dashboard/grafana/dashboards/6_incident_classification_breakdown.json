@@ -3,7 +3,13 @@
     "id": null,
     "uid": "servicedesk-incident-classification",
     "title": "Dashboard 6: Incident Classification Breakdown",
-    "tags": ["servicedesk", "classification", "networking", "telecommunications", "cloud"],
+    "tags": [
+      "servicedesk",
+      "classification",
+      "networking",
+      "telecommunications",
+      "cloud"
+    ],
     "timezone": "browser",
     "schemaVersion": 38,
     "version": 0,
@@ -13,21 +19,54 @@
       "to": "now"
     },
     "timepicker": {
-      "refresh_intervals": ["5m", "15m", "30m", "1h"]
+      "refresh_intervals": [
+        "5m",
+        "15m",
+        "30m",
+        "1h"
+      ]
     },
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 1,
     "panels": [
       {
+        "id": 999,
+        "type": "text",
+        "title": "\ud83d\udcd8 Dashboard Guide",
+        "gridPos": {
+          "h": 4,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "options": {
+          "mode": "markdown",
+          "content": "**Dashboard Purpose**: Classify and analyze incidents by technology stack (Cloud, Telecommunications, Networking) for targeted automation and resource allocation.\n\n**Classification Breakdown** (6,903 incidents):\n- **Cloud**: 78.56% (5,424 incidents) - File shares, Azure, Office 365\n- **Telecommunications**: 18.56% (1,281 incidents) - Calling issues, mobile, conferencing\n- **Networking**: 2.88% (199 incidents) - VPN, switches, connectivity\n\n**Key Insights**:\n- File share issues (738) dominate Cloud category\n- Calling problems (98.22%) dominate Telecommunications\n- VPN issues (51.58%) lead Networking category\n\n**Use Cases**: Technology-specific automation planning, vendor management, infrastructure investment prioritization"
+        },
+        "transparent": false,
+        "fieldConfig": {
+          "defaults": {},
+          "overrides": []
+        }
+      },
+      {
         "id": 1,
         "type": "piechart",
         "title": "Primary Incident Classification (Cloud/Telecom/Networking)",
         "description": "Distribution of non-alert incidents across primary technology categories",
-        "gridPos": {"h": 10, "w": 12, "x": 0, "y": 0},
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 0,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH classified AS (\n  SELECT\n    CASE\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\n      THEN 'Cloud'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])\n      THEN 'Telecommunications'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])\n      THEN 'Networking'\n      ELSE 'Cloud'\n    END AS category\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n)\nSELECT category, COUNT(*) as count\nFROM classified\nGROUP BY category\nORDER BY COUNT(*) DESC;",
             "refId": "A"
@@ -46,7 +85,10 @@
             "showLegend": true,
             "displayMode": "table",
             "placement": "right",
-            "calcs": ["count", "percent"]
+            "calcs": [
+              "count",
+              "percent"
+            ]
           },
           "pieType": "pie",
           "tooltip": {
@@ -58,11 +100,19 @@
         "id": 2,
         "type": "stat",
         "title": "Cloud Incidents",
-        "description": "Total incidents classified as Cloud (including file shares, SaaS, etc.)",
-        "gridPos": {"h": 5, "w": 4, "x": 12, "y": 0},
+        "description": "Total cloud-related incidents (Azure, Office 365, file shares). Largest category at 78.56%.",
+        "gridPos": {
+          "h": 5,
+          "w": 4,
+          "x": 12,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH classified AS (\n  SELECT\n    CASE\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\n      THEN 'Cloud'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])\n      THEN 'Telecommunications'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])\n      THEN 'Networking'\n      ELSE 'Cloud'\n    END AS category\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n)\nSELECT COUNT(*) as value\nFROM classified\nWHERE category = 'Cloud';",
             "refId": "A"
@@ -76,7 +126,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": null, "color": "blue"}
+                {
+                  "value": null,
+                  "color": "blue"
+                }
               ]
             },
             "unit": "short"
@@ -92,11 +145,19 @@
         "id": 3,
         "type": "stat",
         "title": "Telecommunications Incidents",
-        "description": "Total incidents classified as Telecommunications (phone, VoIP, calling, etc.)",
-        "gridPos": {"h": 5, "w": 4, "x": 16, "y": 0},
+        "description": "Total telecom incidents (calling, mobile, conferencing). Second-largest at 18.56%.",
+        "gridPos": {
+          "h": 5,
+          "w": 4,
+          "x": 16,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH classified AS (\n  SELECT\n    CASE\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\n      THEN 'Cloud'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])\n      THEN 'Telecommunications'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])\n      THEN 'Networking'\n      ELSE 'Cloud'\n    END AS category\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n)\nSELECT COUNT(*) as value\nFROM classified\nWHERE category = 'Telecommunications';",
             "refId": "A"
@@ -110,7 +171,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": null, "color": "orange"}
+                {
+                  "value": null,
+                  "color": "orange"
+                }
               ]
             },
             "unit": "short"
@@ -126,11 +190,19 @@
         "id": 4,
         "type": "stat",
         "title": "Networking Incidents",
-        "description": "Total incidents classified as Networking (VPN, firewall, switches, WiFi, etc.)",
-        "gridPos": {"h": 5, "w": 4, "x": 20, "y": 0},
+        "description": "Total networking incidents (VPN, switches, connectivity). Smallest category at 2.88%.",
+        "gridPos": {
+          "h": 5,
+          "w": 4,
+          "x": 20,
+          "y": 4
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH classified AS (\n  SELECT\n    CASE\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\n      THEN 'Cloud'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])\n      THEN 'Telecommunications'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])\n      THEN 'Networking'\n      ELSE 'Cloud'\n    END AS category\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n)\nSELECT COUNT(*) as value\nFROM classified\nWHERE category = 'Networking';",
             "refId": "A"
@@ -144,7 +216,10 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": null, "color": "green"}
+                {
+                  "value": null,
+                  "color": "green"
+                }
               ]
             },
             "unit": "short"
@@ -161,10 +236,18 @@
         "type": "timeseries",
         "title": "Classification Trends Over Time",
         "description": "Weekly trend showing incident distribution across categories",
-        "gridPos": {"h": 10, "w": 12, "x": 12, "y": 5},
+        "gridPos": {
+          "h": 10,
+          "w": 12,
+          "x": 12,
+          "y": 9
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "time_series",
             "rawSql": "WITH classified AS (\n  SELECT\n    DATE_TRUNC('week', \"TKT-Created Time\") as time,\n    CASE\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\n      THEN 'Cloud'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])\n      THEN 'Telecommunications'\n      WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n           LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])\n      THEN 'Networking'\n      ELSE 'Cloud'\n    END AS category\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n)\nSELECT time,\n  SUM(CASE WHEN category = 'Cloud' THEN 1 ELSE 0 END) as \"Cloud\",\n  SUM(CASE WHEN category = 'Telecommunications' THEN 1 ELSE 0 END) as \"Telecommunications\",\n  SUM(CASE WHEN category = 'Networking' THEN 1 ELSE 0 END) as \"Networking\"\nFROM classified\nGROUP BY time\nORDER BY time;",
             "refId": "A"
@@ -197,7 +280,10 @@
             "showLegend": true,
             "displayMode": "list",
             "placement": "bottom",
-            "calcs": ["sum", "mean"]
+            "calcs": [
+              "sum",
+              "mean"
+            ]
           }
         }
       },
@@ -205,11 +291,19 @@
         "id": 6,
         "type": "bargauge",
         "title": "Networking Sub-Categories",
-        "description": "Breakdown of networking infrastructure incidents",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+        "description": "Network incident types. VPN (51.58%) highest - opportunity for VPN troubleshooting automation.",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 14
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH networking_tickets AS (\n  SELECT \"TKT-Title\", \"TKT-Description\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n  AND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n      NOT LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\n  AND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n      LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])\n)\nSELECT\n  CASE\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%vpn%' THEN 'VPN Issues'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%firewall%' THEN 'Firewall'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%switch%' OR\n         LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%router%' THEN 'Switch/Router Hardware'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%wifi%' OR\n         LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%wi-fi%' OR\n         LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%access point%' THEN 'WiFi Connectivity'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%ethernet%' THEN 'Ethernet/Cabling'\n    ELSE 'Other Networking'\n  END AS subcategory,\n  COUNT(*) as count\nFROM networking_tickets\nGROUP BY subcategory\nORDER BY count DESC;",
             "refId": "A"
@@ -224,9 +318,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": null, "color": "green"},
-                {"value": 50, "color": "yellow"},
-                {"value": 100, "color": "red"}
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 50,
+                  "color": "yellow"
+                },
+                {
+                  "value": 100,
+                  "color": "red"
+                }
               ]
             }
           }
@@ -241,11 +344,19 @@
         "id": 7,
         "type": "bargauge",
         "title": "Telecommunications Sub-Categories",
-        "description": "Breakdown of telecommunications incidents",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 15},
+        "description": "Telecom incident breakdown. Calling issues dominate (98.22%) - potential for vendor escalation automation.",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 19
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH telecom_tickets AS (\n  SELECT \"TKT-Title\", \"TKT-Description\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n  AND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n      LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])\n)\nSELECT\n  CASE\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%phone%'\n         OR LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%call%' THEN 'Calling Issues'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%pbx%' THEN 'PBX System'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%voip%' THEN 'VoIP'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%teams meeting%'\n         OR LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%meeting room%' THEN 'Conference/Meeting Rooms'\n    ELSE 'Other Telecom'\n  END AS subcategory,\n  COUNT(*) as count\nFROM telecom_tickets\nGROUP BY subcategory\nORDER BY count DESC;",
             "refId": "A"
@@ -260,9 +371,18 @@
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": null, "color": "orange"},
-                {"value": 100, "color": "yellow"},
-                {"value": 500, "color": "red"}
+                {
+                  "value": null,
+                  "color": "orange"
+                },
+                {
+                  "value": 100,
+                  "color": "yellow"
+                },
+                {
+                  "value": 500,
+                  "color": "red"
+                }
               ]
             }
           }
@@ -278,10 +398,18 @@
         "type": "table",
         "title": "File Share Incidents (Cloud Category)",
         "description": "Network drive and file server incidents classified as Cloud",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 18},
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 22
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "SELECT\n  \"TKT-Ticket ID\" as \"Ticket\",\n  \"TKT-Title\" as \"Title\",\n  \"TKT-Created Time\" as \"Created\",\n  \"TKT-Status\" as \"Status\",\n  \"TKT-Severity\" as \"Priority\"\nFROM servicedesk.tickets\nWHERE \"TKT-Category\" <> 'Alert'\nAND \"TKT-Created Time\" >= '2025-07-01'\nAND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n    LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\nORDER BY \"TKT-Created Time\" DESC\nLIMIT 50;",
             "refId": "A"
@@ -296,12 +424,28 @@
           },
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "Ticket"},
-              "properties": [{"id": "custom.width", "value": 100}]
+              "matcher": {
+                "id": "byName",
+                "options": "Ticket"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 100
+                }
+              ]
             },
             {
-              "matcher": {"id": "byName", "options": "Created"},
-              "properties": [{"id": "custom.width", "value": 150}]
+              "matcher": {
+                "id": "byName",
+                "options": "Created"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 150
+                }
+              ]
             }
           ]
         },
@@ -316,11 +460,19 @@
         "id": 9,
         "type": "table",
         "title": "Recent Networking Incidents",
-        "description": "Latest networking infrastructure tickets",
-        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 23},
+        "description": "Latest network issues. Helps infrastructure team prioritize work.",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 27
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH networking_tickets AS (\n  SELECT *\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n  AND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n      NOT LIKE ANY(ARRAY['%network drive%','%share%','%file server%','%shared drive%','%file share%'])\n  AND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n      LIKE ANY(ARRAY['%vpn%','%firewall%','%switch%','%router%','%wifi%','%wi-fi%','%access point%','%ethernet%'])\n)\nSELECT\n  \"TKT-Ticket ID\" as \"Ticket\",\n  \"TKT-Title\" as \"Title\",\n  \"TKT-Created Time\" as \"Created\",\n  \"TKT-Status\" as \"Status\",\n  CASE\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%vpn%' THEN 'VPN'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%firewall%' THEN 'Firewall'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%switch%' OR\n         LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%router%' THEN 'Switch/Router'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%wifi%' THEN 'WiFi'\n    ELSE 'Other'\n  END AS \"Type\"\nFROM networking_tickets\nORDER BY \"TKT-Created Time\" DESC\nLIMIT 50;",
             "refId": "A"
@@ -335,12 +487,28 @@
           },
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "Ticket"},
-              "properties": [{"id": "custom.width", "value": 100}]
+              "matcher": {
+                "id": "byName",
+                "options": "Ticket"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 100
+                }
+              ]
             },
             {
-              "matcher": {"id": "byName", "options": "Type"},
-              "properties": [{"id": "custom.width", "value": 120}]
+              "matcher": {
+                "id": "byName",
+                "options": "Type"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 120
+                }
+              ]
             }
           ]
         },
@@ -356,10 +524,18 @@
         "type": "table",
         "title": "Recent Telecommunications Incidents",
         "description": "Latest telecommunications tickets",
-        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 26},
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 30
+        },
         "targets": [
           {
-            "datasource": {"type": "postgres", "uid": "P6BECECF7273D15EE"},
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
             "format": "table",
             "rawSql": "WITH telecom_tickets AS (\n  SELECT *\n  FROM servicedesk.tickets\n  WHERE \"TKT-Category\" <> 'Alert'\n  AND \"TKT-Created Time\" >= '2025-07-01'\n  AND LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",''))\n      LIKE ANY(ARRAY['%phone%','%pbx%','%call%','%voip%','%teams meeting%','%meeting room%'])\n)\nSELECT\n  \"TKT-Ticket ID\" as \"Ticket\",\n  \"TKT-Title\" as \"Title\",\n  \"TKT-Created Time\" as \"Created\",\n  \"TKT-Status\" as \"Status\",\n  CASE\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%phone%' THEN 'Phone'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%call%' THEN 'Calling'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%pbx%' THEN 'PBX'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%voip%' THEN 'VoIP'\n    WHEN LOWER(COALESCE(\"TKT-Title\",'') || ' ' || COALESCE(\"TKT-Description\",'')) LIKE '%meeting%' THEN 'Meeting Room'\n    ELSE 'Other'\n  END AS \"Type\"\nFROM telecom_tickets\nORDER BY \"TKT-Created Time\" DESC\nLIMIT 50;",
             "refId": "A"
@@ -374,12 +550,28 @@
           },
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "Ticket"},
-              "properties": [{"id": "custom.width", "value": 100}]
+              "matcher": {
+                "id": "byName",
+                "options": "Ticket"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 100
+                }
+              ]
             },
             {
-              "matcher": {"id": "byName", "options": "Type"},
-              "properties": [{"id": "custom.width", "value": 120}]
+              "matcher": {
+                "id": "byName",
+                "options": "Type"
+              },
+              "properties": [
+                {
+                  "id": "custom.width",
+                  "value": 120
+                }
+              ]
             }
           ]
         },
