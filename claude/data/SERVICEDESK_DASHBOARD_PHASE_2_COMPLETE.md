@@ -35,7 +35,7 @@ All dashboards accessible at http://localhost:3000:
 ## TDD Test Results ✅
 
 ### Phase 2.1: Infrastructure Validation
-- ✅ PostgreSQL connection: 6 tables accessible
+- ✅ PostgreSQL connection: 7 tables accessible (see [SERVICEDESK_DATABASE_SCHEMA.md](SERVICEDESK_DATABASE_SCHEMA.md))
 - ✅ Grafana data source: "ServiceDesk PostgreSQL" configured
 - ✅ Critical metrics (5/5): All passing
 - ✅ PostgreSQL ::numeric casting: Validated

@@ -98,6 +98,7 @@ WHERE comment_type = 'comments'
 - **Schema**: servicedesk.comment_quality
 - **User**: servicedesk_user
 - **Coverage**: 100% of human-authored comments
+- **Complete Schema**: See [SERVICEDESK_DATABASE_SCHEMA.md](SERVICEDESK_DATABASE_SCHEMA.md)
 
 ### Dashboard Metrics Now Available
 ✅ **Average Quality Score**: 3.26 (realistic)
