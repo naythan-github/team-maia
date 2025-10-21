@@ -85,11 +85,14 @@ Production-ready analytics dashboard system providing real-time ServiceDesk oper
        │          │   │ Tools      │
        │ Port:3000│   └────────────┘
        │          │
-       │ 4 Dashboards:
-       │ - Executive (5 KPIs)
-       │ - Operations (13 metrics)
-       │ - Quality (6 metrics)
-       │ - Team Performance (8 metrics)
+       │ 10 Dashboards:
+       │ - Phase 2 (4): Executive, Operations,
+       │                Quality, Team Performance
+       │ - Automation (6): Exec Overview, Alert
+       │                   Analysis, Support Patterns,
+       │                   Improvement Tracking,
+       │                   Incident Classification,
+       │                   Customer Sentiment
        └──────────┘
 
 Access:
@@ -101,10 +104,13 @@ Access:
 
 **PostgreSQL Container (servicedesk-postgres)**:
 - **Purpose**: Data warehouse for ticket, comment, timesheet, and quality data
-- **Technology**: PostgreSQL 15 in Docker container
+- **Technology**: PostgreSQL 15-alpine in Docker container
+- **Database**: `servicedesk` (schema: `servicedesk`)
+- **Tables**: 7 tables, 143 columns total, 19 indexes, 266,622 rows
 - **Dependencies**: None (isolated container)
 - **Scalability**: Vertical (currently handles 266K rows, can scale to millions)
 - **Persistence**: Docker volume `servicedesk_postgres_data`
+- **Schema Documentation**: [SERVICEDESK_DATABASE_SCHEMA.md](../../claude/data/SERVICEDESK_DATABASE_SCHEMA.md) (complete schema, validated 2025-10-21)
 
 **Grafana Container (grafana)**:
 - **Purpose**: Web-based analytics and visualization platform
@@ -126,37 +132,89 @@ Access:
 
 ### Primary Data Flows
 
-#### 1. **Quarterly Data Import**: XLSX → PostgreSQL
+#### 1. **Quarterly Data Import**: XLSX → PostgreSQL (ETL V2 Pipeline)
 - **Trigger**: Manual (quarterly ServiceDesk export)
 - **Frequency**: Quarterly (or on-demand for updates)
 - **Volume**: ~10K tickets, ~100K comments, ~140K timesheets per import
-- **SLA**: <2 hours end-to-end (including quality analysis)
+- **SLA**: 25-30 minutes (validated, excludes quality analysis)
+- **Reference**: [ETL Operational Runbook](../../claude/data/SERVICEDESK_ETL_OPERATIONAL_RUNBOOK.md)
 
-**Flow**:
+**Prerequisites** (5-10 minutes):
+```bash
+# Gate 0: Pre-flight checks and backups
+1. python3 claude/tools/sre/servicedesk_etl_preflight.py \
+     --source /path/to/servicedesk_tickets.db
+   → Validates: Disk space (≥2GB), PostgreSQL connection, dependencies
+   → Exit criteria: All checks PASS
+
+2. python3 claude/tools/sre/servicedesk_etl_backup.py backup \
+     --source /path/to/servicedesk_tickets.db \
+     --output /backups/
+   → Creates: Time-stamped backup with MD5 checksum
+   → Enables: Safe rollback if migration fails
+
+3. docker exec servicedesk-postgres pg_dump -U servicedesk_user \
+     -d servicedesk -n servicedesk -F c \
+     -f /backups/servicedesk_schema_$(date +%Y%m%d_%H%M%S).backup
+   → Backs up: PostgreSQL schema (for rollback)
 ```
-1. Export XLSX from ServiceDesk system (manual)
-2. Run incremental_import_servicedesk.py
-   → Loads XLSX to SQLite (servicedesk_tickets.db)
-   → Runs servicedesk_etl_validator.py (40 quality rules)
-   → Runs servicedesk_quality_scorer.py (quality metrics)
-3. Run servicedesk_etl_data_cleaner_enhanced.py
-   → Date standardization (DD/MM/YYYY → YYYY-MM-DD)
-   → Empty string → NULL conversion
-4. Run servicedesk_quality_analyzer_postgres.py
-   → LLM analysis of comments (10 sec/comment)
-   → Writes to comment_quality table
-5. Run migrate_sqlite_to_postgres_enhanced.py
-   → SQLite → PostgreSQL migration
-   → Canary deployment (10% validation)
-   → Blue-green schema cutover
-6. Grafana dashboards auto-refresh from PostgreSQL
+
+**Deployment** (25-30 minutes):
+```bash
+# Gate 1: Data Profiling (5 minutes)
+4. python3 claude/tools/sre/servicedesk_etl_data_profiler.py \
+     --source /path/to/servicedesk_tickets.db \
+     --use-validator \
+     --use-scorer
+   → Type detection with circuit breaker
+   → Halts if: >20% corrupt dates OR >10% type mismatches
+   → Quality scoring: 0-100 scale
+   → Embeds: servicedesk_etl_validator.py (40 rules)
+   → Embeds: servicedesk_quality_scorer.py (quality metrics)
+
+# Gate 2: Data Cleaning (15 minutes for 260K rows)
+5. python3 claude/tools/sre/servicedesk_etl_data_cleaner_enhanced.py \
+     --source /path/to/servicedesk_tickets.db \
+     --output /path/to/servicedesk_tickets_clean.db \
+     --min-quality 80
+   → Date standardization: DD/MM/YYYY → YYYY-MM-DD (ISO format)
+   → Empty strings → NULL (for date/numeric columns)
+   → PostgreSQL ROUND() casting: Add ::numeric
+   → Transaction safety: Rollback on failure
+
+# Gate 3: PostgreSQL Migration (5 minutes)
+6. python3 claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_postgres_enhanced.py \
+     --source /path/to/servicedesk_tickets_clean.db \
+     --mode canary
+   → Quality gate: Minimum 80/100 score required
+   → Canary deployment: Test 10% sample before full migration
+   → Blue-green option: --mode blue-green (zero-downtime cutover)
+   → Idempotent: Safe to retry on failure
 ```
+
+**Post-Deployment Validation** (5-10 minutes):
+```bash
+# Verify row counts match
+7. sqlite3 /path/to/servicedesk_tickets_clean.db "SELECT COUNT(*) FROM tickets;"
+   docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk \
+     -c "SELECT COUNT(*) FROM servicedesk.tickets;"
+
+# Sample data verification
+8. docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk \
+     -c "SELECT \"TKT-Created Time\", \"TKT-Resolved Time\"
+         FROM servicedesk.tickets LIMIT 5;"
+
+# Grafana smoke test
+9. Open http://localhost:3000 → Verify all dashboards load with data
+```
+
+**Result**: SQLite data migrated to PostgreSQL, dashboards auto-refresh
 
 #### 2. **Dashboard Refresh**: PostgreSQL → Grafana
 - **Trigger**: Automatic (Grafana query refresh)
-- **Frequency**: Hourly (real-time metrics), Daily (quality metrics)
-- **Volume**: 23 metrics across 4 dashboards
-- **SLA**: <2 seconds dashboard load, <100ms per query
+- **Frequency**: 5 minutes (configurable per dashboard)
+- **Volume**: 100+ metrics across 10 operational dashboards
+- **SLA**: <2 seconds dashboard load, <500ms per query
 
 **Flow**:
 ```
@@ -166,21 +224,156 @@ Access:
 4. Auto-refresh every hour (configurable per dashboard)
 ```
 
-#### 3. **Comment Quality Analysis**: Comments → LLM → PostgreSQL
+#### 3. **Comment Quality Analysis**: Comments → LLM → PostgreSQL (Optional, Post-Migration)
 - **Trigger**: Manual (on-demand via servicedesk_quality_analyzer_postgres.py)
-- **Frequency**: After each data import
-- **Volume**: 6,319 human comments (filtered: user_name != 'brian')
-- **SLA**: ~10 hours for full analysis (10 sec/comment)
+- **Frequency**: After each data import (optional enhancement)
+- **Volume**: 6,319 human comments analyzed (filters user_name != 'brian')
+- **SLA**: 6-10 hours for full analysis (~10 sec/comment)
+- **When**: Run AFTER successful PostgreSQL migration (Gate 3 complete)
 
 **Flow**:
+```bash
+# Run quality analysis (optional, after migration complete)
+python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
+  --batch-size 100 \
+  --max-comments 6000
+
+# Process:
+1. Reads comments from servicedesk.comments table (PostgreSQL)
+2. Filters system user "brian" (66,046 automation comments excluded)
+3. Sends human comments to Ollama (llama3.1:8b model) for LLM analysis
+4. LLM scores: professionalism, clarity, empathy, actionability (1-5 scale)
+5. Writes results to servicedesk.comment_quality table
+6. Grafana Quality Dashboard (UID: servicedesk-quality) reflects new data immediately
 ```
-1. servicedesk_quality_analyzer_postgres.py reads comments from PostgreSQL
-2. Filters system user "brian" (66,046 automation comments)
-3. Sends to Ollama (llama3.1:8b) for analysis
-4. LLM returns quality scores (professionalism, clarity, empathy, actionability)
-5. Writes to comment_quality table in PostgreSQL
-6. Grafana Quality Dashboard reflects new data immediately
+
+**Note**: Quality analysis is optional and runs independently after migration. Does NOT block ETL pipeline.
+
+---
+
+## ETL Tool Inventory
+
+### Core ETL Pipeline (Required for Data Import)
+
+**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+
+| Script | Purpose | Execution Time | When to Use |
+|--------|---------|----------------|-------------|
+| **servicedesk_etl_preflight.py** | Environment validation | 1 min | Before every deployment (Gate 0) |
+| **servicedesk_etl_backup.py** | Backup with MD5 verification | 1-2 min | Before every deployment (Gate 0) |
+| **servicedesk_etl_data_profiler.py** | Type detection + circuit breaker | 5 min | Every deployment (Gate 1) |
+| **servicedesk_etl_data_cleaner_enhanced.py** | Date/NULL cleaning | 15 min | Every deployment (Gate 2) |
+| **migrate_sqlite_to_postgres_enhanced.py** | PostgreSQL migration | 5 min | Every deployment (Gate 3) |
+
+**Total Pipeline Time**: 25-30 minutes (validated on 260K rows)
+
+**Usage**:
+```bash
+# Complete ETL pipeline (sequential execution)
+cd /Users/naythandawe/git/maia
+
+# Gate 0: Prerequisites
+python3 claude/tools/sre/servicedesk_etl_preflight.py --source /path/to/servicedesk_tickets.db
+python3 claude/tools/sre/servicedesk_etl_backup.py backup --source /path/to/servicedesk_tickets.db --output /backups/
+
+# Gate 1: Profiling
+python3 claude/tools/sre/servicedesk_etl_data_profiler.py --source /path/to/servicedesk_tickets.db --use-validator --use-scorer
+
+# Gate 2: Cleaning
+python3 claude/tools/sre/servicedesk_etl_data_cleaner_enhanced.py --source /path/to/servicedesk_tickets.db --output /path/to/servicedesk_tickets_clean.db --min-quality 80
+
+# Gate 3: Migration
+python3 claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_postgres_enhanced.py --source /path/to/servicedesk_tickets_clean.db --mode canary
 ```
+
+---
+
+### Quality Analysis Tools (Optional Post-Migration)
+
+**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+
+| Script | Purpose | Execution Time | When to Use |
+|--------|---------|----------------|-------------|
+| **servicedesk_quality_analyzer_postgres.py** | LLM comment analysis | 6-10 hours | After migration, quarterly |
+| **servicedesk_comment_quality_analyzer.py** | Batch quality analysis | Variable | Ad-hoc quality audits |
+| **servicedesk_complete_quality_analyzer.py** | Comprehensive analysis | Variable | Full quality review |
+| **servicedesk_quality_monitoring.py** | Quality metrics tracking | Real-time | Ongoing monitoring |
+
+**Usage**:
+```bash
+# Run quality analysis after successful migration
+python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
+  --batch-size 100 \
+  --max-comments 6000
+```
+
+---
+
+### Support & Analysis Tools (Ad-hoc Operations)
+
+**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+
+| Script | Purpose | When to Use |
+|--------|---------|-------------|
+| **servicedesk_discovery_analyzer.py** | Pattern discovery, automation opportunities | Strategic planning |
+| **servicedesk_operations_intelligence.py** | Operations insights | Capacity planning |
+| **servicedesk_ops_intel_hybrid.py** | Hybrid intelligence | Advanced analytics |
+| **servicedesk_agent_quality_coach.py** | Training recommendations | Agent coaching |
+| **servicedesk_best_practice_library.py** | Best practice catalog | Knowledge management |
+
+---
+
+### ETL Infrastructure (Embedded in Core Tools)
+
+**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+
+| Script | Purpose | Called By |
+|--------|---------|-----------|
+| **servicedesk_etl_validator.py** | 40 data quality rules | Data profiler (embedded) |
+| **servicedesk_quality_scorer.py** | Quality scoring (0-100 scale) | Data profiler (embedded) |
+| **servicedesk_etl_observability.py** | Structured logging + Prometheus metrics | All ETL tools |
+
+**Note**: These are NOT standalone scripts - they're imported and called by the core ETL pipeline tools.
+
+---
+
+### Migration Scripts
+
+**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/migration/`
+
+| Script | Purpose | Size | Status |
+|--------|---------|------|--------|
+| **migrate_sqlite_to_postgres_enhanced.py** | Canary + blue-green migration | 29 KB | ✅ Production (ETL V2) |
+| **migrate_sqlite_to_postgres.py** | Basic migration | 11 KB | ⚠️ Legacy (superseded) |
+
+---
+
+### RAG & Indexing Tools (Experimental)
+
+**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+
+| Script | Purpose | Size |
+|--------|---------|------|
+| **servicedesk_gpu_rag_indexer.py** | GPU-accelerated RAG indexing | 27 KB |
+| **servicedesk_multi_rag_indexer.py** | Multi-model RAG | 14 KB |
+| **servicedesk_parallel_rag_indexer.py** | Parallel RAG processing | 18 KB |
+
+**Note**: RAG tools are experimental and not part of core ETL pipeline.
+
+---
+
+### Complete Documentation References
+
+**ETL Process Documentation**:
+- **Operational Runbook**: [SERVICEDESK_ETL_OPERATIONAL_RUNBOOK.md](../../claude/data/SERVICEDESK_ETL_OPERATIONAL_RUNBOOK.md) (850 lines)
+- **Monitoring Guide**: [SERVICEDESK_ETL_MONITORING_GUIDE.md](../../claude/data/SERVICEDESK_ETL_MONITORING_GUIDE.md) (450 lines)
+- **Best Practices**: [SERVICEDESK_ETL_BEST_PRACTICES.md](../../claude/data/SERVICEDESK_ETL_BEST_PRACTICES.md) (400 lines)
+- **Final Status**: [SERVICEDESK_ETL_V2_FINAL_STATUS.md](../../claude/data/SERVICEDESK_ETL_V2_FINAL_STATUS.md) (300 lines)
+
+**Database Schema**:
+- **Complete Schema**: [SERVICEDESK_DATABASE_SCHEMA.md](../../claude/data/SERVICEDESK_DATABASE_SCHEMA.md) (549 lines, validated 2025-10-21)
+
+---
 
 ### Data Transformations
 
@@ -291,6 +484,406 @@ subprocess.run([
 - LLM errors: Retry 3 times with exponential backoff
 - Database errors: Log and continue to next comment
 - Overall failure: Resume from last processed comment_id
+
+---
+
+## Database Schema
+
+### Schema Overview
+
+**Database**: `servicedesk` (PostgreSQL 15-alpine)
+**Schema**: `servicedesk`
+**Total Tables**: 7
+**Total Rows**: 266,622
+**Total Columns**: 143
+**Total Indexes**: 19
+
+**Complete Documentation**: [SERVICEDESK_DATABASE_SCHEMA.md](../../claude/data/SERVICEDESK_DATABASE_SCHEMA.md) (549 lines, validated 2025-10-21)
+
+---
+
+### Table Summary
+
+| Table | Rows | Columns | Indexes | Purpose |
+|-------|------|---------|---------|---------|
+| **tickets** | 10,939 | 60 | 10 | Ticket data warehouse (primary table) |
+| **comments** | 108,129 | 10 | 2 | Comment history and customer feedback |
+| **timesheets** | 141,062 | 21 | 2 | Task-level time tracking |
+| **comment_quality** | 6,319 | 17 | 2 | LLM quality analysis scores |
+| **comment_sentiment** | 109 | 13 | 4 | Sentiment analysis results |
+| **cloud_team_roster** | 48 | 3 | 0 | Team member directory |
+| **import_metadata** | 16 | 9 | 0 | ETL run tracking and metadata |
+
+**Total**: 266,622 rows across 7 tables
+
+---
+
+### Key Tables Detail
+
+#### tickets (Primary Table)
+
+**Rows**: 10,939
+**Columns**: 60 (complete ServiceDesk export)
+**Indexes**: 10 (optimized for query performance)
+
+**Critical Columns**:
+- **Timestamps** (TIMESTAMP type):
+  - `TKT-Created Time` - Ticket creation
+  - `TKT-Resolved Time` - Resolution timestamp
+  - `TKT-Closed Time` - Closure timestamp
+  - `TKT-Last Modified Time` - Last update
+
+- **Categorical Fields**:
+  - `TKT-Status` - Current status (Open, Closed, PendingAssignment, etc.)
+  - `TKT-Category` - Incident type (Incident, Service Request, Change, etc.)
+  - `TKT-Priority` - Priority level (1-5)
+  - `TKT-Assigned To` - Current assignee
+
+- **SLA Fields**:
+  - `SLA-1 Compliance` - First response SLA compliance
+  - `SLA-2 Compliance` - Resolution SLA compliance
+
+**Key Indexes**:
+1. `idx_tickets_created_time` - Time-series queries
+2. `idx_tickets_category` - Category filtering
+3. `idx_tickets_resolution_dates` - Resolution time calculations
+4. `idx_tickets_status_category` - Performance metrics
+
+**Used By**: All 10 Grafana dashboards
+
+---
+
+#### comments (Comment History)
+
+**Rows**: 108,129 (66,046 automation + 42,083 human)
+**Columns**: 10
+**Indexes**: 2
+
+**Key Columns**:
+- `comment_id` - Unique identifier
+- `ticket_id` - Foreign key to tickets table
+- `comment_text` - Full comment text
+- `user_name` - Author (filter "brian" for automation)
+- `created_time` - Comment timestamp
+- `is_public` - Customer-facing flag
+
+**Filter Pattern**: `WHERE user_name != 'brian'` (exclude automation comments)
+
+**Used By**: Dashboard 7 (Customer Sentiment), Quality Dashboard
+
+---
+
+#### timesheets (Task-Level Time Tracking)
+
+**Rows**: 141,062
+**Columns**: 21
+**Indexes**: 2
+
+**Key Columns**:
+- `ticket_id` - Foreign key to tickets table
+- `task_type` - Categorization (Communication, Technical, Administrative)
+- `hours_logged` - Time spent
+- `assignee` - Team member
+
+**Coverage**: 9.6% of tickets have timesheet entries (762/7,969)
+
+**Used By**: Dashboard 4 (Team Performance & Task-Level)
+
+---
+
+#### comment_quality (LLM Analysis Results)
+
+**Rows**: 6,319 (analyzed comments, 5.8% coverage)
+**Columns**: 17
+**Indexes**: 2
+
+**Key Columns**:
+- `comment_id` - Foreign key to comments table
+- `professionalism_score` - 1-5 scale
+- `clarity_score` - 1-5 scale
+- `empathy_score` - 1-5 scale
+- `actionability_score` - 1-5 scale
+- `quality_tier` - Excellent/Good/Fair/Poor
+- `analysis_timestamp` - LLM processing time
+
+**LLM Model**: Ollama llama3.1:8b
+**Processing Time**: ~10 sec/comment
+
+**Used By**: Quality Dashboard
+
+---
+
+### Database Access Patterns
+
+**Read Access** (Grafana):
+- Connection: Grafana PostgreSQL datasource plugin
+- Method: Direct SQL queries via datasource proxy
+- Authentication: servicedesk_user (from provisioning config)
+
+**Write Access** (Python ETL Tools):
+- Connection: `docker exec` via PostgreSQL CLI
+- Method: SQL INSERT/UPDATE via psql
+- Authentication: servicedesk_user (from .env)
+- **NOT SUPPORTED**: Direct psycopg2 connections (container isolation)
+
+**Example Write Pattern**:
+```bash
+docker exec servicedesk-postgres psql \
+  -U servicedesk_user \
+  -d servicedesk \
+  -c "INSERT INTO servicedesk.comment_quality (comment_id, quality_score, ...)
+      VALUES (12345, 3.5, ...);"
+```
+
+---
+
+### Schema Management
+
+**Migrations**: Manual (via migrate_sqlite_to_postgres_enhanced.py)
+**Backups**:
+- Database: docker exec pg_dump (before each ETL run)
+- Retention: 30 days (manual cleanup)
+
+**Schema Changes**:
+- Frequency: Rare (7 tables stable since Oct 2025)
+- Process: Test in blue-green schema, canary deployment
+- Rollback: Restore from backup (pg_dump archives)
+
+---
+
+### Performance Characteristics
+
+**Query Performance** (tested on 266K rows):
+- Simple aggregations (COUNT, AVG): 25-40ms
+- Time-series queries: 40-80ms
+- Pattern matching (ILIKE): 150-180ms
+- Complex joins (3+ tables): 200-350ms
+- Full dashboard load (10+ queries): 1.2-1.5 seconds
+
+**All queries meet <500ms SLA** ✅
+
+**Optimization Potential**:
+- Materialized views for pattern matching (90% faster: 200ms → <20ms)
+- Table partitioning if dataset exceeds 100K tickets (50-70% faster)
+
+---
+
+## Grafana Dashboards
+
+### Dashboard Inventory (10 Operational Dashboards)
+
+**Total Deployed**: 10 dashboards (organized in 2 sets)
+**Access**: http://localhost:3000
+**Auto-Refresh**: 5 minutes (configurable)
+**Data Source**: ServiceDesk PostgreSQL (UID: P6BECECF7273D15EE)
+
+---
+
+### Set 1: Phase 2 Stakeholder Dashboards (4 Dashboards)
+
+**Purpose**: Multi-audience analytics for different organizational roles
+**Created**: Phase 2 (Oct 19, 2025)
+**Documentation**: See `claude/data/SERVICEDESK_DASHBOARD_PHASE_2_COMPLETE.md`
+
+#### 1. ServiceDesk Executive Dashboard
+- **UID**: `servicedesk-executive`
+- **URL**: http://localhost:3000/d/servicedesk-executive
+- **Audience**: Executives, C-level
+- **Panels**: 6 stat panels
+- **Metrics**: 5 KPIs (total tickets, avg resolution time, SLA compliance, team size, quality score)
+- **Purpose**: High-level performance summary for executive oversight
+
+#### 2. ServiceDesk Operations Dashboard
+- **UID**: `servicedesk-operations`
+- **URL**: http://localhost:3000/d/servicedesk-operations
+- **Audience**: Operations Managers
+- **Panels**: 8 panels (time-series, tables, stat panels)
+- **Metrics**: 13 operational metrics (ticket volume trends, category distribution, SLA tracking, backlog)
+- **Purpose**: Day-to-day operational monitoring and capacity planning
+
+#### 3. ServiceDesk Quality Dashboard
+- **UID**: `servicedesk-quality`
+- **URL**: http://localhost:3000/d/servicedesk-quality
+- **Audience**: Quality Managers, Training Teams
+- **Panels**: 8 panels (quality scores, trends, agent rankings)
+- **Metrics**: 6 quality metrics (professionalism, clarity, empathy, actionability, quality tiers)
+- **Purpose**: Agent performance evaluation and training needs identification
+
+#### 4. ServiceDesk Team Performance Dashboard
+- **UID**: `servicedesk-team-performance`
+- **URL**: http://localhost:3000/d/servicedesk-team-performance
+- **Audience**: Team Leads, Individual Agents
+- **Panels**: 4 panels (workload distribution, resolution time, close rates)
+- **Metrics**: 8 team metrics (tickets per assignee, avg resolution, close rates, performance rankings)
+- **Purpose**: Individual and team performance tracking
+
+---
+
+### Set 2: Automation Analytics Suite (6 Dashboards)
+
+**Purpose**: Automation opportunity identification and ROI tracking
+**Created**: Phase 132-134 (Oct 19-20, 2025)
+**Documentation**: See `README_DASHBOARDS.md`, `DASHBOARD_DELIVERY_SUMMARY.md`
+
+#### 5. Dashboard 1: Automation Executive Overview
+- **UID**: `servicedesk-automation-exec`
+- **URL**: http://localhost:3000/d/servicedesk-automation-exec
+- **Tags**: automation, executive, roi, servicedesk
+- **Panels**: 9 panels
+- **Key Metrics**:
+  - 10,939 tickets analyzed
+  - 4,842 automation opportunities (82.2% coverage)
+  - $952K annual savings potential
+  - 960 quick wins (motion/sensor alerts)
+- **Purpose**: Single-pane-of-glass automation opportunity summary for decision makers
+
+#### 6. Dashboard 2: Alert Analysis Deep-Dive
+- **UID**: `servicedesk-alert-analysis`
+- **URL**: http://localhost:3000/d/servicedesk-alert-analysis
+- **Tags**: alerts, automation, patterns, servicedesk
+- **Panels**: 9 panels (time-series, heatmaps, tables)
+- **Alert Patterns**: 5 categories
+  - Motion/Sensor alerts: 960 tickets ($268K/year savings)
+  - Patch failures: 555 tickets ($155K/year)
+  - Network/VPN: 490 tickets
+  - Azure Resource Health: 678 tickets ($189K/year)
+  - SSL/Certificate: 248 tickets ($87K/year)
+- **Purpose**: Detailed alert pattern analysis for automation scoping
+
+#### 7. Dashboard 3: Support Ticket Pattern Analysis
+- **UID**: `servicedesk-support-patterns`
+- **URL**: http://localhost:3000/d/servicedesk-support-patterns
+- **Tags**: automation, patterns, support, servicedesk
+- **Panels**: 8 panels (time-series, pie charts, tables)
+- **Support Patterns**: 5 categories
+  - Access/Permissions: 908 tickets ($253K/year) - Medium complexity
+  - Email issues: 526 tickets ($147K/year) - High complexity
+  - Password reset: 196 tickets ($91K/year) - Low complexity (quick win)
+  - License management: 94 tickets
+  - Software installation: 125 tickets
+- **Purpose**: Support automation opportunities with complexity ratings
+
+#### 8. Dashboard 5: Improvement Tracking & ROI Calculator
+- **UID**: `servicedesk-improvement-tracking`
+- **URL**: http://localhost:3000/d/servicedesk-improvement-tracking
+- **Tags**: baseline, improvement, roi, servicedesk, tracking
+- **Panels**: 13 panels (baseline KPIs, trends, ROI calculators, implementation status)
+- **Features**:
+  - Baseline metrics (pre-automation snapshot)
+  - Post-automation placeholders (populate after deployment)
+  - ROI calculator (estimated vs actual savings by pattern)
+  - Cumulative ROI tracker ($952K estimated vs $0 actual)
+- **Purpose**: Before/after comparison framework for automation ROI tracking
+
+#### 9. Dashboard 6: Incident Classification Breakdown
+- **UID**: `servicedesk-incident-classification`
+- **URL**: http://localhost:3000/d/servicedesk-incident-classification
+- **Tags**: classification, cloud, networking, servicedesk, telecommunications
+- **Panels**: 11 panels
+- **Classifications**:
+  - 6,903 incidents analyzed
+  - Technology stack distribution (Azure, AWS, On-Prem, Telecommunications)
+  - Incident type breakdown (Cloud, Networking, Telecommunications)
+  - Time-series trends by category
+- **Purpose**: Infrastructure incident analysis and technology stack insights
+
+#### 10. Dashboard 7: Customer Sentiment & Team Performance
+- **UID**: `servicedesk-sentiment-team-performance`
+- **URL**: http://localhost:3000/d/servicedesk-sentiment-team-performance
+- **Tags**: sentiment, customer-satisfaction, performance, servicedesk, team-ranking
+- **Panels**: 11 panels (stat panels, tables, charts, time-series)
+- **Key Features**:
+  - 16,620 customer-facing comments analyzed
+  - Positive sentiment rate: 50.6%
+  - Team performance composite scores (SLA + speed + sentiment)
+  - Top 20 team member rankings
+  - Recent positive/negative comment tables
+- **Purpose**: Customer satisfaction analysis and sentiment-based team performance rankings
+- **Methodology**: TDD (20/20 tests passing)
+
+---
+
+### Dashboard Files on Disk
+
+**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/`
+
+**Phase 2 Dashboards** (4 files):
+- `executive_dashboard.json` (293 lines)
+- `operations_dashboard.json` (333 lines)
+- `quality_dashboard.json` (504 lines)
+- `team_performance_dashboard.json` (267 lines)
+
+**Automation Suite** (7 files):
+- `1_automation_executive_overview.json` (642 lines)
+- `2_alert_analysis_deepdive.json` (551 lines)
+- `3_support_pattern_analysis.json` (527 lines)
+- `4_team_performance_tasklevel.json` (548 lines) ⚠️ **NOT YET IMPORTED**
+- `5_improvement_tracking_roi.json` (752 lines)
+- `6_incident_classification_breakdown.json` (587 lines)
+- `7_customer_sentiment_team_performance.json` (1,114 lines)
+
+**Total**: 11 dashboard JSON files (6,118 lines)
+**Deployed**: 10/11 dashboards (Dashboard 4 pending re-import)
+
+---
+
+### Dashboard Import/Update
+
+**Automated Import** (All dashboards):
+```bash
+cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+bash scripts/import_dashboards.sh
+```
+
+**Manual Import** (Single dashboard):
+```bash
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -u "admin:${GRAFANA_ADMIN_PASSWORD}" \
+  -d @grafana/dashboards/[dashboard_name].json \
+  http://localhost:3000/api/dashboards/db
+```
+
+**Verify Import**:
+```bash
+# Via API (list all dashboards)
+curl -s -u "admin:${GRAFANA_ADMIN_PASSWORD}" \
+  'http://localhost:3000/api/search?type=dash-db' | python3 -m json.tool
+
+# Via Browser
+open http://localhost:3000/dashboards
+```
+
+---
+
+### Dashboard Performance
+
+**Query Performance** (tested on 266K rows):
+- Simple aggregations: 25-40ms
+- Time-series queries: 40-80ms
+- Pattern matching: 150-180ms
+- Complex joins: 200-350ms
+- Full dashboard load: 1.2-1.5 seconds
+
+**All dashboards meet <2 second load time SLA** ✅
+
+---
+
+### Dashboard Maintenance
+
+**Weekly**:
+- Verify all panels display data correctly
+- Check query performance (no queries >500ms)
+
+**Monthly**:
+- Update time range if new data imported
+- Review dashboard usage analytics
+- Backup dashboard JSON files
+
+**Quarterly**:
+- Review automation ROI metrics (Dashboard 5)
+- Update hourly rate assumptions if changed
+- Add new automation patterns if identified
 
 ---
 
