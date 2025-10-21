@@ -360,30 +360,40 @@ def main():
             print(f"    {sentiment:10s}: {data['count']:5,} ({pct:5.1f}%) - avg conf: {data['avg_confidence']:.2f}")
         print(f"{'='*80}\n")
     else:
-        # Run analysis
-        print("\n📥 PHASE 1: Extracting unanalyzed comments from PostgreSQL...")
-        comments = analyzer.get_unanalyzed_comments(limit=args.batch_size)
-
-        if not comments:
-            print("✅ No new comments to analyze!")
-            stats = analyzer.get_sentiment_statistics()
-            print(f"\n📊 Current total: {stats['total_analyzed']:,} comments analyzed")
-        else:
-            print(f"   Found {len(comments):,} unanalyzed comments")
-
-            print("\n🤖 PHASE 2: Analyzing with gemma2:9b and storing to PostgreSQL...")
-            result = analyzer.analyze_and_store(comments, batch_size=args.commit_size)
-
-            print("\n📊 PHASE 3: Summary...")
-            stats = analyzer.get_sentiment_statistics()
+        # Run analysis - loop until all comments are analyzed
+        batch_num = 0
+        while True:
+            batch_num += 1
             print(f"\n{'='*80}")
-            print(f"FINAL STATISTICS")
+            print(f"📦 BATCH #{batch_num}")
             print(f"{'='*80}")
-            print(f"  Total in database: {stats['total_analyzed']:,}")
-            for sentiment, data in stats['distribution'].items():
-                pct = data['count'] / stats['total_analyzed'] * 100 if stats['total_analyzed'] > 0 else 0
-                print(f"    {sentiment:10s}: {data['count']:5,} ({pct:5.1f}%)")
-            print(f"{'='*80}\n")
+
+            print("\n📥 PHASE 1: Extracting unanalyzed comments from PostgreSQL...")
+            comments = analyzer.get_unanalyzed_comments(limit=args.batch_size)
+
+            if not comments:
+                print("✅ No new comments to analyze!")
+                stats = analyzer.get_sentiment_statistics()
+                print(f"\n📊 FINAL TOTAL: {stats['total_analyzed']:,} comments analyzed")
+                print(f"\n🎉 All comments have been analyzed!")
+                break
+            else:
+                print(f"   Found {len(comments):,} unanalyzed comments")
+
+                print("\n🤖 PHASE 2: Analyzing with gemma2:9b and storing to PostgreSQL...")
+                result = analyzer.analyze_and_store(comments, batch_size=args.commit_size)
+
+                print("\n📊 PHASE 3: Batch Summary...")
+                stats = analyzer.get_sentiment_statistics()
+                print(f"\n{'='*80}")
+                print(f"CUMULATIVE STATISTICS (after batch #{batch_num})")
+                print(f"{'='*80}")
+                print(f"  Total in database: {stats['total_analyzed']:,}")
+                for sentiment, data in stats['distribution'].items():
+                    pct = data['count'] / stats['total_analyzed'] * 100 if stats['total_analyzed'] > 0 else 0
+                    print(f"    {sentiment:10s}: {data['count']:5,} ({pct:5.1f}%)")
+                print(f"{'='*80}\n")
+                print(f"✅ Batch #{batch_num} complete. Starting next batch...\n")
 
     analyzer.close()
     print("✅ Done! Grafana dashboard will update automatically.\n")
