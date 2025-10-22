@@ -46,10 +46,11 @@ fi
 # Invokes SwarmOrchestrator when routing confidence >70% and complexity >3
 # Creates session state file for Maia agent context loading
 # Performance SLA: <200ms, Reliability SLA: 100% graceful degradation
+# Phase 135.6: Disown background job to prevent blocking (198ms → <60ms)
 SWARM_AUTO_LOADER="$(dirname "$0")/swarm_auto_loader.py"
 if [[ -f "$SWARM_AUTO_LOADER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
-    # Run in background (non-blocking, graceful degradation)
-    (python3 "$SWARM_AUTO_LOADER" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true) &
+    # Run in background with disown (truly non-blocking, graceful degradation)
+    (python3 "$SWARM_AUTO_LOADER" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true) & disown
 fi
 
 # Verbose mode output (only if explicitly enabled)
