@@ -202,6 +202,10 @@ JSON response:"""
                 AND c.comment_type NOT IN ('Automation', 'System')
                 AND c.comment_text IS NOT NULL
                 AND LENGTH(c.comment_text) > 10
+                -- Exclude HTML-garbage comments (>80% HTML markup)
+                AND (
+                    LENGTH(c.comment_text) - LENGTH(REGEXP_REPLACE(c.comment_text, '<[^>]+>', '', 'g'))
+                ) / NULLIF(LENGTH(c.comment_text), 0)::float < 0.8
             ORDER BY c.created_time DESC
         """
 
@@ -362,6 +366,9 @@ def main():
     else:
         # Run analysis - loop until all comments are analyzed
         batch_num = 0
+        consecutive_failures = 0
+        MAX_CONSECUTIVE_FAILURES = 3  # Circuit breaker: exit after 3 failed batches
+
         while True:
             batch_num += 1
             print(f"\n{'='*80}")
@@ -382,6 +389,21 @@ def main():
 
                 print("\n🤖 PHASE 2: Analyzing with gemma2:9b and storing to PostgreSQL...")
                 result = analyzer.analyze_and_store(comments, batch_size=args.commit_size)
+
+                # Circuit breaker: Check for repeated failures
+                if result['processed'] == 0 and result['errors'] > 0:
+                    consecutive_failures += 1
+                    print(f"\n⚠️  WARNING: Batch had 0 successful analyses ({result['errors']} errors)")
+                    print(f"   Consecutive failures: {consecutive_failures}/{MAX_CONSECUTIVE_FAILURES}")
+
+                    if consecutive_failures >= MAX_CONSECUTIVE_FAILURES:
+                        print(f"\n🛑 CIRCUIT BREAKER TRIGGERED!")
+                        print(f"   Stopped after {MAX_CONSECUTIVE_FAILURES} consecutive failed batches")
+                        print(f"   This prevents infinite loops on problematic data")
+                        print(f"   Check logs and HTML-garbage comments in database")
+                        break
+                else:
+                    consecutive_failures = 0  # Reset on success
 
                 print("\n📊 PHASE 3: Batch Summary...")
                 stats = analyzer.get_sentiment_statistics()
