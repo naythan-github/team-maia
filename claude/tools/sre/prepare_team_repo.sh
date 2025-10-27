@@ -13,7 +13,7 @@ echo ""
 
 # Configuration
 ORIGINAL_REPO="${1:-/Users/naythandawe/git/maia}"
-CLEAN_REPO="${2:-/tmp/maia-team-share}"
+CLEAN_REPO="${2:-/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/maia-team-share}"
 YOUR_NAME="${3:-naythandawe}"
 YOUR_ORG="${4:-ORROPTYLTD}"
 
@@ -30,10 +30,23 @@ if [ -d "$CLEAN_REPO" ]; then
     rm -rf "$CLEAN_REPO"
 fi
 
-git clone "$ORIGINAL_REPO" "$CLEAN_REPO"
+# Create parent directory if needed
+mkdir -p "$(dirname "$CLEAN_REPO")"
+
+# Copy the repository (preserving git history)
+echo "   Copying repository..."
+cp -R "$ORIGINAL_REPO" "$CLEAN_REPO"
 cd "$CLEAN_REPO"
 
-echo "   ✅ Repository cloned"
+# Initialize as a new git repository if not already one
+if [ ! -d ".git" ] || [ ! -f ".git/config" ]; then
+    echo "   Initializing new git repository..."
+    git init
+    git add -A
+    git commit -m "Initial commit from team preparation script" || true
+fi
+
+echo "   ✅ Repository copied"
 echo ""
 
 # Step 2: Remove personal databases

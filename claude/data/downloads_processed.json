@@ -20,6 +20,7 @@
     "/Users/naythandawe/Downloads/RE- Millenium Weekly Meeting - Updates.eml",
     "/Users/naythandawe/Downloads/GS1 - Powershell Transcription - Enable .cpt",
     "/Users/naythandawe/Downloads/unique_descriptions.csv",
+    "/Users/naythandawe/Downloads/Kaseya Connect Asia Pacific 2025.ics",
     "/Users/naythandawe/Downloads/FW- WIndows 10 Upgrades.eml",
     "/Users/naythandawe/Downloads/Isalbi - August 2025 Monthly Audit - Service Desk monthly Report.eml",
     "/Users/naythandawe/Downloads/FRM012 Orro Company Asset Acceptance Form V1.1[93].docx",
@@ -307,6 +308,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/TG Pro 2.98.dmg",
       "timestamp": "2025-10-20T16:32:17.796034"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Kaseya Connect Asia Pacific 2025.ics",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Kaseya Connect Asia Pacific 2025.ics",
+      "timestamp": "2025-10-22T10:02:12.539386"
     }
   ]
 }

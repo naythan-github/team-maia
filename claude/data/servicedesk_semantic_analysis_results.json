@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "analyzed_at": "2025-10-27T07:48:09.347936",
+    "model": "intfloat/e5-base-v2",
+    "total_tickets": 10939
+  },
+  "clustering": {
+    "n_clusters": 119,
+    "n_noise": 2582,
+    "silhouette_score": 0.691606879234314
+  },
+  "clusters": [
+    {
+      "cluster_id": 
