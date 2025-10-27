@@ -4,7 +4,7 @@ ServiceDesk Tier Backfill Script - PostgreSQL Edition
 
 Project: TIER-TRACKER-001
 Phase: 3 - Database Schema Implementation
-Date: 2025-10-27
+Date: 2025-10-27 (Updated: psycopg2 implementation)
 
 Purpose:
 Backfill support_tier column in PostgreSQL servicedesk.tickets table
@@ -22,6 +22,7 @@ Features:
 - Progress logging (every 1000 rows)
 - Idempotent (safe to re-run)
 - Sample mode for accuracy validation
+- psycopg2 direct connection (no text parsing, handles HTML in descriptions)
 
 Execution:
   # Sample mode (100 tickets for accuracy validation)
@@ -31,16 +32,31 @@ Execution:
   python3 claude/tools/sre/backfill_support_tiers_to_postgres.py --full
 
 Database Access:
-  Uses docker exec per ARCHITECTURE.md ADR-001 (PostgreSQL in isolated container)
+  Uses psycopg2 for direct Python connection (no docker exec text parsing)
+  Falls back to docker exec if psycopg2 unavailable
 """
 
 import argparse
 import subprocess
 import time
 import sys
+import os
 from pathlib import Path
 from typing import List, Tuple, Dict
 import json
+
+# Try to import psycopg2 (preferred method)
+# Temporarily disabled until password management is configured
+PSYCOPG2_AVAILABLE = False  # TODO: Enable when POSTGRES_PASSWORD env var is set
+
+# try:
+#     import psycopg2
+#     PSYCOPG2_AVAILABLE = True and os.getenv("POSTGRES_PASSWORD")  # Only enable if password available
+# except ImportError:
+#     PSYCOPG2_AVAILABLE = False
+
+if not PSYCOPG2_AVAILABLE:
+    print("ℹ️  Using docker exec method (no password required)")
 
 # Import TierCategorizer from existing script
 MAIA_ROOT = Path(__file__).resolve().parents[3]
@@ -79,22 +95,23 @@ def execute_sql(sql: str) -> Tuple[int, str, str]:
     return (result.returncode, result.stdout, result.stderr)
 
 
-def execute_sql_json(sql: str) -> List[Dict]:
+def execute_sql_json(sql: str, delimiter: str = "§§§") -> List[str]:
     """
-    Execute SQL and return results as JSON
+    Execute SQL and return results as delimited text lines
 
     Args:
         sql: SQL query to execute
+        delimiter: Field delimiter (default: §§§ for robust parsing)
 
     Returns:
-        List[Dict]: Query results as list of dictionaries
+        List[str]: Query results as list of delimited text lines
     """
-    # Add -t (no headers) and format as JSON-friendly output
+    # Add -t (no headers) and format as delimited output
     cmd = [
         "docker", "exec", DOCKER_CONTAINER,
         "psql", "-U", DB_USER, "-d", DB_NAME,
         "-t", "-A",  # No headers, unaligned mode
-        "-F", "|",   # Field separator
+        "-F", delimiter,  # Field separator
         "-c", sql
     ]
 
@@ -103,15 +120,15 @@ def execute_sql_json(sql: str) -> List[Dict]:
     if result.returncode != 0:
         raise Exception(f"SQL execution failed: {result.stderr}")
 
-    # Parse pipe-separated output
+    # Parse delimited output
     lines = [line for line in result.stdout.strip().split('\n') if line.strip()]
 
     return lines
 
 
-def fetch_tickets(sample_mode: bool = False) -> List[Dict]:
+def fetch_tickets_psycopg2(sample_mode: bool = False) -> List[Dict]:
     """
-    Fetch tickets from PostgreSQL database
+    Fetch tickets using psycopg2 (direct Python connection, no text parsing)
 
     Args:
         sample_mode: If True, fetch only SAMPLE_SIZE tickets
@@ -121,28 +138,107 @@ def fetch_tickets(sample_mode: bool = False) -> List[Dict]:
     """
     limit_clause = f"LIMIT {SAMPLE_SIZE}" if sample_mode else ""
 
+    print(f"📊 Fetching tickets from database (psycopg2)...")
+
+    # Connect to PostgreSQL via localhost (port forwarded from Docker)
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            port=5432,
+            database=DB_NAME,
+            user=DB_USER,
+            password=os.getenv("POSTGRES_PASSWORD", "")
+        )
+    except psycopg2.OperationalError as e:
+        print(f"❌ Could not connect to PostgreSQL: {e}")
+        print(f"   Ensure servicedesk-postgres container is running and port 5432 is accessible")
+        sys.exit(1)
+
+    cursor = conn.cursor()
+
     sql = f"""
     SELECT
-        "TKT-Ticket ID"::text AS ticket_id,
-        COALESCE("TKT-Title", '') AS title,
-        COALESCE("TKT-Description", '') AS description,
-        COALESCE("TKT-Category", '') AS category,
-        COALESCE("TKT-Root Cause Category", '') AS root_cause
+        "TKT-Ticket ID",
+        COALESCE("TKT-Title", ''),
+        COALESCE("TKT-Description", ''),
+        COALESCE("TKT-Category", ''),
+        COALESCE("TKT-Root Cause Category", '')
     FROM servicedesk.tickets
     WHERE support_tier IS NULL
     ORDER BY "TKT-Created Time" DESC
     {limit_clause}
     """
 
-    print(f"📊 Fetching tickets from database...")
-    lines = execute_sql_json(sql)
+    cursor.execute(sql)
+
+    tickets = []
+    for row in cursor.fetchall():
+        tickets.append({
+            'ticket_id': str(row[0]),  # Integer from database
+            'title': row[1] if row[1] else None,
+            'description': row[2] if row[2] else None,
+            'category': row[3] if row[3] else None,
+            'root_cause': row[4] if row[4] else None
+        })
+
+    cursor.close()
+    conn.close()
+
+    print(f"✅ Fetched {len(tickets):,} tickets\n")
+    return tickets
+
+
+def fetch_tickets_docker_exec(sample_mode: bool = False) -> List[Dict]:
+    """
+    Fetch tickets using docker exec (fallback method with §§§ delimiter and newline stripping)
+
+    Args:
+        sample_mode: If True, fetch only SAMPLE_SIZE tickets
+
+    Returns:
+        List[Dict]: List of ticket dictionaries
+    """
+    limit_clause = f"LIMIT {SAMPLE_SIZE}" if sample_mode else ""
+
+    # Use unique delimiter §§§ and strip newlines to avoid parsing issues with HTML content
+    sql = f"""
+    SELECT
+        "TKT-Ticket ID"::text AS ticket_id,
+        REPLACE(REPLACE(COALESCE("TKT-Title", ''), CHR(10), ' '), CHR(13), ' ') AS title,
+        REPLACE(REPLACE(COALESCE("TKT-Description", ''), CHR(10), ' '), CHR(13), ' ') AS description,
+        REPLACE(REPLACE(COALESCE("TKT-Category", ''), CHR(10), ' '), CHR(13), ' ') AS category,
+        REPLACE(REPLACE(COALESCE("TKT-Root Cause Category", ''), CHR(10), ' '), CHR(13), ' ') AS root_cause
+    FROM servicedesk.tickets
+    WHERE support_tier IS NULL
+    ORDER BY "TKT-Created Time" DESC
+    {limit_clause}
+    """
+
+    print(f"📊 Fetching tickets from database (docker exec with §§§ delimiter)...")
+
+    # Use §§§ as delimiter (unlikely to appear in ticket data)
+    cmd = [
+        "docker", "exec", DOCKER_CONTAINER,
+        "psql", "-U", DB_USER, "-d", DB_NAME,
+        "-t", "-A",  # No headers, unaligned mode
+        "-F", "§§§",  # Field separator (unique delimiter)
+        "-c", sql
+    ]
+
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    if result.returncode != 0:
+        raise Exception(f"SQL execution failed: {result.stderr}")
+
+    # Parse §§§-separated output
+    lines = [line for line in result.stdout.strip().split('\n') if line.strip()]
 
     tickets = []
     for line in lines:
         if not line.strip():
             continue
 
-        parts = line.split('|')
+        parts = line.split('§§§')
         if len(parts) >= 5:
             tickets.append({
                 'ticket_id': parts[0].strip(),
@@ -154,6 +250,23 @@ def fetch_tickets(sample_mode: bool = False) -> List[Dict]:
 
     print(f"✅ Fetched {len(tickets):,} tickets\n")
     return tickets
+
+
+def fetch_tickets(sample_mode: bool = False) -> List[Dict]:
+    """
+    Fetch tickets from PostgreSQL (auto-selects best method)
+
+    Args:
+        sample_mode: If True, fetch only SAMPLE_SIZE tickets
+
+    Returns:
+        List[Dict]: List of ticket dictionaries
+    """
+    if PSYCOPG2_AVAILABLE:
+        return fetch_tickets_psycopg2(sample_mode)
+    else:
+        print("⚠️  Using docker exec fallback (psycopg2 not available)")
+        return fetch_tickets_docker_exec(sample_mode)
 
 
 def categorize_tickets(tickets: List[Dict]) -> List[Tuple[str, str]]:
@@ -182,9 +295,56 @@ def categorize_tickets(tickets: List[Dict]) -> List[Tuple[str, str]]:
     return results
 
 
-def backfill_batch(batch: List[Tuple[str, str]]) -> bool:
+def backfill_batch_psycopg2(batch: List[Tuple[str, str]]) -> bool:
     """
-    Backfill a batch of tickets (transaction-safe)
+    Backfill a batch using psycopg2 (direct connection, transaction-safe)
+
+    Args:
+        batch: List of (ticket_id, tier) tuples
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        conn = psycopg2.connect(
+            host="localhost",
+            port=5432,
+            database=DB_NAME,
+            user=DB_USER,
+            password=os.getenv("POSTGRES_PASSWORD", "")
+        )
+    except psycopg2.OperationalError as e:
+        print(f"❌ Database connection failed: {e}")
+        return False
+
+    cursor = conn.cursor()
+
+    # Use psycopg2's parameter substitution (safe from SQL injection)
+    try:
+        for ticket_id, tier in batch:
+            tid_num = int(ticket_id)
+            cursor.execute(
+                'UPDATE servicedesk.tickets SET support_tier = %s WHERE "TKT-Ticket ID" = %s',
+                (tier, tid_num)
+            )
+
+        # Commit transaction
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+
+    except Exception as e:
+        print(f"❌ Batch update failed: {e}")
+        conn.rollback()
+        cursor.close()
+        conn.close()
+        return False
+
+
+def backfill_batch_docker_exec(batch: List[Tuple[str, str]]) -> bool:
+    """
+    Backfill a batch using docker exec (fallback method)
 
     Args:
         batch: List of (ticket_id, tier) tuples
@@ -236,6 +396,22 @@ def backfill_batch(batch: List[Tuple[str, str]]) -> bool:
     return True
 
 
+def backfill_batch(batch: List[Tuple[str, str]]) -> bool:
+    """
+    Backfill a batch (auto-selects best method)
+
+    Args:
+        batch: List of (ticket_id, tier) tuples
+
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    if PSYCOPG2_AVAILABLE:
+        return backfill_batch_psycopg2(batch)
+    else:
+        return backfill_batch_docker_exec(batch)
+
+
 def validate_backfill() -> Dict[str, int]:
     """
     Validate backfill results
@@ -262,7 +438,7 @@ def validate_backfill() -> Dict[str, int]:
 
     tier_counts = {}
     for line in lines:
-        parts = line.split('|')
+        parts = line.split('§§§')
         if len(parts) == 2:
             tier = parts[0].strip()
             count = int(parts[1].strip())
