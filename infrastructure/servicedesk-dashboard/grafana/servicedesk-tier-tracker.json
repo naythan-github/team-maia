@@ -1,0 +1,586 @@
+{
+  "dashboard": {
+    "title": "ServiceDesk Tier Optimization Dashboard",
+    "uid": "servicedesk-tier-tracker",
+    "version": 1,
+    "timezone": "browser",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-6M",
+      "to": "now"
+    },
+    "timepicker": {
+      "refresh_intervals": ["5m", "15m", "30m", "1h", "6h", "12h", "1d"]
+    },
+    "tags": ["servicedesk", "tier-optimization", "cost-savings"],
+    "templating": {
+      "list": []
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "PostgreSQL",
+          "enable": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Tier Target Changes",
+          "query": "SELECT effective_date as time, 'Target Updated: L1=' || target_percentage || '%' as text FROM servicedesk.tier_cost_config WHERE tier='L1' ORDER BY effective_date",
+          "showIn": 0,
+          "tags": [],
+          "type": "tags"
+        }
+      ]
+    },
+    "panels": [
+      {
+        "id": 1,
+        "title": "L1 Percentage (Help Desk)",
+        "type": "stat",
+        "gridPos": {"x": 0, "y": 0, "w": 6, "h": 8},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "SELECT\n  ROUND(\n    COUNT(*) FILTER (WHERE support_tier = 'L1')::NUMERIC /\n    COUNT(*)::NUMERIC * 100, 1\n  ) as value,\n  'L1 Percentage' as metric\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE);"
+          },
+          {
+            "refId": "B",
+            "format": "table",
+            "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) as time,\n  ROUND(\n    COUNT(*) FILTER (WHERE support_tier = 'L1')::NUMERIC /\n    COUNT(*)::NUMERIC * 100, 1\n  ) as value\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\"::timestamp >= CURRENT_DATE - INTERVAL '6 months'\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp)\nORDER BY time;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 50, "color": "yellow"},
+                {"value": 60, "color": "green"}
+              ]
+            },
+            "mappings": [],
+            "color": {"mode": "thresholds"}
+          }
+        },
+        "options": {
+          "graphMode": "area",
+          "colorMode": "value",
+          "justifyMode": "auto",
+          "textMode": "value_and_name",
+          "orientation": "auto",
+          "reduceOptions": {
+            "values": false,
+            "calcs": ["lastNotNull"],
+            "fields": ""
+          },
+          "text": {
+            "titleSize": 14,
+            "valueSize": 48
+          }
+        },
+        "pluginVersion": "10.0.0",
+        "description": "Current month L1 percentage. Target: 60-70%. Green ≥60%, Yellow 50-60%, Red <50%"
+      },
+      {
+        "id": 2,
+        "title": "L2 Percentage (Technical Support)",
+        "type": "stat",
+        "gridPos": {"x": 6, "y": 0, "w": 6, "h": 8},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "SELECT\n  ROUND(\n    COUNT(*) FILTER (WHERE support_tier = 'L2')::NUMERIC /\n    COUNT(*)::NUMERIC * 100, 1\n  ) as value,\n  'L2 Percentage' as metric\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE);"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "green"},
+                {"value": 35, "color": "yellow"},
+                {"value": 45, "color": "red"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "none",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "text": {
+            "valueSize": 48
+          }
+        },
+        "description": "Current month L2 percentage. Target: 25-35%. Green ≤35%, Yellow 35-45%, Red >45%"
+      },
+      {
+        "id": 3,
+        "title": "L3 Percentage (Expert/Architectural)",
+        "type": "stat",
+        "gridPos": {"x": 12, "y": 0, "w": 6, "h": 8},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "SELECT\n  ROUND(\n    COUNT(*) FILTER (WHERE support_tier = 'L3')::NUMERIC /\n    COUNT(*)::NUMERIC * 100, 1\n  ) as value,\n  'L3 Percentage' as metric\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE);"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "yellow"},
+                {"value": 5, "color": "green"},
+                {"value": 10, "color": "yellow"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "none",
+          "colorMode": "value",
+          "textMode": "value_and_name",
+          "text": {
+            "valueSize": 48
+          }
+        },
+        "description": "Current month L3 percentage. Target: 5-10%. Green 5-10%, Yellow otherwise"
+      },
+      {
+        "id": 4,
+        "title": "Annual Cost Savings Opportunity",
+        "type": "stat",
+        "gridPos": {"x": 18, "y": 0, "w": 6, "h": 8},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "WITH current_month AS (\n  SELECT\n    COUNT(*) FILTER (WHERE support_tier = 'L1') as l1_count,\n    COUNT(*) FILTER (WHERE support_tier = 'L2') as l2_count,\n    COUNT(*) FILTER (WHERE support_tier = 'L3') as l3_count,\n    COUNT(*) as total\n  FROM servicedesk.tickets\n  WHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE)\n),\ncosts AS (\n  SELECT\n    MAX(CASE WHEN tier='L1' THEN cost_per_ticket END) as l1_cost,\n    MAX(CASE WHEN tier='L2' THEN cost_per_ticket END) as l2_cost,\n    MAX(CASE WHEN tier='L3' THEN cost_per_ticket END) as l3_cost,\n    MAX(CASE WHEN tier='L1' THEN target_percentage END) as l1_target,\n    MAX(CASE WHEN tier='L2' THEN target_percentage END) as l2_target,\n    MAX(CASE WHEN tier='L3' THEN target_percentage END) as l3_target\n  FROM servicedesk.tier_cost_config\n)\nSELECT\n  ROUND(\n    (\n      (cm.l1_count * c.l1_cost + cm.l2_count * c.l2_cost + cm.l3_count * c.l3_cost) * 12 -\n      (cm.total * c.l1_target / 100 * c.l1_cost + cm.total * c.l2_target / 100 * c.l2_cost + cm.total * c.l3_target / 100 * c.l3_cost) * 12\n    ) / 1000, 0\n  ) as value,\n  'Annual Savings' as metric\nFROM current_month cm, costs c;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "currencyUSD",
+            "decimals": 0,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "blue"}
+              ]
+            }
+          }
+        },
+        "options": {
+          "graphMode": "none",
+          "colorMode": "value",
+          "textMode": "value",
+          "text": {
+            "valueSize": 48
+          }
+        },
+        "description": "Potential annual cost savings if tier distribution reaches target (65% L1, 30% L2, 7.5% L3). Calculated from tier_cost_config table."
+      },
+      {
+        "id": 5,
+        "title": "Tier Distribution Over Time (12 Months)",
+        "type": "timeseries",
+        "gridPos": {"x": 0, "y": 8, "w": 16, "h": 10},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "time_series",
+            "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) as time,\n  support_tier as metric,\n  ROUND(\n    COUNT(*)::NUMERIC / SUM(COUNT(*)) OVER (PARTITION BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp)) * 100, 1\n  ) as value\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\"::timestamp >= CURRENT_DATE - INTERVAL '12 months'\n  AND support_tier IS NOT NULL\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp), support_tier\nORDER BY time, support_tier;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "drawStyle": "line",
+              "lineInterpolation": "smooth",
+              "fillOpacity": 20,
+              "gradientMode": "none",
+              "lineWidth": 2,
+              "pointSize": 5,
+              "showPoints": "auto",
+              "spanNulls": false,
+              "stacking": {
+                "mode": "percent",
+                "group": "A"
+              }
+            },
+            "unit": "percent",
+            "min": 0,
+            "max": 100
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "L1"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "L2"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "L3"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "tooltip": {
+            "mode": "multi",
+            "sort": "none"
+          },
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "calcs": ["mean", "lastNotNull"]
+          }
+        },
+        "description": "100% stacked area chart showing tier distribution trends. Goal: L1 increasing, L2 decreasing over time."
+      },
+      {
+        "id": 6,
+        "title": "Target vs Actual Progress",
+        "type": "gauge",
+        "gridPos": {"x": 16, "y": 8, "w": 8, "h": 10},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "WITH current AS (\n  SELECT\n    ROUND(COUNT(*) FILTER (WHERE support_tier = 'L1')::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as l1_pct,\n    ROUND(COUNT(*) FILTER (WHERE support_tier = 'L2')::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as l2_pct,\n    ROUND(COUNT(*) FILTER (WHERE support_tier = 'L3')::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as l3_pct\n  FROM servicedesk.tickets\n  WHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE)\n)\nSELECT\n  current.l1_pct as \"L1 Current\",\n  current.l2_pct as \"L2 Current\",\n  current.l3_pct as \"L3 Current\"\nFROM current;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "min": 0,
+            "max": 100,
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 50, "color": "yellow"},
+                {"value": 60, "color": "green"}
+              ]
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "L1 Current"},
+              "properties": [
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": 0, "color": "red"},
+                      {"value": 50, "color": "yellow"},
+                      {"value": 60, "color": "green"}
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "L2 Current"},
+              "properties": [
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": 0, "color": "green"},
+                      {"value": 35, "color": "yellow"},
+                      {"value": 45, "color": "red"}
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "orientation": "auto",
+          "showThresholdLabels": true,
+          "showThresholdMarkers": true,
+          "text": {}
+        },
+        "description": "Gauge showing current vs target. L1 target: 60-70%, L2 target: 25-35%, L3 target: 5-10%"
+      },
+      {
+        "id": 7,
+        "title": "Monthly Ticket Volume by Tier (Last 6 Months)",
+        "type": "barchart",
+        "gridPos": {"x": 0, "y": 18, "w": 12, "h": 9},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "SELECT\n  TO_CHAR(DATE_TRUNC('month', \"TKT-Created Time\"::timestamp), 'YYYY-MM') as month,\n  support_tier,\n  COUNT(*) as count\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\"::timestamp >= CURRENT_DATE - INTERVAL '6 months'\n  AND support_tier IS NOT NULL\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp), support_tier\nORDER BY month, support_tier;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "fillOpacity": 80,
+              "lineWidth": 1,
+              "gradientMode": "none"
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "L1"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "blue"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "L2"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "orange"}}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "L3"},
+              "properties": [
+                {"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}
+              ]
+            }
+          ]
+        },
+        "options": {
+          "orientation": "vertical",
+          "xField": "month",
+          "legend": {
+            "displayMode": "list",
+            "placement": "bottom",
+            "showLegend": true
+          },
+          "tooltip": {
+            "mode": "multi"
+          },
+          "barWidth": 0.8,
+          "groupWidth": 0.7,
+          "stacking": "none"
+        },
+        "description": "Grouped bar chart showing absolute ticket volumes. Helps identify seasonal patterns beyond percentages."
+      },
+      {
+        "id": 8,
+        "title": "Month-over-Month Tier Changes",
+        "type": "table",
+        "gridPos": {"x": 12, "y": 18, "w": 12, "h": 9},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "WITH monthly_pcts AS (\n  SELECT\n    DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) as month,\n    ROUND(COUNT(*) FILTER (WHERE support_tier = 'L1')::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as l1_pct,\n    ROUND(COUNT(*) FILTER (WHERE support_tier = 'L2')::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as l2_pct,\n    ROUND(COUNT(*) FILTER (WHERE support_tier = 'L3')::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as l3_pct\n  FROM servicedesk.tickets\n  WHERE \"TKT-Created Time\"::timestamp >= CURRENT_DATE - INTERVAL '6 months'\n  GROUP BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp)\n)\nSELECT\n  TO_CHAR(month, 'YYYY-MM') as \"Month\",\n  l1_pct as \"L1 %\",\n  l1_pct - LAG(l1_pct) OVER (ORDER BY month) as \"L1 Δ\",\n  l2_pct as \"L2 %\",\n  l2_pct - LAG(l2_pct) OVER (ORDER BY month) as \"L2 Δ\",\n  l3_pct as \"L3 %\",\n  l3_pct - LAG(l3_pct) OVER (ORDER BY month) as \"L3 Δ\"\nFROM monthly_pcts\nORDER BY month DESC;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "align": "center",
+              "displayMode": "auto"
+            },
+            "decimals": 1
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "L1 Δ"},
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": -5, "color": "red"},
+                      {"value": 0, "color": "yellow"},
+                      {"value": 2, "color": "green"}
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "L2 Δ"},
+              "properties": [
+                {
+                  "id": "custom.displayMode",
+                  "value": "color-background"
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": -2, "color": "green"},
+                      {"value": 0, "color": "yellow"},
+                      {"value": 5, "color": "red"}
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "options": {
+          "showHeader": true,
+          "sortBy": []
+        },
+        "description": "Month-over-month percentage point changes. Green = moving toward target. L1 increase is good, L2 decrease is good."
+      },
+      {
+        "id": 9,
+        "title": "L1 Tickets by Category (Current Month)",
+        "type": "piechart",
+        "gridPos": {"x": 0, "y": 27, "w": 8, "h": 9},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "SELECT\n  COALESCE(\"TKT-Category\", 'Uncategorized') as category,\n  COUNT(*) as count\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE)\n  AND support_tier = 'L1'\nGROUP BY \"TKT-Category\"\nORDER BY count DESC\nLIMIT 10;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "custom": {
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
+              }
+            },
+            "unit": "short"
+          }
+        },
+        "options": {
+          "pieType": "pie",
+          "displayLabels": ["name", "percent"],
+          "legend": {
+            "displayMode": "list",
+            "placement": "right",
+            "showLegend": true,
+            "values": ["value", "percent"]
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        },
+        "description": "Top 10 categories for L1 tickets. Identify which categories achieving L1 success."
+      },
+      {
+        "id": 10,
+        "title": "L2 Tickets by Category (Current Month)",
+        "type": "piechart",
+        "gridPos": {"x": 8, "y": 27, "w": 8, "h": 9},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "SELECT\n  COALESCE(\"TKT-Category\", 'Uncategorized') as category,\n  COUNT(*) as count\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE)\n  AND support_tier = 'L2'\nGROUP BY \"TKT-Category\"\nORDER BY count DESC\nLIMIT 10;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        },
+        "options": {
+          "pieType": "pie",
+          "displayLabels": ["name", "percent"],
+          "legend": {
+            "displayMode": "list",
+            "placement": "right",
+            "showLegend": true
+          }
+        },
+        "description": "Top 10 categories for L2 tickets. Identify escalation opportunities and training needs."
+      },
+      {
+        "id": 11,
+        "title": "L1 Rate by Pod (Current Month)",
+        "type": "barchart",
+        "gridPos": {"x": 16, "y": 27, "w": 8, "h": 9},
+        "datasource": "PostgreSQL",
+        "targets": [
+          {
+            "refId": "A",
+            "format": "table",
+            "rawSql": "SELECT\n  COALESCE(assigned_pod, 'Unassigned') as pod,\n  ROUND(\n    COUNT(*) FILTER (WHERE support_tier = 'L1')::NUMERIC /\n    COUNT(*)::NUMERIC * 100, 1\n  ) as l1_rate\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE)\n  AND assigned_pod IS NOT NULL\nGROUP BY assigned_pod\nHAVING COUNT(*) >= 10\nORDER BY l1_rate DESC\nLIMIT 15;"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "custom": {
+              "fillOpacity": 80,
+              "lineWidth": 1
+            },
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": 0, "color": "red"},
+                {"value": 50, "color": "yellow"},
+                {"value": 60, "color": "green"}
+              ]
+            },
+            "color": {
+              "mode": "thresholds"
+            }
+          }
+        },
+        "options": {
+          "orientation": "horizontal",
+          "xField": "l1_rate",
+          "legend": {
+            "showLegend": false
+          },
+          "tooltip": {
+            "mode": "single"
+          },
+          "barWidth": 0.9
+        },
+        "description": "L1 rate by pod (minimum 10 tickets). Compare pod performance, identify training needs. Target: 60% L1 rate."
+      }
+    ],
+    "refresh": "5m",
+    "schemaVersion": 38,
+    "style": "dark",
+    "links": [],
+    "liveNow": false
+  },
+  "overwrite": true,
+  "folderUid": "servicedesk",
+  "message": "ServiceDesk Tier Tracker Dashboard - Initial Version"
+}

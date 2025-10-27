@@ -2,6 +2,7 @@
   "processed": [
     "/Users/naythandawe/Downloads/GS1 - Orro Onboarding - 21.2.25.xlsx",
     "/Users/naythandawe/Downloads/TG Pro 2.98.dmg",
+    "/Users/naythandawe/Downloads/NordVPN.pkg",
     "/Users/naythandawe/Downloads/Orro___Agent_Procedure_Export.xml",
     "/Users/naythandawe/Downloads/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
     "/Users/naythandawe/Downloads/Wayne Ash Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
@@ -314,6 +315,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/Kaseya Connect Asia Pacific 2025.ics",
       "timestamp": "2025-10-22T10:02:12.539386"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/NordVPN.pkg",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/NordVPN.pkg",
+      "timestamp": "2025-10-27T18:46:25.297100"
     }
   ]
 }

@@ -5,12 +5,17 @@ Web-based dashboard showing project status, priorities, and backlog visualizatio
 
 ## Command Usage
 ```bash
-# Launch dashboard
-maia project_backlog_dashboard
+# Launch dashboard (from MAIA_ROOT)
+streamlit run claude/tools/project_management/project_backlog_dashboard.py
 
 # Launch on specific port
-maia project_backlog_dashboard --port=8505
+streamlit run claude/tools/project_management/project_backlog_dashboard.py --server.port=8505
+
+# Launch with dark theme
+streamlit run claude/tools/project_management/project_backlog_dashboard.py --theme.base=dark
 ```
+
+**Dashboard URL**: http://localhost:8501
 
 ## Dashboard Features
 - **Project Overview**: Active projects with status indicators
@@ -46,16 +51,28 @@ maia project_backlog_dashboard --port=8505
 - Agent utilization metrics
 - Completion rate forecasting
 
-## Implementation Approach
-1. **Data Collection**: Scan git repos, markdown files, agent logs
-2. **Web Interface**: Streamlit dashboard with real-time updates
-3. **File-Based**: No database required, pure filesystem scanning
-4. **Interactive**: Click to drill down into project details
+## Implementation Details
+1. **Data Source**: SQLite database (`claude/data/project_registry.db`)
+2. **Web Framework**: Streamlit with Plotly visualizations
+3. **Database Integration**: Direct SQL queries via sqlite3
+4. **Interactive Features**:
+   - Click project IDs to view details
+   - Filter by status/priority/category
+   - Real-time data refresh (60s cache)
+   - Responsive charts with hover tooltips
+5. **Implementation File**: `claude/tools/project_management/project_backlog_dashboard.py`
 
-## Token Estimate
-- **Development**: ~12k tokens
-- **No Runtime Cost**: Pure local dashboard, no AI processing
-- **One-time Build**: Self-updating from filesystem
+## Status
+✅ **IMPLEMENTED** - Ready to use
+
+**Implementation**: `claude/tools/project_management/project_backlog_dashboard.py` (25KB, 700+ lines)
+
+**Dependencies**:
+- streamlit (installed)
+- plotly (installed)
+- pandas (installed)
+
+**Runtime**: No AI processing cost - pure local visualization
 
 ## Success Metrics
 - Clear visibility into all projects
