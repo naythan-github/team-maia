@@ -201,7 +201,7 @@
           {
             "refId": "A",
             "format": "time_series",
-            "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) as time,\n  support_tier as metric,\n  ROUND(\n    COUNT(*)::NUMERIC / SUM(COUNT(*)) OVER (PARTITION BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp)) * 100, 1\n  ) as value\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\"::timestamp >= CURRENT_DATE - INTERVAL '12 months'\n  AND support_tier IS NOT NULL\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp), support_tier\nORDER BY time, support_tier;"
+            "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) as time,\n  ROUND(SUM(CASE WHEN support_tier = 'L1' THEN 1 ELSE 0 END)::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as \"L1\",\n  ROUND(SUM(CASE WHEN support_tier = 'L2' THEN 1 ELSE 0 END)::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as \"L2\",\n  ROUND(SUM(CASE WHEN support_tier = 'L3' THEN 1 ELSE 0 END)::NUMERIC / COUNT(*)::NUMERIC * 100, 1) as \"L3\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\"::timestamp >= CURRENT_DATE - INTERVAL '12 months'\n  AND support_tier IS NOT NULL\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\"::timestamp)\nORDER BY time"
           }
         ],
         "fieldConfig": {
@@ -209,11 +209,11 @@
             "custom": {
               "drawStyle": "line",
               "lineInterpolation": "smooth",
-              "fillOpacity": 20,
+              "fillOpacity": 70,
               "gradientMode": "none",
-              "lineWidth": 2,
+              "lineWidth": 1,
               "pointSize": 5,
-              "showPoints": "auto",
+              "showPoints": "never",
               "spanNulls": false,
               "stacking": {
                 "mode": "percent",

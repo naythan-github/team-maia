@@ -95,7 +95,7 @@ class EmailRAGOllama:
         response.raise_for_status()
         return response.json()["embeddings"][0]
 
-    def index_inbox(self, limit: Optional[int] = None, force: bool = False, hours_ago: int = 24, include_sent: bool = True) -> Dict[str, int]:
+    def index_inbox(self, limit: Optional[int] = None, force: bool = False, hours_ago: int = 24, include_sent: bool = True, include_cc: bool = True) -> Dict[str, int]:
         """
         Index emails with Ollama embeddings
 
@@ -104,16 +104,25 @@ class EmailRAGOllama:
             force: Re-index already indexed emails
             hours_ago: Only index messages from last N hours (default: 24)
             include_sent: Also index sent messages (default: True)
+            include_cc: Also index CC folder messages (default: True)
         """
         fetch_limit = limit or 200  # Default to 200 messages max per mailbox
 
         print("=" * 60)
-        print(f"📥 Indexing Inbox{' & Sent' if include_sent else ''} (last {hours_ago}h)...")
+        folders = "Inbox"
+        if include_sent:
+            folders += " & Sent"
+        if include_cc:
+            folders += " & CC"
+        print(f"📥 Indexing {folders} (last {hours_ago}h)...")
         print("=" * 60)
 
         # Get inbox messages
         print(f"📧 Retrieving inbox messages (last {hours_ago}h)...")
         messages = self.mail_bridge.get_inbox_messages(limit=fetch_limit, hours_ago=hours_ago)
+        # Mark inbox messages explicitly
+        for msg in messages:
+            msg['mailbox'] = 'Inbox'
 
         # Get sent messages if requested
         if include_sent:
@@ -124,13 +133,38 @@ class EmailRAGOllama:
                 msg['mailbox'] = 'Sent Items'
             messages.extend(sent_messages)
 
+        # Get CC folder messages if requested
+        if include_cc:
+            print(f"📋 Retrieving CC folder messages (last {hours_ago}h)...")
+            try:
+                cc_messages = self.mail_bridge.search_messages_in_account(
+                    account="Exchange",
+                    mailbox_type="CC",
+                    limit=fetch_limit,
+                    hours_ago=hours_ago
+                )
+                # Mark CC messages so we can identify them
+                for msg in cc_messages:
+                    msg['mailbox'] = 'CC'
+                messages.extend(cc_messages)
+                print(f"   Found {len(cc_messages)} CC messages")
+            except Exception as e:
+                print(f"   ⚠️  CC folder unavailable: {str(e)[:80]}")
+
         stats = {"total": len(messages), "new": 0, "skipped": 0, "errors": 0, "contacts_added": 0}
 
         # Load existing contacts once at the start
         if self.extract_contacts:
-            existing_contacts = self.contacts_bridge.get_all_contacts()
-            self.existing_contact_emails = {c['email'] for c in existing_contacts if c.get('email')}
-            print(f"📇 Loaded {len(existing_contacts)} existing contacts for deduplication\n")
+            try:
+                existing_contacts = self.contacts_bridge.get_all_contacts()
+                self.existing_contact_emails = {c['email'] for c in existing_contacts if c.get('email')}
+                print(f"📇 Loaded {len(existing_contacts)} existing contacts for deduplication\n")
+            except RuntimeError as e:
+                # Contacts.app not running (background execution) - continue without contact extraction
+                print(f"⚠️  Contact extraction unavailable: {str(e)[:100]}")
+                print(f"📧 Continuing with email indexing only...\n")
+                self.extract_contacts = False  # Disable for this run
+                self.existing_contact_emails = set()
 
         documents = []
         metadatas = []
@@ -157,8 +191,8 @@ class EmailRAGOllama:
                 print(f"  [{i}/{len(messages)}] Embedding: {content['subject'][:50]}...")
                 embedding = self._get_embedding(doc_text)
 
-                # Determine mailbox type (sent vs inbox)
-                mailbox_type = "Sent" if msg.get('mailbox') == 'Sent Items' else "Inbox"
+                # Determine mailbox type from message metadata
+                mailbox_type = msg.get('mailbox', 'Inbox')  # Default to Inbox if not specified
 
                 metadata = {
                     "message_id": msg['id'],

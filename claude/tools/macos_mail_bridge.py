@@ -208,7 +208,20 @@ class MacOSMailBridge:
         script = f'''
         tell application "Mail"
             set targetAccount to account "{account}"
-            set targetMailbox to mailbox "{mailbox_type}" of targetAccount
+
+            -- Find mailbox (handle both direct and nested mailboxes)
+            set targetMailbox to missing value
+            repeat with mb in mailboxes of targetAccount
+                if name of mb is "{mailbox_type}" then
+                    set targetMailbox to mb
+                    exit repeat
+                end if
+            end repeat
+
+            if targetMailbox is missing value then
+                error "Mailbox {mailbox_type} not found"
+            end if
+
             set messageList to messages of targetMailbox {search_filter}
             set messageCount to count of messageList
 
@@ -265,8 +278,19 @@ class MacOSMailBridge:
         tell application "Mail"
             try
                 set targetAccount to account "{account}"
-                set targetMailbox to mailbox "Inbox" of targetAccount
-                set msg to (first message of targetMailbox whose id is {message_id})
+
+                -- Search across all mailboxes for the message ID
+                set msg to missing value
+                repeat with mb in mailboxes of targetAccount
+                    try
+                        set msg to (first message of mb whose id is {message_id})
+                        exit repeat
+                    end try
+                end repeat
+
+                if msg is missing value then
+                    error "Message not found in any mailbox"
+                end if
 
                 set msgSubject to subject of msg
                 set msgSender to sender of msg
