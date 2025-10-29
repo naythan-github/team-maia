@@ -219,6 +219,18 @@ class MeetingTranscriber:
         # Validate server
         self._validate_whisper_server()
 
+    def _color(self, text: str, color: str = None) -> str:
+        """Safely apply terminal color, fallback to plain text"""
+        if not color:
+            return text
+        try:
+            color_func = getattr(self.term, color, None)
+            if color_func:
+                return color_func(text)
+        except (TypeError, AttributeError):
+            pass
+        return text
+
     def _validate_whisper_server(self):
         """Check if whisper-server is running"""
         try:
@@ -312,16 +324,26 @@ class MeetingTranscriber:
 
     def _display_header(self):
         """Display session header"""
-        print(self.term.home + self.term.clear)
-        print(self.term.bold_green("🎤 Meeting Transcription - Live Session"))
-        print(self.term.dim("═" * 80))
+        try:
+            print(self.term.home + self.term.clear)
+            print(self.term.bold_green("🎤 Meeting Transcription - Live Session"))
+        except (TypeError, AttributeError):
+            print("\n🎤 Meeting Transcription - Live Session")
+
+        print("═" * 80)
         print(f"Session ID: {self.session_id}")
         print(f"Output: {self.transcript_file}")
         print(f"Started: {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(self.term.dim("─" * 80))
-        print(f"Status: {self.term.green('RECORDING')} | Chunks: {self.chunk_count} | "
-              f"Duration: {self._format_duration()}")
-        print(self.term.dim("─" * 80))
+        print("─" * 80)
+
+        try:
+            print(f"Status: {self.term.green('RECORDING')} | Chunks: {self.chunk_count} | "
+                  f"Duration: {self._format_duration()}")
+        except (TypeError, AttributeError):
+            print(f"Status: RECORDING | Chunks: {self.chunk_count} | "
+                  f"Duration: {self._format_duration()}")
+
+        print("─" * 80)
         print("\n")
 
     def _format_duration(self) -> str:
@@ -379,13 +401,17 @@ class MeetingTranscriber:
             f.write(f"**Session ID**: {self.session_id}\n\n")
             f.write("---\n")
 
-        print(self.term.clear)
-        print(self.term.bold_green(f"✅ Session started: {session_name}"))
+        try:
+            print(self.term.clear)
+        except (TypeError, AttributeError):
+            print("\n" * 3)
+
+        print(self._color(f"✅ Session started: {session_name}", "bold_green"))
         print(f"📝 Saving to: {self.transcript_file}")
         if self.rag.enabled:
             print("🔍 RAG indexing: ENABLED")
         print("\n")
-        print(self.term.yellow("Recording in 3 seconds..."))
+        print(self._color("Recording in 3 seconds...", "yellow"))
         time.sleep(3)
 
     def run(self):
@@ -397,18 +423,18 @@ class MeetingTranscriber:
 
                 # Display status
                 self._display_header()
-                print(self.term.cyan(f"🎙️  Recording chunk {self.chunk_count} "
-                                    f"({CHUNK_DURATION}s)..."))
+                print(self._color(f"🎙️  Recording chunk {self.chunk_count} "
+                                 f"({CHUNK_DURATION}s)...", "cyan"))
 
                 # Record chunk
                 audio_file = self._record_chunk(CHUNK_DURATION)
 
                 if not audio_file:
-                    print(self.term.yellow("⚠️  Recording failed, retrying..."))
+                    print(self._color("⚠️  Recording failed, retrying...", "yellow"))
                     continue
 
                 # Transcribe
-                print(self.term.cyan("🔄 Transcribing..."))
+                print(self._color("🔄 Transcribing...", "cyan"))
                 text = self._transcribe_chunk(audio_file)
 
                 # Cleanup audio
@@ -416,10 +442,10 @@ class MeetingTranscriber:
 
                 if text:
                     # Display transcription
-                    print(self.term.green("\n📝 Transcription:"))
-                    print(self.term.dim("─" * 80))
+                    print(self._color("\n📝 Transcription:", "green"))
+                    print("─" * 80)
                     print(text)
-                    print(self.term.dim("─" * 80))
+                    print("─" * 80)
 
                     # Save to file
                     self._save_chunk(text, chunk_start)
@@ -437,11 +463,11 @@ class MeetingTranscriber:
                                 "total_chunks": self.chunk_count
                             }
                         )
-                        print(self.term.dim("✅ RAG indexed"))
+                        print("✅ RAG indexed")
                 else:
-                    print(self.term.yellow("⚠️  No speech detected in chunk"))
+                    print(self._color("⚠️  No speech detected in chunk", "yellow"))
 
-                print(f"\n{self.term.dim('Press Ctrl+C to stop and save')}\n")
+                print("\nPress Ctrl+C to stop and save\n")
                 time.sleep(2)  # Brief pause between chunks
 
         except KeyboardInterrupt:
@@ -453,8 +479,12 @@ class MeetingTranscriber:
         end_time = datetime.now()
         duration = end_time - self.start_time
 
-        print(self.term.clear)
-        print(self.term.bold_yellow("\n🛑 Stopping transcription...\n"))
+        try:
+            print(self.term.clear)
+        except (TypeError, AttributeError):
+            print("\n" * 3)
+
+        print(self._color("\n🛑 Stopping transcription...\n", "bold_yellow"))
 
         # Write session summary to transcript
         with open(self.transcript_file, 'a') as f:
@@ -467,7 +497,7 @@ class MeetingTranscriber:
         self._update_metadata()
 
         # Summary
-        print(self.term.green("✅ Session complete"))
+        print(self._color("✅ Session complete", "green"))
         print(f"\n📊 Summary:")
         print(f"   Duration: {self._format_duration()}")
         print(f"   Chunks: {self.chunk_count}")
@@ -483,7 +513,7 @@ class MeetingTranscriber:
                   f"rag = MeetingTranscriptionRAG(); "
                   f"print(rag.search(\"your query\", meeting_id=\"{self.session_id}\"))'")
 
-        print(f"\n{self.term.bold_green('Session saved successfully')}\n")
+        print(f"\n{self._color('Session saved successfully', 'bold_green')}\n")
 
 
 def main():
