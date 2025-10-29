@@ -250,7 +250,7 @@ class MeetingTranscriber:
         cmd = [
             "/opt/homebrew/bin/ffmpeg",
             "-f", "avfoundation",
-            "-i", ":1",  # MacBook Air Microphone
+            "-i", ":0",  # MacBook Air Microphone (audio device 0)
             "-t", str(duration),
             "-ar", str(SAMPLE_RATE),
             "-ac", "1",
