@@ -545,7 +545,93 @@ def extract_pattern_metadata(analysis_context: dict) -> dict:
 
 ---
 
+## Mandatory Agent Configuration ⭐ **CRITICAL**
+
+**Required Agent**: SRE Principal Engineer Agent
+**Why**: Ensures TDD methodology compliance, catches violations, validates reliability requirements
+
+### Before Starting Implementation
+
+**Step 1: Load SRE Agent**
+```
+User: "load sre agent"
+or
+User: "load sre principal engineer agent"
+```
+
+**Step 2: Verify Agent Active**
+```bash
+# Check for active agent session
+python3 claude/hooks/swarm_auto_loader.py get_context_id
+
+# Verify session file exists
+cat /tmp/maia_active_swarm_session_*.json | grep sre_principal_engineer
+```
+
+**Step 3: Confirm TDD Enforcement**
+Agent should respond with:
+- ✅ "SRE Principal Engineer Agent loaded"
+- ✅ "Ready for TDD implementation"
+- ✅ "Will enforce red-green-refactor cycle"
+
+### If Agent Not Loaded
+
+**Consequences of skipping SRE agent**:
+- ❌ TDD violations may go undetected (as happened in Phase 141.0 initially)
+- ❌ Reliability requirements may be missed
+- ❌ Performance SLAs may not be validated
+- ❌ Graceful degradation patterns may be overlooked
+
+**Phase 141.0 Evidence**: SRE agent caught non-TDD violation (400 lines implemented without tests), forced restart with proper TDD, caught 3 bugs before production.
+
+### SRE Agent Responsibilities During Phase 141.1
+
+**Throughout Implementation**:
+- ✅ Enforce test-first approach (write failing test → implement → refactor)
+- ✅ Review each test for reliability coverage
+- ✅ Validate performance requirements (<500ms overhead)
+- ✅ Ensure graceful degradation (pattern library unavailable → continue)
+- ✅ Verify non-blocking error handling
+- ✅ Check transaction safety (metadata extraction failures)
+- ✅ Validate end-to-end scenarios
+
+**Red Flags to Watch For**:
+- 🚨 Implementation code written before tests
+- 🚨 Tests passing without proper assertions
+- 🚨 Missing error handling tests
+- 🚨 No performance validation
+- 🚨 Hardcoded values instead of configuration
+
+### Agent Session Persistence
+
+**Session file**: `/tmp/maia_active_swarm_session_{CONTEXT_ID}.json`
+- Automatically persists across conversation (Phase 134)
+- SRE agent stays loaded until explicitly changed
+- Check session state at start of each implementation phase
+
+**To verify agent still active**:
+```bash
+if [ -f /tmp/maia_active_swarm_session_*.json ]; then
+    cat /tmp/maia_active_swarm_session_*.json | jq '.current_agent'
+fi
+```
+
+---
+
 ## Implementation Phases
+
+### Phase 0: Pre-Implementation Checklist (5 minutes) ⭐ **MANDATORY**
+
+**Before writing ANY code**:
+- [ ] SRE Principal Engineer Agent loaded and verified
+- [ ] Phase 141.1 TDD plan reviewed
+- [ ] Test specifications understood (35 tests)
+- [ ] Development environment ready (analysis_pattern_library.py accessible)
+- [ ] Data Analyst Agent file located (`claude/agents/data_analyst_agent.md`)
+
+**Deliverable**: Confirmation that TDD workflow will be followed
+
+---
 
 ### Phase 1: Core Integration (2 hours)
 - Modify Data Analyst Agent to check pattern library
@@ -632,16 +718,39 @@ def extract_pattern_metadata(analysis_context: dict) -> dict:
 
 **Upon Approval**:
 1. ✅ Create TDD test specifications (this document)
-2. ⏳ Write 35 tests (red phase)
-3. ⏳ Implement integration (green phase)
-4. ⏳ Refactor for quality
-5. ⏳ Document user guide
-6. ⏳ Update SYSTEM_STATE.md
+2. ⭐ **LOAD SRE AGENT** (mandatory for TDD compliance)
+3. ⏳ Execute Phase 0 checklist (verify setup)
+4. ⏳ Write 35 tests (red phase)
+5. ⏳ Implement integration (green phase)
+6. ⏳ Refactor for quality
+7. ⏳ Document user guide
+8. ⏳ Update SYSTEM_STATE.md
 
-**Status**: ✅ **TDD PLAN COMPLETE** - Ready for test writing (Phase 1)
+**Status**: ✅ **TDD PLAN COMPLETE** - Ready for implementation with SRE agent
+
+---
+
+## How to Start Phase 141.1
+
+**Command to begin**:
+```
+User: "load sre agent and implement phase 141.1"
+```
+
+This will:
+1. Load SRE Principal Engineer Agent (if not already loaded)
+2. Execute Phase 0 checklist
+3. Begin Phase 1 with test-first approach
+4. Enforce TDD throughout all 4 phases
+
+**Or, if SRE agent already loaded**:
+```
+User: "implement phase 141.1"
+```
 
 ---
 
 **Prepared By**: SRE Principal Engineer Agent
 **Date**: 2025-10-30
+**Updated**: 2025-10-30 (Added mandatory SRE agent requirement)
 **Estimated Delivery**: Phase 141.1 complete in 3-4 hours with TDD methodology
