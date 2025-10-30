@@ -24,17 +24,14 @@ Status: Production Ready (TDD Complete)
 
 import os
 import json
+import time
 import markdown as md_lib
 import logging
 from typing import Optional, List, Dict
 from pathlib import Path
 
 # Import underlying reliable client (internal use only)
-try:
-    from _reliable_confluence_client import ReliableConfluenceClient
-except ImportError:
-    # Fallback for when file not yet renamed
-    from reliable_confluence_client import ReliableConfluenceClient
+from _reliable_confluence_client import ReliableConfluenceClient
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -305,6 +302,205 @@ class ConfluenceClient:
             logger.error(error_msg)
             raise ConfluenceError(error_msg) from e
 
+    def create_page_from_html(
+        self,
+        space_key: str,
+        title: str,
+        html_content: str,
+        parent_id: Optional[str] = None,
+        validate_html: bool = True
+    ) -> str:
+        """
+        Create Confluence page from HTML (storage format)
+
+        For advanced use cases where you need direct HTML control (macros,
+        custom layouts, etc.). For 95% of cases, use create_page_from_markdown().
+
+        Args:
+            space_key: Confluence space key
+            title: Page title
+            html_content: Confluence storage format HTML
+            parent_id: Optional parent page ID
+            validate_html: Run HTML validation before creating (default: True)
+
+        Returns:
+            Page URL (str)
+
+        Raises:
+            ValueError: If input validation fails or HTML validation fails
+            ConfluenceError: If page creation fails
+
+        Example:
+            html = '''
+            <h1>Custom Layout</h1>
+            <ac:structured-macro ac:name="info">
+                <ac:rich-text-body>
+                    <p>Custom info panel</p>
+                </ac:rich-text-body>
+            </ac:structured-macro>
+            '''
+            url = client.create_page_from_html("Orro", "Custom Page", html)
+        """
+        # Validate input
+        self._validate_input(space_key, title, html_content)
+
+        try:
+            # Create page via underlying client (with HTML validation if enabled)
+            result = self.client.create_page(
+                space_key=space_key,
+                title=title,
+                content=html_content,
+                parent_id=parent_id,
+                validate_html=validate_html
+            )
+
+            # Check if creation failed
+            if result is None:
+                try:
+                    spaces = self.list_spaces()
+                    space_keys = [s['key'] for s in spaces]
+                    if space_key not in space_keys:
+                        raise ConfluenceError(
+                            f"Failed to create page '{title}' in space '{space_key}'\n"
+                            f"Reason: Space '{space_key}' does not exist or is inaccessible\n"
+                            f"Suggestion: Verify space key with list_spaces() - available: {', '.join(space_keys[:5])}"
+                        )
+                except ConfluenceError:
+                    raise
+                except Exception:
+                    pass
+
+                raise ConfluenceError(
+                    f"Failed to create page '{title}' in space '{space_key}'\n"
+                    f"Reason: API request returned None (check logs for HTML validation errors)\n"
+                    f"Suggestion: Verify space exists with list_spaces() or check HTML format"
+                )
+
+            url = self._extract_page_url(result)
+            logger.info(f"Page created from HTML: {title} → {url}")
+            return url
+
+        except ValueError as e:
+            # HTML validation failed
+            raise ValueError(f"HTML validation failed: {e}")
+        except ConfluenceError:
+            raise
+        except Exception as e:
+            error_msg = self._format_error_message(
+                operation="create page from HTML",
+                space_key=space_key,
+                title=title,
+                original_error=e
+            )
+            logger.error(error_msg)
+            raise ConfluenceError(error_msg) from e
+
+    def update_page_from_html(
+        self,
+        space_key: str,
+        title: str,
+        html_content: str,
+        validate_html: bool = True
+    ) -> str:
+        """
+        Update existing page with HTML (storage format)
+
+        For advanced use cases. For 95% of cases, use update_page_from_markdown().
+
+        Args:
+            space_key: Confluence space key
+            title: Page title to search for
+            html_content: Confluence storage format HTML
+            validate_html: Run HTML validation (default: True)
+
+        Returns:
+            Page URL (str)
+
+        Raises:
+            ValueError: If input validation fails or HTML validation fails
+            ConfluenceError: If update/create fails
+
+        Example:
+            url = client.update_page_from_html("Orro", "Page Title", html_content)
+        """
+        self._validate_input(space_key, title, html_content)
+
+        try:
+            # Search for existing page with retry logic (same as update_page_from_markdown)
+            existing_page = self._find_page_by_title(space_key, title)
+
+            if existing_page:
+                # Update existing page
+                page_id = existing_page['id']
+                full_page = self.client.get_page(page_id, expand='version')
+
+                if not full_page:
+                    raise ConfluenceError(f"Found page {page_id} but couldn't fetch full details")
+
+                result = self.client.update_page(
+                    page_id=page_id,
+                    title=title,
+                    content=html_content,
+                    version_number=full_page['version']['number'] + 1
+                )
+
+                if result and 'url' not in result:
+                    result['url'] = f"{self.config.get('url', 'https://vivoemc.atlassian.net/wiki')}/spaces/{space_key}/pages/{page_id}"
+
+                url = self._extract_page_url(result)
+                logger.info(f"Page updated from HTML: {title} → {url}")
+                return url
+            else:
+                # Page not found - retry with backoff then create
+                logger.info(f"Page not found in initial search: {title}")
+                logger.info("Retrying with backoff for search index latency...")
+
+                for attempt in range(2):
+                    wait_time = 3 + (attempt * 3)
+                    logger.info(f"Waiting {wait_time}s for search index (attempt {attempt+1}/2)")
+                    time.sleep(wait_time)
+
+                    retry_page = self._find_page_by_title(space_key, title)
+                    if retry_page:
+                        logger.info(f"Found page on retry {attempt+1}, updating...")
+                        page_id = retry_page['id']
+                        full_page = self.client.get_page(page_id, expand='version')
+
+                        if not full_page:
+                            raise ConfluenceError(f"Found page {page_id} but couldn't fetch details")
+
+                        result = self.client.update_page(
+                            page_id=page_id,
+                            title=title,
+                            content=html_content,
+                            version_number=full_page['version']['number'] + 1
+                        )
+
+                        if result and 'url' not in result:
+                            result['url'] = f"{self.config.get('url', 'https://vivoemc.atlassian.net/wiki')}/spaces/{space_key}/pages/{page_id}"
+
+                        url = self._extract_page_url(result)
+                        logger.info(f"Page updated via search retry: {title} → {url}")
+                        return url
+
+                # Not found after retries, create new
+                logger.info(f"Page confirmed not exists after retries, creating from HTML: {title}")
+                return self.create_page_from_html(space_key, title, html_content, validate_html=validate_html)
+
+        except ValueError as e:
+            raise ValueError(f"HTML validation failed: {e}")
+        except ConfluenceError:
+            raise
+        except Exception as e:
+            error_msg = self._format_error_message(
+                operation="update page from HTML",
+                space_key=space_key,
+                title=title,
+                original_error=e
+            )
+            logger.error(error_msg)
+            raise ConfluenceError(error_msg) from e
+
     def get_page_url(self, space_key: str, title: str, retry_for_index: bool = True) -> Optional[str]:
         """
         Get page URL by title (simple lookup)
@@ -507,12 +703,29 @@ class ConfluenceClient:
         # Try modern format
         if '_links' in page_response and 'webui' in page_response['_links']:
             relative_url = page_response['_links']['webui']
-            return f"{base_url}{relative_url}"
+            full_url = f"{base_url}{relative_url}"
+            # Normalize: Strip title slug for consistency
+            # Format: /spaces/SPACE/pages/ID/Title+Slug → /spaces/SPACE/pages/ID
+            if '/pages/' in full_url:
+                # Extract up to page ID (format: .../pages/12345/Title... → .../pages/12345)
+                parts = full_url.split('/pages/')
+                if len(parts) == 2:
+                    page_id_and_slug = parts[1]
+                    page_id = page_id_and_slug.split('/')[0]  # Get just the ID
+                    return f"{parts[0]}/pages/{page_id}"
+            return full_url
 
         # Try legacy format
         if 'webui' in page_response:
             relative_url = page_response['webui']
-            return f"{base_url}{relative_url}"
+            full_url = f"{base_url}{relative_url}"
+            # Normalize: Strip title slug for consistency
+            if '/pages/' in full_url:
+                parts = full_url.split('/pages/')
+                if len(parts) == 2:
+                    page_id = parts[1].split('/')[0]
+                    return f"{parts[0]}/pages/{page_id}"
+            return full_url
 
         # Construct from page ID if available
         if 'id' in page_response:
