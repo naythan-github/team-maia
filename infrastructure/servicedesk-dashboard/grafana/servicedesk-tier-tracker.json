@@ -461,7 +461,7 @@
       {
         "id": 9,
         "title": "L1 Tickets by Category (Current Month)",
-        "type": "piechart",
+        "type": "table",
         "gridPos": {"x": 0, "y": 27, "w": 8, "h": 9},
         "datasource": "PostgreSQL",
         "targets": [
@@ -474,39 +474,41 @@
         "fieldConfig": {
           "defaults": {
             "custom": {
-              "hideFrom": {
-                "tooltip": false,
-                "viz": false,
-                "legend": false
-              }
+              "align": "left",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "count"},
+              "properties": [
+                {"id": "custom.displayMode", "value": "color-background"},
+                {"id": "custom.width", "value": 100}
+              ]
             },
-            "unit": "short"
-          }
+            {
+              "matcher": {"id": "byName", "options": "category"},
+              "properties": [
+                {"id": "custom.width", "value": 200}
+              ]
+            }
+          ]
         },
         "options": {
-          "pieType": "pie",
-          "displayLabels": ["name", "percent"],
-          "legend": {
-            "displayMode": "list",
-            "placement": "right",
-            "showLegend": true,
-            "values": ["value", "percent"]
-          },
-          "tooltip": {
-            "mode": "single"
-          },
-          "reduceOptions": {
-            "values": true,
-            "limit": 10,
-            "calcs": ["lastNotNull"]
+          "showHeader": true,
+          "cellHeight": "sm",
+          "footer": {
+            "show": false,
+            "reducer": ["sum"],
+            "countRows": false
           }
         },
-        "description": "Top 10 categories for L1 tickets. Identify which categories achieving L1 success."
+        "description": "Top 10 categories for L1 tickets (table format). Color intensity shows relative volume."
       },
       {
         "id": 10,
         "title": "L2 Tickets by Category (Current Month)",
-        "type": "piechart",
+        "type": "table",
         "gridPos": {"x": 8, "y": 27, "w": 8, "h": 9},
         "datasource": "PostgreSQL",
         "targets": [
@@ -518,70 +520,96 @@
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "short"
-          }
+            "custom": {
+              "align": "left",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "count"},
+              "properties": [
+                {"id": "custom.displayMode", "value": "color-background"},
+                {"id": "custom.width", "value": 100}
+              ]
+            },
+            {
+              "matcher": {"id": "byName", "options": "category"},
+              "properties": [
+                {"id": "custom.width", "value": 200}
+              ]
+            }
+          ]
         },
         "options": {
-          "pieType": "pie",
-          "displayLabels": ["name", "percent"],
-          "legend": {
-            "displayMode": "list",
-            "placement": "right",
-            "showLegend": true
-          },
-          "reduceOptions": {
-            "values": true,
-            "limit": 10,
-            "calcs": ["lastNotNull"]
+          "showHeader": true,
+          "cellHeight": "sm",
+          "footer": {
+            "show": false,
+            "reducer": ["sum"],
+            "countRows": false
           }
         },
-        "description": "Top 10 categories for L2 tickets. Identify escalation opportunities and training needs."
+        "description": "Top 10 categories for L2 tickets (table format). Identify escalation opportunities and training needs."
       },
       {
         "id": 11,
         "title": "L1 Rate by Pod (Current Month)",
-        "type": "barchart",
+        "type": "table",
         "gridPos": {"x": 16, "y": 27, "w": 8, "h": 9},
         "datasource": "PostgreSQL",
         "targets": [
           {
             "refId": "A",
             "format": "table",
-            "rawSql": "SELECT\n  COALESCE(assigned_pod, 'Unassigned') as pod,\n  ROUND(\n    COUNT(*) FILTER (WHERE support_tier = 'L1')::NUMERIC /\n    COUNT(*)::NUMERIC * 100, 1\n  ) as l1_rate\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE)\n  AND assigned_pod IS NOT NULL\nGROUP BY assigned_pod\nHAVING COUNT(*) >= 10\nORDER BY l1_rate DESC\nLIMIT 15;"
+            "rawSql": "SELECT\n  COALESCE(assigned_pod, 'Unassigned') as pod,\n  ROUND(\n    COUNT(*) FILTER (WHERE support_tier = 'L1')::NUMERIC /\n    COUNT(*)::NUMERIC * 100, 1\n  ) as l1_rate\nFROM servicedesk.tickets\nWHERE DATE_TRUNC('month', \"TKT-Created Time\"::timestamp) = DATE_TRUNC('month', CURRENT_DATE)\nGROUP BY assigned_pod\nHAVING COUNT(*) >= 10\nORDER BY l1_rate DESC\nLIMIT 15;"
           }
         ],
         "fieldConfig": {
           "defaults": {
-            "unit": "percent",
             "custom": {
-              "fillOpacity": 80,
-              "lineWidth": 1
-            },
-            "thresholds": {
-              "mode": "absolute",
-              "steps": [
-                {"value": 0, "color": "red"},
-                {"value": 50, "color": "yellow"},
-                {"value": 60, "color": "green"}
+              "align": "left",
+              "displayMode": "auto"
+            }
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "l1_rate"},
+              "properties": [
+                {"id": "custom.displayMode", "value": "color-background"},
+                {"id": "unit", "value": "percent"},
+                {"id": "custom.width", "value": 100},
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {"value": 0, "color": "red"},
+                      {"value": 50, "color": "yellow"},
+                      {"value": 60, "color": "green"}
+                    ]
+                  }
+                }
               ]
             },
-            "color": {
-              "mode": "thresholds"
+            {
+              "matcher": {"id": "byName", "options": "pod"},
+              "properties": [
+                {"id": "custom.width", "value": 200}
+              ]
             }
-          }
+          ]
         },
         "options": {
-          "orientation": "horizontal",
-          "xField": "l1_rate",
-          "legend": {
-            "showLegend": false
-          },
-          "tooltip": {
-            "mode": "single"
-          },
-          "barWidth": 0.9
+          "showHeader": true,
+          "cellHeight": "sm",
+          "footer": {
+            "show": false,
+            "reducer": ["sum"],
+            "countRows": false
+          }
         },
-        "description": "L1 rate by pod (minimum 10 tickets). Compare pod performance, identify training needs. Target: 60% L1 rate."
+        "description": "L1 rate by pod (table format). Green ≥60%, Yellow 50-60%, Red <50%. Shows 'Unassigned' until pods are assigned to tickets."
       }
     ],
     "refresh": "5m",
