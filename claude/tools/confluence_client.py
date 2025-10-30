@@ -143,9 +143,29 @@ class ConfluenceClient:
 
             # Check if creation failed (returns None)
             if result is None:
+                # Common failure: space doesn't exist
+                # Verify space exists to provide better error message
+                try:
+                    spaces = self.list_spaces()
+                    space_keys = [s['key'] for s in spaces]
+                    if space_key not in space_keys:
+                        raise ConfluenceError(
+                            f"Failed to create page '{title}' in space '{space_key}'\n"
+                            f"Reason: Space '{space_key}' does not exist or is inaccessible\n"
+                            f"Suggestion: Verify space key with list_spaces() - available: {', '.join(space_keys[:5])}"
+                        )
+                except ConfluenceError:
+                    # Re-raise our formatted error
+                    raise
+                except Exception:
+                    # Couldn't list spaces, provide generic error
+                    pass
+
+                # Generic failure message if we couldn't determine cause
                 raise ConfluenceError(
-                    f"Page creation returned None - check API response. "
-                    f"Space: {space_key}, Title: {title}"
+                    f"Failed to create page '{title}' in space '{space_key}'\n"
+                    f"Reason: API request returned None (check logs for details)\n"
+                    f"Suggestion: Verify space exists with list_spaces() and check network connectivity"
                 )
 
             # Extract and return URL
@@ -233,8 +253,43 @@ class ConfluenceClient:
                 logger.info(f"Page updated successfully: {title} → {url}")
                 return url
             else:
-                # 2b. Create new page if doesn't exist
-                logger.info(f"Page not found, creating new: {title}")
+                # 2b. Page not found in search - could be search index latency
+                # Wait and retry search before creating (handles race condition)
+                logger.info(f"Page not found in initial search: {title}")
+                logger.info("Retrying with backoff for search index latency...")
+
+                for attempt in range(2):
+                    wait_time = 3 + (attempt * 3)  # 3s, 6s
+                    logger.info(f"Waiting {wait_time}s for search index (attempt {attempt+1}/2)")
+                    time.sleep(wait_time)
+
+                    retry_page = self._find_page_by_title(space_key, title)
+                    if retry_page:
+                        logger.info(f"Found page on retry {attempt+1}, updating...")
+                        # Update the page we found
+                        html = self._markdown_to_html(markdown_content)
+                        page_id = retry_page['id']
+                        full_page = self.client.get_page(page_id, expand='version')
+
+                        if not full_page:
+                            raise ConfluenceError(f"Found page {page_id} but couldn't fetch details")
+
+                        result = self.client.update_page(
+                            page_id=page_id,
+                            title=title,
+                            content=html,
+                            version_number=full_page['version']['number'] + 1
+                        )
+
+                        if result and 'url' not in result:
+                            result['url'] = f"{self.config.get('url', 'https://vivoemc.atlassian.net/wiki')}/spaces/{space_key}/pages/{page_id}"
+
+                        url = self._extract_page_url(result)
+                        logger.info(f"Page updated via search retry: {title} → {url}")
+                        return url
+
+                # Still not found after retries, create new page
+                logger.info(f"Page confirmed not exists after retries, creating: {title}")
                 return self.create_page_from_markdown(space_key, title, markdown_content)
 
         except ConfluenceError:
@@ -250,13 +305,14 @@ class ConfluenceClient:
             logger.error(error_msg)
             raise ConfluenceError(error_msg) from e
 
-    def get_page_url(self, space_key: str, title: str) -> Optional[str]:
+    def get_page_url(self, space_key: str, title: str, retry_for_index: bool = True) -> Optional[str]:
         """
         Get page URL by title (simple lookup)
 
         Args:
             space_key: Confluence space key
             title: Page title to search for
+            retry_for_index: If True, retry with backoff for search index latency (default: True)
 
         Returns:
             Page URL if found, None otherwise (not an exception)
@@ -270,6 +326,18 @@ class ConfluenceClient:
         """
         try:
             page = self._find_page_by_title(space_key, title)
+
+            # If not found and retry enabled, wait for search index
+            if not page and retry_for_index:
+                logger.info(f"Page not found, retrying with backoff for search index: {title}")
+                for attempt in range(2):
+                    wait_time = 3 + (attempt * 3)  # 3s, 6s
+                    time.sleep(wait_time)
+                    page = self._find_page_by_title(space_key, title)
+                    if page:
+                        logger.info(f"Found page on retry {attempt+1}")
+                        break
+
             return self._extract_page_url(page) if page else None
         except Exception as e:
             logger.warning(f"Page lookup failed: {space_key}/{title} - {e}")

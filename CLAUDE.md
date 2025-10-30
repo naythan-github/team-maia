@@ -12,6 +12,8 @@
    - **File**: `/tmp/maia_active_swarm_session_{CONTEXT_ID}.json` (Phase 134.4: stable context ID)
    - **Context ID**: Stable Claude Code window PID (walks process tree to find native-binary/claude process)
    - **Detection**: Use swarm_auto_loader.py `get_context_id()` for stable ID, fall back to PPID if detection fails
+   - **🚨 CRITICAL**: ALWAYS get context ID FIRST, then check for that specific file - NEVER use glob patterns (`ls /tmp/maia_active_swarm_session_*.json`) as this returns alphabetically-first file, not context-specific file
+   - **Correct Method**: `python3 claude/hooks/swarm_auto_loader.py get_context_id` → then check `/tmp/maia_active_swarm_session_{result}.json`
    - **If exists**: Load specified agent context + enriched context from session
    - **Agent loading**: Read `${MAIA_ROOT}/claude/agents/{current_agent}.md` OR `${MAIA_ROOT}/claude/agents/{current_agent}_agent.md`
    - **Behavior**: Respond AS the loaded agent with agent's expertise and behavioral patterns

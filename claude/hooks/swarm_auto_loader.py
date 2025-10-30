@@ -148,12 +148,36 @@ def migrate_legacy_session():
             pass  # Graceful degradation
 
 
+def is_process_alive(pid: int) -> bool:
+    """
+    Check if a process is still running.
+
+    Args:
+        pid: Process ID to check
+
+    Returns:
+        True if process exists, False otherwise
+    """
+    try:
+        # Send signal 0 (null signal) - doesn't kill process, just checks existence
+        os.kill(pid, 0)
+        return True
+    except (OSError, ValueError):
+        return False
+
+
 def cleanup_stale_sessions(max_age_hours: int = 24):
     """
     Remove session files older than max_age_hours.
 
     Phase 134.3: Prevent /tmp pollution from abandoned contexts.
+    Phase 134.5: Also remove legacy non-numeric context IDs (e.g., sre_001)
+    Phase 134.5.1: Check if process still running before deleting (multi-session safety)
     Runs on every startup (fast: glob + stat).
+
+    Safety: Will NOT delete session if:
+    - Process (PID) is still running, OR
+    - Session file modified within max_age_hours
 
     Args:
         max_age_hours: Maximum session age in hours (default: 24)
@@ -163,9 +187,31 @@ def cleanup_stale_sessions(max_age_hours: int = 24):
     try:
         for session_file in Path("/tmp").glob("maia_active_swarm_session_*.json"):
             try:
-                if session_file.stat().st_mtime < cutoff_time:
-                    session_file.unlink()
-            except OSError:
+                # Extract context ID from filename
+                # Expected format: maia_active_swarm_session_{CONTEXT_ID}.json
+                filename = session_file.name
+                if filename.startswith("maia_active_swarm_session_") and filename.endswith(".json"):
+                    context_id = filename[len("maia_active_swarm_session_"):-len(".json")]
+
+                    # Check if legacy format (non-numeric)
+                    is_legacy = not context_id.isdigit()
+
+                    # Legacy sessions: Always remove (not PID-based, can't verify if active)
+                    if is_legacy:
+                        session_file.unlink()
+                        continue
+
+                    # Numeric context ID (PID): Check if process still running
+                    pid = int(context_id)
+                    process_alive = is_process_alive(pid)
+
+                    # Only delete if BOTH conditions met:
+                    # 1. Process no longer running AND
+                    # 2. Session file older than max_age_hours
+                    if not process_alive and session_file.stat().st_mtime < cutoff_time:
+                        session_file.unlink()
+
+            except (OSError, ValueError):
                 pass  # Graceful degradation (file may be locked or deleted)
     except Exception:
         pass  # Graceful degradation
