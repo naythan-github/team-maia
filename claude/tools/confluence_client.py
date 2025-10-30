@@ -224,6 +224,11 @@ class ConfluenceClient:
                     version_number=full_page['version']['number'] + 1
                 )
 
+                # Update response doesn't include URL, construct it
+                if result and 'url' not in result:
+                    # Add space_key and url to result for consistent extraction
+                    result['url'] = f"{self.config.get('url', 'https://vivoemc.atlassian.net/wiki')}/spaces/{space_key}/pages/{page_id}"
+
                 url = self._extract_page_url(result)
                 logger.info(f"Page updated successfully: {title} → {url}")
                 return url
