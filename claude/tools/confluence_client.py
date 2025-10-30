@@ -141,12 +141,22 @@ class ConfluenceClient:
                 parent_id=parent_id
             )
 
+            # Check if creation failed (returns None)
+            if result is None:
+                raise ConfluenceError(
+                    f"Page creation returned None - check API response. "
+                    f"Space: {space_key}, Title: {title}"
+                )
+
             # Extract and return URL
             url = self._extract_page_url(result)
 
             logger.info(f"Page created successfully: {title} → {url}")
             return url
 
+        except ConfluenceError:
+            # Re-raise ConfluenceError as-is
+            raise
         except Exception as e:
             error_msg = self._format_error_message(
                 operation="create page",
@@ -200,11 +210,18 @@ class ConfluenceClient:
                 # 2a. Update existing page
                 html = self._markdown_to_html(markdown_content)
 
+                # Search results don't include version, need to fetch full page
+                page_id = existing_page['id']
+                full_page = self.client.get_page(page_id, expand='version')
+
+                if not full_page:
+                    raise ConfluenceError(f"Found page {page_id} but couldn't fetch full details")
+
                 result = self.client.update_page(
-                    page_id=existing_page['id'],
+                    page_id=page_id,
                     title=title,
                     content=html,
-                    version_number=existing_page['version']['number'] + 1
+                    version_number=full_page['version']['number'] + 1
                 )
 
                 url = self._extract_page_url(result)
@@ -366,18 +383,24 @@ class ConfluenceClient:
             Page dict if found, None otherwise
         """
         try:
-            # Use Confluence search with exact title match
-            query = f'title="{title}" and space={space_key}'
+            # Use text search (search_content expects text, not CQL title)
+            # Search for the title as text content
             search_results = self.client.search_content(
-                query=query,
+                query=title,
                 space_key=space_key
             )
 
             if not search_results or len(search_results) == 0:
                 return None
 
-            # Return first result (exact title match should be first)
-            return search_results[0]
+            # Filter results for exact title match (search returns partial matches)
+            for result in search_results:
+                if result.get('title') == title:
+                    # Found exact match
+                    return result
+
+            # No exact match found
+            return None
 
         except Exception as e:
             logger.warning(f"Page search failed: {space_key}/{title} - {e}")
@@ -388,6 +411,7 @@ class ConfluenceClient:
         Extract page URL from API response (handles multiple formats)
 
         The Confluence API returns URLs in different formats:
+        - ReliableConfluenceClient format: response['url'] (direct URL)
         - Modern: response['_links']['webui']
         - Legacy: response['webui']
         - Fallback: Construct from page ID
@@ -401,9 +425,13 @@ class ConfluenceClient:
         Raises:
             ValueError: If URL cannot be extracted
         """
+        # Try ReliableConfluenceClient format first (has 'url' key directly)
+        if 'url' in page_response:
+            return page_response['url']
+
         base_url = self.config.get("url", "https://vivoemc.atlassian.net/wiki")
 
-        # Try modern format first
+        # Try modern format
         if '_links' in page_response and 'webui' in page_response['_links']:
             relative_url = page_response['_links']['webui']
             return f"{base_url}{relative_url}"
@@ -423,7 +451,7 @@ class ConfluenceClient:
         raise ValueError(
             f"Unable to extract URL from response. "
             f"Available keys: {available_keys}. "
-            f"Expected '_links.webui', 'webui', or 'id'."
+            f"Expected 'url', '_links.webui', 'webui', or 'id'."
         )
 
     def _load_site_config(self, site_name: str) -> Dict:

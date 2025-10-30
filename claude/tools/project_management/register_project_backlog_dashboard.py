@@ -25,12 +25,12 @@ def register_project_backlog_dashboard():
     registry = DashboardRegistry()
 
     # Configuration for project backlog dashboard
-    # Port selection: Using 8067 (next available in DevOps/Metrics group 8060-8069)
+    # Port selection: Using 8068 (DevOps/Metrics group 8060-8069, next available after 8067)
     config = DashboardConfig(
         name="project_backlog_dashboard",
         description="Maia Project Registry Dashboard - Interactive visualization of project backlog, status, priorities, and analytics with 34+ tracked projects",
         file_path=str(MAIA_ROOT / "claude/tools/project_management/project_backlog_dashboard.py"),
-        port=8067,
+        port=8068,
         host="127.0.0.1",
         auto_start=False,  # Can be started from hub
         health_endpoint="/",  # Streamlit default endpoint

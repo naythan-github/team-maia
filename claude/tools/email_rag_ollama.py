@@ -40,7 +40,7 @@ class EmailRAGOllama:
         # UFC-compliant path: keep RAG databases within repo structure
         default_path = os.path.join(
             os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
-            "data", "rag_databases", "email_rag_ollama"
+            "claude", "data", "rag_databases", "email_rag_ollama"
         )
         self.db_path = db_path or default_path
         os.makedirs(self.db_path, exist_ok=True)

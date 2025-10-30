@@ -57,18 +57,18 @@ open http://127.0.0.1:8100
 # Step 3: Find "Project Backlog Dashboard" in the hub UI
 # Click "Start" button next to the dashboard
 
-# Step 4: Dashboard will launch on port 8067
-# Click the link to access: http://127.0.0.1:8067
+# Step 4: Dashboard will launch on port 8068
+# Click the link to access: http://127.0.0.1:8068
 ```
 
 ### Option 2: Direct Launch (Development)
 
 ```bash
 # From MAIA root directory
-streamlit run claude/tools/project_management/project_backlog_dashboard.py --server.port=8067
+streamlit run claude/tools/project_management/project_backlog_dashboard.py --server.port=8068
 ```
 
-**Dashboard will open automatically in your browser at**: `http://127.0.0.1:8067`
+**Dashboard will open automatically in your browser at**: `http://127.0.0.1:8068`
 
 ### Option 3: Custom Port
 
@@ -262,11 +262,11 @@ python3 -c "import streamlit; print('Streamlit installed')"
 # Install if missing
 pip3 install streamlit
 
-# Check if port 8067 is available
-lsof -i :8067
+# Check if port 8068 is available
+lsof -i :8068
 
 # Kill process using port (if needed)
-kill -9 $(lsof -ti :8067)
+kill -9 $(lsof -ti :8068)
 ```
 
 ### Issue 2: Database Not Found
@@ -309,12 +309,12 @@ pwd  # Should be: /Users/naythandawe/git/maia
 
 ### Issue 4: Port Already in Use
 
-**Symptom**: "Port 8067 already in use" error
+**Symptom**: "Port 8068 already in use" error
 
 **Solutions**:
 ```bash
 # Find process using port
-lsof -i :8067
+lsof -i :8068
 
 # Kill the process
 kill -9 <PID>
@@ -349,12 +349,12 @@ ls -l claude/data/project_registry.db
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ User Browser                                                │
-│ http://127.0.0.1:8067                                       │
+│ http://127.0.0.1:8068                                       │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ Streamlit Server (Port 8067)                                │
+│ Streamlit Server (Port 8068)                                │
 │ - project_backlog_dashboard.py                              │
 │ - Render executive summary, status board, heatmap, analytics│
 │ - Cache: 60-second TTL for queries                          │
@@ -414,7 +414,7 @@ All paths relative to MAIA root: `/Users/naythandawe/git/maia`
 streamlit run claude/tools/project_management/project_backlog_dashboard.py
 
 # Launch on specific port
-streamlit run claude/tools/project_management/project_backlog_dashboard.py --server.port=8067
+streamlit run claude/tools/project_management/project_backlog_dashboard.py --server.port=8068
 
 # Launch in browser (opens automatically)
 streamlit run claude/tools/project_management/project_backlog_dashboard.py --server.headless=false
