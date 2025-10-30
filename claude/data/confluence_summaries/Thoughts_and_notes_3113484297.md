@@ -1,9 +1,127 @@
 # Thoughts and notes
 
 **URL**: /spaces/Orro/pages/3113484297/Thoughts+and+notes
-**Updated**: 2025-10-21T08:00:06.123026
+**Updated**: 2025-10-30T11:00:05.132098
 
 
+
+ 
+
+Review the root cause listed in TKT-Root Cause Category against the actual resolution and report on if the root cause seems accurate to you?
+
+Review how many times a ticket is handled and calculate the FCR rate
+
+Calculate for the FCR rate for each team member
+
+review the cloud teams and analyse the types of tickets that each team is taking, infer if there are difference or specialisations between the teams
+
+calculate the number of times each incident is handled and the list the team from best to worst
+
+ 
+
+Questions for Jaqi
+
+what are our SLAs now, where are they?
+
+Interested in knowing what channels are being used to contact us? New Query.
+
+Jono
+
+is there any api access to OTC at the moment?
+
+ 
+
+Tasks
+
+detailed service descriptions – check on previous doc
+
+create backlog and epics for managing the process
+
+MOST
+
+SOW’s, where are they, how are we building them, excel taks breakdown?
+
+Where do we want to store them?
+
+ 
+
+Tickets
+
+breakdown of type of tickets
+
+compare catergories from exports to rag’d inference
+
+alerts and automation opportunities
+
+volume of networking and collaboration/comms tickets (teams meeting rooms, calling/pbx related)
+
+using ticket information classify the level of tasks that team members are working on. The aim is to work out at what level the tasks they are working on is and if they are a low performer, on target or high performer.
+
+Remember timehseeting is not directly linked to the incident up and so is not enforce and is not a reliable means of measure at the moment. I will be requesting improvments to how time is tracked.
+
+PHI – what are we actually doing for them on their tickets
+
+ 
+
+Missing quality data
+
+ /Users/naythandawe/git/maia/claude/data/SERVICEDESK_QUALITY_DATA_ISSUE.md
+
+ 
+
+Breakdown
+
+Incident versus Request
+
+Breakdown per user, who is working on what
+
+Analysis incident and request support staff level, who is performing according to their level. Ticket volumes per future state support tier.
+
+Best customer feedback performer
+
+ 
+
+ 
+
+Maia
+
+Load SRE Agent and continue tier tracker dashboard project
+
+ 
+
+rohan@nh-it.com.au
+
+https://danielmiessler.com/blog/personal-ai-infrastructure
+
+ 
+
+nord
+
+ 
+
+"Load SRE Agent and continue tier tracker dashboard project"
+
+ 
+
+ 
+
+Paul O’Brian: follow up for acess for Trevour
+
+ 
+
+Kaseya: Complaicen and Goverance management reporting portal
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
 
  
 

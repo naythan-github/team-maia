@@ -94,7 +94,12 @@ class MeetingTranscriptionRAG:
             return
 
         self.enabled = True
-        self.db_path = db_path or os.path.expanduser("~/.maia/meeting_transcripts_rag")
+        # UFC-compliant path: keep RAG databases within repo structure
+        default_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "data", "rag_databases", "meeting_transcripts_rag"
+        )
+        self.db_path = db_path or default_path
         os.makedirs(self.db_path, exist_ok=True)
 
         # Initialize ChromaDB

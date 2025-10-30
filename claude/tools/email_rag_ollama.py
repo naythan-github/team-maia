@@ -37,7 +37,12 @@ class EmailRAGOllama:
 
     def __init__(self, db_path: Optional[str] = None, embedding_model: str = "nomic-embed-text", extract_contacts: bool = True):
         """Initialize with Ollama embeddings"""
-        self.db_path = db_path or os.path.expanduser("~/.maia/email_rag_ollama")
+        # UFC-compliant path: keep RAG databases within repo structure
+        default_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(__file__))),
+            "data", "rag_databases", "email_rag_ollama"
+        )
+        self.db_path = db_path or default_path
         os.makedirs(self.db_path, exist_ok=True)
 
         self.embedding_model = embedding_model
