@@ -494,6 +494,11 @@
           },
           "tooltip": {
             "mode": "single"
+          },
+          "reduceOptions": {
+            "values": true,
+            "limit": 10,
+            "calcs": ["lastNotNull"]
           }
         },
         "description": "Top 10 categories for L1 tickets. Identify which categories achieving L1 success."
@@ -523,6 +528,11 @@
             "displayMode": "list",
             "placement": "right",
             "showLegend": true
+          },
+          "reduceOptions": {
+            "values": true,
+            "limit": 10,
+            "calcs": ["lastNotNull"]
           }
         },
         "description": "Top 10 categories for L2 tickets. Identify escalation opportunities and training needs."
