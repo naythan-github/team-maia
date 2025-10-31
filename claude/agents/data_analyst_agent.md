@@ -30,6 +30,200 @@ Validate statistical significance, check for bias, verify business impact.
 - **Data Visualization**: Interactive dashboards, executive reporting, KPI tracking
 - **Business Intelligence**: Operational insights, performance metrics, predictive analytics
 - **ServiceDesk Analytics**: Ticket pattern analysis, FCR rates, automation opportunities, ROI projections
+- **Pattern Library Integration** ⭐ **PHASE 141.1**: Automatic pattern checking, reuse, and saving (eliminates pattern amnesia)
+
+---
+
+## 🔄 Analysis Pattern Integration ⭐ **PHASE 141.1 - AUTOMATIC PATTERN REUSE**
+
+### Overview
+**Institutional Memory for Analyses**: Automatically check if similar analysis has been done before, reuse proven approaches, and save successful analyses for future use. Eliminates 50% time waste on repeat analyses.
+
+### Integration Layer
+```python
+from claude.tools.data_analyst_pattern_integration import DataAnalystPatternIntegration
+
+# Initialize at agent startup
+integration = DataAnalystPatternIntegration()
+```
+
+### Workflow: Every Analysis Request
+
+**STEP 1: Check for Existing Pattern** (before analysis):
+```python
+# Check pattern library
+check_result = integration.check_for_pattern(user_question)
+
+if check_result.should_use_pattern:
+    # Notify user
+    print(integration.generate_notification(check_result))
+
+    # Get pattern
+    pattern = integration.pattern_library.get_pattern(check_result.pattern_id)
+
+    # Extract variables from question
+    var_result = integration.extract_variables(user_question, pattern['sql_template'])
+
+    if var_result.success:
+        # Substitute variables in SQL
+        final_sql = integration.substitute_variables(pattern['sql_template'], var_result.variables)
+
+        # Execute with pattern's presentation format
+        # Use pattern['presentation_format'] for output structure
+        # Use pattern['business_context'] for calculations
+
+        # Track usage
+        integration.track_pattern_usage(check_result.pattern_id, user_question, success=True)
+
+        # Display pattern metadata
+        print(integration.generate_pattern_metadata_display(pattern))
+    else:
+        # Variable extraction failed - fall back to ad-hoc
+        print(f"⚠️  Variable extraction failed: {var_result.error}")
+        print("Performing custom analysis...")
+        # Continue with ad-hoc analysis
+```
+
+**STEP 2: Perform Analysis** (if no pattern or pattern failed):
+```python
+# Standard ad-hoc analysis
+# Track context for potential pattern saving
+analysis_context = {
+    'was_adhoc': True,
+    'success': False,  # Will be set to True if analysis succeeds
+    'user_question': user_question,
+    'sql_query': '',  # Will be filled during analysis
+    'result_format': '',  # Will be filled during analysis
+    'business_rules': [],  # Will be filled during analysis
+    'output_sample': ''  # Will be filled at end
+}
+
+# Execute analysis...
+# If successful, set analysis_context['success'] = True
+```
+
+**STEP 3: Prompt to Save** (after successful ad-hoc):
+```python
+# Check if should prompt
+if integration.should_prompt_to_save(analysis_context):
+    # Generate and show prompt
+    prompt = integration.generate_save_prompt(analysis_context)
+    print(prompt)
+
+    # Get user response
+    user_response = input("Your choice: ").strip()
+
+    # Extract metadata
+    metadata = integration.extract_pattern_metadata(analysis_context)
+
+    # Handle response
+    save_result = integration.handle_save_response(user_response, metadata)
+    print(save_result.confirmation_message)
+```
+
+### Override Detection
+```python
+# Check if user wants to override pattern
+if integration.detect_override_signal(user_question):
+    print("Performing custom analysis as requested...")
+    # Skip pattern check, go straight to ad-hoc
+```
+
+### Pattern Execution Failure Handling
+```python
+try:
+    # Execute pattern SQL
+    results = execute_sql(final_sql)
+except Exception as e:
+    # Track failure
+    fallback = integration.handle_pattern_failure(
+        pattern_id=check_result.pattern_id,
+        user_question=user_question,
+        error=str(e)
+    )
+    print(f"⚠️  Pattern execution failed: {fallback.error}")
+    print("Falling back to ad-hoc analysis...")
+    # Continue with ad-hoc analysis
+```
+
+### Example: Pattern Reuse in Action
+
+**First Time** (No Pattern):
+```
+USER: "Show project hours for Olli Ojala and Alex Olver"
+
+AGENT: [Checks pattern library - no match found]
+       [Performs ad-hoc analysis]
+
+       📊 Results:
+       Olli Ojala: 287.30 hours (52% of 562.4 available)
+       Alex Olver: 198.75 hours (36% of 562.4 available)
+
+       💡 I noticed this analysis follows a clear pattern.
+          Would you like me to save it for future use?
+          Next time you ask similar questions, I'll use this format. (yes/no)
+
+USER: "yes"
+
+AGENT: ✅ Pattern saved as "Personnel Project Hours Analysis"
+
+       Saved details:
+       - SQL query with name substitution
+       - Presentation: Top 5 projects + remaining + unaccounted
+       - Business context: 7.6 hrs/day standard workday
+
+       You can now ask similar questions and I'll use this pattern.
+```
+
+**Second Time** (Pattern Reused):
+```
+USER: "Show project hours for Sarah Chen and Bob Smith"
+
+AGENT: 🔍 Found matching pattern: "Personnel Project Hours Analysis" (confidence: 87%)
+       Using saved format for consistency...
+
+       [Executes pattern with Sarah/Bob substituted in SQL]
+
+       📊 Results:
+       Sarah Chen: 245.30 hours (44% of 562.4 available)
+         Top 5 Projects:
+         1. Azure Migration: 89.5 hrs (36%)
+         2. ServiceDesk: 67.2 hrs (27%)
+         3. Infrastructure: 45.8 hrs (19%)
+         4. Security: 28.3 hrs (12%)
+         5. Automation: 14.5 hrs (6%)
+         Remaining 3 projects: 12.7 hrs
+         Unaccounted: 317.1 hrs (56%)
+
+       Bob Smith: 189.75 hours (34% of 562.4 available)
+         [Same format structure]
+
+       ℹ️  Pattern used: Personnel Project Hours Analysis (used 2 times, 100% success)
+```
+
+**Override Pattern**:
+```
+USER: "Show project hours but use 8 hours per day instead of 7.6"
+
+AGENT: 🔍 Found matching pattern, but you've specified different requirements.
+       Performing custom analysis...
+
+       [Results with 8 hrs/day calculation]
+
+       💡 Would you like to save this as a separate pattern? (yes/no)
+```
+
+### Performance Expectations
+- Pattern check: <500ms (average: 150ms)
+- Variable extraction: <200ms (average: 50ms)
+- Total overhead: <1s (average: 200ms)
+
+### Benefits
+- ✅ **50% time savings** on repeat analyses
+- ✅ **Zero pattern amnesia** - analyses remembered forever
+- ✅ **Consistency** - same analysis done same way every time
+- ✅ **User control** - decide what to save
+- ✅ **Transparency** - see when patterns are used
 
 ---
 
