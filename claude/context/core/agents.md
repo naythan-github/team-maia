@@ -82,20 +82,21 @@ The PagerDuty Specialist Agent provides expert incident management with Event In
 - **Model**: Claude Sonnet (Event Intelligence configuration, ML training validation, architecture decisions)
 - **Status**: ✅ Production Ready (2025-11-05)
 
-### **Phase 143 OpsGenie Specialist Agent** ⭐ **INCIDENT MANAGEMENT SPECIALIST**
-The OpsGenie Specialist Agent provides expert incident management, alerting optimization, and on-call scheduling for Atlassian OpsGenie platform:
+### **Phase 143 OpsGenie Specialist Agent** ⭐ **INCIDENT MANAGEMENT SPECIALIST** (Enhanced 2025-11-05)
+The OpsGenie Specialist Agent provides expert incident management, alerting optimization, on-call scheduling, AND platform migration export for Atlassian OpsGenie platform:
 - **Incident Management Architecture**: Service-aware incident grouping, workflow design for varying priorities, alert-to-incident routing, post-incident reviews
 - **Alerting Optimization**: Alert routing rules (by tags, priority, source, time), deduplication & noise reduction (entity-based grouping), alert enrichment (runbooks, dashboards), alert fatigue prevention (65-75% noise reduction achievable)
 - **On-Call Management**: Schedule design (fair rotations with override/swap), multi-level escalation policies, follow-the-sun coverage (24/7 across regions), on-call analytics (workload tracking, burnout prevention)
 - **Integration Architecture**: Monitoring tools (AWS CloudWatch, Datadog, Prometheus, Azure Monitor), collaboration platforms (Slack, Teams), ITSM integration (Jira Service Management, ServiceNow)
 - **Metrics & Continuous Improvement**: MTTA/MTTR tracking, alert effectiveness analysis (actionability rate, false positives), incident trend analysis, runbook effectiveness measurement
+- **Platform Migration & Export** ⭐ **NEW**: Configuration export (teams, users, schedules, escalation policies, integrations via OpsGenie API), OpsGenie → PagerDuty/JSM mapping documentation, gap analysis (feature comparison), parallel validation strategy (2-3 day migration + 2-4 week validation), OpsGenie EOL support (April 5, 2027 deadline)
 - **Research-Backed Best Practices**: Entity-based deduplication, time-window aggregation, alert dependencies, multi-level escalation (5/10/15 min delays), business hours coverage
-- **Real-World Optimization**: Alert fatigue reduction (312 → 85 alerts/day examples), follow-the-sun scheduling across 3 regions, AWS CloudWatch integration patterns
+- **Real-World Optimization**: Alert fatigue reduction (312 → 85 alerts/day examples), follow-the-sun scheduling across 3 regions, AWS CloudWatch integration patterns, complete migration export (12 teams, 15 schedules, 8 policies, 22 integrations)
 - **Business Impact**: 40-60% faster MTTA, 50%+ burnout risk reduction, 30-50% MTTR improvement, 11+ hours/day recovered from noise reduction
-- **v2.2 Enhanced Template**: 532 lines (52% optimized from initial draft), comprehensive few-shot examples (alert fatigue, on-call design), self-reflection checkpoint pattern
-- **Collaborations**: SRE Principal Engineer (SLO/SLI), PagerDuty Specialist (platform comparison/migration), Service Desk Manager (ITSM integration), DevOps Principal Architect (CI/CD integration), Security Specialist (security incidents)
-- **Model**: Claude Sonnet (complex routing logic and architecture decisions)
-- **Status**: ✅ Production Ready (2025-11-05)
+- **v2.2 Enhanced Template**: 896 lines (includes migration export capability), 3 comprehensive few-shot examples (alert fatigue, on-call design, PagerDuty migration export), self-reflection checkpoint pattern
+- **Collaborations**: **PagerDuty Specialist** (migration import, Event Intelligence) ⭐ **NEW**, SRE Principal Engineer (SLO/SLI), Service Desk Manager (ITSM integration), DevOps Principal Architect (CI/CD integration), Security Specialist (security incidents)
+- **Model**: Claude Sonnet (complex routing logic, architecture decisions, migration planning)
+- **Status**: ✅ Production Ready (2025-11-05) with Migration Export Capability
 
 ### **Phase 131 Asian Low-Sodium Cooking Agent** ⭐ **CULINARY SPECIALIST**
 The Asian Low-Sodium Cooking Agent provides specialized culinary consulting for sodium reduction in Asian cuisines while preserving authentic flavor profiles:

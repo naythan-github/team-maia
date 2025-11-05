@@ -160,21 +160,23 @@
 
 ---
 
-## 🚨 PHASE 143: OpsGenie Specialist Agent - Incident Management Expert (2025-11-05) ⭐ **PRODUCTION READY**
+## 🚨 PHASE 143: OpsGenie Specialist Agent - Incident Management Expert (2025-11-05) ⭐ **PRODUCTION READY** (Enhanced 2025-11-05)
 
 ### Achievement
-**New Agent Created**: Built comprehensive OpsGenie Specialist Agent v2.2 Enhanced (532 lines, 52% optimized from initial draft) providing expert incident management, alerting optimization, and on-call scheduling for Atlassian OpsGenie platform. Addresses critical capability gap in incident response infrastructure and alert fatigue reduction.
+**New Agent Created**: Built comprehensive OpsGenie Specialist Agent v2.2 Enhanced (896 lines, includes migration export capability) providing expert incident management, alerting optimization, on-call scheduling, AND OpsGenie → PagerDuty migration export for Atlassian OpsGenie platform. Addresses critical capability gap in incident response infrastructure, alert fatigue reduction, and OpsGenie EOL migration (April 5, 2027 deadline).
+
+**Enhancement Added** (2025-11-05): Added comprehensive platform migration export capability with Example 3 (OpsGenie → PagerDuty configuration export, 350 lines). Enables complete configuration export (teams, users, schedules, escalation policies, integrations), OpsGenie → PagerDuty mapping documentation, gap analysis, and parallel validation strategy for customers migrating before April 5, 2027 OpsGenie EOL.
 
 ### Problem Solved
-**Capability Gap**: No specialized expertise for OpsGenie platform configuration, alert routing optimization, or on-call schedule design. Teams suffer from alert fatigue (300+ alerts/day common), inefficient escalation policies, and unsustainable on-call rotations leading to burnout.
+**Capability Gap**: No specialized expertise for OpsGenie platform configuration, alert routing optimization, on-call schedule design, AND no migration export capability for OpsGenie EOL (April 5, 2027). Teams suffer from alert fatigue (300+ alerts/day common), inefficient escalation policies, unsustainable on-call rotations leading to burnout, AND need to migrate to PagerDuty or JSM before OpsGenie sunset.
 
 ### Deliverables
 
-**Agent File**: `claude/agents/opsgenie_specialist_agent.md` (532 lines)
-- ✅ v2.2 Enhanced template pattern (optimized from 1,150 lines initial draft)
+**Agent File**: `claude/agents/opsgenie_specialist_agent.md` (896 lines)
+- ✅ v2.2 Enhanced template pattern (optimized from 1,150 lines initial draft, migration added)
 - ✅ 4 core behavior principles with self-reflection checkpoint
-- ✅ 5 key commands (architecture design, alert routing, on-call schedules, monitoring integration, incident playbooks)
-- ✅ 2 comprehensive few-shot examples (alert fatigue reduction, follow-the-sun coverage)
+- ✅ 6 key commands (architecture design, alert routing, on-call schedules, monitoring integration, incident playbooks, **migration export** ⭐ **NEW**)
+- ✅ 3 comprehensive few-shot examples (alert fatigue reduction, follow-the-sun coverage, **PagerDuty migration export** ⭐ **NEW**)
 - ✅ Research-backed OpsGenie best practices (Atlassian documentation, 2024-2025 standards)
 - ✅ Explicit handoff patterns (SRE, Service Desk Manager, DevOps, Security agents)
 
