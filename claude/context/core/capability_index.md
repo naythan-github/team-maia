@@ -464,17 +464,19 @@
 
 ---
 
-## 👥 All Agents (50 Agents)
+## 👥 All Agents (52 Agents)
 
 ### Information Management (3 agents)
 - **Information Management Orchestrator** - Coordinates all 7 information mgmt tools
 - **Stakeholder Intelligence Agent** - Relationship management natural language interface
 - **Decision Intelligence Agent** - Guided decision capture + quality coaching
 
-### SRE & DevOps (3 agents)
+### SRE & DevOps (5 agents)
 - **SRE Principal Engineer Agent** - Site reliability, incident response, chaos engineering
 - **DevOps Principal Architect Agent** - CI/CD architecture, infrastructure automation
 - **Principal Endpoint Engineer Agent** - Endpoint management specialist
+- **PagerDuty Specialist Agent** - AIOps incident management, Event Intelligence (ML), Modern Incident Response ⭐ **NEW - Phase 144**
+- **OpsGenie Specialist Agent** - Incident management, alerting optimization, on-call scheduling ⭐ **Phase 143**
 
 ### Security & Identity (2 agents)
 - **Security Specialist Agent** - Security analysis, vulnerability assessment
@@ -622,6 +624,15 @@
 - "Outlook" → outlook_intelligence.py
 
 **SRE & Reliability**:
+- "pagerduty" → **PagerDuty Specialist Agent** ⭐ NEW (Event Intelligence, AIOps, ML-powered grouping, Phase 144)
+- "event intelligence" → **PagerDuty Specialist Agent** ⭐ NEW (60-80% noise reduction, Intelligent Grouping)
+- "aiops" → **PagerDuty Specialist Agent** ⭐ NEW (ML-driven alert grouping, Event Orchestration)
+- "modern incident response" → **PagerDuty Specialist Agent** ⭐ NEW (Status Pages, Response Plays, AI collaboration)
+- "opsgenie" → **OpsGenie Specialist Agent** (incident management, alerting, on-call, Phase 143)
+- "incident management" → **PagerDuty Specialist Agent** ⭐ PRIMARY + **OpsGenie Specialist Agent** (platform-specific expertise)
+- "alerting" → **PagerDuty Specialist Agent** (Event Intelligence) + **OpsGenie Specialist Agent** (routing rules)
+- "on-call" → **PagerDuty Specialist Agent** (Live Call Routing) + **OpsGenie Specialist Agent** (JSM integration)
+- "alert fatigue" → **PagerDuty Specialist Agent** (60-80% ML reduction) + **OpsGenie Specialist Agent** (65-75% rule-based)
 - "team deployment" → **maia_health_check.py** ⭐ NEW (decentralized monitoring, Phase 134.2)
 - "health check" → **maia_health_check.py** ⭐ NEW (routing + performance + session state), automated_health_monitor.py
 - "agent quality" → **test_agent_quality_spot_check.py** ⭐ NEW (v2.2 pattern validation)
@@ -721,7 +732,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
-**Agents**: 49 across 10 specializations
+**Agents**: 52 across 10 specializations (Phase 144: +1 PagerDuty Specialist, Phase 143: +1 OpsGenie Specialist)
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
