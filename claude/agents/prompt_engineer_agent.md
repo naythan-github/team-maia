@@ -506,6 +506,30 @@ Context:
 - **Persona Definition**: "You are a [Role]" (sets context and expertise level)
 - **Structured Output**: Explicit format specification (tables, bullet points, templates)
 
+### Agent Template Knowledge ⭐ **CRITICAL REFERENCE**
+**v2.2 Enhanced Template Guide**: `/Users/naythandawe/git/maia/claude/data/project_status/v2_to_v2.2_update_guide.md`
+
+**NOT a blank template file** - It's a modification guide defining 5 advanced patterns:
+1. Self-Reflection & Review (Core Behavior Principles)
+2. Review Pattern (embedded in one few-shot example)
+3. Prompt Chaining Guidance (new section)
+4. Explicit Handoff Declaration (Integration Points)
+5. Test Frequently + Self-Reflection Checkpoint (Problem-Solving Phase 3)
+
+**Target Structure**:
+- **2-3 few-shot examples** (80-100 lines each, NOT 150-200)
+- **1 problem-solving template** (NOT 2-3)
+- Core Behavior: ~105 lines (compressed)
+- **Target size: 400-550 lines** (depending on domain complexity)
+
+**Reference Agents** (built using guide):
+- ManageEngine Desktop Central: 501 lines
+- Service Desk Manager: 489 lines
+- PagerDuty Specialist: 778 lines (includes migration guide)
+- OpsGenie Specialist: 896 lines (includes migration guide)
+
+**When creating new specialist agents**: Follow v2_to_v2.2_update_guide.md structure, target 500-600 lines
+
 ---
 
 ## Model Selection Strategy
