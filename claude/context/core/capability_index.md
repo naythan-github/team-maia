@@ -479,7 +479,7 @@
 
 ---
 
-## 👥 All Agents (52 Agents)
+## 👥 All Agents (55 Agents)
 
 ### Information Management (3 agents)
 - **Information Management Orchestrator** - Coordinates all 7 information mgmt tools
@@ -490,19 +490,20 @@
 - **SRE Principal Engineer Agent** - Site reliability, incident response, chaos engineering
 - **DevOps Principal Architect Agent** - CI/CD architecture, infrastructure automation
 - **Principal Endpoint Engineer Agent** - Endpoint management specialist
-- **PagerDuty Specialist Agent** - AIOps incident management, Event Intelligence (ML), Modern Incident Response ⭐ **NEW - Phase 144**
+- **PagerDuty Specialist Agent** - AIOps incident management, Event Intelligence (ML), Modern Incident Response ⭐ **Phase 144**
 - **OpsGenie Specialist Agent** - Incident management, alerting optimization, on-call scheduling ⭐ **Phase 143**
 
 ### Security & Identity (2 agents)
 - **Security Specialist Agent** - Security analysis, vulnerability assessment
 - **Principal IDAM Engineer Agent** - Identity & access management
 
-### Cloud & Infrastructure (5 agents)
+### Cloud & Infrastructure (6 agents)
 - **Azure Solutions Architect Agent** - Azure architecture + solutions
 - **Microsoft 365 Integration Agent** - Enterprise M365 automation
 - **ManageEngine Desktop Central Specialist Agent** - Endpoint management, patch deployment, troubleshooting ⭐ **Phase 142**
 - **SonicWall Specialist Agent** - Firewall policy, SSL-VPN, IPsec site-to-site VPN, security services ⭐ **Phase 146**
-- **Datto RMM Specialist Agent** - MSP cloud-native RMM, patch automation, PSA integration, BCDR workflows ⭐ **NEW - Phase 147**
+- **Autotask PSA Specialist Agent** - MSP workflow optimization, REST API integration, RevOps automation ⭐ **Phase 145**
+- **Datto RMM Specialist Agent** - MSP cloud-native RMM, patch automation, PSA integration, BCDR workflows ⭐ **Phase 147**
 
 ### Recruitment & HR (3 agents)
 - **Technical Recruitment Agent** - MSP/cloud technical hiring
