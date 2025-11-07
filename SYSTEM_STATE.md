@@ -1,8 +1,112 @@
 # Maia System State
 
 **Last Updated**: 2025-11-07
-**Current Phase**: Phase 149 - SonicWall SMA 500 to Azure VPN Gateway Migration Toolkit
-**Status**: ✅ DISCOVERY TOOL COMPLETE - API mapping script ready for deployment
+**Current Phase**: Phase 150 - Agent Continuity & Progress Preservation Protocol
+**Status**: ✅ COMPLETE - SRE agent continuity guidance updated
+
+---
+
+## 🚨 PHASE 150: Agent Continuity & Progress Preservation Protocol (2025-11-07) ⭐ **PROTOCOL ENHANCEMENT**
+
+### Achievement
+Updated TDD Development Protocol and SRE Principal Engineer Agent with **mandatory agent reload instructions** and **incremental progress saving** to prevent base Maia takeovers during multi-phase implementations, especially after context compression.
+
+### Problem Solved
+**Historical Issue**: SRE agent context lost at end of phases → base Maia takes over → implementation loses SRE reliability expertise and systematic approach.
+
+**Root Causes**:
+1. No explicit agent reload commands in implementation plans
+2. Progress saved only at end (not incrementally)
+3. Agent context assumed to persist across context compression
+4. No warning signs when base Maia takes over
+
+### Solution Implemented
+
+**1. SRE Agent Updates** (`claude/agents/sre_principal_engineer_agent.md`)
+- Added **Section 1a: Agent Continuity & Progress Preservation**
+- **Agent Reload Protocol**:
+  - EVERY session start: Announce "I'm the SRE Principal Engineer Agent..."
+  - Context compression: Explicit reload trigger
+  - Multi-phase: Reload at START of each phase
+- **Incremental Progress Saving**:
+  - Location: `claude/data/project_status/active/{PROJECT}_progress.md`
+  - Frequency: After EACH phase (30-60 min intervals)
+  - Content: Completed steps, current status, next steps, agent context
+- **Base Maia Takeover Prevention**: Recognition triggers and recovery commands
+
+**2. TDD Protocol Updates** (`claude/context/core/tdd_development_protocol.md`)
+- Added **🚨 Agent Continuity & Progress Preservation** section
+- **Mandatory Practices**:
+  1. Agent reload instructions in ALL implementation plans (example template)
+  2. Incremental progress saving (format and frequency)
+  3. Session start protocol (read progress.md, reload agent, confirm identity)
+  4. Base Maia takeover detection and recovery
+- **Updated File Structure**: Added `{PROJECT}_progress.md` to standard structure
+- **New Success Metrics**: Agent continuity, progress preservation, incremental saves
+- **New Quality Gates**: Progress Gate (#5), Agent Continuity Gate (#6)
+- **New Risk Mitigations**: Context loss prevention, progress loss prevention, takeover prevention
+
+### Implementation Plan Template (NEW)
+```markdown
+## Phase 1: [Phase Name]
+**AGENT**: Load SRE Principal Engineer Agent + [Domain Specialist]
+**Command**: "load sre_principal_engineer_agent"
+
+[Phase 1 steps...]
+
+**Save Progress**: Update {PROJECT}_progress.md with Phase 1 completion
+
+## Phase 2: [Next Phase]
+**AGENT RELOAD**: "load sre_principal_engineer_agent" (don't assume persistence)
+
+[Phase 2 steps...]
+```
+
+### Progress Tracking Template (NEW)
+```markdown
+# {PROJECT} - Progress Tracker
+
+**Last Updated**: [timestamp]
+**Active Agents**: SRE Principal Engineer Agent + [Domain Specialist]
+
+## Completed Phases
+- [x] Phase 1: [Name] (timestamp)
+  - [Key deliverables]
+  - Decision: [decisions made]
+
+## Current Phase
+- [ ] Phase 2: [Name] (IN PROGRESS)
+  - Status: [percentage]%
+  - Next: [next step]
+
+## Session Resumption
+**Command**: "load sre_principal_engineer_agent"
+**Context**: Working on {PROJECT}, Phase X
+**Next Step**: [specific next action]
+```
+
+### Files Modified
+- `claude/agents/sre_principal_engineer_agent.md` (+44 lines)
+- `claude/context/core/tdd_development_protocol.md` (+77 lines)
+- `SYSTEM_STATE.md` (this entry)
+
+### Business Impact
+**Prevents**:
+- Loss of SRE reliability expertise mid-project
+- Progress loss after context compression or session breaks
+- Requirement to restart phases due to lost context
+- Base Maia takeover degrading implementation quality
+
+**Enables**:
+- Seamless multi-phase project continuation
+- Consistent agent expertise throughout project lifecycle
+- Recovery after interruptions with full context
+- Quality assurance through SRE review at all phases
+
+### User Request Context
+User observed: "There is a history of you getting to the end of a phase and then Maia taking over. Especially after a context compression."
+
+**Response**: Implemented explicit agent reload protocol + incremental progress saving to maintain SRE agent continuity across all project phases.
 
 ---
 

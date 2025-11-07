@@ -159,6 +159,71 @@ MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift
 - Before implementing: "Let me verify against our test suite"
 - Regular checkpoint: "Are we still aligned with requirements?"
 
+### 🚨 Agent Continuity & Progress Preservation 🚨
+
+**CRITICAL**: Multi-phase projects risk losing agent context after:
+- Context compression (long sessions)
+- Session breaks
+- Phase transitions
+- Base Maia taking over without agent reload
+
+**MANDATORY PRACTICES**:
+
+1. **Agent Reload Instructions in ALL Implementation Plans**:
+   ```markdown
+   ## Phase 1: Requirements Discovery
+   **AGENT**: Load SRE Principal Engineer Agent + [Domain Specialist]
+   **Command**: "load sre_principal_engineer_agent"
+
+   [Phase 1 steps...]
+
+   **Save Progress**: Update {PROJECT}_progress.md with Phase 1 completion
+
+   ## Phase 2: Test Design
+   **AGENT RELOAD**: "load sre_principal_engineer_agent" (don't assume persistence)
+
+   [Phase 2 steps...]
+   ```
+
+2. **Incremental Progress Saving**:
+   - **Location**: `claude/data/project_status/active/{PROJECT}_progress.md`
+   - **Frequency**: After EACH phase completion (not just at end)
+   - **Trigger**: Every 30-60 minutes of work OR natural breakpoints
+   - **Content**:
+     ```markdown
+     # {PROJECT} - Progress Tracker
+
+     **Last Updated**: [timestamp]
+     **Active Agents**: SRE Principal Engineer Agent + [Domain Specialist]
+
+     ## Completed Phases
+     - [x] Phase 1: Requirements Discovery (2025-11-07 14:30)
+       - Created requirements.md
+       - Confirmed with user
+       - Decision: [key decisions made]
+
+     ## Current Phase
+     - [ ] Phase 2: Test Design (IN PROGRESS)
+       - Status: 60% complete
+       - Next: Write remaining edge case tests
+
+     ## Session Resumption
+     **Command**: "load sre_principal_engineer_agent"
+     **Context**: Working on {PROJECT}, Phase 2 test design
+     **Next Step**: Complete edge case tests, then proceed to implementation
+     ```
+
+3. **Session Start Protocol**:
+   - Read `{PROJECT}_progress.md` FIRST
+   - Reload agent context: "load sre_principal_engineer_agent"
+   - Confirm identity: "I'm the SRE Principal Engineer Agent, resuming..."
+   - Continue from documented next step
+
+4. **Base Maia Takeover Detection**:
+   - **Warning sign**: Response doesn't start with agent identity
+   - **Recovery**: User says "reload SRE agent" or "load sre_principal_engineer_agent"
+   - **Prevention**: Explicit reload commands at phase transitions
+
 ### Key Phrases
 - **"Requirements complete"** - User signal to proceed to test phase
 - **"Check requirements"** - Prompts re-reading of requirements.md
@@ -169,9 +234,12 @@ MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift
 ```
 project_name/
 ├── requirements.md          # Living requirements document
-├── test_requirements.py     # Tests encoding all requirements  
+├── test_requirements.py     # Tests encoding all requirements
 ├── implementation.py        # Actual implementation
 └── README.md               # Project overview
+
+claude/data/project_status/active/
+└── {PROJECT}_progress.md    # Incremental progress tracking (multi-phase projects)
 ```
 
 ## Success Metrics
@@ -179,12 +247,17 @@ project_name/
 - All initial tests remain valid (no deletion due to misunderstanding)
 - Requirements document stays current with implementation
 - No "oh, I forgot to mention" moments after test creation
+- **Agent continuity maintained** (no base Maia takeovers mid-project)
+- **Progress preserved** (can resume after any interruption)
+- **Incremental saves completed** (progress.md updated after each phase)
 
 ## Quality Gates
 1. **Requirements Gate**: No tests until "requirements complete" confirmation
 2. **Test Gate**: No implementation until all tests written
 3. **Implementation Gate**: No feature complete until all tests pass
 4. **Documentation Gate**: Requirements.md updated with any changes
+5. **Progress Gate**: Progress saved after EACH phase (not just at end)
+6. **Agent Continuity Gate**: Agent identity confirmed at phase transitions
 
 ## Risk Mitigation
 - Active probing during discovery phase
@@ -192,6 +265,9 @@ project_name/
 - Explicit confirmation checkpoints
 - Regular requirements verification
 - Test-first discipline enforcement
+- **Agent context loss prevention** (explicit reload commands in plans)
+- **Progress loss prevention** (incremental saves after each phase)
+- **Base Maia takeover prevention** (identity confirmation at transitions)
 
 ## Why This Works
 1. **Persistent Documentation**: Requirements survive context resets
@@ -227,6 +303,7 @@ project_name/
 ⚠️ **Config with logic**: If config changes affect behavior → TDD required
 
 ---
-*Last Updated: 2025-10-19*
+*Last Updated: 2025-11-07*
 *Status: MANDATORY Protocol - Enforced for ALL Development*
 *Agent Pairing: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)*
+*Agent Continuity: Explicit reload commands + incremental progress saving (ALWAYS)*
