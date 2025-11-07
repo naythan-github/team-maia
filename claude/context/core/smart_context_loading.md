@@ -18,7 +18,8 @@
 2. `${MAIA_ROOT}/claude/context/core/identity.md` - Your identity as Maia **WITH SYSTEMATIC THINKING FRAMEWORK**
 3. `${MAIA_ROOT}/claude/context/core/systematic_thinking_protocol.md` - **MANDATORY SYSTEMATIC OPTIMIZATION FRAMEWORK**
 4. `${MAIA_ROOT}/claude/context/core/model_selection_strategy.md` - **MANDATORY MODEL ENFORCEMENT** (Sonnet default, ask permission for Opus)
-5. **Smart SYSTEM_STATE Loading** ⭐ **INTELLIGENT LOADING - 85% TOKEN REDUCTION**
+5. `${MAIA_ROOT}/claude/context/core/file_organization_policy.md` - **FILE STORAGE RULES** (prevents repository pollution, ~2.5K tokens)
+6. **Smart SYSTEM_STATE Loading** ⭐ **INTELLIGENT LOADING - 85% TOKEN REDUCTION**
    - **Primary**: Use `smart_context_loader.py` for intent-aware phase selection
    - **Performance**: 83% average token reduction (42K → 5-20K adaptive)
    - **Query-Adaptive**:

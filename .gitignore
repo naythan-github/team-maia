@@ -54,6 +54,19 @@ claude/data/context_state.json
 claude/data/*.db
 *.sqlite
 
+# Operational work outputs (should be in ~/work_projects/)
+claude/data/*ServiceDesk*.xlsx
+claude/data/*ServiceDesk*.csv
+claude/data/*Infrastructure*.xlsx
+claude/data/*Infrastructure*.csv
+claude/data/*Lance_Letran*
+claude/data/L2_*
+claude/data/servicedesk_tickets.db
+
+# Temporary analysis files
+claude/data/*_Analysis_*.xlsx
+claude/data/*_Summary_*.md
+
 # Session and analysis artifacts (can get very large)
 claude/context/session/governance_analysis/dependency_scan_*.json
 
