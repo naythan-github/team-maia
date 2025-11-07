@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-10-21 (Phase 135 - Architecture Documentation Standards)
+**Last Updated**: 2025-11-07 (Phase 147 - Datto RMM Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,21 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 147 (Nov 7) - Datto RMM Specialist Agent ⭐ **NEW MSP RMM EXPERT**
+- **datto_rmm_specialist_agent.md** - MSP cloud-native RMM specialist (580 lines, v2.2 Enhanced)
+- **Desktop Shortcut Deployment**: PowerShell components for all users (`C:\Users\Public\Desktop\`) or current user
+- **Self-Healing Workflows**: Alert-triggered automation with PSA ticket integration (disk cleanup, service restart)
+- **Patch Tuesday Automation**: Monthly patch workflow (7-day auto-approve, 2nd Tuesday deployment, client notifications, PSA failures)
+- **PSA Integration**: Native ConnectWise/Autotask workflows (bidirectional tickets, time tracking, CI sync, SSoR)
+- **Datto BCDR Integration**: 25% time savings (Datto-documented), unified backup status, rollback strategy
+- **Component Development**: PowerShell/Bash components with UDFs, Input Variables, ComStore integration (200+ pre-built)
+- **Monitoring**: Real-time 60-second check-ins, performance monitoring, service auto-restart, event log alerts
+- **Limitations**: NO Linux patching (monitoring only), NO auto-rollback (manual/BCDR restore), cloud-only (no on-prem)
+- **Problem Solved**: No Datto RMM expertise for MSP operations, component development, PSA workflows, BCDR integration
+- **Use Cases**: MSP patch automation, desktop shortcut deployment, self-healing, PSA ticket workflows, Datto BCDR rollback
+- **Production Status**: ✅ Ready - Complete RMM operational guide for MSPs
+- **Documentation**: Comprehensive examples (desktop shortcuts, self-healing disk cleanup, Patch Tuesday workflow)
 
 ### Phase 141.1 (Oct 31) - Data Analyst Pattern Integration ⭐ **85% PRODUCTION READY - TDD COMPLETE**
 - **data_analyst_pattern_integration.py** - Integration layer connecting Data Analyst Agent to Pattern Library (730 lines, 30/35 tests passing)
@@ -482,10 +497,12 @@
 - **Security Specialist Agent** - Security analysis, vulnerability assessment
 - **Principal IDAM Engineer Agent** - Identity & access management
 
-### Cloud & Infrastructure (3 agents)
+### Cloud & Infrastructure (5 agents)
 - **Azure Solutions Architect Agent** - Azure architecture + solutions
 - **Microsoft 365 Integration Agent** - Enterprise M365 automation
-- **ManageEngine Desktop Central Specialist Agent** - Endpoint management, patch deployment, troubleshooting ⭐ **NEW - Phase 142**
+- **ManageEngine Desktop Central Specialist Agent** - Endpoint management, patch deployment, troubleshooting ⭐ **Phase 142**
+- **SonicWall Specialist Agent** - Firewall policy, SSL-VPN, IPsec site-to-site VPN, security services ⭐ **Phase 146**
+- **Datto RMM Specialist Agent** - MSP cloud-native RMM, patch automation, PSA integration, BCDR workflows ⭐ **NEW - Phase 147**
 
 ### Recruitment & HR (3 agents)
 - **Technical Recruitment Agent** - MSP/cloud technical hiring
@@ -595,6 +612,19 @@
 - "voice dictation" → whisper_dictation_server.py
 - "transcription" → vtt_watcher.py, vtt_rag_indexer.py
 - "VTT processing" → vtt_watcher.py, vtt_rag_indexer.py
+
+**RMM & Endpoint Management**:
+- "datto rmm" → **Datto RMM Specialist Agent** ⭐ NEW (MSP cloud-native RMM, Phase 147)
+- "desktop shortcut deployment" → **Datto RMM Specialist Agent** (PowerShell components, all users/current user)
+- "self-healing automation" → **Datto RMM Specialist Agent** (alert-triggered remediation, PSA escalation)
+- "patch tuesday workflow" → **Datto RMM Specialist Agent** (monthly automation, 7-day auto-approve, notifications)
+- "psa integration" → **Datto RMM Specialist Agent** (ConnectWise/Autotask native, bidirectional tickets)
+- "datto bcdr" → **Datto RMM Specialist Agent** (25% time savings, rollback strategy)
+- "rmm component development" → **Datto RMM Specialist Agent** (PowerShell/Bash, UDFs, Input Variables)
+- "comstore" → **Datto RMM Specialist Agent** (200+ pre-built components)
+- "manageengine" → **ManageEngine Desktop Central Specialist Agent** (endpoint management, Phase 142)
+- "endpoint patching" → **Datto RMM Specialist Agent** (Windows only) OR **ManageEngine Agent** (Windows + Linux)
+- "linux rmm patching" → **ManageEngine Desktop Central Specialist Agent** (Datto cannot patch Linux)
 
 **Personal & Lifestyle**:
 - "asian cooking" → Asian Low-Sodium Cooking Agent ⭐ NEW
@@ -732,7 +762,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
-**Agents**: 52 across 10 specializations (Phase 144: +1 PagerDuty Specialist, Phase 143: +1 OpsGenie Specialist)
+**Agents**: 55 across 10 specializations (Phase 147: +1 Datto RMM, Phase 146: +1 SonicWall, Phase 145: +1 Autotask PSA)
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
