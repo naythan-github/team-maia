@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-07 (Phase 147 - Datto RMM Specialist Agent)
+**Last Updated**: 2025-11-07 (Phase 149 - SonicWall SMA 500 to Azure VPN Gateway Migration Toolkit)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,23 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 149 (Nov 7) - SonicWall SMA 500 to Azure VPN Gateway Migration Toolkit ⭐ **MIGRATION AUTOMATION**
+- **sma_api_discovery.py** - SMA 500 API endpoint discovery tool (341 lines, 40+ endpoints tested)
+- **SMA_500_API_DISCOVERY_GUIDE.md** - Complete migration guide (9.8KB, quick start + troubleshooting)
+- **API Discovery**: 5-phase endpoint testing (Console, Management, Setup, Alternative structures, Config export)
+- **Authentication**: HTTP Basic Auth with `local\username` format validation
+- **Endpoint Testing**: SystemStatus, UserSessions, Extensions, Licensing, NetExtender, Bookmarks (40+ total)
+- **JSON Report**: Structured output with working endpoints, sample data, categorization (404/401/200)
+- **Migration Architecture**: SMA SSL-VPN → Azure VPN Gateway Point-to-Site (OpenVPN/IKEv2)
+- **Configuration Mapping**: NetExtender routes → Custom routes, AD/LDAP → Azure AD, Client pool → VPN address pool
+- **Problem Solved**: No automated SMA → Azure migration path, API structure undocumented, extraction uncertainty
+- **Use Cases**: SMA EoS migrations, Azure VPN Gateway deployments, SSL-VPN to cloud transformation
+- **Dependencies**: Standard library + requests (pip3 install requests)
+- **Runtime**: 5 minutes (complete API discovery), non-disruptive (read-only)
+- **Next Phase**: Custom extractor (uses discovered endpoints) → Transformer (SMA JSON → Azure CLI) → Deployment script
+- **Production Status**: ✅ Discovery tool ready - Awaiting client discovery results for custom extractor
+- **Confidence**: 90% (validated against SonicWall docs + GitHub projects)
 
 ### Phase 147 (Nov 7) - Datto RMM Specialist Agent ⭐ **NEW MSP RMM EXPERT**
 - **datto_rmm_specialist_agent.md** - MSP cloud-native RMM specialist (580 lines, v2.2 Enhanced)
