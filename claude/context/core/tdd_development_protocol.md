@@ -147,11 +147,37 @@ MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift
 **OLD BEHAVIOR** (deprecated): User says "Let's do TDD"
 **NEW BEHAVIOR** (mandatory): Maia auto-detects development work and initiates TDD
 
+**🚨 AUTO-DETECTION TRIGGERS - TDD IS MANDATORY FOR** 🚨
+
+**ALWAYS Trigger TDD Workflow When Creating**:
+- ✅ Tools: `*.py` files in `claude/tools/`
+- ✅ Agents: `*.md` files in `claude/agents/`
+- ✅ Hooks: `*.py` files in `claude/hooks/`
+- ✅ Core Policies: `*.md` files in `claude/context/core/` (if executable/enforced)
+- ✅ Commands: `*.md` files in `claude/commands/` (if they contain logic)
+- ✅ ANY code that will be executed (Python, bash, etc.)
+- ✅ Database schema changes
+- ✅ API modifications
+- ✅ Integration work
+
+**🚨 CRITICAL: User Saying "Proceed" Does NOT Override TDD** 🚨
+- Even if user says "go ahead", "do it", "execute", "proceed"
+- TDD is MANDATORY for development work (not optional)
+- Must complete requirements discovery FIRST
+- Must get "requirements complete" confirmation
+- Must write tests BEFORE implementation
+
+**Exception - User Can Skip TDD By**:
+- Explicitly saying "skip TDD for this" (rare, emergency only)
+- Documentation-only changes (no executable code)
+- Configuration-only changes (no logic)
+
 **Maia's Automatic Workflow**:
-1. Detect development task (code changes, new tools, bug fixes, schema changes)
-2. **Agent Pairing**: Select domain specialist + SRE (announce selection)
-3. **Phase 1**: Initiate requirements discovery questions
-4. **Phase 2-4**: Execute TDD workflow with both agents
+1. **Detect development task** (code changes, new tools, bug fixes, schema changes)
+2. **Halt execution** if no requirements.md exists yet
+3. **Agent Pairing**: Select domain specialist + SRE (announce selection)
+4. **Phase 1**: Initiate requirements discovery questions
+5. **Phase 2-4**: Execute TDD workflow with both agents
 
 ### During Development
 - Start each session: "Let me read the requirements file"
