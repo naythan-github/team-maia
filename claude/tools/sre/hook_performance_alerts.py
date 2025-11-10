@@ -31,7 +31,7 @@ from dataclasses import dataclass
 MAIA_ROOT = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
 
-DB_PATH = MAIA_ROOT / "performance_metrics.db"  # Profiler creates DB in maia root
+DB_PATH = MAIA_ROOT / "claude" / "data" / "databases" / "system" / "performance_metrics.db"
 
 
 @dataclass

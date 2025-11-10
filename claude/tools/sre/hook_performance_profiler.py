@@ -17,7 +17,7 @@ class HookPerformanceProfiler:
 
     def __init__(self):
         self.maia_root = Path(__file__).resolve().parents[3]
-        self.db_path = self.maia_root / "performance_metrics.db"
+        self.db_path = self.maia_root / "claude" / "data" / "databases" / "system" / "performance_metrics.db"
         self.hook_path = self.maia_root / "claude" / "hooks" / "user-prompt-submit"
         self._init_database()
 

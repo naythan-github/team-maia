@@ -34,7 +34,7 @@ app.config['JSON_SORT_KEYS'] = False
 
 # Dashboard configuration
 DASHBOARD_PORT = 8067
-DB_PATH = MAIA_ROOT / "performance_metrics.db"  # Profiler creates DB in maia root
+DB_PATH = MAIA_ROOT / "claude" / "data" / "databases" / "system" / "performance_metrics.db"
 
 # SLO thresholds
 SLO_THRESHOLDS = {
