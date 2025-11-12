@@ -31,7 +31,9 @@ def get_staged_files():
             text=True,
             check=True
         )
-        return [f for f in result.stdout.strip().split('\n') if f]
+        files = [f for f in result.stdout.strip().split('\n') if f]
+        # Strip workspace prefix (e.g., 'maia/') if present
+        return [f.split('/', 1)[1] if '/' in f and not f.startswith('claude/') and not f.startswith('tests/') else f for f in files]
     except subprocess.CalledProcessError:
         return []
 
