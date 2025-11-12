@@ -2,7 +2,7 @@
 
 **Agent**: SRE Principal Engineer Agent
 **Started**: 2025-11-09
-**Status**: IN PROGRESS (40% complete)
+**Status**: IN PROGRESS (40% complete) + **ENFORCEMENT ACTIVE** ✅
 
 ---
 
@@ -381,3 +381,39 @@ To: `claude/data/project_status/archive/2025-Q3/`
 
 **Last Updated**: 2025-11-09 (Session 1)
 **Next Update**: After Priority 1 completion
+
+---
+
+## 🔒 ENFORCEMENT ACTIVATED (2025-11-12)
+
+### Pre-Commit Hook Status: ✅ **ACTIVE**
+
+**Hook Location**: `/Users/naythandawe/git/.git/hooks/pre-commit` (composite hook)
+
+**Components**:
+1. **Phase 127**: Hook performance regression testing
+2. **Phase 151**: File organization policy enforcement ← NEW
+
+**What It Blocks**:
+- ✅ Work outputs in Maia repo (ServiceDesk, Infrastructure patterns)
+- ✅ Files >10 MB (except rag_databases/)
+- ✅ Root directory pollution (only 4 files allowed)
+- ✅ Databases outside claude/data/databases/{category}/
+
+**Installation Path Discovery**:
+- Git repository root: `/Users/naythandawe/git/` (NOT `/Users/naythandawe/git/maia/`)
+- Hook must be at `/Users/naythandawe/git/.git/hooks/pre-commit`
+- Initial installation at wrong location (maia/.git/hooks/) didn't work
+
+**Fix Applied**:
+- Updated `pre_commit_file_organization.py` to strip workspace prefix (maia/)
+- Created composite hook combining Phase 127 + Phase 151
+- Installed at correct git repository root location
+
+**Tested**: ✅ Blocks violations (file staged but commit rejected)
+
+**Bypass** (emergencies only):
+```bash
+git commit --no-verify
+```
+
