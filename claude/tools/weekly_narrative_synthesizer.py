@@ -39,32 +39,44 @@ class WeeklyNarrativeSynthesizer:
             Markdown narrative string
         """
         # Get shareable journeys from last 7 days
-        journeys = self.logger.get_week_journeys(include_private=False)
+        try:
+            journeys = self.logger.get_week_journeys(include_private=False)
+        except Exception as e:
+            # Graceful degradation: Generate error narrative
+            import logging
+            logging.error(f"Failed to retrieve journeys: {e}")
+            journeys = []
 
         if not journeys:
-            return self._generate_empty_week_narrative()
+            narrative = self._generate_empty_week_narrative()
+        else:
+            # Generate narrative sections
+            header = self._generate_header(len(journeys))
+            journey_narratives = [self._generate_journey_narrative(j, i+1)
+                                 for i, j in enumerate(journeys)]
+            stats = self._generate_stats_section(journeys)
+            meta_learning = self._generate_meta_learning_section(journeys)
+            footer = self._generate_footer()
 
-        # Generate narrative sections
-        header = self._generate_header(len(journeys))
-        journey_narratives = [self._generate_journey_narrative(j, i+1)
-                             for i, j in enumerate(journeys)]
-        stats = self._generate_stats_section(journeys)
-        meta_learning = self._generate_meta_learning_section(journeys)
-        footer = self._generate_footer()
-
-        # Combine all sections
-        narrative = "\n\n".join([
-            header,
-            *journey_narratives,
-            stats,
-            meta_learning,
-            footer
-        ])
+            # Combine all sections
+            narrative = "\n\n".join([
+                header,
+                *journey_narratives,
+                stats,
+                meta_learning,
+                footer
+            ])
 
         # Save to file if path provided
         if output_path:
-            Path(output_path).parent.mkdir(parents=True, exist_ok=True)
-            Path(output_path).write_text(narrative)
+            try:
+                Path(output_path).parent.mkdir(parents=True, exist_ok=True)
+                Path(output_path).write_text(narrative)
+            except Exception as e:
+                import logging
+                logging.error(f"Failed to write narrative to {output_path}: {e}")
+                # Re-raise to inform caller
+                raise
 
         return narrative
 
