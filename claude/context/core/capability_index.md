@@ -708,7 +708,10 @@
 - "Outlook" → outlook_intelligence.py
 
 **SRE & Reliability**:
-- "pagerduty" → **PagerDuty Specialist Agent** ⭐ NEW (Event Intelligence, AIOps, ML-powered grouping, Phase 144)
+- "pagerduty" → **PagerDuty Specialist Agent** ⭐ PRIMARY + **configure_pagerduty_for_datto.py** ⭐ **NEW TOOL** (automation, Phase 151)
+- "pagerduty automation" → **configure_pagerduty_for_datto.py** ⭐ **NEW - PRODUCTION READY** (5-10 min vs 2-3h manual, Phase 151)
+- "datto pagerduty integration" → **configure_pagerduty_for_datto.py** (complete automation: services, schedules, escalations, Event Orchestration)
+- "pagerduty api" → **configure_pagerduty_for_datto.py** (REST API v2, pdpyras SDK, idempotent, SRE-hardened)
 - "event intelligence" → **PagerDuty Specialist Agent** ⭐ NEW (60-80% noise reduction, Intelligent Grouping)
 - "aiops" → **PagerDuty Specialist Agent** ⭐ NEW (ML-driven alert grouping, Event Orchestration)
 - "modern incident response" → **PagerDuty Specialist Agent** ⭐ NEW (Status Pages, Response Plays, AI collaboration)
