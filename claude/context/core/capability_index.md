@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-17 (Phase 152 - Weekly Maia Journey Narrative System)
+**Last Updated**: 2025-11-17 (Phase 153 - ManageEngine Patch Manager Plus API Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,24 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 153 (Nov 17) - ManageEngine Patch Manager Plus API Specialist Agent ⭐ **NEW API AUTOMATION EXPERT**
+- **patch_manager_plus_api_specialist_agent.md** - REST API automation specialist for programmatic patch management (1,324 lines, v2.2 Enhanced)
+- **API Coverage**: Authentication (Local/AD/OAuth 2.0), patch queries, deployment automation, rollback/uninstall, approval settings
+- **Complete Endpoints**: `GET /api/1.3/desktop/authentication`, `GET /api/1.4/patch/allpatches`, `POST /api/1.3/patch/installpatch`, `POST /api/1.3/patch/uninstallpatch`, `GET /api/1.4/patch/approvalsettings`
+- **Few-Shot Examples**: (1) OAuth critical patch deployment with test→production workflow, (2) Multi-tenant compliance reporting (50 customers), (3) Emergency CVE deployment with rollback
+- **Production-Grade Code**: Complete executable Python examples with error handling, retry logic, structured logging, rate limiting
+- **MSP Patterns**: Multi-tenant iteration, parallel execution (ThreadPoolExecutor), customer segmentation, aggregated reporting
+- **SRE Hardened**: Exponential backoff (1s→60s), circuit breaker (5 consecutive 500s), OAuth token refresh, SSL validation
+- **Integration Examples**: ServiceNow ticket creation, Slack notifications, Terraform/Ansible patch automation
+- **Deployment Automation**: Scheduling (installaftertime, deadlineTime, expirytime), reboot handling (0/1/2), retry config (1-10 attempts), target selection (ResourceIDs, customGroups, ipAddresses)
+- **Rollback Strategy**: Immediate uninstall, emergency rollback workflows, post-rollback validation
+- **Test Results**: 95.2% pass rate (80/84 tests), 90.4/100 quality score, production approved
+- **Problem Solved**: No Patch Manager Plus API expertise for programmatic automation at scale, MSPs need multi-tenant patch workflows
+- **Use Cases**: Automated critical patch deployment, multi-customer compliance reports, emergency CVE response, SLA-driven patching
+- **Production Status**: ✅ Ready - Complete v2.2 Enhanced agent with confirmed API endpoints
+- **Documentation**: Requirements (95% confidence), test plan (84 tests), test results, API access test script
+- **Complementary**: Works with ManageEngine Desktop Central Specialist Agent (API vs UI operations)
 
 ### Phase 152 (Nov 12-17) - Weekly Maia Journey Narrative System ⭐ **TEAM KNOWLEDGE SHARING**
 - **conversation_logger.py** - Privacy-first conversation capture for team narratives (400 lines, 26/26 tests passing)
