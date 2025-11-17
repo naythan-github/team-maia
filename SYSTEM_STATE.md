@@ -256,11 +256,37 @@ Added PRE-WRITE CHECKLIST to systematic thinking protocol preventing file organi
 - **Testing Period**: 1-2 weeks to measure effectiveness
 - **Success Metric**: Zero new file organization violations
 
+**Phase 1.5: Comprehensive Validation Tool** ✅ **COMPLETE**
+Created `file_organization_checker.py` for save_state integration (550 lines):
+
+**Tool Capabilities**:
+- Full repository scan (not just staged files like pre-commit hook)
+- 5 comprehensive checks: root directory, work output separation, file sizes, database categorization, phase archival
+- Detailed violation reporting with recommendations
+- Exit codes: 0 (pass), 1 (warnings), 2 (critical violations)
+- JSON export for programmatic use
+
+**Current Repository Status** (first run results):
+- 📊 Files scanned: 419
+- ❌ Root violations: **25** (discovered 8 more than known 17)
+- ⚠️ Work output violations: 1
+- ⚠️ Size violations: 1 (servicedesk_tickets.db: 153.7 MB)
+- ⚠️ Database categorization: 4 databases
+
+**Integration**:
+- Added to `save_state.md` Phase 2.2.1
+- Runs alongside automated_health_monitor.py
+- Blocks save_state if critical violations found
+
+**Architectural Consistency**:
+- Follows save_state_security_checker.py pattern
+- Matches automated_health_monitor.py integration
+- Consistent exit code semantics (0/1/2)
+
 **Phase 2: Optional Inline Validation** (DEFERRED)
-- Only implement if Phase 1 guidance proves insufficient
-- Optimized inline validation (5-15ms overhead, NOT 35-65ms subprocess)
-- Import validation logic directly (no subprocess spawn)
-- **Deferred until**: Phase 1 testing complete
+- Only if Phase 1 guidance proves insufficient
+- Optimized inline validation (5-15ms, NOT subprocess)
+- **Deferred until**: Phase 1 testing complete (1-2 weeks)
 
 ### Implementation Details
 ```markdown
@@ -290,12 +316,12 @@ Phase 1 guidance likely sufficient given:
 - Pre-commit hook provides safety net (catches any that slip through)
 
 ### Next Steps
-1. **Monitor**: Track new file creation over 1-2 weeks
-2. **Measure**: Count file organization violations (target: 0)
+1. **Monitor**: Track new file creation over 1-2 weeks (Phase 1 guidance effectiveness)
+2. **Measure**: Count file organization violations (target: 0 new violations)
 3. **Decide**: If violations occur → Implement Phase 2 inline validation
-4. **Cleanup**: After prevention proven → Clean up 17 existing violations in root
+4. **Cleanup**: After prevention proven → Clean up 25 existing violations in root (deferred per Priority 2)
 
-### Files Modified: 2 files, +25 lines | Performance: 0ms | Risk: ZERO
+### Files Created/Modified: 3 files, 575 lines | Performance: 0ms overhead | Risk: ZERO
 
 ---
 ## 🚨 PHASE 151: File Organization Enforcement - SAFE PATH (2025-11-07) ⭐ **POLICY COMPLETE**

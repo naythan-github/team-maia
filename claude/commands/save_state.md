@@ -271,6 +271,29 @@ python3 claude/tools/sre/automated_health_monitor.py
 
 **Action if CRITICAL**: Review critical issues and fix before proceeding with commit
 
+#### 2.2.1 File Organization Compliance Check ⭐ **PHASE 151.1 - NEW**
+```bash
+python3 claude/tools/sre/file_organization_checker.py --check
+```
+
+**What it checks** (5 comprehensive validations):
+1. **Root Directory**: Only 4 core files allowed (CLAUDE.md, README.md, SYSTEM_STATE.md, SYSTEM_STATE_ARCHIVE.md)
+2. **Work Output Separation**: No work outputs in Maia repository (must be in ~/work_projects/)
+3. **File Size Limits**: Files >10 MB must be in ~/work_projects/ (except RAG databases)
+4. **Database Categorization**: All .db files in claude/data/databases/{category}/ subdirectories
+5. **Phase Documentation**: Identifies phase docs >30 days old for archival
+
+**Exit codes**:
+- 0 = PASSED (compliant)
+- 1 = WARNINGS (non-blocking, but should address)
+- 2 = CRITICAL (violations block save state until fixed)
+
+**Action if CRITICAL**: Review violations and fix before proceeding with commit
+- Root violations: Move files to appropriate subdirectories
+- Work outputs: Move to ~/work_projects/
+- Large files: Move to ~/work_projects/ or delete
+- Databases: Move to claude/data/databases/{category}/
+
 **Alternative: Individual checks** (if automated monitor unavailable):
 ```bash
 # UFC Compliance only
@@ -284,6 +307,9 @@ python3 claude/tools/sre/rag_system_health_monitor.py --dashboard
 
 # Service Health only
 python3 claude/tools/sre/launchagent_health_monitor.py --dashboard
+
+# File Organization only
+python3 claude/tools/sre/file_organization_checker.py --check
 ```
 
 #### 2.4 Documentation Consistency Verification
