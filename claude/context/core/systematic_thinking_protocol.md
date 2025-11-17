@@ -76,6 +76,26 @@ Before ANY recommendation or action:
 - [ ] Have I analyzed second/third-order consequences? (Only in DISCOVERY MODE)
 - [ ] Have I considered implementation complexity and risks? (Only in DISCOVERY MODE)
 
+### **PRE-WRITE CHECKLIST** ⭐ **FILE ORGANIZATION ENFORCEMENT - PHASE 151**
+Before using the Write tool to create ANY file:
+- [ ] **Is this a Maia system file or work output?**
+  - System file (helps Maia operate): tools, agents, commands, databases, docs
+  - Work output (produced BY Maia): analysis reports, deliverables, project data
+- [ ] **Does the proposed path comply with file organization policy?**
+  - Work outputs → `~/work_projects/{project}/` (NEVER in Maia repo)
+  - System files → UFC structure (`claude/{agents,tools,commands,data}/`)
+  - Databases → `claude/data/databases/{intelligence,system,user}/`
+  - Root directory → ONLY 4 allowed files (CLAUDE.md, README.md, SYSTEM_STATE.md, SYSTEM_STATE_ARCHIVE.md)
+- [ ] **Does file size exceed 10 MB?**
+  - If YES → MUST be in `~/work_projects/` (NOT Maia repo)
+  - Exception: RAG databases in `claude/data/rag_databases/`
+
+**DECISION CRITERIA**: "Does this file help Maia operate (system file) or is it output FROM Maia (work output)?"
+
+**VALIDATION**: If unsure, consult `claude/context/core/file_organization_policy.md` for full decision tree
+
+**VIOLATION PREVENTION**: This checklist prevents file organization violations with ZERO performance overhead (guidance-based, not validation-based)
+
 ### **RESPONSE TEMPLATE**
 
 ### **🚨 MODE CHECK (ALWAYS FIRST)** 🚨
