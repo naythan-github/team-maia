@@ -1,11 +1,30 @@
 # Active Deployments - Maia System Registry
 
-**Last Updated**: 2025-10-21
+**Last Updated**: 2025-11-12
 **Purpose**: Central registry of all deployed systems and services across Maia environment
 
 ---
 
 ## Production Systems
+
+### Weekly Maia Journey Narrative System
+- **Status**: ✅ Active (Phase 1 Production)
+- **Architecture Doc**: [WEEKLY_NARRATIVE_SYSTEM_ARCHITECTURE.md](../../../WEEKLY_NARRATIVE_SYSTEM_ARCHITECTURE.md)
+- **Database**: `claude/data/databases/system/conversations.db` (SQLite)
+- **Owner**: Naythan Dawe / Maia Team
+- **Last Deployed**: 2025-11-12
+- **Components**:
+  - Conversation Logger (claude/tools/conversation_logger.py)
+  - Conversations Database (SQLite, schema v1)
+  - Test Suite (26 tests, 100% passing)
+- **Purpose**: Capture collaborative problem-solving conversations for weekly team narrative generation
+- **Dependencies**: Python 3.11+, SQLite 3
+- **Health Check**: `python3 -m pytest tests/test_conversation_logger.py`
+- **Roadmap**:
+  - Phase 1: ✅ Conversation Logger (Complete)
+  - Phase 2: ⏳ Narrative Synthesizer (Team Knowledge Sharing Agent)
+  - Phase 3: ⏳ save_state Integration
+  - Phase 4: ⏳ Email Automation
 
 ### ServiceDesk Dashboard
 - **Status**: ✅ Active (Production)
@@ -190,6 +209,7 @@ ollama run llama3.1:8b "Analyze this text..."
 
 | Date | System | Change | Owner |
 |------|--------|--------|-------|
+| 2025-11-12 | Weekly Narrative | Phase 1 deployed: Conversation Logger (26/26 tests passing) | SRE Agent |
 | 2025-10-21 | Global | Created active_deployments.md registry | Maia System |
 | 2025-10-20 | ServiceDesk | Completed comment quality analysis (6,319 comments) | Maia System |
 | 2025-10-19 | ServiceDesk | Deployed 4 Grafana dashboards to production | UI Systems Agent |

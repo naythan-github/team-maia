@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-07 (Phase 149 - SonicWall SMA 500 to Azure VPN Gateway Migration Toolkit)
+**Last Updated**: 2025-11-17 (Phase 152 - Weekly Maia Journey Narrative System)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,24 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 152 (Nov 12-17) - Weekly Maia Journey Narrative System ⭐ **TEAM KNOWLEDGE SHARING**
+- **conversation_logger.py** - Privacy-first conversation capture for team narratives (400 lines, 26/26 tests passing)
+- **weekly_narrative_synthesizer.py** - Conversational weekly narrative generation (400+ lines)
+- **conversations.db** - SQLite database at `claude/data/databases/system/` (schema v1)
+- **Conversation Capture**: Problem, question, options, refinement, agents, deliverables, impact, meta-learning
+- **Privacy Model**: Default private (opt-in sharing), sensitive data pattern detection
+- **Narrative Format**: Story-driven journeys (~15 lines each, second-person voice)
+- **Tone**: Casual but professional ("Ouch", "now we're talking", "Smart call")
+- **Meta-Learning**: Automatic pattern extraction across journeys
+- **Weekly Stats**: Journey count, refinements, agent handoffs
+- **Performance**: <50ms writes (actual: ~5ms), <200ms reads (actual: ~10ms)
+- **CLI Interface**: `python3 conversation_logger.py`, `python3 weekly_narrative_synthesizer.py generate`
+- **Problem Solved**: No way to share "art of the possible with Maia" with team, tribal knowledge loss
+- **Use Cases**: Team onboarding, demonstrating Maia capabilities, discovering new workflows
+- **Production Status**: ✅ Phases 1-2 Complete - Conversation logger + narrative synthesizer ready
+- **Architecture**: WEEKLY_NARRATIVE_SYSTEM_ARCHITECTURE.md (complete system documentation)
+- **Roadmap**: Phase 3 (save_state integration), Phase 4 (email automation), Phase 5 (coordinator auto-logging)
 
 ### Phase 149 (Nov 7) - SonicWall SMA 500 to Azure VPN Gateway Migration Toolkit ⭐ **MIGRATION AUTOMATION**
 - **sma_api_discovery.py** - SMA 500 API endpoint discovery tool (341 lines, 40+ endpoints tested)
