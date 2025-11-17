@@ -17,6 +17,7 @@ Created: 2025-10-13 (Phase 112)
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import List, Dict, Optional, Any, Tuple
 from dataclasses import dataclass
@@ -306,6 +307,10 @@ class MacOSContactsBridge:
 
     def get_all_contacts(self) -> List[Dict[str, Any]]:
         """Get all contacts from Contacts app"""
+        # Ensure Contacts app is running (prevents AppleScript error -600)
+        subprocess.run(['open', '-a', 'Contacts'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        time.sleep(3.0)  # Give app time to launch and initialize
+
         script = '''
         tell application "Contacts"
             set contactList to {}
