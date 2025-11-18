@@ -75,14 +75,14 @@ class WhisperDictationClient:
             fd, output_file = tempfile.mkstemp(suffix=f".{AUDIO_FORMAT}")
             os.close(fd)
 
-        print("🎤 Recording... (speak now, 5 seconds)")
+        print("🎤 Recording... (speak now, 10 seconds)")
 
-        # Use ffmpeg with MacBook microphone (device :0 = MacBook Air Microphone)
+        # TEST: Use ffmpeg with Bluetooth Jabra (device :2 = Jabra Engage 75)
         cmd = [
             "/opt/homebrew/bin/ffmpeg",
             "-f", "avfoundation",
-            "-i", ":0",  # MacBook Air Microphone (audio device index 0)
-            "-t", "5",  # 5 seconds
+            "-i", ":2",  # Jabra Engage 75 Bluetooth (audio device index 2) - TESTING
+            "-t", "10",  # 10 seconds
             "-ar", str(SAMPLE_RATE),
             "-ac", "1",
             "-af", "volume=10dB",  # Boost quiet input by 10dB

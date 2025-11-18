@@ -31,6 +31,9 @@ from typing import Optional, List, Dict
 from pathlib import Path
 
 # Import underlying reliable client (internal use only)
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
 from _reliable_confluence_client import ReliableConfluenceClient
 
 # Configure logging
@@ -642,7 +645,7 @@ class ConfluenceClient:
 
     def _find_page_by_title(self, space_key: str, title: str) -> Optional[Dict]:
         """
-        Find page by title using search
+        Find page by title using direct query (no search index lag)
 
         Args:
             space_key: Confluence space key
@@ -652,8 +655,12 @@ class ConfluenceClient:
             Page dict if found, None otherwise
         """
         try:
-            # Use text search (search_content expects text, not CQL title)
-            # Search for the title as text content
+            # Use direct get_page_by_title API (instant, no search index lag)
+            page = self.client.get_page_by_title(space_key, title)
+            if page:
+                return page
+
+            # Fallback to search if direct query fails (handles edge cases)
             search_results = self.client.search_content(
                 query=title,
                 space_key=space_key

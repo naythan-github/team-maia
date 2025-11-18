@@ -311,6 +311,31 @@ class ReliableConfluenceClient:
         if response:
             return response.json()
         return None
+
+    def get_page_by_title(self, space_key: str, title: str, expand: str = 'body.storage,version') -> Optional[Dict]:
+        """
+        Get a Confluence page by title (direct query, no search index lag)
+
+        Args:
+            space_key: Confluence space key
+            title: Exact page title
+            expand: Comma-separated list of properties to expand (default: body.storage,version)
+
+        Returns:
+            Page data dictionary or None if not found
+        """
+        params = {
+            'spaceKey': space_key,
+            'title': title,
+            'expand': expand
+        }
+        response = self._make_request('GET', '/content', params=params)
+        if response:
+            data = response.json()
+            results = data.get('results', [])
+            if results:
+                return results[0]  # Return first match (title should be unique in space)
+        return None
         
     def create_page(self, space_key: str, title: str, content: str,
                    parent_id: Optional[str] = None, validate_html: bool = True) -> Optional[Dict]:
