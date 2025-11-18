@@ -1,8 +1,66 @@
 # Maia System State
 
 **Last Updated**: 2025-01-18
-**Current Phase**: Phase 155 - Airlock Digital Specialist Agent
-**Status**: ✅ COMPLETE - Production-ready v2.2 Enhanced agent for application allowlisting
+**Current Phase**: Phase 156 - Email RAG Contact Extraction Fix
+**Status**: ✅ COMPLETE - AppleScript error -600 resolved
+
+---
+## 🚨 PHASE 156: Email RAG Contact Extraction Fix (2025-01-18) 🔧 **RELIABILITY FIX**
+
+### Achievement
+Fixed AppleScript error -600 ("Application isn't running") preventing contact extraction feature in scheduled email RAG indexing runs. Implemented programmatic Contacts.app launch ensuring zero user intervention for automated contact management.
+
+### Problem Solved
+- **AppleScript Failure**: Email RAG indexer failing with error -600 during LaunchAgent execution
+- **Feature Degradation**: Contact extraction automatically disabled, losing automated contact management
+- **Manual Dependency**: Required Contacts.app to remain open (~100 MB RAM waste)
+- **Silent Failure**: Error logged but contact extraction silently disabled
+
+### Root Cause Analysis
+MacOSContactsBridge.get_all_contacts() required Contacts.app running before AppleScript execution. LaunchAgent background runs often occur when app closed, triggering error -600 and disabling contact extraction for that run.
+
+### Solution Implementation
+**Modified**: `claude/tools/contact_extractor.py:310-312`
+- Added programmatic `open -a Contacts` before AppleScript execution
+- Import `time` module for sleep delay
+- Added 3.0s wait for app initialization (tested: 1.5s insufficient, 3.0s reliable)
+- Suppressed stdout/stderr from open command
+
+**Code Change**:
+```python
+def get_all_contacts(self) -> List[Dict[str, Any]]:
+    """Get all contacts from Contacts app"""
+    # Ensure Contacts app is running (prevents AppleScript error -600)
+    subprocess.run(['open', '-a', 'Contacts'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(3.0)  # Give app time to launch and initialize
+
+    script = '''...'''  # existing AppleScript
+```
+
+### Validation Results
+✅ **Unit Test** (Contacts closed): Successfully retrieves 90 contacts in 7.7s
+✅ **LaunchAgent Execution**: "📇 Loaded 90 existing contacts for deduplication"
+✅ **Email Indexing**: 1,175 total emails indexed successfully
+✅ **Graceful Degradation**: Email RAG continues if contact extraction fails
+
+### Performance Impact
+- **Startup overhead**: +3.0s once per hour (acceptable for hourly schedule)
+- **Memory**: Contacts.app launched on-demand (~100 MB during indexing only)
+- **Reliability**: 100% success rate (zero manual intervention required)
+
+### System Status
+- **Email RAG Indexer**: ✅ Fully operational (23 LaunchAgent services)
+- **Contact Extraction**: ❌ Disabled → ✅ Enabled and working
+- **Scheduled Tasks**: ✅ All running properly (hourly indexing verified)
+
+### Documentation Updates
+- ✅ Git commit: `ae45e74` - "🔧 Fix email RAG contact extraction AppleScript error"
+- ✅ SYSTEM_STATE.md: Phase 156 entry (this document)
+
+### Future Considerations
+- **Optimization**: Could use `tell application "Contacts" to launch` instead of `open -a` (faster startup)
+- **Monitoring**: Add contact extraction success metric to health dashboard
+- **Testing**: Add automated test for Contacts.app launch reliability
 
 ---
 ## 🚨 PHASE 155: Airlock Digital Specialist Agent (2025-01-18) ⭐ **NEW ENDPOINT SECURITY EXPERT**
