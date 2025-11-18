@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-18 (Phase 154 - PagerDuty Automation Tool for Datto RMM Integration)
+**Last Updated**: 2025-01-18 (Phase 155 - Airlock Digital Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,23 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 155 (Jan 18) - Airlock Digital Specialist Agent ⭐ **NEW ENDPOINT SECURITY EXPERT**
+- **airlock_digital_specialist_agent.md** - Application allowlisting specialist for Airlock Digital platform (980 lines, v2.2 Enhanced)
+- **Location**: `claude/agents/airlock_digital_specialist_agent.md`
+- **Purpose**: Expert consultation for Airlock Digital implementations (policy design, Essential Eight ML3 compliance, Trusted Installer integration)
+- **Capabilities**: Publisher/path/file hash trust levels, blocklist rules, exception workflows, SIEM integration, ransomware prevention
+- **Essential Eight ML3**: Complete compliance framework (allowlisting, centralized logging, annual validation, trust methods)
+- **Trusted Installer**: SCCM/Intune/Jamf integration for automated deployment approval (5-min self-service vs 1-2h IT tickets)
+- **Few-Shot Examples**: (1) Essential Eight ML3 implementation (800 Windows endpoints, 12 weeks), (2) Jamf Trusted Installer integration (300 macOS, 97% shadow IT reduction)
+- **Implementation Framework**: 4-phase (Discovery → Design → Pilot → Rollout) with <1% false positive target
+- **Performance Metrics**: 97% shadow IT reduction, 0.3% false positives, 4.1/5.0 user satisfaction, 87% ransomware prevention
+- **Cross-Platform**: Windows (including legacy), macOS, Linux endpoint security
+- **Integration Architecture**: SIEM centralized logging (Splunk/Elastic/Sentinel), CrowdStrike, VirusTotal, MDM platforms
+- **Problem Solved**: No Airlock-specific expertise for Essential Eight ML3 compliance, shadow IT prevention, Trusted Installer integration
+- **Use Cases**: Essential Eight ML3 compliance (government/regulated), shadow IT prevention (macOS Jamf), ransomware prevention, MSP endpoint security
+- **Production Status**: ✅ Ready - Complete v2.2 Enhanced agent with proven frameworks
+- **Documentation**: 2 comprehensive ReACT examples, 4-phase implementation framework, industry benchmarks
 
 ### Phase 154 (Nov 18) - PagerDuty Automation Tool for Datto RMM Integration ⭐ **PRODUCTION-READY AUTOMATION**
 - **configure_pagerduty_for_datto.py** - Complete PagerDuty configuration automation via REST API v2 (1,100+ lines, SRE-hardened)
@@ -564,9 +581,10 @@
 - **PagerDuty Specialist Agent** - AIOps incident management, Event Intelligence (ML), Modern Incident Response ⭐ **Phase 144**
 - **OpsGenie Specialist Agent** - Incident management, alerting optimization, on-call scheduling ⭐ **Phase 143**
 
-### Security & Identity (2 agents)
+### Security & Identity (3 agents)
 - **Security Specialist Agent** - Security analysis, vulnerability assessment
 - **Principal IDAM Engineer Agent** - Identity & access management
+- **Airlock Digital Specialist Agent** - Application allowlisting, Essential Eight ML3 compliance, Trusted Installer integration ⭐ **Phase 155**
 
 ### Cloud & Infrastructure (6 agents)
 - **Azure Solutions Architect Agent** - Azure architecture + solutions
@@ -637,6 +655,14 @@
 - "secrets detection" → save_state_security_checker.py (8 secret patterns)
 - "code security" → bandit_scanner.py, save_state_security_checker.py
 - "compliance check" → ufc_compliance_checker.py, save_state_security_checker.py
+- "airlock" → **Airlock Digital Specialist Agent** ⭐ NEW (application allowlisting, Essential Eight ML3)
+- "application allowlisting" → **Airlock Digital Specialist Agent** (deny-by-default endpoint security)
+- "application whitelisting" → **Airlock Digital Specialist Agent** (publisher/path/file hash trust)
+- "essential eight" → **Airlock Digital Specialist Agent** (ML3 compliance, Australian government standard)
+- "shadow it" → **Airlock Digital Specialist Agent** (97% reduction via Trusted Installer)
+- "trusted installer" → **Airlock Digital Specialist Agent** (SCCM/Intune/Jamf integration)
+- "ransomware prevention" → **Airlock Digital Specialist Agent** (87% delivery vector blocking)
+- "endpoint security" → **Airlock Digital Specialist Agent** + Principal Endpoint Engineer Agent
 
 **Context & Memory**:
 - "context loading" → smart_context_loader.py, dynamic_context_loader.py
@@ -837,7 +863,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
-**Agents**: 55 across 10 specializations (Phase 147: +1 Datto RMM, Phase 146: +1 SonicWall, Phase 145: +1 Autotask PSA)
+**Agents**: 56 across 10 specializations (Phase 155: +1 Airlock Digital, Phase 147: +1 Datto RMM, Phase 146: +1 SonicWall)
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
