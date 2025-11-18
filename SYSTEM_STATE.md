@@ -44,7 +44,7 @@ def get_all_contacts(self) -> List[Dict[str, Any]]:
 ✅ **Graceful Degradation**: Email RAG continues if contact extraction fails
 
 ### Performance Impact
-- **Startup overhead**: +3.0s once per hour (acceptable for hourly schedule)
+- **Startup overhead**: +3.0s once per hour when Contacts closed (zero when already running)
 - **Memory**: Contacts.app launched on-demand (~100 MB during indexing only)
 - **Reliability**: 100% success rate (zero manual intervention required)
 
@@ -55,12 +55,26 @@ def get_all_contacts(self) -> List[Dict[str, Any]]:
 
 ### Documentation Updates
 - ✅ Git commit: `ae45e74` - "🔧 Fix email RAG contact extraction AppleScript error"
+- ✅ Git commit: `b5914a0` - "🔧 Prevent Contacts app from stealing focus during hourly email RAG runs"
 - ✅ SYSTEM_STATE.md: Phase 156 entry (this document)
 
+### Follow-Up Optimization (Same Phase)
+**Problem**: Every hourly run brought Contacts.app to foreground, disrupting user workflow
+
+**Solution**:
+1. Check if Contacts already running using `pgrep -x Contacts`
+2. Only launch if not running (skip 3s delay)
+3. Use `open -g` flag to launch in background (no focus steal)
+
+**Result**:
+- ✅ No focus interruption during hourly runs
+- ✅ Faster when already running (10.24s vs 8.15s with launch)
+- ✅ Validated: "📇 Loaded 97 existing contacts", 1 new contact added
+
 ### Future Considerations
-- **Optimization**: Could use `tell application "Contacts" to launch` instead of `open -a` (faster startup)
 - **Monitoring**: Add contact extraction success metric to health dashboard
 - **Testing**: Add automated test for Contacts.app launch reliability
+- **Performance**: Could optimize AppleScript to reduce 8-10s extraction time
 
 ---
 ## 🚨 PHASE 155: Airlock Digital Specialist Agent (2025-01-18) ⭐ **NEW ENDPOINT SECURITY EXPERT**
