@@ -77,12 +77,11 @@ class WhisperDictationClient:
 
         print("🎤 Recording... (speak now, 5 seconds)")
 
-        # Use ffmpeg with MacBook microphone (device :1 = MacBook Air Microphone)
-        # Device :0 = Jabra (may require additional permissions)
+        # Use ffmpeg with MacBook microphone (device :0 = MacBook Air Microphone)
         cmd = [
             "/opt/homebrew/bin/ffmpeg",
             "-f", "avfoundation",
-            "-i", ":1",  # MacBook Air Microphone (most reliable)
+            "-i", ":0",  # MacBook Air Microphone (audio device index 0)
             "-t", "5",  # 5 seconds
             "-ar", str(SAMPLE_RATE),
             "-ac", "1",
