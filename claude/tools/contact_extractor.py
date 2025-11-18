@@ -308,8 +308,13 @@ class MacOSContactsBridge:
     def get_all_contacts(self) -> List[Dict[str, Any]]:
         """Get all contacts from Contacts app"""
         # Ensure Contacts app is running (prevents AppleScript error -600)
-        subprocess.run(['open', '-a', 'Contacts'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        time.sleep(3.0)  # Give app time to launch and initialize
+        # Check if already running to avoid bringing to foreground unnecessarily
+        is_running = subprocess.run(['pgrep', '-x', 'Contacts'], capture_output=True).returncode == 0
+
+        if not is_running:
+            # Launch in background (-g flag prevents stealing focus)
+            subprocess.run(['open', '-g', '-a', 'Contacts'], check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            time.sleep(3.0)  # Give app time to launch and initialize
 
         script = '''
         tell application "Contacts"
