@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-01-18 (Phase 155 - Airlock Digital Specialist Agent)
+**Last Updated**: 2025-01-19 (Phase 156 - Document Conversion Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,23 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 156 (Jan 19) - Document Conversion Specialist Agent ⭐ **NEW DOCUMENT AUTOMATION EXPERT**
+- **document_conversion_specialist_agent.md** - DOCX creation, template extraction, multi-format conversion specialist (880 lines, v2.2 Enhanced)
+- **Location**: `claude/agents/document_conversion_specialist_agent.md`
+- **Purpose**: Guide users through document automation workflows, extract corporate templates, build conversion tools
+- **Core Capabilities**: Template extraction (Jinja2, XPath), multi-format conversion (MD/HTML/PDF→DOCX), data-driven generation, custom tool development
+- **Library Expertise**: python-docx (DOCX manipulation), docxtpl (Jinja2 templates), Pandoc (universal converter), docx2python (structure extraction), pypandoc (Python wrapper)
+- **Few-Shot Examples**: (1) Corporate template extraction from QBR (96% time savings: 2-3h → 5min), (2) MD→DOCX converter with corporate styling (Pandoc + reference templates), (3) HTML email archival system (compliance 7-year retention)
+- **Template Workflows**: Extract from existing Word docs, create Jinja2 placeholders, populate from JSON/CSV/database, validate style preservation
+- **Conversion Fidelity**: 95+ structure preservation, 90+ style accuracy, 85+ image handling, <5s performance target
+- **Business Impact**: 60-96% time reduction (recurring documents), 100% branding consistency (vs 70-80% manual), batch scalability (100s-1000s docs)
+- **Custom Tool Development**: Library selection guidance, architecture design, error handling patterns, production-ready code generation
+- **Problem Solved**: No document conversion expertise, manual template creation (2-3h/doc), no corporate style automation, email archival gaps
+- **Use Cases**: Recurring reports (QBRs, monthly updates), email archival (compliance), MD→DOCX pipelines, corporate template libraries
+- **Production Status**: ✅ Ready - Complete v2.2 Enhanced agent with 3 comprehensive examples
+- **Documentation**: Template extraction workflows, Pandoc reference-doc patterns, XPath structure extraction, style preservation strategies
+- **Existing Tool**: cv_converter.py (CV-specific MD→DOCX, 3 modes: styled/ATS/readable) - Agent provides general conversion + tool development
 
 ### Phase 155 (Jan 18) - Airlock Digital Specialist Agent ⭐ **NEW ENDPOINT SECURITY EXPERT**
 - **airlock_digital_specialist_agent.md** - Application allowlisting specialist for Airlock Digital platform (980 lines, v2.2 Enhanced)
@@ -739,6 +756,26 @@
 - "bartender" → Cocktail Mixologist Agent
 - "mocktail" → Cocktail Mixologist Agent
 
+**Document Conversion & Automation** ⭐ **PHASE 156**:
+- "document conversion" → **Document Conversion Specialist Agent** (DOCX creation, template extraction, multi-format)
+- "docx creation" → **Document Conversion Specialist Agent** (python-docx, docxtpl, Pandoc)
+- "word conversion" → **Document Conversion Specialist Agent** (MD/HTML/PDF → DOCX)
+- "template extraction" → **Document Conversion Specialist Agent** (extract from existing Word docs, Jinja2 placeholders)
+- "corporate template" → **Document Conversion Specialist Agent** (style preservation, branding automation)
+- "markdown to docx" → **Document Conversion Specialist Agent** (Pandoc + reference templates) + cv_converter.py (CV-specific)
+- "html to docx" → **Document Conversion Specialist Agent** (email archival, web content conversion)
+- "pdf to docx" → **Document Conversion Specialist Agent** (text extraction, limitations noted)
+- "jinja2 template" → **Document Conversion Specialist Agent** (dynamic content, loops, conditionals)
+- "recurring reports" → **Document Conversion Specialist Agent** (QBRs, monthly updates, 96% time savings)
+- "email archival" → **Document Conversion Specialist Agent** (HTML email → DOCX for compliance)
+- "batch document generation" → **Document Conversion Specialist Agent** (100s-1000s docs from templates)
+- "python-docx" → **Document Conversion Specialist Agent** (library expertise) + cv_converter.py (implementation example)
+- "docxtpl" → **Document Conversion Specialist Agent** (Jinja2 templating for DOCX)
+- "pandoc" → **Document Conversion Specialist Agent** (universal converter, reference-doc patterns)
+- "style preservation" → **Document Conversion Specialist Agent** (fonts, colors, spacing, margins)
+- "conversion tool development" → **Document Conversion Specialist Agent** (library selection, architecture, error handling)
+- "cv conversion" → cv_converter.py (MD → DOCX, 3 modes: styled/ATS/readable)
+
 **Productivity**:
 - "confluence" → **confluence_client.py** ⭐ **THE ONLY TOOL YOU NEED** (Phase 140, 95% confidence)
 - "confluence page" → **confluence_client.py** (create, update, get URL)
@@ -863,7 +900,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
-**Agents**: 56 across 10 specializations (Phase 155: +1 Airlock Digital, Phase 147: +1 Datto RMM, Phase 146: +1 SonicWall)
+**Agents**: 57 across 11 specializations (Phase 156: +1 Document Conversion, Phase 155: +1 Airlock Digital, Phase 147: +1 Datto RMM)
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
