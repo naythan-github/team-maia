@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-01-19 (Phase 156 - Document Conversion Specialist Agent)
+**Last Updated**: 2025-01-20 (Phase 157 - Snowflake Data Cloud Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,26 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 157 (Jan 20) - Snowflake Data Cloud Specialist Agent ⭐ **NEW DATA PLATFORM EXPERT**
+- **snowflake_data_cloud_specialist_agent.md** - Cloud-native data platform specialist (580 lines, v2.2 Enhanced)
+- **Location**: `claude/agents/snowflake_data_cloud_specialist_agent.md`
+- **Purpose**: Expert consultation for Snowflake AI Data Cloud (architecture, AI/ML, real-time analytics, cost optimization, governance)
+- **Core Capabilities**: Platform architecture design, Cortex AI enablement, real-time streaming (Iceberg+Kafka), cost optimization, Snowflake Horizon governance
+- **AI/ML Expertise**: Cortex AI (LLM functions, Cortex Analyst semantic models, Cortex Search RAG, Cortex Guard), Snowpark Python/ML, MLOps workflows
+- **Streaming Architecture**: Iceberg Tables (managed/external, ACID), Snowpipe Streaming, Openflow (managed Apache NiFi), Kafka CDC integration, Confluent Tableflow
+- **Cost Optimization**: Warehouse sizing (X-SMALL→6X-LARGE, spillage analysis), multi-cluster auto-scaling, Query Acceleration Service (20-40% savings), auto-suspend tuning
+- **Governance**: Horizon catalog, RBAC design, row-level security (session context variables), tag-based data masking, PII classification
+- **Multi-Tenancy Patterns**: MTT (Multi-Tenant Tables) for 50-500 tenants, OPT (Object-Per-Tenant) for <50 or >1000, hybrid regional patterns
+- **Few-Shot Examples**: (1) Cortex AI multi-tenant SaaS architecture (50 customers, RLS isolation, 85% cost optimization via history truncation), (2) Real-time Kafka streaming (50K events/sec, Iceberg+Tableflow, <5 min latency, 80% cost savings)
+- **Performance Targets**: P95 <3s simple queries, P95 <30s complex aggregations, 100+ concurrent users, <5 min data freshness (streaming)
+- **Cost Efficiency**: >70% warehouse utilization, >60% cache hit rate, <5% query spillage, aggressive auto-suspend (1-5 min)
+- **Real-World Patterns**: Snowflake Postgres (OLTP workloads), zero-copy cloning (dev/test), time travel (90 days), disaster recovery (multi-region)
+- **Problem Solved**: No Snowflake platform expertise for AI/ML enablement, real-time analytics, multi-tenant SaaS, cost optimization at scale
+- **Use Cases**: AI-powered SaaS analytics (Cortex AI), real-time dashboards (Kafka+Iceberg streaming), data lakehouse (open Iceberg format), enterprise data warehouse consolidation
+- **Production Status**: ✅ Ready - Complete v2.2 Enhanced agent with production patterns
+- **Documentation**: Multi-tenancy security patterns, Iceberg streaming architecture, warehouse sizing methodology, Cortex AI cost controls
+- **Integration**: Azure/AWS/GCP multi-cloud, Apache Spark interoperability, Confluent Kafka, dbt data transformation
 
 ### Phase 156 (Jan 19) - Document Conversion Specialist Agent ⭐ **NEW DOCUMENT AUTOMATION EXPERT**
 - **document_conversion_specialist_agent.md** - DOCX creation, template extraction, multi-format conversion specialist (880 lines, v2.2 Enhanced)
@@ -603,9 +623,10 @@
 - **Principal IDAM Engineer Agent** - Identity & access management
 - **Airlock Digital Specialist Agent** - Application allowlisting, Essential Eight ML3 compliance, Trusted Installer integration ⭐ **Phase 155**
 
-### Cloud & Infrastructure (6 agents)
+### Cloud & Infrastructure (7 agents)
 - **Azure Solutions Architect Agent** - Azure architecture + solutions
 - **Microsoft 365 Integration Agent** - Enterprise M365 automation
+- **Snowflake Data Cloud Specialist Agent** - Cloud data platform, Cortex AI, streaming analytics, cost optimization ⭐ **Phase 157**
 - **ManageEngine Desktop Central Specialist Agent** - Endpoint management, patch deployment, troubleshooting ⭐ **Phase 142**
 - **SonicWall Specialist Agent** - Firewall policy, SSL-VPN, IPsec site-to-site VPN, security services ⭐ **Phase 146**
 - **Autotask PSA Specialist Agent** - MSP workflow optimization, REST API integration, RevOps automation ⭐ **Phase 145**
@@ -722,6 +743,22 @@
 - "RAG search" → rag_enhanced_search.py, email_rag_system.py, document_rag_system.py
 - "email search" → email_rag_system.py, outlook_intelligence.py
 - "semantic search" → email_rag_system.py, vtt_rag_indexer.py
+
+**Data Platform & Analytics** ⭐ **PHASE 157**:
+- "snowflake" → **Snowflake Data Cloud Specialist Agent** ⭐ NEW (platform architecture, AI/ML, streaming, cost optimization)
+- "data warehouse" → **Snowflake Data Cloud Specialist Agent** (cloud-native architecture, multi-cloud deployment)
+- "data lake" → **Snowflake Data Cloud Specialist Agent** (Iceberg lakehouse, open format, multi-engine access)
+- "cortex ai" → **Snowflake Data Cloud Specialist Agent** (LLM functions, Cortex Analyst semantic models, Cortex Search RAG, Cortex Guard)
+- "snowpark" → **Snowflake Data Cloud Specialist Agent** (Python/Java/Scala data engineering, ML pipelines, UDF deployment)
+- "iceberg tables" → **Snowflake Data Cloud Specialist Agent** (managed/external Iceberg, ACID transactions, Spark interoperability)
+- "snowpipe streaming" → **Snowflake Data Cloud Specialist Agent** (real-time ingestion, Kafka CDC, millisecond latency)
+- "data governance" → **Snowflake Data Cloud Specialist Agent** (Horizon catalog, RBAC, row-level security, data masking)
+- "warehouse sizing" → **Snowflake Data Cloud Specialist Agent** (X-SMALL→6X-LARGE, spillage analysis, cost optimization)
+- "multi-tenant data" → **Snowflake Data Cloud Specialist Agent** (MTT vs OPT patterns, RLS isolation, session context variables)
+- "real-time analytics" → **Snowflake Data Cloud Specialist Agent** (Iceberg+Kafka streaming, <5 min latency, Confluent Tableflow)
+- "snowflake cost optimization" → **Snowflake Data Cloud Specialist Agent** (warehouse auto-suspend, Query Acceleration Service, caching)
+- "data streaming" → **Snowflake Data Cloud Specialist Agent** (Openflow managed NiFi, Snowpipe, Iceberg CDC pipelines)
+- "semantic models" → **Snowflake Data Cloud Specialist Agent** (Cortex Analyst YAML, verified queries, natural language SQL)
 
 **Voice & Transcription**:
 - "voice dictation" → whisper_dictation_server.py
@@ -900,7 +937,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
-**Agents**: 57 across 11 specializations (Phase 156: +1 Document Conversion, Phase 155: +1 Airlock Digital, Phase 147: +1 Datto RMM)
+**Agents**: 58 across 11 specializations (Phase 157: +1 Snowflake Data Cloud, Phase 156: +1 Document Conversion, Phase 155: +1 Airlock Digital)
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
