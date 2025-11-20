@@ -508,12 +508,59 @@ def log_error(message: str):
     print(f"[swarm_auto_loader ERROR] {message}", file=sys.stderr)
 
 
+def close_session():
+    """
+    Close active agent session - clears session file to restore natural routing.
+
+    Phase 134.7: User-controlled session lifecycle management.
+
+    Usage:
+        python3 swarm_auto_loader.py close_session
+
+    Returns:
+        Prints status message and exits with code 0
+    """
+    session_file = get_session_file_path()
+
+    if session_file.exists():
+        try:
+            # Read session info for confirmation message
+            with open(session_file, 'r') as f:
+                session_data = json.load(f)
+                agent = session_data.get("current_agent", "unknown")
+                domain = session_data.get("domain", "unknown")
+
+            # Delete session file
+            session_file.unlink()
+
+            print(f"✅ Agent session closed")
+            print(f"   Agent: {agent}")
+            print(f"   Domain: {domain}")
+            print(f"   Next conversation will route naturally based on query content")
+
+        except (json.JSONDecodeError, IOError, OSError) as e:
+            # File corrupt or permission error - try to delete anyway
+            try:
+                session_file.unlink()
+                print(f"✅ Agent session closed (file was corrupted)")
+            except OSError:
+                print(f"⚠️  Could not delete session file: {e}")
+                sys.exit(1)
+    else:
+        print(f"ℹ️  No active agent session")
+        print(f"   Already using natural routing")
+
+    sys.exit(0)
+
+
 def main():
     """
     Main entry point for swarm auto-loader.
 
     Usage:
         python3 swarm_auto_loader.py "user query"
+        python3 swarm_auto_loader.py close_session
+        python3 swarm_auto_loader.py get_context_id
 
     Exit codes:
         0: Success (agent loaded or gracefully degraded)
@@ -527,6 +574,11 @@ def main():
     if len(sys.argv) < 2:
         # No query provided - graceful exit (hook may call without query)
         sys.exit(0)
+
+    # Phase 134.7: Handle close_session command
+    if sys.argv[1] == "close_session":
+        close_session()
+        # close_session() calls sys.exit(), never returns
 
     query = sys.argv[1]
 

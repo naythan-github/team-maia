@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-20 (Phase 159 - IT Glue Specialist Agent)
+**Last Updated**: 2025-11-20 (Phase 134.7 - User-Controlled Session Lifecycle + Phase 159)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,23 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 134.7 (Nov 20) - User-Controlled Session Lifecycle ⭐ **CRITICAL FIX - AGENT ROUTING RESTORED**
+- **/close-session command** - User-controlled agent session management restoring natural routing
+- **Location**: `claude/hooks/swarm_auto_loader.py` (close_session function) + `.claude/commands/close-session.md`
+- **Purpose**: Clear persistent agent sessions to restore natural routing (fixes 2-month session persistence bug blocking router)
+- **Problem Solved**: Agent sessions persisted indefinitely (2+ months), blocking natural routing - Airlock agent answering SRE questions, router completely bypassed
+- **Root Cause**: Phase 134 designed "persist within conversation" but implemented "persist forever" (no expiration, no task completion marker, no user control)
+- **The Bug**: CLAUDE.md Step 2 checks session file BEFORE routing → If exists, loads old agent WITHOUT classification → Router never consulted → Wrong agent for 5+ conversations
+- **User Workflow**: Multi-day projects need persistence (Essential Eight implementation over 3 days) → Can't use time-based expiration → User controls lifecycle explicitly
+- **Solution**: Manual two-step workflow - (1) "save state" updates docs/commits, (2) "close session" clears agent + restores routing
+- **Command Usage**: `/close-session` OR "close session" in conversation → Deletes `/tmp/maia_active_swarm_session_{CONTEXT_ID}.json`
+- **Output**: Shows closed agent/domain, confirms natural routing restored
+- **Integration**: Working Principle #15 updated (Phase 134/134.7), supports multi-day persistence + user-controlled reset
+- **Impact**: ✅ Agent router functional again, ✅ Natural routing restored after projects, ✅ Multi-day persistence preserved, ✅ User has explicit control
+- **Philosophy**: Reverted to "new session = clean slate" with opt-in persistence (original Maia principle), respects actual user workflow (days-long projects)
+- **Production Status**: ✅ Complete - Tested, documented, deployed
+- **Files Modified**: swarm_auto_loader.py (+47 lines close_session function), CLAUDE.md (Working Principle #15 updated), .claude/commands/close-session.md (new)
 
 ### Phase 160 (Nov 20) - Contract RAG System ⭐ **NEW - CUSTOMER CONTRACT INTELLIGENCE**
 - **Contract RAG System** - Local-only semantic search for customer contracts (5,000+ lines, production-ready)
