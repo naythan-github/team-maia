@@ -72,26 +72,29 @@ class ConfluenceClient:
             markdown_content="# Updated Header\\n\\nNew content"
         )
 
-        # Multi-site
-        client_orro = ConfluenceClient(site_name="orro")
+        # Single VivOEMC instance (vivoemc.atlassian.net)
+        client = ConfluenceClient()
     """
 
-    def __init__(self, site_name: str = "default"):
+    def __init__(self):
         """
         Initialize Confluence client
 
-        Args:
-            site_name: Site identifier from config (default, orro, personal)
-                      Loads configuration from ~/.maia/confluence_sites.json
+        NOTE: This client connects to VivOEMC Confluence ONLY (vivoemc.atlassian.net)
+              All space keys (e.g., "Orro") are spaces within this single instance.
 
         Raises:
-            ConfluenceError: If site configuration invalid
+            ConfluenceError: If configuration invalid
         """
-        self.site_name = site_name
-        self.config = self._load_site_config(site_name)
+        # Single Confluence instance - vivoemc.atlassian.net
+        self.config = {
+            "url": "https://vivoemc.atlassian.net/wiki",
+            "auth": "env:CONFLUENCE_API_TOKEN",
+            "primary": True
+        }
         self.client = ReliableConfluenceClient()
 
-        logger.info(f"ConfluenceClient initialized for site: {site_name}")
+        logger.info("ConfluenceClient initialized for VivOEMC Confluence (vivoemc.atlassian.net)")
 
     def create_page_from_markdown(
         self,
@@ -603,8 +606,8 @@ class ConfluenceClient:
         Raises:
             ValueError: If validation fails
         """
-        if not space_key or not space_key.strip():
-            raise ValueError("space_key cannot be empty")
+        # Validate space key with helpful error messages
+        self._validate_space_key(space_key)
 
         if not title or not title.strip():
             raise ValueError("title cannot be empty")
@@ -747,69 +750,31 @@ class ConfluenceClient:
             f"Expected 'url', '_links.webui', 'webui', or 'id'."
         )
 
-    def _load_site_config(self, site_name: str) -> Dict:
+    def _validate_space_key(self, space_key: str):
         """
-        Load site configuration from config file
+        Validate space key and provide helpful error for common mistakes
 
-        Config file: ~/.maia/confluence_sites.json
-        Format:
-            {
-                "default": {
-                    "url": "https://vivoemc.atlassian.net/wiki",
-                    "auth": "env:CONFLUENCE_API_TOKEN",
-                    "primary": true
-                },
-                "orro": {
-                    "url": "https://orro.atlassian.net/wiki",
-                    "auth": "env:ORRO_CONFLUENCE_TOKEN",
-                    "primary": false
-                }
-            }
-
-        Args:
-            site_name: Site identifier to load
-
-        Returns:
-            Site configuration dict
-
-        Fallback: If file missing or site not found, returns hardcoded default
+        Raises:
+            ValueError: If space key appears to be a site name or invalid
         """
-        config_path = Path.home() / ".maia" / "confluence_sites.json"
+        if not space_key or not space_key.strip():
+            raise ValueError("space_key cannot be empty")
 
-        # If config file doesn't exist, use hardcoded default
-        if not config_path.exists():
-            logger.info(f"Config file not found: {config_path}, using default")
-            return {
-                "url": "https://vivoemc.atlassian.net/wiki",
-                "auth": "env:CONFLUENCE_API_TOKEN",
-                "primary": True
-            }
+        # Check for common mistakes - space key that looks like a site/instance name
+        space_lower = space_key.lower().strip()
 
-        # Load config file
-        try:
-            with open(config_path) as f:
-                all_configs = json.load(f)
+        # Common mistake: Using "orro" thinking it's a different Confluence instance
+        # Reality: "Orro" is a space key within vivoemc.atlassian.net
+        if space_lower in ['vivoemc', 'vivonetix', 'atlassian']:
+            raise ValueError(
+                f"Invalid space_key '{space_key}'. "
+                f"This appears to be a Confluence instance name, not a space key. "
+                f"All Confluence requests go to vivoemc.atlassian.net. "
+                f"Use the actual space key (e.g., 'Orro', 'MAIA-TEST') instead."
+            )
 
-            # Get requested site, fallback to default if not found
-            config = all_configs.get(site_name, all_configs.get("default", {}))
-
-            if not config:
-                logger.warning(f"Site '{site_name}' not found in config, using default")
-                return {
-                    "url": "https://vivoemc.atlassian.net/wiki",
-                    "auth": "env:CONFLUENCE_API_TOKEN",
-                    "primary": True
-                }
-
-            return config
-
-        except Exception as e:
-            logger.warning(f"Failed to load config: {e}, using default")
-            return {
-                "url": "https://vivoemc.atlassian.net/wiki",
-                "auth": "env:CONFLUENCE_API_TOKEN",
-                "primary": True
-            }
+        # Helpful guidance for valid space keys
+        logger.debug(f"Using space_key='{space_key}' in VivOEMC Confluence (vivoemc.atlassian.net)")
 
     def _format_error_message(
         self,

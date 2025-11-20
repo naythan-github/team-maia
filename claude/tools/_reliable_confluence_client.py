@@ -124,7 +124,7 @@ class ReliableConfluenceClient:
         self.email = "atlas.n@londonxyz.com"
         
         # API token - in production, use environment variable or secret manager
-        self.api_token = os.environ.get('CONFLUENCE_API_TOKEN', 'ATATT3xFfGF0fnqzG5roVee1aNwfi7O9hzHebtXZc4DFwwVmgVuJZXZtZdzyyvplTzOM0dgUYAa9fcJoIacNmWlxhaAFBKDJeSNFegJPP1UarN_Bj3kG0ct4T8avPmVXEhO_h-iuPzhDzV8kWYtpz9l7WM8Feiw9mqNcmncioNtlsCf8ihi3Gek=5270FC8E')
+        self.api_token = os.environ.get('CONFLUENCE_API_TOKEN', 'ATATT3xFfGF0KG9hdQ4Nh7Fi9Mf3ckEFRyu8Eh0ZB7Q2zbItXTJnWsbNiVX6CTWFAJlDfDK5BVQ7ZKfLF65nr_Iia8t-qwxdsqFHNLuCFFp2UMXHpnZfawkBesUtQOasAt0CFJJLeLQPPUKQH5FS4F7Sd7R9A3lHZxLKkGe3ahNXQrDpbhfK_qs=005E3052')
         
         # Initialize monitoring
         self.metrics = ServiceMetrics()
