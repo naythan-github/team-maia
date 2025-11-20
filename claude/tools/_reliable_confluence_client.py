@@ -21,17 +21,10 @@ from enum import Enum
 import logging
 from pathlib import Path
 
-# Import HTML builder for validated content generation
-try:
-    from claude.tools.confluence_html_builder import (
-        ConfluencePageBuilder,
-        validate_confluence_html,
-        create_interview_prep_html
-    )
-    HTML_BUILDER_AVAILABLE = True
-except ImportError:
-    HTML_BUILDER_AVAILABLE = False
-    logging.warning("ConfluencePageBuilder not available - HTML validation disabled")
+# NOTE: ConfluencePageBuilder removed in Phase 140
+# All Confluence operations now go through confluence_client.py which handles markdown→HTML conversion
+# This internal client (_reliable_confluence_client.py) is a low-level implementation detail
+HTML_BUILDER_AVAILABLE = False  # Deprecated - use confluence_client.py instead
 
 # Configure logging
 logging.basicConfig(
@@ -122,9 +115,9 @@ class ReliableConfluenceClient:
         # Confluence configuration
         self.base_url = "https://vivoemc.atlassian.net"
         self.email = "atlas.n@londonxyz.com"
-        
-        # API token - in production, use environment variable or secret manager
-        self.api_token = os.environ.get('CONFLUENCE_API_TOKEN', 'ATATT3xFfGF0KG9hdQ4Nh7Fi9Mf3ckEFRyu8Eh0ZB7Q2zbItXTJnWsbNiVX6CTWFAJlDfDK5BVQ7ZKfLF65nr_Iia8t-qwxdsqFHNLuCFFp2UMXHpnZfawkBesUtQOasAt0CFJJLeLQPPUKQH5FS4F7Sd7R9A3lHZxLKkGe3ahNXQrDpbhfK_qs=005E3052')
+
+        # API token - MUST be in environment variable (never hardcode secrets)
+        self.api_token = self._load_api_token()
         
         # Initialize monitoring
         self.metrics = ServiceMetrics()
@@ -145,7 +138,67 @@ class ReliableConfluenceClient:
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         })
-        
+
+    def _load_api_token(self) -> str:
+        """
+        Load Confluence API token securely from external sources.
+
+        Token loading order (first found wins):
+        1. CONFLUENCE_API_TOKEN environment variable
+        2. Read from ~/.zshrc (shell config file)
+
+        SECURITY: Never hardcode tokens in source code.
+
+        Returns:
+            API token string
+
+        Raises:
+            ValueError: If no token found with setup instructions
+        """
+        import subprocess
+
+        # Method 1: Check environment variable directly
+        token = os.environ.get('CONFLUENCE_API_TOKEN')
+        if token:
+            logger.debug("Token loaded from CONFLUENCE_API_TOKEN environment variable")
+            return token
+
+        # Method 2: Source shell config and extract token
+        # This handles cases where subprocess doesn't inherit parent shell env
+        try:
+            # Run shell command to source .zshrc and print token
+            result = subprocess.run(
+                ['zsh', '-c', 'source ~/.zshrc 2>/dev/null && echo $CONFLUENCE_API_TOKEN'],
+                capture_output=True,
+                text=True,
+                timeout=2
+            )
+
+            token = result.stdout.strip()
+            if token:
+                logger.debug("Token loaded from ~/.zshrc via shell source")
+                return token
+
+        except Exception as e:
+            logger.debug(f"Could not load from shell config: {e}")
+
+        # No token found - provide clear setup instructions
+        raise ValueError(
+            "\n" + "="*70 + "\n"
+            "ERROR: Confluence API token not found\n"
+            "="*70 + "\n\n"
+            "The Confluence integration requires an API token.\n\n"
+            "SETUP INSTRUCTIONS:\n\n"
+            "1. Generate token:\n"
+            "   https://id.atlassian.com/manage-profile/security/api-tokens\n\n"
+            "2. Add to ~/.zshrc:\n"
+            "   echo 'export CONFLUENCE_API_TOKEN=\"your-token-here\"' >> ~/.zshrc\n\n"
+            "3. Reload shell:\n"
+            "   source ~/.zshrc\n\n"
+            "SECURITY: Never commit tokens to git or hardcode in source.\n"
+            "="*70
+        )
+
     def _make_request(self, method: str, endpoint: str, **kwargs) -> Optional[requests.Response]:
         """
         Make HTTP request with retry logic and circuit breaker
@@ -336,6 +389,19 @@ class ReliableConfluenceClient:
             if results:
                 return results[0]  # Return first match (title should be unique in space)
         return None
+
+    def delete_page(self, page_id: str) -> bool:
+        """
+        Delete a Confluence page by ID
+
+        Args:
+            page_id: Confluence page ID
+
+        Returns:
+            True if deleted successfully, False otherwise
+        """
+        response = self._make_request('DELETE', f'/content/{page_id}')
+        return response is not None
         
     def create_page(self, space_key: str, title: str, content: str,
                    parent_id: Optional[str] = None, validate_html: bool = True) -> Optional[Dict]:
