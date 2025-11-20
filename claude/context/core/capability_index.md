@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-20 (Phase 158 - PIR Template System)
+**Last Updated**: 2025-11-20 (Phase 159 - IT Glue Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,25 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 159 (Nov 20) - IT Glue Specialist Agent ⭐ **NEW MSP DOCUMENTATION EXPERT**
+- **it_glue_specialist_agent.md** - IT Glue documentation & integration specialist (650 lines, v2.2 Enhanced)
+- **Location**: `claude/agents/it_glue_specialist_agent.md`
+- **Purpose**: Expert consultation for IT Glue platform (multi-tenant documentation architecture, REST API automation, password management, PSA/RMM integration)
+- **Core Capabilities**: Documentation architecture design, REST API integration & automation, password management & rotation, Network Glue implementation, MyGlue client collaboration
+- **Documentation Architecture**: Multi-tenant information hierarchy (Organizations → Configurations → Flexible Assets), relationship mapping strategies, standardized template development, version control workflows
+- **REST API Expertise**: Python automation scripts, rate limiting (3000 req/5min), API key management (90-day expiry), PSA/RMM sync (Autotask PSA, ConnectWise PSA, Datto RMM)
+- **Password Management**: Integrated password management, automated password rotation (M365/Azure AD/AD), MyGlue client portal (SSO, mobile app, policy hub), immutable audit trail (SOC 2)
+- **Few-Shot Examples**: (1) Multi-tenant documentation architecture design (75 clients, 3-tier structure, relationship mapping, 50-80% time savings), (2) REST API automation for PSA sync (Autotask PSA bi-directional sync, Python script, rate limiting)
+- **AI Features (2024-2025)**: IT Glue Copilot Smart Assist (stale asset cleanup), AI-powered SOP Generator (capture clicks/keystrokes), Device Lifecycle Management
+- **Integration Ecosystem**: 60+ native integrations (PSA, RMM, ITSM, cloud), REST API (api.itglue.com), Autotask PSA, ConnectWise PSA, Datto RMM, Microsoft Intune/Azure AD/M365
+- **Performance Metrics**: 50-80% time savings on information retrieval, 30%+ productivity gains (user-reported), >95% documentation coverage, 90% user recommendation rate
+- **Business Impact**: Automated documentation (PSA/RMM sync), SOC 2 compliance (audit trail), scalable architecture (unlimited organizations), client self-service (MyGlue portal)
+- **Problem Solved**: No IT Glue expertise for MSP implementations, manual documentation updates (PSA/RMM sync gaps), inconsistent multi-tenant structure, slow information retrieval
+- **Use Cases**: MSP multi-tenant documentation rollout, PSA/RMM integration automation, password management workflows, Network Glue implementation, client collaboration portals
+- **Production Status**: ✅ Ready - Complete v2.2 Enhanced agent with comprehensive REST API examples
+- **Documentation**: Multi-tenant architecture design, REST API automation workflows, password rotation setup, relationship mapping strategies
+- **Integration**: Works with Autotask PSA Specialist, Datto RMM Specialist, SonicWall Specialist, M365 Integration Agent, SRE Principal Engineer Agent
 
 ### Phase 158 (Nov 20) - Post-Incident Review Template System ⭐ **NEW SECURITY DOCUMENTATION TOOL**
 - **pir_template_manager.py** - Template management system for Post-Incident Reviews (370 lines, production-ready)
@@ -562,6 +581,8 @@
 
 ### Productivity & Integration (18 tools)
 - **confluence_client.py** ⭐ **PRIMARY - THE ONLY TOOL YOU NEED** - Simple facade for all Confluence operations (Phase 140, 95% confidence, 28/28 tests passing)
+  - **IMPORTANT**: Single instance ONLY - vivoemc.atlassian.net (VivOEMC Confluence)
+  - Space keys (e.g., "Orro") are spaces WITHIN vivoemc.atlassian.net, NOT separate Confluence instances
   - create_page_from_markdown() - Create pages from markdown
   - update_page_from_markdown() - Update existing pages (auto-lookup by title)
   - get_page_url() - Get page URL by title
@@ -622,7 +643,7 @@
 
 ---
 
-## 👥 All Agents (55 Agents)
+## 👥 All Agents (58 Agents)
 
 ### Information Management (3 agents)
 - **Information Management Orchestrator** - Coordinates all 7 information mgmt tools
@@ -641,7 +662,7 @@
 - **Principal IDAM Engineer Agent** - Identity & access management
 - **Airlock Digital Specialist Agent** - Application allowlisting, Essential Eight ML3 compliance, Trusted Installer integration ⭐ **Phase 155**
 
-### Cloud & Infrastructure (7 agents)
+### Cloud & Infrastructure (8 agents)
 - **Azure Solutions Architect Agent** - Azure architecture + solutions
 - **Microsoft 365 Integration Agent** - Enterprise M365 automation
 - **Snowflake Data Cloud Specialist Agent** - Cloud data platform, Cortex AI, streaming analytics, cost optimization ⭐ **Phase 157**
@@ -649,6 +670,7 @@
 - **SonicWall Specialist Agent** - Firewall policy, SSL-VPN, IPsec site-to-site VPN, security services ⭐ **Phase 146**
 - **Autotask PSA Specialist Agent** - MSP workflow optimization, REST API integration, RevOps automation ⭐ **Phase 145**
 - **Datto RMM Specialist Agent** - MSP cloud-native RMM, patch automation, PSA integration, BCDR workflows ⭐ **Phase 147**
+- **IT Glue Specialist Agent** - IT documentation platform, multi-tenant architecture, REST API automation, password management ⭐ **Phase 159**
 
 ### Recruitment & HR (3 agents)
 - **Technical Recruitment Agent** - MSP/cloud technical hiring
@@ -783,12 +805,26 @@
 - "transcription" → vtt_watcher.py, vtt_rag_indexer.py
 - "VTT processing" → vtt_watcher.py, vtt_rag_indexer.py
 
+**MSP Documentation & Integration**:
+- "it glue" → **IT Glue Specialist Agent** ⭐ NEW (IT documentation platform, multi-tenant architecture, Phase 159)
+- "msp documentation" → **IT Glue Specialist Agent** (structured documentation framework, relationship mapping, templates)
+- "documentation platform" → **IT Glue Specialist Agent** (Organizations → Configurations → Flexible Assets hierarchy)
+- "multi-tenant documentation" → **IT Glue Specialist Agent** (75+ clients, standardized templates, 50-80% time savings)
+- "relationship mapping" → **IT Glue Specialist Agent** (link passwords/contacts/domains to configurations)
+- "password management msp" → **IT Glue Specialist Agent** (integrated password management, automated rotation, MyGlue portal)
+- "automated password rotation" → **IT Glue Specialist Agent** (M365/Azure AD/AD rotation - Select/Enterprise tiers)
+- "network glue" → **IT Glue Specialist Agent** (automated network discovery, Active Directory discovery, diagramming)
+- "myglue" → **IT Glue Specialist Agent** (client collaboration portal, password self-service, SSO, mobile app)
+- "it glue api" → **IT Glue Specialist Agent** (REST API automation, rate limiting 3000 req/5min, Python scripts)
+- "it glue psa sync" → **IT Glue Specialist Agent** (Autotask PSA/ConnectWise PSA bi-directional sync)
+- "it glue copilot" → **IT Glue Specialist Agent** (Smart Assist stale asset cleanup, AI SOP Generator - 2024 features)
+
 **RMM & Endpoint Management**:
 - "datto rmm" → **Datto RMM Specialist Agent** ⭐ NEW (MSP cloud-native RMM, Phase 147)
 - "desktop shortcut deployment" → **Datto RMM Specialist Agent** (PowerShell components, all users/current user)
 - "self-healing automation" → **Datto RMM Specialist Agent** (alert-triggered remediation, PSA escalation)
 - "patch tuesday workflow" → **Datto RMM Specialist Agent** (monthly automation, 7-day auto-approve, notifications)
-- "psa integration" → **Datto RMM Specialist Agent** (ConnectWise/Autotask native, bidirectional tickets)
+- "psa integration" → **Datto RMM Specialist Agent** (ConnectWise/Autotask native, bidirectional tickets) + **IT Glue Specialist Agent** (PSA/RMM sync automation)
 - "datto bcdr" → **Datto RMM Specialist Agent** (25% time savings, rollback strategy)
 - "rmm component development" → **Datto RMM Specialist Agent** (PowerShell/Bash, UDFs, Input Variables)
 - "comstore" → **Datto RMM Specialist Agent** (200+ pre-built components)
@@ -832,9 +868,11 @@
 - "cv conversion" → cv_converter.py (MD → DOCX, 3 modes: styled/ATS/readable)
 
 **Productivity**:
-- "confluence" → **confluence_client.py** ⭐ **THE ONLY TOOL YOU NEED** (Phase 140, 95% confidence)
-- "confluence page" → **confluence_client.py** (create, update, get URL)
+- "confluence" → **confluence_client.py** ⭐ **THE ONLY TOOL YOU NEED** (Phase 140, 95% confidence) **VivOEMC ONLY (vivoemc.atlassian.net)**
+- "confluence page" → **confluence_client.py** (create, update, get URL) - All pages in vivoemc.atlassian.net
 - "confluence markdown" → **confluence_client.py** (auto-converts markdown to HTML)
+- "orro space" → Space key "Orro" WITHIN vivoemc.atlassian.net (NOT a separate Confluence instance)
+- "save to confluence" → ALWAYS uses vivoemc.atlassian.net with specified space_key
 - "confluence organization" → confluence_organization_manager.py (bulk operations)
 - "confluence sync" → confluence_auto_sync.py
 - ❌ "confluence formatter" → **DELETED** - Use confluence_client.py (Phase 140)
@@ -955,7 +993,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
-**Agents**: 58 across 11 specializations (Phase 157: +1 Snowflake Data Cloud, Phase 156: +1 Document Conversion, Phase 155: +1 Airlock Digital)
+**Agents**: 58 across 11 specializations (Phase 159: +1 IT Glue, Phase 157: +1 Snowflake Data Cloud, Phase 156: +1 Document Conversion)
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
