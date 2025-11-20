@@ -1205,13 +1205,20 @@ Commands are markdown files that define reusable workflows and can be chained to
 ## Confluence Access ⭐ **PHASE 140 UPDATE - THE ONLY TOOL YOU NEED**
 **Location**: `claude/tools/confluence_client.py` ⭐ **PRIMARY - 95% CONFIDENCE, 28/28 TESTS PASSING**
 
+### 🚨 **CRITICAL CONSTRAINT: VivOEMC Confluence ONLY** 🚨
+**ALL Confluence requests use vivoemc.atlassian.net (single instance)**
+- "Orro" is a **space key** within vivoemc.atlassian.net, NOT a separate Confluence instance
+- "Save to Confluence Orro space" = Create page in space_key="Orro" at vivoemc.atlassian.net
+- **Never attempt** to construct alternate Confluence URLs (e.g., orro.atlassian.net doesn't exist)
+
 ### **Quick Start** (95% of use cases):
 ```python
 from confluence_client import ConfluenceClient
 
+# Single VivOEMC instance - no parameters needed
 client = ConfluenceClient()
 
-# Create page from markdown
+# Create page from markdown (in VivOEMC Confluence, space "Orro")
 url = client.create_page_from_markdown("Orro", "Page Title", "# Markdown content")
 
 # Update page (auto-lookup by title)
@@ -1220,7 +1227,7 @@ url = client.update_page_from_markdown("Orro", "Page Title", "# Updated content"
 # Get page URL
 url = client.get_page_url("Orro", "Page Title")
 
-# List spaces
+# List spaces (all spaces in vivoemc.atlassian.net)
 spaces = client.list_spaces()
 ```
 
@@ -1250,16 +1257,12 @@ spaces = client.list_spaces()
 - ✅ Links `[text](url)`
 - ✅ Automatic HTML conversion
 
-### **Multi-Site Configuration** (Optional):
-Create `~/.maia/confluence_sites.json` for multiple Confluence instances:
-```python
-client = ConfluenceClient(site_name="client_a")
-```
-
-### **What Changed** (Phase 140):
+### **What Changed** (Phase 140 + Phase 159 Reliability Fix):
 - 🗑️ **DELETED**: confluence_formatter.py, confluence_formatter_v2.py, confluence_html_builder.py
+- 🗑️ **REMOVED**: Multi-site configuration support (single VivOEMC instance only)
 - 🔒 **INTERNAL**: _reliable_confluence_client.py (renamed with underscore, don't import directly)
 - ⭐ **NEW PRIMARY**: confluence_client.py (THE ONLY TOOL YOU NEED)
+- ✅ **RELIABILITY FIX**: Space key validation prevents misinterpretation of "Orro space" as separate instance
 
 ### **Specialized Tools** (Still Available):
 - `confluence_organization_manager.py` - Bulk operations, space organization
