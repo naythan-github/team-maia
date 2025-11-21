@@ -37,7 +37,6 @@ ALLOWED_ROOT_FILES = [
     'SYSTEM_STATE.md',
     'SYSTEM_STATE_ARCHIVE.md',
     '.gitignore',
-    'requirements-mcp-trello.txt'
 ]
 
 WORK_OUTPUT_PATTERNS = [

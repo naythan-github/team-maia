@@ -38,7 +38,7 @@ class PIRTemplateManager:
 
         Args:
             source_docx: Path to source DOCX file (completed PIR)
-            template_name: Name for the template (e.g., "credential_stuffing_pir")
+            template_name: Name for the template (e.g., "pir_credential_stuffing_template")
             description: Description of when to use this template
             metadata: Additional metadata (incident_type, sections_included, etc.)
 

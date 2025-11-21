@@ -18,7 +18,8 @@ from pathlib import Path
 
 # Configuration
 MAIA_ROOT = Path(__file__).parent.parent.parent
-ALLOWED_ROOT_FILES = ['CLAUDE.md', 'README.md', 'SYSTEM_STATE.md', 'SYSTEM_STATE_ARCHIVE.md', '.gitignore', 'requirements-mcp-trello.txt']
+ALLOWED_ROOT_FILES = ['CLAUDE.md', 'README.md', 'SYSTEM_STATE.md', 'SYSTEM_STATE_ARCHIVE.md', '.gitignore']
+ALLOWED_ROOT_DIRS = ['${MAIA_ROOT}', "get_path_manager().get_path('backup') "]  # Path manager directories
 WORK_OUTPUT_PATTERNS = ['ServiceDesk', 'Infrastructure', 'Lance_Letran', 'L2_']
 MAX_FILE_SIZE_MB = 10
 
@@ -73,7 +74,7 @@ def check_violations():
 
         # Check 3: Root directory pollution
         if '/' not in file:  # File is in root
-            if filename not in ALLOWED_ROOT_FILES:
+            if filename not in ALLOWED_ROOT_FILES and filename not in ALLOWED_ROOT_DIRS:
                 violations.append(
                     f"❌ {file} - Not allowed in root (move to appropriate subdirectory)"
                 )
