@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "file_path": "/Users/naythandawe/git/maia/claude/data/transcripts/Quick Test Session.md",
+  "metadata": {
+    "title": "Quick Test Session",
+    "date": "2025-10-29",
+    "time": "16:17:42",
+    "session_id": "20251029_161739"
+  },
+  "word_count": 897,
+  "timestamp": "2025-11-21T21:15:06.108918",
+  "summary": {
+    "success": true,
+    "summary_text": "Here are the key takeaways from the meeting transcript:\n\n- IT Loop is introducing new AI capabilities, including Smart Ticket Triage for automated ticket classification and Smart Assist to analyze password security. \n- A natural language interface called Kombra Coach will be integrated into SAP Pacificia, allowing technicians to interact with the platform in a conversational way to get answers, analyze data, and generate reports.\n- Kombra Coach can also create standardized operating procedures (SOPs) based on contextual information from various systems, improving efficiency and knowledge sharing.\n- The SAVA platform offers self-service options for booking professional services engagements, managing auto-renewals, and accessing original documents. \n-  SAVA centralizes data from different systems to provide a comprehensive view of operations, enabling features like generating TBR reports based on ticket volume, backup status, security, and customer interactions.\n- The company plans significant updates over the next 12-18 months to further enhance efficiency and support thousands of endpoints per technician.",
+    "bullet_points": [
+      "Here are the key takeaways from the meeting transcript:",
+      "IT Loop is introducing new AI capabilities, including Smart Ticket Triage for automated ticket classification and Smart Assist to analyze password security.",
+      "A natural language interface called Kombra Coach will be integrated into SAP Pacificia, allowing technicians to interact with the platform in a conversational way to get answers, analyze data, and generate reports.",
+      "Kombra Coach can also create standardized operating procedures (SOPs) based on contextual information from various systems, improving efficiency and knowledge sharing.",
+      "The SAVA platform offers self-service options for booking professional services engagements, managing auto-renewals, and accessing original documents.",
+      "SAVA centralizes data from different systems to provide a comprehensive view of operations, enabling features like generating TBR reports based on ticket volume, backup status, security, and customer interactions.",
+      "The company plans significant updates over the next 12-18 months to further enhance efficiency and support thousands of endpoints per technician."
+    ],
+    "bullet_count": 7,
+    "model": "gemma2:9b",
+    "latency_seconds": 25.6
+  },
+  "action_items": {
+    "success": true,
+    "action_items": [
+      {
+        "task": "Analyze password security and identify duplicated, outdated, or vulnerable passwords for rotation",
+        "assignee": "IT Loop technician",
+        "deadline": null,
+        "priority": "high",
+        "context": "Smart Assist from Housewives helps analyze password security."
+      },
+      {
+        "task": "Clean up empty items in the menu using kombra coach",
+        "assignee": "IT Loop technician",
+        "deadline": null,
+        "priority": "high",
+        "context": "Ask kombra coach for assistance in cleaning up menu items."
+      },
+      {
+        "task": "Write SOP for 2D VPN setup on a Macboard station",
+        "assignee": "IT Loop technician",
+        "deadline": null,
+        "priority": "high",
+        "context": "Kombra coach can help with writing SOPs."
+      },
+      {
+        "task": "Manage all vendors and interactions with SAVA",
+        "assignee": "IT Loop user",
+        "deadline": null,
+        "priority": "high",
+        "context": "SAVA allows for self-service and professional services engagements management."
+      },
+      {
+        "task": "Improve TBR process using Maven bus in SAVA",
+        "assignee": "IT Loop user",
+        "deadline": null,
+        "priority": "high",
+        "context": "SAVA provides a single platform for all data, making it easier to generate TBRs."
+      }
+    ],
+    "count": 5,
+    "model": "knoopx/hermes-2-pro-mistral:7b-q8_0",
+    "latency_seconds": 44.6
+  },
+  "keywords": {
+    "success": true,
+    "keywords": [
+      "Smart Ticket Triage",
+      "Password Security Analysis",
+      "Natural Language Interface",
+      "Kombra Coach Action",
+      "SOP Automation",
+      "Margin Improvement",
+      "Self-Service Management",
+      "Data Centralization",
+      "Revenue Growth",
+      "Endpoint Management"
+    ],
+    "keywords_text": "1. Smart Ticket Triage\n2. Password Security Analysis\n3. Natural Language Interface\n4. Kombra Coach Action\n5. SOP Automation\n6. Margin Improvement\n7. Self-Service Management\n8. Data Centralization\n9. Revenue Growth\n10. Endpoint Management",
+    "count": 10,
+    "model": "qwen2.5:7b-instruct",
+    "latency_seconds": 13.1
+  },
+  "total_latency_seconds": 83.4
+}

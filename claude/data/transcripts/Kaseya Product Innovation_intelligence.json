@@ -1,0 +1,91 @@
+{
+  "success": true,
+  "file_path": "/Users/naythandawe/git/maia/claude/data/transcripts/Kaseya Product Innovation.md",
+  "metadata": {
+    "title": "Kaseya Product Innovation",
+    "date": "2025-10-29",
+    "time": "16:35:57",
+    "session_id": "20251029_163553"
+  },
+  "word_count": 871,
+  "timestamp": "2025-11-21T21:05:18.855763",
+  "summary": {
+    "success": true,
+    "summary_text": "- LtraID backup allows for easy restoration of data, including entire tenants, within seconds. \n-  A special offer includes three months free with a one-year or 100 license contract for LtraID backup.\n- Current SaaS Protection and Spanning customers receive an increased business credit when bringing LtraID Backup to their clients.\n- The new Next Generation Partner series features desktop appliances optimized for performance using DCDR-optimized C-commutes.\n-  Series six appliances offer up to 120 terabytes of storage capacity, Intel processors, and faster RAM compared to previous generations.\n- A migration tool simplifies moving from Series five to Series six appliances. \n- The BCR FastTrack hardware offers a 50% discount on maintenance for the first year and includes six months free of SaaS-Baka platform with a two-year subscription.",
+    "bullet_points": [
+      "LtraID backup allows for easy restoration of data, including entire tenants, within seconds.",
+      "A special offer includes three months free with a one-year or 100 license contract for LtraID backup.",
+      "Current SaaS Protection and Spanning customers receive an increased business credit when bringing LtraID Backup to their clients.",
+      "The new Next Generation Partner series features desktop appliances optimized for performance using DCDR-optimized C-commutes.",
+      "Series six appliances offer up to 120 terabytes of storage capacity, Intel processors, and faster RAM compared to previous generations.",
+      "A migration tool simplifies moving from Series five to Series six appliances.",
+      "The BCR FastTrack hardware offers a 50% discount on maintenance for the first year and includes six months free of SaaS-Baka platform with a two-year subscription."
+    ],
+    "bullet_count": 7,
+    "model": "gemma2:9b",
+    "latency_seconds": 16.3
+  },
+  "action_items": {
+    "success": true,
+    "action_items": [
+      {
+        "task": "Follow up with attendees for feedback on new products",
+        "assignee": "Product team",
+        "deadline": null,
+        "priority": "high",
+        "context": "Discussed new product features and capabilities. Feedback from attendees is important for further development."
+      },
+      {
+        "task": "Provide free first three months for LtraID backup to customers with 12 month or 100 license contract",
+        "assignee": "Sales team",
+        "deadline": null,
+        "priority": "high",
+        "context": "Offered as an incentive for signing long-term contracts for LtraID backup services."
+      },
+      {
+        "task": "Create marketing materials for Next Generation Partner and BCR FastTrack hardware offers",
+        "assignee": "Marketing team",
+        "deadline": null,
+        "priority": "high",
+        "context": "New product offers were discussed in the meeting. Marketing materials need to be created to promote these offers."
+      },
+      {
+        "task": "Develop migration tool for series five to series six appliances",
+        "assignee": "Engineering team",
+        "deadline": null,
+        "priority": "high",
+        "context": "Mentioned as a key feature to simplify migrations between product versions."
+      },
+      {
+        "task": "Implement extended estate deal for customers with losers",
+        "assignee": "Sales team",
+        "deadline": null,
+        "priority": "medium",
+        "context": "New contract terms discussed to help customers redeploy appliances and start earning money faster."
+      }
+    ],
+    "count": 5,
+    "model": "knoopx/hermes-2-pro-mistral:7b-q8_0",
+    "latency_seconds": 46.6
+  },
+  "keywords": {
+    "success": true,
+    "keywords": [
+      "LtraID Backup Restoration",
+      "Free Trial Offer",
+      "Kisea 365 Subscription",
+      "Next Generation Partner",
+      "Desktop Return",
+      "DCDR Optimized Commutes",
+      "Storage Capacity Expansion",
+      "Migration Tool Series Five to Six",
+      "BCR FastTrack Hardware",
+      "SaaS-Baka Platform Discount"
+    ],
+    "keywords_text": "1. LtraID Backup Restoration\n2. Free Trial Offer\n3. Kisea 365 Subscription\n4. Next Generation Partner\n5. Desktop Return\n6. DCDR Optimized Commutes\n7. Storage Capacity Expansion\n8. Migration Tool Series Five to Six\n9. BCR FastTrack Hardware\n10. SaaS-Baka Platform Discount",
+    "count": 10,
+    "model": "qwen2.5:7b-instruct",
+    "latency_seconds": 14.7
+  },
+  "total_latency_seconds": 77.6
+}

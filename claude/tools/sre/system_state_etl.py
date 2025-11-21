@@ -73,7 +73,7 @@ class SystemStateParser:
     # Regex patterns for phase headers (handles emoji variations)
     PHASE_HEADER_PATTERNS = [
         # Format: ## 📄 PHASE 163: Title (2025-11-21) **STATUS**
-        re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️].+?PHASE\s+(\d+):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)\s*(?:\*\*(.+?)\*\*)?', re.IGNORECASE),
+        re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐].+?PHASE\s+(\d+):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)\s*(?:\*\*(.+?)\*\*)?', re.IGNORECASE),
         # Format: ## PHASE 163: Title (2025-11-21)
         re.compile(r'^##\s+PHASE\s+(\d+):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)', re.IGNORECASE),
     ]

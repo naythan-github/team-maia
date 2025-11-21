@@ -1,0 +1,78 @@
+{
+  "success": true,
+  "file_path": "/Users/naythandawe/git/maia/claude/data/transcripts/Test Meeting.md",
+  "metadata": {
+    "title": "Test Meeting",
+    "date": "2025-10-29",
+    "time": "16:14:08",
+    "session_id": "20251029_161404"
+  },
+  "word_count": 0,
+  "timestamp": "2025-11-21T21:16:29.800892",
+  "summary": {
+    "success": true,
+    "summary_text": "Please provide the meeting transcript so I can summarize it for you! \ud83d\ude0a",
+    "bullet_points": [
+      "Please provide the meeting transcript so I can summarize it for you! \ud83d\ude0a"
+    ],
+    "bullet_count": 1,
+    "model": "gemma2:9b",
+    "latency_seconds": 5.9
+  },
+  "action_items": {
+    "success": true,
+    "action_items": [
+      {
+        "task": "Finalize the budget for the upcoming project",
+        "assignee": "Sarah",
+        "deadline": "next Friday",
+        "priority": "high",
+        "context": "Discussed during the financial review section of the meeting"
+      },
+      {
+        "task": "Schedule a follow-up meeting with Marketing team",
+        "assignee": "John",
+        "deadline": "within a week",
+        "priority": "medium",
+        "context": "Mentioned during the project update section of the meeting"
+      },
+      {
+        "task": "Research and present alternative materials for packaging",
+        "assignee": "David",
+        "deadline": "in two weeks",
+        "priority": "medium",
+        "context": "Brought up during the product development discussion"
+      },
+      {
+        "task": "Review and provide feedback on the new website design",
+        "assignee": "Emily",
+        "deadline": "by the end of this week",
+        "priority": "high",
+        "context": "Discussed during the presentation section of the meeting"
+      }
+    ],
+    "count": 4,
+    "model": "knoopx/hermes-2-pro-mistral:7b-q8_0",
+    "latency_seconds": 45.2
+  },
+  "keywords": {
+    "success": true,
+    "keywords": [
+      "Project Timeline",
+      "Budget Review",
+      "Marketing Strategy",
+      "Sales Forecast",
+      "Product Launch",
+      "Customer Feedback",
+      "Supply Chain Issues",
+      "Employee Training",
+      "Technology Integration",
+      "Partnership Opportunities"
+    ],
+    "keywords_text": "1. Project Timeline\n2. Budget Review\n3. Marketing Strategy\n4. Sales Forecast\n5. Product Launch\n6. Customer Feedback\n7. Supply Chain Issues\n8. Employee Training\n9. Technology Integration\n10. Partnership Opportunities",
+    "count": 10,
+    "model": "qwen2.5:7b-instruct",
+    "latency_seconds": 7.4
+  },
+  "total_latency_seconds": 58.5
+}
