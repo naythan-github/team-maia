@@ -78,3 +78,17 @@ temp/
 claude/data/model_usage_log.txt
 claude/data/dashboard_service.pid
 claude/infrastructure/servicedesk-dashboard/.env
+# Large cache files
+claude/data/capability_cache.json
+claude/data/servicedesk_comment_sample.json
+# SQLite temp files
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Runtime/process files
+*.pid
+
+# Old log files
+unified_dashboard.log
+unified_dashboard.error.log
