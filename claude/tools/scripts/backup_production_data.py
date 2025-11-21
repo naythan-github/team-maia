@@ -50,21 +50,20 @@ class ProductionBackupSystem:
             # Core system databases
             "claude/data/jobs.db",
             "claude/data/databases/rag_service.db",
-            "claude/data/databases/personal_knowledge_graph.db",
-            "claude/data/personal_knowledge_graph.db",
+            "claude/data/databases/user/personal_knowledge_graph.db",
             "claude/data/security_intelligence.db",
-            "claude/data/dashboard_registry.db",
-            "claude/data/tool_discovery.db",
+            "claude/data/databases/system/dashboard_registry.db",
+            "claude/data/databases/system/tool_discovery.db",
             "claude/data/tool_usage.db",
-            "claude/data/implementations/implementations.db",
+            "claude/data/databases/system/implementations.db",
             "claude/data/maia_improvement_intelligence.db",
             "claude/data/maia_projects.db",
             
             # Business and analytics databases
             "claude/data/bi_dashboard.db",
-            "claude/data/performance_metrics.db",
-            "claude/data/predictive_models.db",
-            "claude/data/research_cache.db",
+            "claude/data/databases/system/performance_metrics.db",
+            "claude/data/databases/intelligence/predictive_models.db",
+            "claude/data/databases/system/research_cache.db",
             "claude/data/rss_intelligence.db",
             "claude/data/teams_meetings.db",
             
@@ -77,12 +76,15 @@ class ProductionBackupSystem:
             "claude/data/reconstruction.db",
             "claude/data/databases/system/self_improvement.db",
             "claude/data/ux_optimization.db",
-            "claude/data/verification_hook.db",
-            "claude/data/deduplication.db",
-            
+            "claude/data/databases/system/verification_hook.db",
+            "claude/data/databases/system/deduplication.db",
+
             # EIA and monitoring databases
-            "claude/data/eia/dora_metrics.db",
-            "claude/data/eia/eia_intelligence.db"
+            "claude/data/databases/system/dora_metrics.db",
+            "claude/data/databases/intelligence/eia_intelligence.db",
+            "claude/data/databases/intelligence/security_metrics.db",
+            "claude/data/databases/system/system_health.db",
+            "claude/data/databases/system/anti_sprawl_progress.db"
         ]
         
         # Credential files to backup (encrypted)
