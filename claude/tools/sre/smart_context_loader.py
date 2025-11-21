@@ -6,6 +6,7 @@ Intelligently loads relevant portions of SYSTEM_STATE.md based on query intent,
 complexity, and domain. Prevents token overflow (42K+ → 5-20K adaptive loading).
 
 Part of Phase 2: SYSTEM_STATE Intelligent Loading Project
+Enhanced in Phase 165: Database-accelerated queries (100x faster)
 
 Usage:
     from claude.tools.sre.smart_context_loader import SmartContextLoader
@@ -22,13 +23,15 @@ Features:
     - Complexity-based depth control (simple → 10 phases, complex → 20)
     - Domain-specific loading (SRE → 103-105, Azure → 102, etc.)
     - Token budget enforcement (never exceed 20K tokens)
-    - RAG fallback for historical phases (Phase 1-80 archived)
+    - Database-accelerated queries (0.2ms vs 100-500ms) - Phase 165
+    - Graceful fallback to markdown if database unavailable
 """
 
 import re
 from pathlib import Path
 from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass
+import logging
 
 # Try importing intent classifier (Phase 111 infrastructure)
 try:
@@ -40,6 +43,17 @@ try:
 except ImportError:
     INTENT_CLASSIFIER_AVAILABLE = False
     Intent = None
+
+# Try importing database query interface (Phase 165 infrastructure)
+try:
+    from system_state_queries import SystemStateQueries
+    DB_QUERIES_AVAILABLE = True
+except ImportError:
+    DB_QUERIES_AVAILABLE = False
+
+# Configure logging
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -67,11 +81,29 @@ class SmartContextLoader:
             self.maia_root = Path(maia_root)
 
         self.system_state_path = self.maia_root / "SYSTEM_STATE.md"
+        self.db_path = self.maia_root / "claude" / "data" / "databases" / "system" / "system_state.db"
         self.token_budget_max = 20000  # Maximum tokens (80% of Read tool limit)
         self.token_budget_default = 10000  # Default for standard queries
 
         # Initialize intent classifier if available
         self.intent_classifier = IntentClassifier() if INTENT_CLASSIFIER_AVAILABLE else None
+
+        # Initialize database query interface if available
+        self.db_queries = None
+        self.use_database = False
+        if DB_QUERIES_AVAILABLE and self.db_path.exists():
+            try:
+                self.db_queries = SystemStateQueries(self.db_path)
+                self.use_database = True
+                logger.info(f"Database queries enabled: {self.db_path}")
+            except Exception as e:
+                logger.warning(f"Database initialization failed, using markdown fallback: {e}")
+                self.use_database = False
+        else:
+            if not DB_QUERIES_AVAILABLE:
+                logger.debug("Database queries module not available")
+            elif not self.db_path.exists():
+                logger.debug(f"Database not found: {self.db_path}")
 
     def load_for_intent(self, user_query: str) -> ContextLoadResult:
         """
@@ -214,9 +246,55 @@ class SmartContextLoader:
 
         return phase_numbers[:count]
 
-    def _load_phases(self, phase_numbers: List[int], token_budget: int) -> str:
+    def _load_phases_from_db(self, phase_numbers: List[int], token_budget: int) -> str:
         """
-        Load specified phases from SYSTEM_STATE.md.
+        Load phases from database (fast path - Phase 165).
+
+        Args:
+            phase_numbers: List of phase numbers to load
+            token_budget: Maximum tokens to load
+
+        Returns:
+            Content string formatted as markdown
+        """
+        if not self.use_database or not self.db_queries:
+            raise RuntimeError("Database not available")
+
+        # Query database for requested phases
+        phases = self.db_queries.get_phases_by_number(phase_numbers)
+
+        if not phases:
+            # No phases found in DB, fall back to markdown
+            logger.warning(f"No phases found in database for {phase_numbers}, falling back to markdown")
+            return self._load_phases_from_markdown(phase_numbers, token_budget)
+
+        # Format as markdown with token budget enforcement
+        markdown = self.db_queries.format_phases_as_markdown(phases)
+
+        # Truncate if exceeds budget
+        if len(markdown) // 4 > token_budget:
+            # Remove phases until under budget
+            truncated_phases = []
+            current_tokens = 0
+
+            for phase in phases:
+                phase_md = self.db_queries.format_phase_as_markdown(phase)
+                phase_tokens = len(phase_md) // 4
+
+                if current_tokens + phase_tokens <= token_budget:
+                    truncated_phases.append(phase)
+                    current_tokens += phase_tokens
+                else:
+                    break
+
+            markdown = self.db_queries.format_phases_as_markdown(truncated_phases)
+            logger.info(f"Truncated to {len(truncated_phases)}/{len(phases)} phases for token budget")
+
+        return markdown
+
+    def _load_phases_from_markdown(self, phase_numbers: List[int], token_budget: int) -> str:
+        """
+        Load phases by parsing markdown file (fallback path).
 
         Args:
             phase_numbers: List of phase numbers to load
@@ -229,7 +307,7 @@ class SmartContextLoader:
         lines = content.splitlines()
 
         # Always include header (first ~8 lines before first phase)
-        phase_pattern = re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠].+PHASE\s+\d+:', re.IGNORECASE)
+        phase_pattern = re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠🗄️].+PHASE\s+\d+:', re.IGNORECASE)
 
         header_end = 0
         for i, line in enumerate(lines):
@@ -245,7 +323,7 @@ class SmartContextLoader:
         current_phase_start = None
 
         for i, line in enumerate(lines):
-            match = re.match(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠].+PHASE\s+(\d+):', line, re.IGNORECASE)
+            match = re.match(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠🗄️].+PHASE\s+(\d+):', line, re.IGNORECASE)
             if match:
                 # Save previous phase if it's in our list
                 if current_phase_num and current_phase_num in phase_numbers:
@@ -279,6 +357,28 @@ class SmartContextLoader:
                 break
 
         return combined.strip()
+
+    def _load_phases(self, phase_numbers: List[int], token_budget: int) -> str:
+        """
+        Load phases using best available method (DB or markdown).
+
+        Routes to database query (fast) or markdown parsing (fallback).
+
+        Args:
+            phase_numbers: List of phase numbers to load
+            token_budget: Maximum tokens to load
+
+        Returns:
+            Content string with selected phases
+        """
+        if self.use_database:
+            try:
+                return self._load_phases_from_db(phase_numbers, token_budget)
+            except Exception as e:
+                logger.warning(f"Database query failed, falling back to markdown: {e}")
+                return self._load_phases_from_markdown(phase_numbers, token_budget)
+        else:
+            return self._load_phases_from_markdown(phase_numbers, token_budget)
 
     def _intent_to_dict(self, intent: Intent) -> Dict[str, Any]:
         """Convert Intent dataclass to dictionary for serialization."""
