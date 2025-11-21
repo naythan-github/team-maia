@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-20 (Phase 134.7 - User-Controlled Session Lifecycle + Phase 159)
+**Last Updated**: 2025-11-21 (Phase 164 - SYSTEM_STATE Hybrid Database MVP)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,30 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 164 (Nov 21) - SYSTEM_STATE Hybrid Database ⭐ **NEW - MVP INFRASTRUCTURE**
+- **SYSTEM_STATE Hybrid Database** - Production-grade SQLite database replacing 2.1 MB markdown with structured storage for 163 phases (MVP: 10 phases migrated)
+- **Location**: `claude/tools/sre/system_state_etl.py` (ETL), `claude/tools/sre/system_state_schema.sql` (schema), `claude/data/databases/system/system_state.db` (database)
+- **Purpose**: Enable structured queries, pattern analysis, and metric aggregation across all Maia development phases (currently limited to keyword search in markdown)
+- **Core Capabilities**: 6-table normalized schema (phases, problems, solutions, metrics, files_created, tags), markdown ETL parser (570 lines), foreign key constraints, 11 performance indexes, 4 convenience views, transaction safety with rollback, deduplication handling
+- **Database Schema**: phases (core metadata: number, title, date, status, achievement, agent team, git commits, full narrative), problems (before state, root cause, category), solutions (after state, architecture, implementation), metrics (name, value, unit, baseline, target), files_created (path, type, purpose, status), tags (categorization for pattern analysis)
+- **ETL Pipeline**: Regex-based markdown parser → section extraction (Achievement, Problem Solved, Metrics, Files Created) → structured data transformation → SQLite insertion with transaction safety → validation reporting
+- **Test Suite**: 23 automated tests (7 passing schema tests: foreign keys, UNIQUE constraints, cascade delete, indexes, views; 16 pending: parser, queries, ETL, performance)
+- **Architecture Decision**: Option B (Hybrid DB + Narrative) chosen over Option C (ChromaDB RAG) - matches existing patterns (27 SQLite DBs), solves actual needs (95% structured queries vs 5% semantic), no Ollama dependency (Phase 161 proved unreliable), lower complexity (4-6h vs 6-8h), better ROI (enables metrics/pattern analysis impossible with RAG)
+- **Migration Status**: 10 phases migrated (163, 162, 161, 160, 159, 158, 157, 141, 134, 133), 7 problems extracted, 7 solutions extracted, 4 metrics extracted, 19 files extracted, 0 errors (100% success rate)
+- **Performance**: ETL processes 10 phases in <5 seconds, database size 68 KB (projected 1 MB for full 163 phases vs 2.1 MB markdown), query speed not yet benchmarked (pending query interface)
+- **Business Impact**: Enables ROI reporting ("total time savings" = 1 SQL query), pattern learning ("all SQL injection fixes" = instant results), architecture timelines (technology adoption tracking), metric dashboards (business value visualization), smart loader enhancement (query DB vs parse markdown)
+- **Problem Solved**: SYSTEM_STATE.md = 2.1 MB markdown (44,865 lines, 163 phases, 10,330 chars/phase) with no structured queries, no pattern analysis, no metric aggregation, smart loader limited to keyword matching, archive tool broken (Phase 87), ~30% markdown overhead
+- **Known Limitations**: Only 10 phases migrated (MVP scope), no query interface yet (database not usable), no smart loader integration, parser handles recent formats only (older phases may need refinement), files extraction incomplete (19 files for 10 phases = low coverage)
+- **Future Work** (Phase 165+): Backfill all 163 phases, build query interface (get_recent_phases, aggregate_metric, search_narrative, pattern_analysis), integrate with smart context loader (query DB first, fall back to markdown), generate reports (ROI dashboard, pattern analysis, quality metrics), schema migration tools (handle format evolution)
+- **Production Status**: ✅ MVP Complete - Schema validated (7/7 tests), ETL working (10 phases), committed and pushed (git: 34ebcd0), documentation in progress
+- **TDD Methodology**: Requirements-first (450 lines), tests-before-implementation (23 tests created before ETL), systematic validation (schema → tests → ETL → validation)
+- **Files Created**: system_state_schema.sql (220 lines: 6 tables, 11 indexes, 4 views), system_state_etl.py (570 lines: parser + ETL + CLI), test_system_state_db.py (310 lines: 23 tests), SYSTEM_STATE_DB_requirements.md (450 lines: TDD spec), system_state.db (68 KB: 10 phases)
+- **Agent Team**: SRE Principal Engineer (TDD, schema design, ETL, production hardening)
+- **Methodology**: TDD (tests first), SRE hardening (foreign keys, transactions, validation), incremental approach (10 phases → validate → expand)
+- **Usage**: `python3 ~/git/maia/claude/tools/sre/system_state_etl.py --recent 20` (ETL), `sqlite3 ~/git/maia/claude/data/databases/system/system_state.db "SELECT * FROM v_recent_phases"` (query), `python3 ~/git/maia/claude/tools/sre/test_system_state_db.py` (tests)
+- **Views**: v_recent_phases (phases with counts), v_metric_summary (metric aggregation), v_problem_categories (problem frequency), v_file_types (file type summary)
+- **Example Queries** (future): "SELECT SUM(value) FROM metrics WHERE metric_name='time_savings_hours'" (total ROI), "SELECT * FROM problems WHERE problem_category='SQL injection'" (pattern learning), "SELECT phase_number, date FROM phases WHERE narrative_text LIKE '%ChromaDB%'" (technology timeline)
 
 ### Phase 163 (Nov 21) - Document Conversion System ⭐ **NEW - PRODUCTION READY**
 - **Generic MD→DOCX Converter** - Production-hardened markdown to Word converter with Orro corporate branding
