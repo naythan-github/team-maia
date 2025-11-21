@@ -39,13 +39,13 @@ class ProductionBackupSystem:
         # All database files to backup - COMPREHENSIVE COVERAGE
         self.database_files = [
             # User-specific databases
-            f"claude/data/contextual_memory_{user_id}.db",
-            f"claude/data/autonomous_alerts_{user_id}.db", 
-            f"claude/data/continuous_monitoring_{user_id}.db",
-            f"claude/data/calendar_optimizer_{user_id}.db",
-            f"claude/data/context_preparation_{user_id}.db",
-            f"claude/data/background_learning_{user_id}.db",
-            f"claude/data/production_deployment_{user_id}.db",
+            f"claude/data/databases/user/contextual_memory_{user_id}.db",
+            f"claude/data/databases/user/autonomous_alerts_{user_id}.db",
+            f"claude/data/databases/user/continuous_monitoring_{user_id}.db",
+            f"claude/data/databases/user/calendar_optimizer_{user_id}.db",
+            f"claude/data/databases/user/context_preparation_{user_id}.db",
+            f"claude/data/databases/user/background_learning_{user_id}.db",
+            f"claude/data/databases/user/production_deployment_{user_id}.db",
             
             # Core system databases
             "claude/data/jobs.db",
@@ -65,7 +65,7 @@ class ProductionBackupSystem:
             "claude/data/databases/intelligence/predictive_models.db",
             "claude/data/databases/system/research_cache.db",
             "claude/data/rss_intelligence.db",
-            "claude/data/teams_meetings.db",
+            "claude/data/databases/user/teams_meetings.db",
             
             # Specialized databases
             "claude/data/confluence_organization.db",
