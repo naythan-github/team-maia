@@ -33,7 +33,7 @@ python3 claude/tools/scripts/backup_production_data.py list
 
 # RESTORATION OPTIONS (NOW SIMPLIFIED):
 # Option 1: Direct enterprise restoration using auto-created archive (RECOMMENDED)
-python3 scripts/restore_maia_enterprise.py <backup_name>.tar.gz --target ~/restored_maia
+python3 claude/tools/sre/restore_maia_enterprise.py <backup_name>.tar.gz --target ~/restored_maia
 
 # Option 2: Use master restoration script (from directory)
 cd ~/Library/Mobile\ Documents/com~apple~CloudDocs/maia/backups/production/<backup_folder>/

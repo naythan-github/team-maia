@@ -167,17 +167,25 @@ Update these files with session changes:
    - Update **Last Updated** date
    - Document new files created, tools built, capabilities added
 
-2. **README.md**
+2. **claude/context/core/capability_index.md** ⭐ **CRITICAL - MAIA AWARENESS**
+   - Add entry to "Recent Capabilities" for NEW tools/agents (if created this session)
+   - Include: name, location, purpose, core capabilities, usage, status
+   - **Purpose**: Maia ALWAYS loads this file - if not updated, Maia won't know tool exists
+   - **Format**: Follow existing Phase entries (comprehensive single-bullet format)
+   - **Impact**: Without this, users will ask "how do I X?" and Maia says "I don't know"
+   - **Skip**: Only if NO new capabilities added (modifications to existing tools don't need new entry)
+
+3. **README.md**
    - Add new features to relevant sections
    - Update capability descriptions if changed
    - Keep concise (reference SYSTEM_STATE.md for details)
 
-3. **claude/context/tools/available.md**
+4. **claude/context/tools/available.md**
    - Document new tools with: purpose, capabilities, usage, status
    - Update existing tool documentation if modified
    - Mark deprecated tools clearly
 
-4. **claude/context/core/agents.md**
+5. **claude/context/core/agents.md**
    - Document new agents or agent enhancements
    - Update agent capabilities if modified
    - Maintain agent catalog consistency
@@ -476,6 +484,7 @@ git status
 
 #### 5.2 Documentation Audit Checklist
 - [ ] SYSTEM_STATE.md updated with current phase
+- [ ] **capability_index.md updated if NEW tools/agents created** ⭐ **CRITICAL**
 - [ ] README.md updated if capabilities changed
 - [ ] available.md updated if tools added/modified
 - [ ] agents.md updated if agents added/modified

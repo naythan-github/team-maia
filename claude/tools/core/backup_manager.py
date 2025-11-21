@@ -431,7 +431,7 @@ class MaiaComprehensiveBackupManager:
             logger.info("✅ Bundled RESTORE_ME.py (zero-touch disaster recovery)")
 
         # Copy enterprise restoration script (secondary - advanced options)
-        restoration_script = self.maia_root / "scripts" / "restore_maia_enterprise.py"
+        restoration_script = self.maia_root / "claude" / "tools" / "sre" / "restore_maia_enterprise.py"
         if restoration_script.exists():
             shutil.copy2(restoration_script, backup_path / "restore_maia_enterprise.py")
 

@@ -1757,7 +1757,7 @@ python3 claude/tools/email_rag_ollama.py --stats
 ## Enterprise Backup & Restoration System ⭐ **PHASE 41 COMPLETE - PRODUCTION-READY**
 
 ### **Comprehensive Backup Infrastructure** - Critical System Protection
-**Location**: `/claude/tools/scripts/automated_backup.sh` + `restore_maia.py`
+**Location**: `/claude/tools/scripts/automated_backup.sh` + `/claude/tools/sre/restore_maia.py`
 **Purpose**: Enterprise-grade backup and disaster recovery system with automated scheduling and cross-platform restoration
 **Status**: ⚠️ **PARTIAL** - Backup scripts exist, `maia_backup_manager.py` tool pending implementation (Phase 103 Week 3)
 

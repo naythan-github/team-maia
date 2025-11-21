@@ -483,7 +483,7 @@ def main():
     print()
     
     # Check if enterprise restoration script exists
-    enterprise_script = Path(__file__).parent / "scripts" / "restore_maia_enterprise.py"
+    enterprise_script = Path(__file__).parent.parent / "sre" / "restore_maia_enterprise.py"
     
     if enterprise_script.exists():
         print("✅ Using enterprise restoration system...")
@@ -495,7 +495,7 @@ def main():
         print("  # Create tar.gz of this backup folder first:")
         print("  tar -czf maia_backup.tar.gz -C .. {{Path(__file__).parent.name}}")
         print("  # Then restore:")
-        print("  python3 scripts/restore_maia_enterprise.py maia_backup.tar.gz --target ~/restored_maia")
+        print("  python3 claude/tools/sre/restore_maia_enterprise.py maia_backup.tar.gz --target ~/restored_maia")
         print()
         print("DOCUMENTATION:")
         restoration_guide = Path(__file__).parent / "restoration_docs" / "RESTORATION_GUIDE.md"
@@ -531,7 +531,7 @@ def main():
         
     else:
         print("❌ Enterprise restoration script not found!")
-        print("   Expected: scripts/restore_maia_enterprise.py")
+        print("   Expected: claude/tools/sre/restore_maia_enterprise.py")
         print("   This backup may be incomplete.")
 
 if __name__ == "__main__":
@@ -656,7 +656,7 @@ def main():
             if result.get('archive_created'):
                 archive = result['archive_created']
                 print(f"📦 Archive: {archive['archive_size_mb']} MB (compression: {archive['compression_ratio']}%)")
-                print(f"🚀 Ready for restore: python3 scripts/restore_maia_enterprise.py {result['backup_name']}.tar.gz")
+                print(f"🚀 Ready for restore: python3 claude/tools/sre/restore_maia_enterprise.py {result['backup_name']}.tar.gz")
             else:
                 print("⚠️  Archive creation failed - directory backup only")
         
@@ -674,7 +674,7 @@ def main():
                 if 'archive' in backup:
                     archive = backup['archive']
                     print(f"   📦 Archive: {archive['size_mb']} MB (compression: {archive['compression_ratio']}%)")
-                    print(f"   📁 Ready for restore: python3 scripts/restore_maia_enterprise.py {backup['name']}.tar.gz")
+                    print(f"   📁 Ready for restore: python3 claude/tools/sre/restore_maia_enterprise.py {backup['name']}.tar.gz")
                 else:
                     print(f"   ⚠️  No archive - directory only")
                 print()
