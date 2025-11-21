@@ -75,7 +75,7 @@ class ProductionBackupSystem:
             "claude/data/portfolio_governance.db",
             "claude/data/preservation.db",
             "claude/data/reconstruction.db",
-            "claude/data/self_improvement.db",
+            "claude/data/databases/system/self_improvement.db",
             "claude/data/ux_optimization.db",
             "claude/data/verification_hook.db",
             "claude/data/deduplication.db",
