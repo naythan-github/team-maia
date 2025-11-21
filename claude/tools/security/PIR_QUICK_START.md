@@ -13,7 +13,7 @@
 cd ~/git/maia
 
 python3 claude/tools/security/pir_template_manager.py create \
-  credential_stuffing_pir \
+  pir_credential_stuffing_template \
   ~/work_projects/CUSTOMER_incident_review/PIR_TICKET_CUSTOMER.docx \
   --ticket TICKET_NUMBER \
   --customer "Customer Name" \
@@ -24,7 +24,7 @@ python3 claude/tools/security/pir_template_manager.py create \
 **Example** (Next credential stuffing incident):
 ```bash
 python3 claude/tools/security/pir_template_manager.py create \
-  credential_stuffing_pir \
+  pir_credential_stuffing_template \
   ~/work_projects/acme_incident_review/PIR_4200456_ACME.docx \
   --ticket 4200456 \
   --customer "ACME Corporation" \
@@ -120,8 +120,8 @@ Agent will create:
 **Template Files** (Don't modify directly):
 ```
 ~/git/maia/claude/tools/security/pir_templates/
-├── credential_stuffing_pir.docx     # Your template
-└── credential_stuffing_pir.json     # Metadata
+├── pir_credential_stuffing_template.docx     # Your template
+└── pir_credential_stuffing_template.json     # Metadata
 ```
 
 **Tools**:

@@ -21,6 +21,7 @@ import sys
 import subprocess
 from pathlib import Path
 from docx import Document
+from docx.shared import RGBColor
 from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
@@ -84,11 +85,23 @@ def convert_md_to_docx(input_md: Path, output_docx: Path, apply_table_styles: bo
         print(f"   ❌ Pandoc not found. Install: brew install pandoc")
         return False
 
-    # Step 2: Apply table styles (optional)
+    # Step 2: Apply Orro styling (colors + tables)
     if apply_table_styles:
-        print(f"🎨 Applying Orro table styles...")
+        print(f"🎨 Applying Orro corporate styling...")
 
         doc = Document(temp_output)
+
+        # Apply Orro purple color to all headings
+        ORRO_PURPLE = RGBColor(112, 48, 160)
+        headings_colored = 0
+
+        for paragraph in doc.paragraphs:
+            if paragraph.style.name in ['Heading 1', 'Heading 2', 'Heading 3']:
+                for run in paragraph.runs:
+                    run.font.color.rgb = ORRO_PURPLE
+                headings_colored += 1
+
+        print(f"   ✅ Applied Orro purple to {headings_colored} headings")
 
         # Check if _Orro Table 1 style exists
         style_exists = TABLE_STYLE_NAME in [s.name for s in doc.styles if hasattr(s, 'name')]
@@ -137,8 +150,10 @@ def convert_md_to_docx(input_md: Path, output_docx: Path, apply_table_styles: bo
     print(f"   Input:  {input_md}")
     print(f"   Output: {output_docx}")
     if apply_table_styles:
+        print(f"   Headings: {headings_colored} styled with Orro purple")
         print(f"   Tables: {tables_modified} styled with '{TABLE_STYLE_NAME}'")
     print(f"   Font: Aptos (Orro corporate standard)")
+    print(f"   Color: Orro purple headings RGB(112, 48, 160)")
     print(f"   Margins: 1.0\" all sides")
 
     return True

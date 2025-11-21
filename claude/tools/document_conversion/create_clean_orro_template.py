@@ -29,15 +29,15 @@ def create_clean_orro_reference():
     print("=" * 70)
     print()
 
-    # Load existing template to extract styles
-    source_template = Path("/Users/naythandawe/work_projects/pir_converter/pir_reference_template.docx")
+    # Load existing template to extract styles (optional - we're creating from scratch)
+    source_template = Path("/Users/naythandawe/work_projects/pir_converter/pir_orro_reference.docx")
 
-    if not source_template.exists():
-        print(f"❌ Error: Source template not found: {source_template}")
-        return False
-
-    print(f"📄 Loading source template: {source_template.name}")
-    source_doc = Document(source_template)
+    if source_template.exists():
+        print(f"📄 Source template found: {source_template.name}")
+        source_doc = Document(source_template)
+    else:
+        print(f"📄 Creating template from scratch (no source template)")
+        source_doc = None
 
     # Create new blank document
     print("🔧 Creating clean template (style-only, no content)...")
@@ -57,28 +57,34 @@ def create_clean_orro_reference():
     section.left_margin = Inches(1.0)
     section.right_margin = Inches(1.0)
 
-    # Step 3: Configure styles
-    print("   🎨 Configuring corporate styles...")
+    # Step 3: Configure styles with Orro purple color
+    print("   🎨 Configuring corporate styles (Orro purple headings)...")
 
-    # Heading 1: Aptos, 16pt, bold
+    # Orro purple color: RGB(112, 48, 160) - Official Orro brand color
+    ORRO_PURPLE = RGBColor(112, 48, 160)
+
+    # Heading 1: Aptos, 16pt, bold, Orro purple
     h1 = clean_doc.styles['Heading 1']
     h1.font.name = 'Aptos'
     h1.font.size = Pt(16)
     h1.font.bold = True
+    h1.font.color.rgb = ORRO_PURPLE
 
-    # Heading 2: Aptos, 14pt, bold
+    # Heading 2: Aptos, 14pt, bold, Orro purple
     h2 = clean_doc.styles['Heading 2']
     h2.font.name = 'Aptos'
     h2.font.size = Pt(14)
     h2.font.bold = True
+    h2.font.color.rgb = ORRO_PURPLE
 
-    # Heading 3: Aptos, 12pt, bold
+    # Heading 3: Aptos, 12pt, bold, Orro purple
     h3 = clean_doc.styles['Heading 3']
     h3.font.name = 'Aptos'
     h3.font.size = Pt(12)
     h3.font.bold = True
+    h3.font.color.rgb = ORRO_PURPLE
 
-    # Normal: Aptos, 11pt
+    # Normal: Aptos, 11pt, black
     normal = clean_doc.styles['Normal']
     normal.font.name = 'Aptos'
     normal.font.size = Pt(11)
@@ -141,8 +147,9 @@ def create_clean_orro_reference():
     print("📋 TEMPLATE DETAILS:")
     print(f"   Location: {output_path}")
     print(f"   Font: Aptos (corporate standard)")
+    print(f"   Colors: Orro purple headings RGB(112, 48, 160)")
     print(f"   Margins: 1.0\" all sides")
-    print(f"   Styles: Heading 1-3, Normal, List Bullet/Number")
+    print(f"   Styles: Heading 1-3 (Orro purple), Normal, List Bullet/Number")
     print(f"   Tables: _Orro Table 1 (purple borders)")
     print(f"   Content: Minimal examples only (Pandoc ignores, uses styles)")
     print()
