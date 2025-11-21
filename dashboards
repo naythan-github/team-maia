@@ -1,6 +1,0 @@
-#!/bin/bash
-# Quick dashboard hub access
-#
-# Usage: ./dashboards [start|stop|status]
-
-exec "$(dirname "$0")/claude/tools/monitoring/dashboard_hub_control.sh" "$@"

@@ -1,0 +1,298 @@
+{
+  "applications": [
+    {
+      "canonical_name": "Microsoft 365",
+      "aliases": ["M365", "Office 365", "O365", "Microsoft 365"],
+      "vendor": "Microsoft Corporation",
+      "category": "Productivity Suite",
+      "patterns": ["\\bM365\\b", "\\bMicrosoft 365\\b", "\\bOffice 365\\b", "\\bO365\\b"]
+    },
+    {
+      "canonical_name": "Microsoft Entra ID",
+      "aliases": ["Azure AD", "Entra ID", "Azure Active Directory"],
+      "vendor": "Microsoft Corporation",
+      "category": "Identity Management",
+      "patterns": ["\\bAzure AD\\b", "\\bEntra ID\\b", "\\bAzure Active Directory\\b"]
+    },
+    {
+      "canonical_name": "Microsoft Azure",
+      "aliases": ["Azure"],
+      "vendor": "Microsoft Corporation",
+      "category": "Cloud Platform",
+      "patterns": ["\\bAzure\\b"]
+    },
+    {
+      "canonical_name": "ServiceNow",
+      "aliases": ["ServiceNow"],
+      "vendor": "ServiceNow, Inc.",
+      "category": "ITSM",
+      "patterns": ["\\bServiceNow\\b"]
+    },
+    {
+      "canonical_name": "Confluence",
+      "aliases": ["Confluence", "Atlassian Confluence"],
+      "vendor": "Atlassian",
+      "category": "Documentation",
+      "patterns": ["\\bConfluence\\b", "\\bAtlassian Confluence\\b"]
+    },
+    {
+      "canonical_name": "Jira",
+      "aliases": ["Jira", "Jira Service Management", "JSM"],
+      "vendor": "Atlassian",
+      "category": "Project Management",
+      "patterns": ["\\bJira\\b", "\\bJira Service Management\\b", "\\bJSM\\b"]
+    },
+    {
+      "canonical_name": "Slack",
+      "aliases": ["Slack"],
+      "vendor": "Slack Technologies",
+      "category": "Collaboration",
+      "patterns": ["\\bSlack\\b"]
+    },
+    {
+      "canonical_name": "Microsoft Teams",
+      "aliases": ["Teams", "Microsoft Teams"],
+      "vendor": "Microsoft Corporation",
+      "category": "Collaboration",
+      "patterns": ["\\bMicrosoft Teams\\b", "\\bTeams\\b"]
+    },
+    {
+      "canonical_name": "Salesforce",
+      "aliases": ["Salesforce", "SFDC"],
+      "vendor": "Salesforce, Inc.",
+      "category": "CRM",
+      "patterns": ["\\bSalesforce\\b", "\\bSFDC\\b"]
+    },
+    {
+      "canonical_name": "Zendesk",
+      "aliases": ["Zendesk"],
+      "vendor": "Zendesk, Inc.",
+      "category": "Customer Support",
+      "patterns": ["\\bZendesk\\b"]
+    },
+    {
+      "canonical_name": "Datto RMM",
+      "aliases": ["Datto", "Datto RMM"],
+      "vendor": "Datto, Inc.",
+      "category": "RMM",
+      "patterns": ["\\bDatto RMM\\b", "\\bDatto\\b"]
+    },
+    {
+      "canonical_name": "ManageEngine Desktop Central",
+      "aliases": ["ManageEngine", "Desktop Central", "Patch Manager Plus"],
+      "vendor": "Zoho Corporation",
+      "category": "Endpoint Management",
+      "patterns": ["\\bManageEngine\\b", "\\bDesktop Central\\b", "\\bPatch Manager\\b"]
+    },
+    {
+      "canonical_name": "SonicWall",
+      "aliases": ["SonicWall"],
+      "vendor": "SonicWall Inc.",
+      "category": "Firewall",
+      "patterns": ["\\bSonicWall\\b"]
+    },
+    {
+      "canonical_name": "Autotask PSA",
+      "aliases": ["Autotask", "Autotask PSA"],
+      "vendor": "Datto, Inc.",
+      "category": "PSA",
+      "patterns": ["\\bAutotask\\b", "\\bAutotask PSA\\b"]
+    },
+    {
+      "canonical_name": "IT Glue",
+      "aliases": ["IT Glue", "ITGlue"],
+      "vendor": "Kaseya",
+      "category": "Documentation",
+      "patterns": ["\\bIT Glue\\b", "\\bITGlue\\b"]
+    },
+    {
+      "canonical_name": "PagerDuty",
+      "aliases": ["PagerDuty"],
+      "vendor": "PagerDuty, Inc.",
+      "category": "Incident Management",
+      "patterns": ["\\bPagerDuty\\b"]
+    },
+    {
+      "canonical_name": "OpsGenie",
+      "aliases": ["OpsGenie"],
+      "vendor": "Atlassian",
+      "category": "Incident Management",
+      "patterns": ["\\bOpsGenie\\b"]
+    },
+    {
+      "canonical_name": "Airlock Digital",
+      "aliases": ["Airlock", "Airlock Digital"],
+      "vendor": "Airlock Digital",
+      "category": "Endpoint Security",
+      "patterns": ["\\bAirlock Digital\\b", "\\bAirlock\\b"]
+    },
+    {
+      "canonical_name": "Grafana",
+      "aliases": ["Grafana"],
+      "vendor": "Grafana Labs",
+      "category": "Monitoring",
+      "patterns": ["\\bGrafana\\b"]
+    },
+    {
+      "canonical_name": "CrowdStrike",
+      "aliases": ["CrowdStrike"],
+      "vendor": "CrowdStrike, Inc.",
+      "category": "Endpoint Security",
+      "patterns": ["\\bCrowdStrike\\b"]
+    },
+    {
+      "canonical_name": "Duo Security",
+      "aliases": ["Duo", "Duo Security"],
+      "vendor": "Cisco Systems",
+      "category": "MFA",
+      "patterns": ["\\bDuo Security\\b", "\\bDuo\\b"]
+    },
+    {
+      "canonical_name": "Okta",
+      "aliases": ["Okta"],
+      "vendor": "Okta, Inc.",
+      "category": "Identity Management",
+      "patterns": ["\\bOkta\\b"]
+    },
+    {
+      "canonical_name": "1Password",
+      "aliases": ["1Password", "OnePassword"],
+      "vendor": "AgileBits Inc.",
+      "category": "Password Manager",
+      "patterns": ["\\b1Password\\b", "\\bOnePassword\\b"]
+    },
+    {
+      "canonical_name": "LastPass",
+      "aliases": ["LastPass"],
+      "vendor": "LogMeIn",
+      "category": "Password Manager",
+      "patterns": ["\\bLastPass\\b"]
+    },
+    {
+      "canonical_name": "GitHub",
+      "aliases": ["GitHub"],
+      "vendor": "Microsoft Corporation",
+      "category": "DevOps",
+      "patterns": ["\\bGitHub\\b"]
+    },
+    {
+      "canonical_name": "GitLab",
+      "aliases": ["GitLab"],
+      "vendor": "GitLab Inc.",
+      "category": "DevOps",
+      "patterns": ["\\bGitLab\\b"]
+    },
+    {
+      "canonical_name": "Docker",
+      "aliases": ["Docker"],
+      "vendor": "Docker, Inc.",
+      "category": "Containers",
+      "patterns": ["\\bDocker\\b"]
+    },
+    {
+      "canonical_name": "Kubernetes",
+      "aliases": ["Kubernetes", "K8s"],
+      "vendor": "Cloud Native Computing Foundation",
+      "category": "Containers",
+      "patterns": ["\\bKubernetes\\b", "\\bK8s\\b"]
+    },
+    {
+      "canonical_name": "Terraform",
+      "aliases": ["Terraform"],
+      "vendor": "HashiCorp",
+      "category": "Infrastructure as Code",
+      "patterns": ["\\bTerraform\\b"]
+    },
+    {
+      "canonical_name": "Ansible",
+      "aliases": ["Ansible"],
+      "vendor": "Red Hat",
+      "category": "Configuration Management",
+      "patterns": ["\\bAnsible\\b"]
+    },
+    {
+      "canonical_name": "Splunk",
+      "aliases": ["Splunk"],
+      "vendor": "Splunk Inc.",
+      "category": "SIEM",
+      "patterns": ["\\bSplunk\\b"]
+    },
+    {
+      "canonical_name": "Elasticsearch",
+      "aliases": ["Elastic", "Elasticsearch"],
+      "vendor": "Elastic NV",
+      "category": "Search & Analytics",
+      "patterns": ["\\bElastic\\b", "\\bElasticsearch\\b"]
+    },
+    {
+      "canonical_name": "Datadog",
+      "aliases": ["Datadog"],
+      "vendor": "Datadog, Inc.",
+      "category": "Monitoring",
+      "patterns": ["\\bDatadog\\b"]
+    },
+    {
+      "canonical_name": "New Relic",
+      "aliases": ["New Relic"],
+      "vendor": "New Relic, Inc.",
+      "category": "APM",
+      "patterns": ["\\bNew Relic\\b"]
+    },
+    {
+      "canonical_name": "Power BI",
+      "aliases": ["Power BI", "PowerBI"],
+      "vendor": "Microsoft Corporation",
+      "category": "Business Intelligence",
+      "patterns": ["\\bPower BI\\b", "\\bPowerBI\\b"]
+    },
+    {
+      "canonical_name": "Tableau",
+      "aliases": ["Tableau"],
+      "vendor": "Salesforce, Inc.",
+      "category": "Business Intelligence",
+      "patterns": ["\\bTableau\\b"]
+    },
+    {
+      "canonical_name": "Snowflake",
+      "aliases": ["Snowflake"],
+      "vendor": "Snowflake Inc.",
+      "category": "Data Warehouse",
+      "patterns": ["\\bSnowflake\\b"]
+    },
+    {
+      "canonical_name": "OneDrive",
+      "aliases": ["OneDrive"],
+      "vendor": "Microsoft Corporation",
+      "category": "Cloud Storage",
+      "patterns": ["\\bOneDrive\\b"]
+    },
+    {
+      "canonical_name": "SharePoint",
+      "aliases": ["SharePoint"],
+      "vendor": "Microsoft Corporation",
+      "category": "Collaboration",
+      "patterns": ["\\bSharePoint\\b"]
+    },
+    {
+      "canonical_name": "Exchange Online",
+      "aliases": ["Exchange Online", "Exchange"],
+      "vendor": "Microsoft Corporation",
+      "category": "Email",
+      "patterns": ["\\bExchange Online\\b", "\\bExchange\\b"]
+    },
+    {
+      "canonical_name": "Microsoft Intune",
+      "aliases": ["Intune"],
+      "vendor": "Microsoft Corporation",
+      "category": "Endpoint Management",
+      "patterns": ["\\bIntune\\b", "\\bMicrosoft Intune\\b"]
+    },
+    {
+      "canonical_name": "Microsoft Defender",
+      "aliases": ["Defender", "Microsoft Defender"],
+      "vendor": "Microsoft Corporation",
+      "category": "Endpoint Security",
+      "patterns": ["\\bDefender\\b", "\\bMicrosoft Defender\\b"]
+    }
+  ]
+}
