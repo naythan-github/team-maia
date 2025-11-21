@@ -1,40 +1,37 @@
 #!/usr/bin/env python3
 """
-Confluence Reliability Test - Post-Consolidation Validation
+⚠️  DEPRECATED - Phase 140 ⚠️
 
+This test file is obsolete. Phase 140 completed TDD implementation of confluence_client.py
+which is now THE ONLY tool needed for Confluence operations.
+
+ORIGINAL PURPOSE:
 Tests the consolidated Confluence tooling for reliability improvements.
 Part of Phase 129 - Confluence Tooling Consolidation
 
-USAGE:
-    # Run HTML validation only (safe, no API calls)
-    python3 test_confluence_reliability.py --html-only
+REPLACEMENT:
+Use the test suite in claude/tools/tests/test_confluence_client.py
+which validates the Phase 140 TDD implementation (28/28 tests passing).
 
-    # Run full test including page creation (creates test pages)
-    python3 test_confluence_reliability.py --full --space TEST
-
-    # Run with specific iteration count
-    python3 test_confluence_reliability.py --full --iterations 5 --space TEST
+STATUS: ⚠️  Keeping for historical reference only - DO NOT USE
 """
 
 import sys
-import time
-import argparse
 from pathlib import Path
 
-# Add Maia tools to path
-maia_root = Path(__file__).parent.parent.parent.parent
-sys.path.insert(0, str(maia_root))
-
-# Import from absolute path
-tools_path = maia_root / "claude" / "tools"
-sys.path.insert(0, str(tools_path))
-
-from reliable_confluence_client import ReliableConfluenceClient
-from confluence_html_builder import (
-    ConfluencePageBuilder,
-    validate_confluence_html,
-    PanelColor
-)
+print("="*70)
+print("⚠️  DEPRECATED TEST - Phase 140")
+print("="*70)
+print()
+print("This test file is obsolete. Use instead:")
+print("  python3 claude/tools/tests/test_confluence_client.py")
+print()
+print("Phase 140 completed TDD implementation of confluence_client.py")
+print("which replaces confluence_html_builder.py and all related tooling.")
+print()
+print("See: claude/documentation/confluence_quick_start.md")
+print("="*70)
+sys.exit(1)
 
 
 def test_html_validation() -> bool:

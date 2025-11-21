@@ -9,6 +9,7 @@
     "/Users/naythandawe/Downloads/general_unique_descriptions.csv",
     "/Users/naythandawe/Downloads/TG Pro 2.98.dmg",
     "/Users/naythandawe/Downloads/Kaseya Connect Asia Pacific 2025.ics",
+    "/Users/naythandawe/Downloads/test_full_pir_styled.html",
     "/Users/naythandawe/Downloads/Orro___Policy_Export (1).xml",
     "/Users/naythandawe/Downloads/.DS_Store",
     "/Users/naythandawe/Downloads/.com.microsoft.edgemac.JOyyea",
@@ -18,6 +19,8 @@
     "/Users/naythandawe/Downloads/Orro___Agent_Procedure_Export.xml",
     "/Users/naythandawe/Downloads/.com.microsoft.edgemac.txSC2E",
     "/Users/naythandawe/Downloads/maia_comprehensive_manual_20251001_092749.tar.gz",
+    "/Users/naythandawe/Downloads/CompanyPortal-Installer.pkg",
+    "/Users/naythandawe/Downloads/Unconfirmed 764983.crdownload",
     "/Users/naythandawe/Downloads/unique_descriptions.csv",
     "/Users/naythandawe/Downloads/GS1 - Orro Onboarding - 21.2.25.xlsx",
     "/Users/naythandawe/Downloads/POL005 Orro BYOD Security Requirements Policy V3.0.pdf",
@@ -342,6 +345,24 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/.com.microsoft.edgemac.JOyyea",
       "timestamp": "2025-10-30T11:33:30.906785"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Unconfirmed 764983.crdownload",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Unconfirmed 764983.crdownload",
+      "timestamp": "2025-11-20T18:02:14.136555"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/test_full_pir_styled.html",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/test_full_pir_styled.html",
+      "timestamp": "2025-11-20T18:30:08.490195"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/CompanyPortal-Installer.pkg",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/CompanyPortal-Installer.pkg",
+      "timestamp": "2025-11-21T11:54:43.284387"
     }
   ]
 }
