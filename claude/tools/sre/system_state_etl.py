@@ -400,25 +400,55 @@ class SystemStateETL:
                    problems: List[Problem], solutions: List[Solution],
                    metrics: List[Metric], files: List[FileCreated]) -> int:
         """
-        Load phase and related data into database
+        Load phase and related data into database with smart UPSERT.
+
+        - If phase exists: UPDATE phase, clear and re-insert related records
+        - If phase is new: INSERT phase and related records
+        - Preserves created_at timestamp, updates updated_at
+
         Returns: phase_id
         """
         cursor = conn.cursor()
 
-        # Insert phase
-        cursor.execute("""
-            INSERT INTO phases (
-                phase_number, title, date, status, achievement,
-                agent_team, git_commits, narrative_text
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            phase.phase_number, phase.title, phase.date, phase.status,
-            phase.achievement, phase.agent_team, phase.git_commits,
-            phase.narrative_text
-        ))
-        phase_id = cursor.lastrowid
+        # Check if phase exists
+        cursor.execute("SELECT id FROM phases WHERE phase_number=?", (phase.phase_number,))
+        existing = cursor.fetchone()
 
-        # Insert problems
+        if existing:
+            # UPDATE: Phase exists, update it
+            phase_id = existing[0]
+            cursor.execute("""
+                UPDATE phases
+                SET title=?, date=?, status=?, achievement=?,
+                    agent_team=?, git_commits=?, narrative_text=?,
+                    updated_at=CURRENT_TIMESTAMP
+                WHERE phase_number=?
+            """, (
+                phase.title, phase.date, phase.status, phase.achievement,
+                phase.agent_team, phase.git_commits, phase.narrative_text,
+                phase.phase_number
+            ))
+
+            # Clear related records (will be re-inserted below)
+            cursor.execute("DELETE FROM problems WHERE phase_id=?", (phase_id,))
+            cursor.execute("DELETE FROM solutions WHERE phase_id=?", (phase_id,))
+            cursor.execute("DELETE FROM metrics WHERE phase_id=?", (phase_id,))
+            cursor.execute("DELETE FROM files_created WHERE phase_id=?", (phase_id,))
+        else:
+            # INSERT: New phase
+            cursor.execute("""
+                INSERT INTO phases (
+                    phase_number, title, date, status, achievement,
+                    agent_team, git_commits, narrative_text
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                phase.phase_number, phase.title, phase.date, phase.status,
+                phase.achievement, phase.agent_team, phase.git_commits,
+                phase.narrative_text
+            ))
+            phase_id = cursor.lastrowid
+
+        # Insert problems (same for UPDATE and INSERT)
         for problem in problems:
             cursor.execute("""
                 INSERT INTO problems (phase_id, problem_category, before_state, root_cause)
