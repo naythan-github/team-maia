@@ -5976,6 +5976,56 @@ fi
 
 ---
 
+---
+
+## 🔒 PHASE 134.4: Context ID Stability Fix (2025-10-21) ⭐ **CRITICAL BUG FIX**
+
+### Achievement
+**Stable context ID detection via process tree walking** - Fixed PPID instability bug where context IDs varied across subprocess invocations, breaking agent persistence. Solution walks process tree to find stable Claude Code binary PID. Delivered 100% stability (4/4 tests passing), <15ms overhead, automatic migration, graceful degradation. Agent persistence now reliable across all subprocess patterns.
+
+### Problem Solved
+**Root Cause**: Phase 134.3 used `os.getppid()` for context IDs, but PPID varies between subprocess invocation methods within same Claude Code window.
+
+**Impact**: Session file mismatch, persistence failure, inconsistent UX.
+
+### Solution
+Process tree walking to find stable Claude Code native-binary PID, with PPID fallback for graceful degradation.
+
+### Files Modified
+- `claude/hooks/swarm_auto_loader.py` (context ID stability)
+- `CLAUDE.md` (documentation)
+- `SYSTEM_STATE.md` (Phase 134.4 entry)
+
+### Metrics
+- Performance: <15ms overhead
+- Stability: 100% (4/4 tests passing)
+- Graceful degradation: PPID fallback working
+
+---
+
+## 🔒 PHASE 134.3: Multi-Context Concurrency Fix (2025-10-21)
+
+### Achievement
+**Per-context isolation for agent persistence system** - Fixed critical concurrency bug where multiple Claude Code windows sharing single session file created race conditions. Delivered context-specific session files, automatic stale cleanup (24-hour TTL), legacy migration, and 6/6 passing integration tests. Each context window now has independent agent state with zero collision risk.
+
+### Problem Solved
+**Root Cause**: Phase 134's global session file (`/tmp/maia_active_swarm_session.json`) shared across all Claude Code windows.
+
+**Concurrency Risks**: Read-Modify-Write races, partial write corruption, session collision, agent state confusion.
+
+### Solution
+Per-context isolation with session files named `/tmp/maia_active_swarm_session_context_{PPID}.json`.
+
+### Files Modified
+- `claude/hooks/swarm_auto_loader.py` (per-context isolation)
+- `CLAUDE.md` (context loading protocol)
+- `tests/test_multi_context_isolation.py` (6 tests)
+
+### Metrics
+- Tests passing: 6/6 (100%)
+- Startup overhead: <10ms
+- Stale cleanup: 24-hour TTL
+
 ## 📐 PHASE 135: Architecture Documentation Standards (2025-10-21) ⭐ **NEW STANDARD**
 
 ### Achievement

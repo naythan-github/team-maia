@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 class PhaseRecord:
     """Phase metadata from database"""
     id: int
-    phase_number: int
+    phase_number: str  # Changed to str to support decimals (151.2, 134.4)
     title: str
     date: str
     status: Optional[str]
@@ -124,7 +124,7 @@ class SystemStateQueries:
 
             cursor.execute("""
                 SELECT * FROM phases
-                ORDER BY phase_number DESC
+                ORDER BY CAST(phase_number AS REAL) DESC
                 LIMIT ?
             """, (count,))
 
@@ -162,7 +162,7 @@ class SystemStateQueries:
                 WHERE narrative_text LIKE ?
                 OR title LIKE ?
                 OR achievement LIKE ?
-                ORDER BY phase_number DESC
+                ORDER BY CAST(phase_number AS REAL) DESC
                 LIMIT ?
             """, (f'%{keyword}%', f'%{keyword}%', f'%{keyword}%', limit))
 
@@ -175,20 +175,20 @@ class SystemStateQueries:
             logger.error(f"Failed to search keyword '{keyword}': {e}")
             raise
 
-    def get_phases_by_number(self, phase_numbers: List[int]) -> List[PhaseRecord]:
+    def get_phases_by_number(self, phase_numbers: List) -> List[PhaseRecord]:
         """
-        Get specific phases by number.
+        Get specific phases by number (supports decimals: 151.2, 134.4).
 
         Args:
-            phase_numbers: List of phase numbers to retrieve
+            phase_numbers: List of phase numbers to retrieve (int or str)
 
         Returns:
             List of PhaseRecord objects (ordered by phase number descending)
 
         Example:
-            >>> phases = queries.get_phases_by_number([2, 107, 134])
+            >>> phases = queries.get_phases_by_number([2, 107, "134.4", "151.2"])
             >>> print(len(phases))
-            3
+            4
         """
         if not phase_numbers:
             return []
@@ -197,14 +197,17 @@ class SystemStateQueries:
             conn = self._get_connection()
             cursor = conn.cursor()
 
+            # Convert all to strings (supports both int and str inputs)
+            phase_numbers_str = [str(p) for p in phase_numbers]
+
             # Build placeholders for IN clause
-            placeholders = ','.join('?' * len(phase_numbers))
+            placeholders = ','.join('?' * len(phase_numbers_str))
 
             cursor.execute(f"""
                 SELECT * FROM phases
                 WHERE phase_number IN ({placeholders})
-                ORDER BY phase_number DESC
-            """, phase_numbers)
+                ORDER BY CAST(phase_number AS REAL) DESC
+            """, phase_numbers_str)
 
             rows = cursor.fetchall()
             conn.close()
@@ -215,7 +218,7 @@ class SystemStateQueries:
             logger.error(f"Failed to get phases by number: {e}")
             raise
 
-    def get_phase_with_context(self, phase_number: int) -> Optional[PhaseWithContext]:
+    def get_phase_with_context(self, phase_number) -> Optional[PhaseWithContext]:  # Accepts int or str (e.g., "151.2")
         """
         Get phase with all related data (problems, solutions, metrics, files, tags).
 
@@ -236,11 +239,11 @@ class SystemStateQueries:
             conn = self._get_connection()
             cursor = conn.cursor()
 
-            # Get phase
+            # Get phase (convert to string to support decimals)
             cursor.execute("""
                 SELECT * FROM phases
                 WHERE phase_number = ?
-            """, (phase_number,))
+            """, (str(phase_number),))
 
             phase_row = cursor.fetchone()
             if not phase_row:
@@ -312,7 +315,7 @@ class SystemStateQueries:
                 FROM problems pr
                 JOIN phases p ON pr.phase_id = p.id
                 WHERE pr.problem_category LIKE ?
-                ORDER BY p.phase_number DESC
+                ORDER BY CAST(p.phase_number AS REAL) DESC
                 LIMIT ?
             """, (f'%{category}%', limit))
 
@@ -418,7 +421,7 @@ class SystemStateQueries:
                     FROM files_created f
                     JOIN phases p ON f.phase_id = p.id
                     WHERE f.file_type = ? AND f.status = ?
-                    ORDER BY p.phase_number DESC
+                    ORDER BY CAST(p.phase_number AS REAL) DESC
                 """, (file_type, status))
             else:
                 cursor.execute("""
@@ -430,7 +433,7 @@ class SystemStateQueries:
                     FROM files_created f
                     JOIN phases p ON f.phase_id = p.id
                     WHERE f.file_type = ?
-                    ORDER BY p.phase_number DESC
+                    ORDER BY CAST(p.phase_number AS REAL) DESC
                 """, (file_type,))
 
             rows = cursor.fetchall()

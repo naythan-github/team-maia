@@ -21,7 +21,7 @@ from datetime import datetime
 @dataclass
 class Phase:
     """Structured phase data"""
-    phase_number: int
+    phase_number: str  # Changed to str to support decimals (151.2, 134.4)
     title: str
     date: str
     status: Optional[str] = None
@@ -70,47 +70,72 @@ class FileCreated:
 class SystemStateParser:
     """Parser for SYSTEM_STATE.md markdown"""
 
-    # Regex patterns for phase headers (handles emoji variations)
+    # Regex patterns for phase headers (handles emoji variations + decimal phases)
     PHASE_HEADER_PATTERNS = [
         # Format: ## 📄 PHASE 163: Title (2025-11-21) **STATUS**
-        re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐].+?PHASE\s+(\d+):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)\s*(?:\*\*(.+?)\*\*)?', re.IGNORECASE),
+        # Captures 151, 151.2, 134.4, etc.
+        # All emojis found: 🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐📁📂🎉🔒
+        re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐📁📂🎉🔒].+?PHASE\s+(\d+(?:\.\d+)?):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)\s*(?:\*\*(.+?)\*\*)?', re.IGNORECASE),
         # Format: ## PHASE 163: Title (2025-11-21)
-        re.compile(r'^##\s+PHASE\s+(\d+):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)', re.IGNORECASE),
+        re.compile(r'^##\s+PHASE\s+(\d+(?:\.\d+)?):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)', re.IGNORECASE),
     ]
 
     def __init__(self, system_state_path: Path):
         self.system_state_path = system_state_path
         self.content = system_state_path.read_text()
 
-    def split_into_phases(self) -> List[Tuple[int, str]]:
+    def split_into_phases(self) -> List[Tuple[str, str]]:
         """
         Split SYSTEM_STATE.md into individual phase sections
-        Uses --- separators to define phase boundaries (more reliable than headers alone)
+
+        Enhanced to handle phases with or without --- separators:
+        1. Find all phase headers with their positions
+        2. Extract text between consecutive headers
+        3. Deduplicate (keep first occurrence of each phase number)
+
         Returns: List of (phase_number, phase_text) tuples
+        Note: phase_number is str to support decimals (151.2, 134.4)
         """
-        # Split by --- section separators
-        sections = re.split(r'\n---+\n', self.content)
+        # Find all phase headers and their positions
+        phase_headers = []
+        lines = self.content.split('\n')
 
-        phases = []
-        for section in sections:
-            section = section.strip()
-            if not section:
-                continue
-
-            # Check if this section starts with a phase header
+        for line_idx, line in enumerate(lines):
             for pattern in self.PHASE_HEADER_PATTERNS:
-                match = pattern.match(section)
+                match = pattern.match(line)
                 if match:
-                    phase_number = int(match.group(1))
-                    phases.append((phase_number, section))
-                    break  # Found phase header, move to next section
+                    phase_number = match.group(1)  # String: "151" or "151.2"
+                    phase_headers.append((phase_number, line_idx, line))
+                    break  # Found header, move to next line
 
-        return phases
+        # Extract text between consecutive headers
+        phases = []
+        for i, (phase_number, start_line, header) in enumerate(phase_headers):
+            # Determine end line (next header or end of file)
+            if i + 1 < len(phase_headers):
+                end_line = phase_headers[i + 1][1]  # Start of next phase
+            else:
+                end_line = len(lines)  # End of file
 
-    def parse_phase_header(self, phase_text: str) -> Tuple[int, str, str, Optional[str]]:
+            # Extract phase text
+            phase_text = '\n'.join(lines[start_line:end_line]).strip()
+            phases.append((phase_number, phase_text))
+
+        # Deduplicate: Keep first occurrence of each phase number
+        seen = set()
+        deduped_phases = []
+        for phase_number, phase_text in phases:
+            if phase_number not in seen:
+                seen.add(phase_number)
+                deduped_phases.append((phase_number, phase_text))
+
+        return deduped_phases
+
+    def parse_phase_header(self, phase_text: str) -> Tuple[str, str, str, Optional[str]]:
         """
         Extract phase number, title, date, and status from header
         Returns: (phase_number, title, date, status)
+        Note: phase_number is str to support decimals (151.2, 134.4)
         """
         lines = phase_text.splitlines()
         if not lines:
@@ -120,7 +145,7 @@ class SystemStateParser:
         for pattern in self.PHASE_HEADER_PATTERNS:
             match = pattern.match(lines[0])
             if match:
-                phase_number = int(match.group(1))
+                phase_number = match.group(1)  # Keep as string (supports "151" and "151.2")
                 title = match.group(2).strip()
                 date = match.group(3)
 
