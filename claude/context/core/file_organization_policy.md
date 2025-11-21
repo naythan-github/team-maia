@@ -48,9 +48,9 @@
 
 ## FORBIDDEN LOCATIONS
 
-❌ **Repository Root** (only 6 core files + 2 path manager directories allowed):
+❌ **Repository Root** (only 6 core files + 3 operational directories allowed):
 - ✅ ALLOWED FILES: `CLAUDE.md`, `README.md`, `SYSTEM_STATE.md`, `SYSTEM_STATE_ARCHIVE.md`
-- ✅ ALLOWED DIRECTORIES: `${MAIA_ROOT}/` (path manager template), `get_path_manager().get_path('backup') /` (backup system)
+- ✅ ALLOWED DIRECTORIES: `${MAIA_ROOT}/` (path manager template), `get_path_manager().get_path('backup') /` (backup system), `scripts/` (production launcher scripts)
 - ❌ FORBIDDEN: All other files
 
 ❌ **claude/data/ root** (use subdirectories):
@@ -317,14 +317,14 @@ git commit --no-verify
 ## SUCCESS METRICS
 
 **Compliant Repository**:
-- Root directory: 4 core files + 2 path manager directories only
+- Root directory: 4 core files + 3 operational directories (path manager + scripts/) only
 - claude/data/ root: <20 files (rest in subdirectories)
 - No files >10 MB (except rag_databases/)
 - No work outputs in Maia repo
 - All databases in databases/{category}/
 
 **Non-Compliant Repository**:
-- Root directory: 10+ files (excluding allowed path manager directories)
+- Root directory: 10+ files (excluding allowed operational directories)
 - claude/data/ root: 200+ files
 - Multiple files >10 MB
 - Work outputs mixed with system files
