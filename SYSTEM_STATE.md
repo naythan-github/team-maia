@@ -1,3 +1,18 @@
+# SYSTEM_STATE.md - Maia Development History
+
+⚠️ **DEPRECATED for Maia queries** - Use database query interface instead:
+- **Query tool**: `python3 claude/tools/sre/system_state_queries.py recent --count 10`
+- **Performance**: 500-2500x faster (0.13-0.54ms vs 100-500ms markdown parsing)
+- **Coverage**: 60 phases, 9-year history (2016-2025)
+- **Smart loader**: Automatically uses database (Phase 165-166)
+- **This file**: Maintained for human readability and ETL source only
+
+**Last Updated**: 2025-11-21  
+**Current Phase**: 166  
+**Database Status**: ✅ 100% synced (60/60 phases)
+
+---
+
 ## 📁 PHASE 151.2: File Organization Policy Enforcement + Database Organization + ServiceDesk Archival (2025-11-21) ✅ **COMPLETE**
 
 ### Achievement

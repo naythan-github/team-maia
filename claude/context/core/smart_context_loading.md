@@ -19,32 +19,40 @@
 3. `${MAIA_ROOT}/claude/context/core/systematic_thinking_protocol.md` - **MANDATORY SYSTEMATIC OPTIMIZATION FRAMEWORK**
 4. `${MAIA_ROOT}/claude/context/core/model_selection_strategy.md` - **MANDATORY MODEL ENFORCEMENT** (Sonnet default, ask permission for Opus)
 5. `${MAIA_ROOT}/claude/context/core/file_organization_policy.md` - **FILE STORAGE RULES** (prevents repository pollution, ~2.5K tokens)
-6. **Smart SYSTEM_STATE Loading** ⭐ **INTELLIGENT LOADING - 85% TOKEN REDUCTION**
-   - **Primary**: Use `smart_context_loader.py` for intent-aware phase selection
-   - **Performance**: 83% average token reduction (42K → 5-20K adaptive)
+6. **Smart SYSTEM_STATE Loading** ⭐ **DATABASE-ACCELERATED - 500-2500x FASTER (Phase 165-166)**
+   - **Primary Path** ⭐ **NEW**: Database query interface (0.13-0.54ms, 500-2500x faster than markdown)
+     - **Tool**: `python3 claude/tools/sre/system_state_queries.py [command]`
+     - **Commands**: `recent --count N`, `search KEYWORD`, `phases N1 N2 N3`, `context N`
+     - **Coverage**: 60 phases (100%), 9-year history (2016-2025)
+     - **Smart Loader Integration**: Automatically uses database (transparent to user)
+   - **Secondary Path**: Smart context loader with markdown parsing (100-500ms, legacy fallback)
+     - **Tool**: `python3 claude/tools/sre/smart_context_loader.py "user_query_context"`
+     - **Performance**: 83% average token reduction (42K → 5-20K adaptive)
+     - **Graceful Fallback**: Used automatically when database unavailable
    - **Query-Adaptive**:
      - Agent enhancement queries → Phases 2, 107-111 (~4K tokens, 90% reduction)
      - SRE/reliability queries → Phases 103-105 (~8K tokens, 80% reduction)
      - Strategic planning → Recent 20 phases (~13K tokens, 69% reduction)
      - Simple queries → Recent 10 phases (~3K tokens, 93% reduction)
-   - **Tool**: `python3 claude/tools/sre/smart_context_loader.py "user_query_context"`
-   - **Fallback**: If smart loader unavailable → `Read SYSTEM_STATE.md offset=2000 limit=1059` (recent phases)
+   - **⚠️ DEPRECATED**: Direct SYSTEM_STATE.md reads (500-2500x slower than database)
    - **Manual Usage**:
      ```bash
-     # Get context for current query
+     # DATABASE QUERIES (PREFERRED - 500x faster)
+     python3 claude/tools/sre/system_state_queries.py recent --count 10 --markdown
+     python3 claude/tools/sre/system_state_queries.py search "database"
+     python3 claude/tools/sre/system_state_queries.py phases 165 164 163
+
+     # SMART LOADER (automatic DB integration)
      python3 claude/tools/sre/smart_context_loader.py "Continue agent enhancement work"
-
-     # Show statistics only
      python3 claude/tools/sre/smart_context_loader.py "your query" --stats
-
-     # Load specific phases
      python3 claude/tools/sre/smart_context_loader.py --phases 2 107 108
-
-     # Load recent N phases
      python3 claude/tools/sre/smart_context_loader.py --recent 15
      ```
-   - **Location**: `${MAIA_ROOT}/claude/tools/sre/smart_context_loader.py`
-   - **Documentation**: See `claude/context/tools/available.md` (Smart Context Loader section)
+   - **Locations**:
+     - Query Interface: `${MAIA_ROOT}/claude/tools/sre/system_state_queries.py`
+     - Smart Loader: `${MAIA_ROOT}/claude/tools/sre/smart_context_loader.py`
+     - Database: `${MAIA_ROOT}/claude/data/databases/system/system_state.db`
+   - **Documentation**: See `claude/context/core/capability_index.md` (SYSTEM_STATE Query Interface section)
 
 **DOMAIN-SMART LOADING (Load Based on Request)**:
 - **Simple Tasks** (math, basic questions): CORE ONLY (62% savings)
