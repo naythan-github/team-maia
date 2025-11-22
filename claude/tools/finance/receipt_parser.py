@@ -67,7 +67,8 @@ class Receipt:
             "email_date": self.email_date.isoformat() if self.email_date else None,
             "attachment_name": self.attachment_name,
             "ocr_confidence": self.ocr_confidence,
-            "processed_at": self.processed_at.isoformat()
+            "processed_at": self.processed_at.isoformat(),
+            "raw_text": self.raw_text
         }
 
 
@@ -125,6 +126,17 @@ class ReceiptParser:
         r'qantas': ('Qantas', 'Travel'),
         r'virgin\s*australia': ('Virgin Australia', 'Travel'),
         r'jetstar': ('Jetstar', 'Travel'),
+        # Additional vendors from receipt processing
+        r'max\s*on\s*hardware': ('Max on Hardware', 'Hardware'),
+        r'the\s*barracks': ('The Barracks', 'Food & Beverage'),
+        r'barracks': ('The Barracks', 'Food & Beverage'),
+        r'kana\s*sushi': ('Kana Sushi', 'Food & Beverage'),
+        r'whalebridge': ('Whalebridge', 'Food & Beverage'),
+        r'thai\s*restaurant': ('Thai Restaurant', 'Food & Beverage'),
+        r'thai\s*connection': ('Thai Connection', 'Food & Beverage'),
+        r'swan\s*taxis?': ('Swan Taxis', 'Travel'),
+        r'rasier\s*pacific': ('Uber', 'Travel'),
+        r'uber': ('Uber', 'Travel'),
     }
 
     # Date patterns (Australian format: DD/MM/YYYY)
@@ -213,13 +225,24 @@ class ReceiptParser:
 
         # Fallback: try to extract from first few lines
         lines = original_text.strip().split('\n')
+
+        # Headers to skip (not actual vendor names)
+        skip_headers = [
+            'tax invoice', 'taxinvoice', 'tax  invoice',
+            'receipt', 'invoice', 'order', 'docket',
+            'eftpos', 'customer copy', 'merchant copy',
+        ]
+
         for line in lines[:5]:
             clean_line = line.strip()
             if clean_line and len(clean_line) > 3 and len(clean_line) < 50:
                 # Skip lines that look like addresses or phone numbers
                 if not re.match(r'^[\d\s\-\(\)]+$', clean_line):
                     if not re.search(r'\d{4,}', clean_line):  # Skip phone numbers
-                        return clean_line, "Uncategorized"
+                        # Skip common receipt headers
+                        if clean_line.lower().replace(' ', '') not in [h.replace(' ', '') for h in skip_headers]:
+                            if not any(h in clean_line.lower() for h in skip_headers):
+                                return clean_line, "Uncategorized"
 
         return "Unknown Vendor", "Uncategorized"
 

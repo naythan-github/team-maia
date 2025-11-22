@@ -325,8 +325,8 @@ class ReceiptProcessor:
 
 ## Receipt Log
 
-| Date | Vendor | Amount | GST | Category | Email Date | Status |
-|------|--------|--------|-----|----------|------------|--------|
+| Date | Vendor | Amount | GST | Category | Submitted | Approved |
+|------|--------|--------|-----|----------|-----------|----------|
 """
 
         # Add all receipts (newest first)
@@ -345,18 +345,10 @@ class ReceiptProcessor:
                 except Exception:
                     date_str = r['date']
 
-            email_date_str = "-"
-            if r.get('email_date'):
-                try:
-                    from dateutil import parser as date_parser
-                    email_date_str = date_parser.parse(r['email_date']).strftime('%d %b %Y')
-                except Exception:
-                    pass
-
             gst_str = f"${Decimal(r.get('gst_amount', '0')):.2f}" if r.get('gst_amount') else "-"
             amount_str = f"${Decimal(r.get('total_amount', '0')):.2f}"
 
-            markdown += f"| {date_str} | {r.get('vendor', 'Unknown')} | {amount_str} | {gst_str} | {r.get('category', '-')} | {email_date_str} | ✅ |\n"
+            markdown += f"| {date_str} | {r.get('vendor', 'Unknown')} | {amount_str} | {gst_str} | {r.get('category', '-')} | | |\n"
 
         markdown += """
 ---
