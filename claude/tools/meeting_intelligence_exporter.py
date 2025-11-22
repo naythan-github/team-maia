@@ -37,7 +37,7 @@ sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.meeting_intelligence_processor import MeetingIntelligenceProcessor
 from claude.tools.confluence_client import ConfluenceClient
-# Trello integration would go here when available
+from claude.tools.trello_fast import TrelloFast
 
 
 class MeetingIntelligenceExporter:
@@ -175,11 +175,32 @@ class MeetingIntelligenceExporter:
 
         return "\n".join(lines)
 
+    def _init_trello(self):
+        """Lazy init Trello client"""
+        if self.trello is None:
+            self.trello = TrelloFast()
+        return self.trello
+
+    def _get_or_create_list(self, board_id: str, list_name: str) -> str:
+        """Get or create a list on the board"""
+        trello = self._init_trello()
+        lists = trello.get_lists(board_id)
+
+        # Find existing list
+        for lst in lists:
+            if lst['name'].lower() == list_name.lower():
+                return lst['id']
+
+        # Create new list
+        new_list = trello.create_list(board_id, list_name)
+        print(f"   Created new list: {list_name}")
+        return new_list['id']
+
     def export_to_trello(
         self,
         intelligence_results: Dict,
         board_id: str,
-        list_name: str = "Action Items"
+        list_name: str = "Meeting Action Items"
     ) -> List[str]:
         """
         Export action items to Trello board
@@ -192,20 +213,88 @@ class MeetingIntelligenceExporter:
         Returns:
             List of created card URLs
         """
-        # TODO: Implement when Trello integration is configured
-        print("⚠️  Trello export not yet implemented")
-        print("   Action items available in JSON for manual import")
+        trello = self._init_trello()
 
-        # Show what would be exported
-        if "action_items" in intelligence_results:
-            actions = intelligence_results["action_items"].get("action_items", [])
-            print(f"\n📋 {len(actions)} action items ready for Trello:")
-            for i, item in enumerate(actions, 1):
-                print(f"   {i}. {item['task']}")
-                if item.get('assignee'):
-                    print(f"      → Assignee: {item['assignee']}")
+        # Get action items
+        if "action_items" not in intelligence_results:
+            print("⚠️  No action items to export")
+            return []
 
-        return []
+        actions = intelligence_results["action_items"].get("action_items", [])
+        if not actions:
+            print("⚠️  No action items found in intelligence")
+            return []
+
+        # Get meeting metadata
+        metadata = intelligence_results.get("metadata", {})
+        meeting_title = metadata.get("title", "Meeting")
+        meeting_date = metadata.get("date", "")
+
+        # Get or create target list
+        list_id = self._get_or_create_list(board_id, list_name)
+
+        # Get existing cards to avoid duplicates
+        existing_cards = trello.get_cards(list_id)
+        existing_names = {c['name'].lower() for c in existing_cards}
+
+        created_urls = []
+        skipped = 0
+
+        for item in actions:
+            task = item.get('task', 'Unknown task')
+            assignee = item.get('assignee')
+            deadline = item.get('deadline')
+            priority = item.get('priority')
+            context = item.get('context', '')
+
+            # Build card name
+            card_name = f"[{meeting_title}] {task}"
+
+            # Skip if already exists
+            if card_name.lower() in existing_names:
+                skipped += 1
+                continue
+
+            # Build description
+            desc_lines = [
+                f"**From Meeting**: {meeting_title} ({meeting_date})",
+                "",
+            ]
+            if assignee:
+                desc_lines.append(f"**Assignee**: {assignee}")
+            if deadline:
+                desc_lines.append(f"**Deadline**: {deadline}")
+            if priority:
+                desc_lines.append(f"**Priority**: {priority}")
+            if context:
+                desc_lines.append(f"")
+                desc_lines.append(f"**Context**: {context}")
+
+            desc_lines.append("")
+            desc_lines.append("---")
+            desc_lines.append("*Created by Maia Meeting Intelligence*")
+
+            description = "\n".join(desc_lines)
+
+            # Create card
+            try:
+                card = trello.create_card(
+                    list_id=list_id,
+                    name=card_name,
+                    desc=description,
+                    due=deadline if deadline and deadline != "null" else None
+                )
+                card_url = card.get('url', card.get('shortUrl', ''))
+                created_urls.append(card_url)
+                print(f"   ✅ Created: {task[:50]}...")
+            except Exception as e:
+                print(f"   ❌ Failed: {task[:50]}... - {e}")
+
+        print(f"\n📊 Trello Export Summary:")
+        print(f"   Created: {len(created_urls)} cards")
+        print(f"   Skipped: {skipped} (already exist)")
+
+        return created_urls
 
     def export_intelligence_file(
         self,
