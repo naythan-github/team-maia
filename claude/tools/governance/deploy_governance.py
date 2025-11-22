@@ -196,8 +196,8 @@ def validate_system():
     }
     
     # Add governance tools to path for testing
-    sys.path.insert(0, str(Path(__file__).resolve().parents[4 if 'claude/tools' in str(__file__) else 0] / 'claude' / 'tools' / 'governance')
-    
+    sys.path.insert(0, str(Path(__file__).parent))
+
     # Test repository analyzer
     try:
         from claude.tools.governance.repository_analyzer import RepositoryAnalyzer
@@ -240,7 +240,7 @@ def validate_system():
     # Test governance dashboard
     try:
         # Import check only - don't start server
-        sys.path.insert(0, str(Path(__file__).resolve().parents[4 if 'claude/tools' in str(__file__) else 0] / 'claude' / 'tools' / 'governance')
+        sys.path.insert(0, str(Path(__file__).parent))
         import governance_dashboard
         validation_results["governance_dashboard"] = True
         print("   ✅ Governance dashboard: Ready to launch")
@@ -333,7 +333,7 @@ def update_governance_progress():
     """Update governance implementation progress to Phase 6"""
     print("📊 Updating implementation progress...")
     
-    progress_file = Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "governance_implementation_progress.json")
+    progress_file = Path(__file__).parent.parent.parent / "data" / "governance_implementation_progress.json"
     
     try:
         with open(progress_file, 'r') as f:

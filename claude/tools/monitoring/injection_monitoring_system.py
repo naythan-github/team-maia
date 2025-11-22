@@ -35,7 +35,7 @@ class InjectionMonitoringSystem:
     """Comprehensive monitoring system for AI prompt injection attacks"""
     
     def __init__(self, db_path: str = None):
-        self.base_dir = Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "tools" / "security")
+        self.base_dir = Path(__file__).parent.parent / "security"
         self.logs_dir = self.base_dir / "logs"
         self.logs_dir.mkdir(exist_ok=True)
         

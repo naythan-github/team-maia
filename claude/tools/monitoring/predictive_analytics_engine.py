@@ -326,7 +326,7 @@ class PredictiveModelEngine:
         
     def _initialize_model_database(self) -> str:
         """Initialize SQLite database for model storage."""
-        db_path = Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "predictive_models.db")
+        db_path = Path(__file__).parent.parent.parent / "data" / "databases" / "intelligence" / "predictive_models.db"
         db_path.parent.mkdir(exist_ok=True)
         
         conn = sqlite3.connect(str(db_path))

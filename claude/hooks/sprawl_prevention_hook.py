@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 # Add governance tools to path
-sys.path.append(str(Path(__file__).resolve().parents[4 if 'claude/tools' in str(__file__) else 0] / 'claude' / 'tools' / 'governance')
+sys.path.append(str(Path(__file__).resolve().parents[4 if 'claude/tools' in str(__file__) else 0] / 'claude' / 'tools' / 'governance'))
 
 try:
     from filesystem_monitor import FileSystemMonitor

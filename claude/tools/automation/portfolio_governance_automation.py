@@ -129,7 +129,9 @@ class PortfolioMetrics:
 class PortfolioGovernanceEngine:
     """Main MSP portfolio governance automation engine"""
     
-    def __init__(self, db_path: str = str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "portfolio_governance.db"):
+    def __init__(self, db_path: str = None):
+        if db_path is None:
+            db_path = str(Path(__file__).parent.parent.parent / "data" / "databases" / "system" / "portfolio_governance.db")
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_database()

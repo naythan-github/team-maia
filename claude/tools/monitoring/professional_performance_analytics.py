@@ -46,19 +46,16 @@ except ImportError:
     class MemoryType:
         pass
 
-try:
-    # DEPRECATED: Message bus replaced by Swarm framework
-# from claude.tools.agent_message_bus import get_message_bus, MessageType, MessagePriority
-except ImportError:
-    # Graceful fallback for missing agent_message_bus
-    def get_message_bus():
-        return None
-    
-    class MessageType:
-        pass
-    
-    class MessagePriority:
-        pass
+# DEPRECATED: Message bus replaced by Swarm framework
+# Graceful fallback for missing agent_message_bus
+def get_message_bus():
+    return None
+
+class MessageType:
+    pass
+
+class MessagePriority:
+    pass
 
 @dataclass
 class PerformanceMetrics:

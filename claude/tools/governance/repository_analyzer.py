@@ -190,7 +190,7 @@ class RepositoryAnalyzer:
     def save_analysis(self, output_path: str = None) -> str:
         """Save analysis results to file"""
         if not output_path:
-            output_path = fstr(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "repository_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            output_path = str(Path(__file__).parent.parent.parent / "data" / f"repository_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
         
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         

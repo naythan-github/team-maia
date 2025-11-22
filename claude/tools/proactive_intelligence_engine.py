@@ -107,7 +107,7 @@ class ProactiveIntelligenceEngine:
         self.is_running = False
         
         # Data storage
-        self.data_dir = Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "proactive_intelligence")
+        self.data_dir = Path(__file__).parent.parent / "data" / "proactive_intelligence"
         self.data_dir.mkdir(parents=True, exist_ok=True)
         
         self.opportunities_file = self.data_dir / "opportunities.json"

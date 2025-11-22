@@ -431,7 +431,8 @@ def main():
         print(f"  • {insight}")
     
     # Save detailed results
-    with open(fstr(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "autonomous_analysis_{int(time.time())}.json", "w") as f:
+    output_path = Path(__file__).parent.parent.parent / "data" / f"autonomous_analysis_{int(time.time())}.json"
+    with open(output_path, "w") as f:
         json.dump(results, f, indent=2, default=str)
     
     print(f"\n✅ Detailed analysis saved to claude/data/")

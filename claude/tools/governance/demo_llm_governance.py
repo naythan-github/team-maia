@@ -22,8 +22,8 @@ def demo_local_llm_governance():
     
     # Focus on critical system directories for demo
     critical_paths = [
-        Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "tools" / "servicedesk"),
-        Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "tools" / "governance"),
+        Path(__file__).parent.parent / "servicedesk",
+        Path(__file__).parent,
     ]
     
     total_files = 0

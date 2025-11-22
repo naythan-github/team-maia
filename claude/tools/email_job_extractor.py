@@ -83,8 +83,10 @@ def extract_job_details_from_email(email_body):
 
     return jobs
 
-def store_jobs_in_db(jobs, db_path='get_path_manager().get_path('git_root') / 'claude' / 'data' / 'jobs.db''):
+def store_jobs_in_db(jobs, db_path=None):
     """Store extracted jobs in the database"""
+    if db_path is None:
+        db_path = Path(__file__).parent.parent / 'data' / 'databases' / 'user' / 'jobs.db'
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 

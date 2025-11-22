@@ -11,13 +11,14 @@ import json
 import re
 import time
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 class SystematicThinkingEnforcementWebhook:
     """Technical enforcement of systematic thinking framework"""
     
     def __init__(self):
-        self.log_file = str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "systematic_thinking_enforcement_log.jsonl"
+        self.log_file = str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "systematic_thinking_enforcement_log.jsonl")
         self.session_start = datetime.now().isoformat()
         
         # Create log file if it doesn't exist

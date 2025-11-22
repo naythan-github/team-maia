@@ -421,7 +421,8 @@ class EnhancedProfileScorer:
 
         # Load PM exception keywords from config
         try:
-            with open('get_path_manager().get_path('git_root') / 'claude' / 'data' / 'job_monitor_config.json'', 'r') as f:
+            config_path = Path(__file__).parent.parent / 'data' / 'job_monitor_config.json'
+            with open(config_path, 'r') as f:
                 config = json.load(f)
                 pm_exceptions = config.get('keywords', {}).get('pm_exceptions', [])
         except:

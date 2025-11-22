@@ -274,8 +274,8 @@ def main():
     print("=" * 60)
 
     # Check for credentials
-    cred_file = 'get_path_manager().get_path('git_root') / 'claude' / 'data' / 'gmail_credentials.json''
-    token_file = 'get_path_manager().get_path('git_root') / 'claude' / 'data' / 'gmail_token.pickle''
+    cred_file = Path(__file__).parent.parent / 'data' / 'gmail_credentials.json'
+    token_file = Path(__file__).parent.parent / 'data' / 'gmail_token.pickle'
 
     if not os.path.exists(cred_file):
         print("\n⚠️  Gmail API credentials not found!")
@@ -337,7 +337,8 @@ def main():
     print(f"🔄 Duplicates skipped: {all_stats['duplicates']}")
 
     # Check database
-    conn = sqlite3.connect('get_path_manager().get_path('git_root') / 'claude' / 'data' / 'jobs.db'')
+    db_path = Path(__file__).parent.parent / 'data' / 'databases' / 'user' / 'jobs.db'
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
     cursor.execute('SELECT COUNT(DISTINCT url) FROM jobs')
     total = cursor.fetchone()[0]

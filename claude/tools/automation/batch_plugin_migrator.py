@@ -151,7 +151,7 @@ class BatchMigrationManager:
         """Save detailed migration report"""
         if not output_file:
             timestamp = int(time.time())
-            output_file = fstr(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "data" / "migration_report_{timestamp}.json"
+            output_file = str(Path(__file__).parent.parent.parent / "data" / f"migration_report_{timestamp}.json")
         
         with open(output_file, 'w') as f:
             json.dump(summary, f, indent=2)
