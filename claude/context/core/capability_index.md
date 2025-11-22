@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-21 (Phase 167 - Meeting Intelligence + Confluence Export)
+**Last Updated**: 2025-11-22 (Phase 171 - Comprehensive Test Suite)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,24 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 171 (Nov 22) - Comprehensive Test Suite ⭐ **SRE PRODUCTION VALIDATION**
+- **maia_comprehensive_test_suite.py** - Automated validation of ALL Maia components (572 tests, 7 categories)
+- **Location**: `claude/tools/sre/maia_comprehensive_test_suite.py`
+- **Purpose**: Detect silent failures across tools, agents, databases, RAG, hooks, and core functionality
+- **Test Categories**: tools (426), agents (63), databases (36), rag (3), hooks (31), core (8), ollama (5)
+- **Performance**: 0.6 seconds for full 572-test suite
+- **Output Formats**: Console (default), JSON report (`--output file.json`), quiet mode (`--quiet`)
+- **CLI Usage**:
+  ```bash
+  python3 claude/tools/sre/maia_comprehensive_test_suite.py           # Full suite
+  python3 claude/tools/sre/maia_comprehensive_test_suite.py --quick   # Smoke test
+  python3 claude/tools/sre/maia_comprehensive_test_suite.py -c tools  # Specific category
+  ```
+- **Validation Scope**: Python syntax (AST parsing), agent structure, SQLite integrity, ChromaDB health, hook validity, core functionality, Ollama models
+- **Fixes Applied**: 17 syntax errors discovered and fixed (broken path strings from bad search-replace)
+- **Production Status**: ✅ Complete - 572/572 tests passing (100%)
+- **SRE Value**: Run before deployments, after major changes, or periodically to catch regressions
 
 ### ⭐ SYSTEM_STATE Query Interface (Phase 165-166) - DATABASE-FIRST PATTERN ⭐
 **CRITICAL: Use this tool instead of reading SYSTEM_STATE.md directly**
