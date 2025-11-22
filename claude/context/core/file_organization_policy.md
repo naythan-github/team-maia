@@ -293,6 +293,39 @@ tests/
 
 ---
 
+## POST-REORGANIZATION DATABASE SYNC ⭐ **PHASE 169**
+
+**After moving or reorganizing files, run these commands to keep databases current:**
+
+```bash
+# Step 1: Re-scan capabilities database (tools + agents registry)
+python3 claude/tools/sre/capabilities_registry.py scan
+
+# Step 2: Auto-fix paths in system_state.db (historical phases)
+python3 claude/tools/sre/path_sync.py auto-fix
+
+# Or run both in one command:
+python3 claude/tools/sre/path_sync.py sync
+```
+
+**What each tool does:**
+- **capabilities_registry.py scan**: Rebuilds capabilities.db with current file locations (66 agents, 144 tools)
+- **path_sync.py auto-fix**: Detects moved files and updates path references in system_state.db narrative_text
+- **path_sync.py sync**: Runs both (capabilities scan + system_state path fix)
+
+**When to run:**
+- After any file reorganization or cleanup
+- After archiving old phase documentation
+- After moving tools between directories
+- After renaming agents or tools
+
+**Dry-run first** (optional):
+```bash
+python3 claude/tools/sre/path_sync.py auto-fix --dry-run
+```
+
+---
+
 ## PRE-COMMIT HOOK INSTALLATION
 
 **Automatic** (recommended):
