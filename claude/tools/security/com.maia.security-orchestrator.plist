@@ -9,8 +9,8 @@
     <!-- Program Configuration -->
     <key>ProgramArguments</key>
     <array>
-        <string>/usr/local/bin/python3</string>
-        <string>/Users/naythandawe/git/maia/claude/extensions/experimental/security_orchestration_service.py</string>
+        <string>/usr/bin/python3</string>
+        <string>/Users/naythandawe/git/maia/claude/tools/security/security_orchestration_service.py</string>
         <string>--daemon</string>
     </array>
 
