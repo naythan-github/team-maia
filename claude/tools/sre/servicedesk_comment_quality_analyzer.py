@@ -772,8 +772,8 @@ def main():
         print("\n📥 PHASE 1: Extracting sample comments...")
         sample = analyzer.extract_sample_for_analysis(sample_size=args.sample_size)
 
-        # Save sample to JSON for inspection
-        sample_file = MAIA_ROOT / "claude/data/servicedesk_comment_sample.json"
+        # Save sample to work_projects (work output, not Maia system file)
+        sample_file = Path.home() / "work_projects/servicedesk_analysis/servicedesk_comment_sample.json"
         with open(sample_file, 'w') as f:
             json.dump(sample, f, indent=2, default=str)
         print(f"   ✅ Sample saved to: {sample_file}")
@@ -781,8 +781,8 @@ def main():
     if args.full or args.analyze:
         print("\n🤖 PHASE 2: Analyzing comment quality with Ollama LLM...")
 
-        # Load sample
-        sample_file = MAIA_ROOT / "claude/data/servicedesk_comment_sample.json"
+        # Load sample from work_projects
+        sample_file = Path.home() / "work_projects/servicedesk_analysis/servicedesk_comment_sample.json"
         if sample_file.exists():
             with open(sample_file, 'r') as f:
                 sample = json.load(f)

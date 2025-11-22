@@ -73,8 +73,8 @@ class SemanticTicketAnalyzer:
         self.rag_db_path = os.path.expanduser("~/.maia/servicedesk_semantic_analysis")
         os.makedirs(self.rag_db_path, exist_ok=True)
 
-        # Results storage
-        self.results_path = MAIA_ROOT / "claude/data/servicedesk_semantic_analysis_results.json"
+        # Results storage (work output, not Maia system file)
+        self.results_path = Path.home() / "work_projects/servicedesk_analysis/servicedesk_semantic_analysis_results.json"
 
         # Initialize ChromaDB client
         self.client = chromadb.PersistentClient(path=self.rag_db_path)

@@ -350,7 +350,7 @@
 
 ### Phase 149 (Nov 7) - SonicWall SMA 500 to Azure VPN Gateway Migration Toolkit ⭐ **MIGRATION AUTOMATION**
 - **sma_api_discovery.py** - SMA 500 API endpoint discovery tool (341 lines, 40+ endpoints tested)
-- **SMA_500_API_DISCOVERY_GUIDE.md** - Complete migration guide (9.8KB, quick start + troubleshooting)
+- **SMA_500_API_DISCOVERY_GUIDE.md** - Complete migration guide (9.8KB) → Moved to `~/work_projects/infrastructure_research/`
 - **API Discovery**: 5-phase endpoint testing (Console, Management, Setup, Alternative structures, Config export)
 - **Authentication**: HTTP Basic Auth with `local\username` format validation
 - **Endpoint Testing**: SystemStatus, UserSessions, Extensions, Licensing, NetExtender, Bookmarks (40+ total)

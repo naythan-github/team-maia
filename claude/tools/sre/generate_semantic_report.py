@@ -192,7 +192,8 @@ def main():
             report_lines.append(f"- {cause}: {rc_count} tickets")
 
     # Save report
-    report_path = MAIA_ROOT / "claude/data/servicedesk_semantic_analysis_report.md"
+    # Output to work_projects (work output, not Maia system file)
+    report_path = Path.home() / "work_projects/servicedesk_analysis/servicedesk_semantic_analysis_report.md"
     with open(report_path, 'w') as f:
         f.write("\n".join(report_lines))
 
