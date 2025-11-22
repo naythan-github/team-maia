@@ -550,6 +550,221 @@ class MacOSMailBridge:
         except Exception as e:
             raise RuntimeError(f"Failed to send email: {str(e)}")
 
+    def get_message_attachments(self, message_id: str, account: str = "Exchange") -> List[Dict[str, Any]]:
+        """
+        Get list of attachments for a specific message
+
+        Args:
+            message_id: Message ID from search_messages()
+            account: Account name (default: Exchange)
+
+        Returns:
+            List of attachment dictionaries with name, size, mime_type
+        """
+        script = f'''
+        tell application "Mail"
+            try
+                set targetAccount to account "{account}"
+
+                -- Search across all mailboxes for the message ID
+                set msg to missing value
+                repeat with mb in mailboxes of targetAccount
+                    try
+                        set msg to (first message of mb whose id is {message_id})
+                        exit repeat
+                    end try
+                end repeat
+
+                if msg is missing value then
+                    return "ERROR::Message not found"
+                end if
+
+                set attachmentList to mail attachments of msg
+                set attachmentCount to count of attachmentList
+
+                if attachmentCount is 0 then
+                    return "NONE"
+                end if
+
+                set output to ""
+                repeat with att in attachmentList
+                    set attName to name of att
+                    set attSize to file size of att
+                    set attType to MIME type of att
+                    set output to output & attName & "::" & attSize & "::" & attType & "||"
+                end repeat
+
+                return output
+            on error errMsg
+                return "ERROR::" & errMsg
+            end try
+        end tell
+        '''
+
+        try:
+            result = self._execute_applescript(script)
+
+            if result.strip() == "NONE":
+                return []
+
+            if result.startswith("ERROR::"):
+                error_msg = result.replace("ERROR::", "").strip()
+                if "Message not found" in error_msg or "AppleEvent handler failed" in error_msg:
+                    return []
+                # Log but don't raise for other errors - return empty list
+                print(f"  ⚠️  Attachment error: {error_msg}")
+                return []
+
+            attachments = []
+            if result.strip():
+                for line in result.strip().split("||"):
+                    if line.strip() and "::" in line:
+                        parts = line.split("::")
+                        if len(parts) >= 3:
+                            attachments.append({
+                                "name": parts[0].strip(),
+                                "size": int(parts[1].strip()) if parts[1].strip().isdigit() else 0,
+                                "mime_type": parts[2].strip()
+                            })
+
+            return attachments
+
+        except (RuntimeError, ValueError) as e:
+            error_str = str(e)
+            if any(x in error_str for x in ["Invalid index", "Can't get message", "AppleEvent handler failed"]):
+                return []
+            print(f"  ⚠️  Attachment retrieval error: {error_str}")
+            return []
+
+    def save_attachment(
+        self,
+        message_id: str,
+        attachment_name: str,
+        save_path: str,
+        account: str = "Exchange"
+    ) -> bool:
+        """
+        Save a specific attachment from a message to disk
+
+        Args:
+            message_id: Message ID from search_messages()
+            attachment_name: Name of the attachment to save
+            save_path: Full path where to save the file
+            account: Account name (default: Exchange)
+
+        Returns:
+            True if saved successfully, False otherwise
+        """
+        # Ensure save directory exists
+        save_dir = os.path.dirname(save_path)
+        if save_dir:
+            os.makedirs(save_dir, exist_ok=True)
+
+        # Escape special characters for AppleScript
+        safe_att_name = attachment_name.replace('"', '\\"')
+        safe_save_path = save_path.replace('"', '\\"')
+
+        script = f'''
+        tell application "Mail"
+            try
+                set targetAccount to account "{account}"
+
+                -- Search across all mailboxes for the message ID
+                set msg to missing value
+                repeat with mb in mailboxes of targetAccount
+                    try
+                        set msg to (first message of mb whose id is {message_id})
+                        exit repeat
+                    end try
+                end repeat
+
+                if msg is missing value then
+                    return "ERROR::Message not found"
+                end if
+
+                set attachmentList to mail attachments of msg
+
+                repeat with att in attachmentList
+                    if name of att is "{safe_att_name}" then
+                        save att in POSIX file "{safe_save_path}"
+                        return "SUCCESS"
+                    end if
+                end repeat
+
+                return "ERROR::Attachment not found"
+            on error errMsg
+                return "ERROR::" & errMsg
+            end try
+        end tell
+        '''
+
+        try:
+            result = self._execute_applescript(script)
+
+            if "SUCCESS" in result:
+                return True
+
+            if result.startswith("ERROR::"):
+                error_msg = result.replace("ERROR::", "").strip()
+                print(f"  ⚠️  Attachment save failed: {error_msg}")
+                return False
+
+            return False
+
+        except Exception as e:
+            print(f"  ⚠️  Attachment save error: {e}")
+            return False
+
+    def has_attachments(self, message_id: str, account: str = "Exchange") -> bool:
+        """
+        Quick check if a message has any attachments
+
+        Args:
+            message_id: Message ID
+            account: Account name
+
+        Returns:
+            True if message has attachments
+        """
+        attachments = self.get_message_attachments(message_id, account)
+        return len(attachments) > 0
+
+    def is_image_attachment(self, attachment: Dict[str, Any]) -> bool:
+        """
+        Check if an attachment is an image file
+
+        Args:
+            attachment: Attachment dictionary from get_message_attachments()
+
+        Returns:
+            True if attachment is an image
+        """
+        image_types = ['image/png', 'image/jpeg', 'image/jpg', 'image/tiff', 'image/bmp', 'image/gif', 'image/heic']
+        image_extensions = ['.png', '.jpg', '.jpeg', '.tiff', '.bmp', '.gif', '.heic']
+
+        mime_type = attachment.get('mime_type', '').lower()
+        name = attachment.get('name', '').lower()
+
+        return (
+            any(t in mime_type for t in image_types) or
+            any(name.endswith(ext) for ext in image_extensions)
+        )
+
+    def is_pdf_attachment(self, attachment: Dict[str, Any]) -> bool:
+        """
+        Check if an attachment is a PDF file
+
+        Args:
+            attachment: Attachment dictionary from get_message_attachments()
+
+        Returns:
+            True if attachment is a PDF
+        """
+        mime_type = attachment.get('mime_type', '').lower()
+        name = attachment.get('name', '').lower()
+
+        return 'pdf' in mime_type or name.endswith('.pdf')
+
 
 def main():
     """Test the Mail.app bridge functionality"""

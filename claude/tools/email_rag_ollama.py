@@ -504,6 +504,25 @@ def main():
                 print(f"   From: {r['sender']}")
                 print(f"   Relevance: {r['relevance']:.2%}")
 
+            # Post-indexing hook: Process receipt emails
+            print("\n" + "="*60)
+            print("🧾 Receipt Processing Hook")
+            print("="*60)
+            try:
+                from claude.tools.finance.receipt_processor import process_new_receipts
+                receipt_stats = process_new_receipts(rag, hours_ago=hours_ago or 24)
+                if receipt_stats.get('processed', 0) > 0:
+                    print(f"   • Receipts Processed: {receipt_stats['processed']}")
+                    print(f"   • Successful: {receipt_stats.get('successful', 0)}")
+                    if receipt_stats.get('confluence_url'):
+                        print(f"   • Confluence: {receipt_stats['confluence_url']}")
+                else:
+                    print("   • No new receipts to process")
+            except ImportError:
+                print("   ⚠️  Receipt processor not available")
+            except Exception as e:
+                print(f"   ⚠️  Receipt processing skipped: {e}")
+
         print("\n✅ Email RAG System Operational!")
 
     except Exception as e:
