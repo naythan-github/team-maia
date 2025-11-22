@@ -23,6 +23,7 @@ MAIA_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.email_rag_ollama import EmailRAGOllama
+from claude.tools.confluence_client import ConfluenceClient
 
 
 class MorningEmailIntelligence:
@@ -34,13 +35,27 @@ class MorningEmailIntelligence:
         self.ollama_url = "http://localhost:11434"
         self.email_rag = EmailRAGOllama(extract_contacts=False)
 
-        # Output paths
-        self.output_dir = Path.home() / "Desktop"
+        # Output paths - use ~/.maia/output/ to avoid macOS TCC Desktop restrictions
+        self.output_dir = Path.home() / ".maia" / "output"
+        self.output_dir.mkdir(parents=True, exist_ok=True)
         self.output_file = self.output_dir / "EMAIL_INTELLIGENCE_BRIEF.md"
+
+        # Create Desktop symlink if possible (may fail due to TCC)
+        desktop_link = Path.home() / "Desktop" / "EMAIL_INTELLIGENCE_BRIEF.md"
+        if not desktop_link.exists():
+            try:
+                desktop_link.symlink_to(self.output_file)
+            except (PermissionError, OSError):
+                pass  # TCC blocked - output still accessible at ~/.maia/output/
 
         # Performance tracking
         self.total_time = 0.0
         self.api_calls = 0
+
+        # Confluence configuration
+        self.confluence_space = "Orro"
+        self.confluence_page_title = "Email Intelligence Dashboard"
+        self.confluence_client = None  # Lazy init
 
         # Action tracker integration
         from claude.tools.email_action_tracker import EmailActionTracker
@@ -48,6 +63,27 @@ class MorningEmailIntelligence:
 
         print(f"✅ Initialized with {model} (100% local, zero cost)")
         print(f"✅ Action tracker initialized")
+
+    def _export_to_confluence(self, brief: str) -> Optional[str]:
+        """
+        Export brief to Confluence Orro space (updates existing page)
+
+        Returns:
+            Page URL if successful, None if failed
+        """
+        try:
+            if self.confluence_client is None:
+                self.confluence_client = ConfluenceClient()
+
+            url = self.confluence_client.update_page_from_markdown(
+                space_key=self.confluence_space,
+                title=self.confluence_page_title,
+                markdown_content=brief
+            )
+            return url
+        except Exception as e:
+            print(f"⚠️ Confluence export failed (non-fatal): {e}")
+            return None
 
     def _call_ollama(self, prompt: str, temperature: float = 0.1) -> Dict[str, Any]:
         """Call local Ollama API"""
@@ -83,26 +119,26 @@ class MorningEmailIntelligence:
             }
 
     def _get_recent_emails(self, hours: int = 24) -> List[Dict[str, Any]]:
-        """Get emails from last N hours using macOS Mail bridge"""
+        """Get emails from last N hours using macOS Mail bridge with folder tracking"""
         from claude.tools.macos_mail_bridge import MacOSMailBridge
 
         mail_bridge = MacOSMailBridge()
 
         emails = []
 
-        # Fetch from Inbox and Sent
+        # Fetch from Inbox and Sent separately with folder markers
         try:
-            # Get inbox messages
             inbox_emails = mail_bridge.get_inbox_messages(limit=100, hours_ago=hours)
-            # Filter to unread only
-            inbox_emails = [e for e in inbox_emails if not e.get("read", True)]
+            for e in inbox_emails:
+                e['folder'] = 'Inbox'
             emails.extend(inbox_emails)
         except Exception as e:
             print(f"⚠️  Could not fetch Inbox: {e}")
 
         try:
-            # Get sent messages
             sent_emails = mail_bridge.get_sent_messages(limit=50, hours_ago=hours)
+            for e in sent_emails:
+                e['folder'] = 'Sent'
             emails.extend(sent_emails)
         except Exception as e:
             print(f"⚠️  Could not fetch Sent: {e}")
@@ -111,6 +147,118 @@ class MorningEmailIntelligence:
         emails.sort(key=lambda e: e.get("date", ""), reverse=True)
 
         return emails
+
+    def _normalize_subject(self, subject: str) -> str:
+        """Normalize subject for thread matching (remove Re:, Fwd:, etc.)"""
+        import re
+        # Remove common prefixes
+        normalized = re.sub(r'^(Re:\s*|Fwd:\s*|FW:\s*)+', '', subject, flags=re.IGNORECASE)
+        return normalized.strip().lower()
+
+    def _is_system_notification(self, email: Dict) -> bool:
+        """Check if email is a system notification (should be filtered)"""
+        sender = email.get("from", "").lower()
+        subject = email.get("subject", "").lower()
+
+        # System notification patterns
+        system_senders = [
+            "no-reply@", "noreply@", "donotreply@",
+            "notifications@", "notification@",
+            "sharepoint", "teams@", "calendar@",
+            "mailer-daemon", "postmaster@"
+        ]
+
+        system_subjects = [
+            "recording has expired", "meeting recording",
+            "password expir", "your token", "digest",
+            "newsletter", "unsubscribe"
+        ]
+
+        if any(s in sender for s in system_senders):
+            return True
+        if any(s in subject for s in system_subjects):
+            return True
+        return False
+
+    def _is_from_me(self, email: Dict) -> bool:
+        """Check if email is from me (sent by me)"""
+        sender = email.get("from", "").lower()
+        my_addresses = ["naythan.dawe@", "naythan.general@", "naythandawe@"]
+        return any(addr in sender for addr in my_addresses)
+
+    def _get_thread_states(self, emails: List[Dict]) -> Dict[str, Dict]:
+        """
+        Analyze thread states to determine what needs action.
+
+        Returns dict keyed by normalized subject with:
+        - state: NEEDS_ACTION | ACTIONED | WAITING | SYSTEM
+        - last_inbox: most recent inbox email (if any)
+        - last_sent: most recent sent email (if any)
+        - emails: all emails in thread
+        """
+        threads = {}
+
+        for email in emails:
+            # Skip system notifications
+            if self._is_system_notification(email):
+                continue
+
+            subject = email.get("subject", "")
+            thread_key = self._normalize_subject(subject)
+
+            if not thread_key:
+                continue
+
+            if thread_key not in threads:
+                threads[thread_key] = {
+                    'inbox': [],
+                    'sent': [],
+                    'all_emails': [],
+                    'subject': subject  # Keep original subject
+                }
+
+            threads[thread_key]['all_emails'].append(email)
+
+            if self._is_from_me(email) or email.get('folder') == 'Sent':
+                threads[thread_key]['sent'].append(email)
+            else:
+                threads[thread_key]['inbox'].append(email)
+
+        # Determine state for each thread
+        result = {}
+        for thread_key, data in threads.items():
+            inbox_emails = sorted(data['inbox'], key=lambda x: x.get('date', ''), reverse=True)
+            sent_emails = sorted(data['sent'], key=lambda x: x.get('date', ''), reverse=True)
+
+            last_inbox = inbox_emails[0] if inbox_emails else None
+            last_sent = sent_emails[0] if sent_emails else None
+
+            # Determine state
+            if not last_inbox and last_sent:
+                state = 'WAITING'  # I sent, no reply yet
+            elif last_inbox and not last_sent:
+                state = 'NEEDS_ACTION'  # They sent, I haven't replied
+            elif last_inbox and last_sent:
+                # Compare dates to see who replied last
+                inbox_date = last_inbox.get('date', '')
+                sent_date = last_sent.get('date', '')
+                if inbox_date > sent_date:
+                    state = 'NEEDS_ACTION'  # They replied after me
+                else:
+                    state = 'ACTIONED'  # I replied last
+            else:
+                state = 'UNKNOWN'
+
+            result[thread_key] = {
+                'state': state,
+                'subject': data['subject'],
+                'last_inbox': last_inbox,
+                'last_sent': last_sent,
+                'inbox_count': len(inbox_emails),
+                'sent_count': len(sent_emails)
+            }
+
+        return result
 
     def _categorize_with_gemma2(self, emails: List[Dict]) -> Dict[str, List[Dict]]:
         """Categorize emails using Gemma2 (100% accuracy in tests)"""
@@ -122,7 +270,7 @@ class MorningEmailIntelligence:
         for i, email in enumerate(emails[:50]):  # Limit to 50 for efficiency
             email_summaries.append({
                 "id": i,
-                "from": email.get("sender", "Unknown"),
+                "from": email.get("from", "Unknown"),
                 "subject": email.get("subject", "No Subject"),
                 "date": email.get("date", ""),
                 "preview": email.get("content", "")[:300]
@@ -245,7 +393,7 @@ Respond with JSON only (no markdown, no explanation):
         # Group by sender
         by_sender = {}
         for email in emails:
-            sender = email.get("sender", "Unknown")
+            sender = email.get("from", "Unknown")
             if sender not in by_sender:
                 by_sender[sender] = []
             by_sender[sender].append(email)
@@ -334,7 +482,7 @@ Respond with JSON only (no markdown, no explanation):
             # Find matching email for message_id
             email_match = None
             for email in urgent_emails:
-                if action.get("sender") == email.get("sender") and action.get("context", "").lower() in email.get("subject", "").lower():
+                if action.get("sender") == email.get("from") and action.get("context", "").lower() in email.get("subject", "").lower():
                     email_match = email
                     break
 
@@ -408,9 +556,23 @@ Respond with JSON only (no markdown, no explanation):
             print("   No new emails to process")
             return self._generate_empty_brief()
 
-        # Step 2: Categorize with Gemma2
-        print(f"\n🤖 Categorizing with Gemma2 9B...")
-        categorized = self._categorize_with_gemma2(emails)
+        # Step 1b: Analyze thread states
+        print(f"\n🔗 Analyzing conversation threads...")
+        thread_states = self._get_thread_states(emails)
+        needs_action = [t for t in thread_states.values() if t['state'] == 'NEEDS_ACTION']
+        actioned = [t for t in thread_states.values() if t['state'] == 'ACTIONED']
+        waiting = [t for t in thread_states.values() if t['state'] == 'WAITING']
+        system_filtered = len(emails) - sum(len(t.get('all_emails', [])) for t in thread_states.values() if 'all_emails' in t)
+        print(f"   NEEDS ACTION: {len(needs_action)} threads")
+        print(f"   ACTIONED: {len(actioned)} threads")
+        print(f"   WAITING FOR REPLY: {len(waiting)} threads")
+        print(f"   System notifications filtered: {system_filtered}")
+
+        # Step 2: Categorize NEEDS_ACTION emails with Gemma2
+        print(f"\n🤖 Categorizing actionable emails with Gemma2 9B...")
+        # Only categorize inbox emails that need action (not from me, not system)
+        actionable_emails = [t['last_inbox'] for t in needs_action if t.get('last_inbox')]
+        categorized = self._categorize_with_gemma2(actionable_emails) if actionable_emails else {"urgent": [], "project": [], "fyi": []}
         print(f"   URGENT: {len(categorized['urgent'])}")
         print(f"   PROJECT: {len(categorized['project'])}")
         print(f"   FYI: {len(categorized['fyi'])}")
@@ -435,22 +597,30 @@ Respond with JSON only (no markdown, no explanation):
         stalled_count = len(self.action_tracker.check_stalled_actions())
         print(f"   Overdue: {overdue_count}, Stalled: {stalled_count}")
 
-        # Step 7: Analyze sentiment
+        # Step 7: Analyze sentiment (only external senders from inbox)
         print(f"\n😊 Analyzing sentiment for stakeholder tracking...")
-        sentiment = self._analyze_sentiment_with_gemma2(emails)
-        print(f"   Analyzed {len(sentiment)} key senders")
+        # Only analyze emails from others, not from myself
+        external_emails = [e for e in emails if not self._is_from_me(e) and not self._is_system_notification(e)]
+        sentiment = self._analyze_sentiment_with_gemma2(external_emails)
+        print(f"   Analyzed {len(sentiment)} external senders")
 
-        # Step 8: Generate markdown brief
+        # Step 8: Generate markdown brief with thread states
         print(f"\n📝 Generating morning brief...")
-        brief = self._format_brief(categorized, action_items, sentiment)
+        brief = self._format_brief_v2(categorized, action_items, sentiment, thread_states)
 
-        # Step 6: Save to Desktop
+        # Step 9: Save locally
         self.output_file.write_text(brief)
+        print(f"\n✅ Local brief saved: {self.output_file}")
+
+        # Step 10: Export to Confluence
+        print(f"\n📤 Exporting to Confluence ({self.confluence_space}/{self.confluence_page_title})...")
+        confluence_url = self._export_to_confluence(brief)
+        if confluence_url:
+            print(f"✅ Confluence page updated: {confluence_url}")
 
         elapsed = (datetime.now() - start_time).total_seconds()
 
-        print(f"\n✅ Morning brief saved: {self.output_file}")
-        print(f"💰 Total cost: $0.00 (100% local)")
+        print(f"\n💰 Total cost: $0.00 (100% local)")
         print(f"⏱️  Total time: {elapsed:.1f}s")
         print(f"🔢 Ollama calls: {self.api_calls}")
 
@@ -480,7 +650,7 @@ Model: Gemma2 9B (Local) | Processed: {sum(len(v) for v in categorized.values())
 
         # Urgent emails
         for i, email in enumerate(categorized["urgent"][:10], 1):
-            sender = email.get("sender", "Unknown")
+            sender = email.get("from", "Unknown")
             subject = email.get("subject", "No Subject")
             date = email.get("date", "")[:19]
 
@@ -531,7 +701,7 @@ Model: Gemma2 9B (Local) | Processed: {sum(len(v) for v in categorized.values())
 """
         for i, email in enumerate(categorized["project"][:10], 1):
             subject = email.get("subject", "No Subject")
-            sender = email.get("sender", "Unknown")
+            sender = email.get("from", "Unknown")
             brief += f"{i}. {subject}\n   From: {sender}\n\n"
 
         if len(categorized["project"]) > 10:
@@ -593,6 +763,158 @@ Model: Gemma2 9B (Local) | Processed: {sum(len(v) for v in categorized.values())
 *Generated by Maia Email Intelligence (Hourly)*
 *Local Model: Gemma2 9B | Zero Cost | 100% Action Recall*
 *Updates every hour automatically | Last run: {now.strftime('%I:%M %p')}*
+"""
+
+        return brief
+
+    def _format_brief_v2(self, categorized: Dict, action_items: List[Dict], sentiment: Dict, thread_states: Dict) -> str:
+        """Format morning brief with thread-aware sections (v2)"""
+        now = datetime.now()
+
+        # Separate threads by state
+        needs_action = [t for t in thread_states.values() if t['state'] == 'NEEDS_ACTION']
+        actioned = [t for t in thread_states.values() if t['state'] == 'ACTIONED']
+        waiting = [t for t in thread_states.values() if t['state'] == 'WAITING']
+
+        # Calculate stats
+        total_threads = len(thread_states)
+        total_emails = sum(len(v) for v in categorized.values())
+
+        brief = f"""# Email Intelligence Brief - {now.strftime('%A, %B %d, %Y %I:%M %p')}
+
+Model: Gemma2 9B (Local) | Threads: {total_threads} | Emails: {total_emails} | Cost: $0.00
+
+---
+
+"""
+
+        # Add action tracker dashboard
+        action_dashboard = self.action_tracker.format_action_dashboard()
+        brief += action_dashboard
+
+        # NEEDS ACTION section (urgent + project combined)
+        brief += f"""---
+
+## 🎯 NEEDS YOUR ACTION ({len(needs_action)} conversations)
+
+"""
+        if needs_action:
+            # Sort by urgency (urgent first)
+            urgent_subjects = {self._normalize_subject(e.get('subject', '')): True
+                              for e in categorized.get('urgent', [])}
+
+            for i, thread in enumerate(needs_action[:15], 1):
+                subject = thread.get('subject', 'No Subject')
+                last_inbox = thread.get('last_inbox', {})
+                sender = last_inbox.get('from', 'Unknown')
+                date = last_inbox.get('date', '')[:16]
+
+                # Check if urgent
+                is_urgent = self._normalize_subject(subject) in urgent_subjects
+                urgency_marker = "🔴 " if is_urgent else ""
+
+                # Sentiment
+                sender_sentiment = sentiment.get(sender, {})
+                sentiment_text = sender_sentiment.get('sentiment', '')
+                sentiment_emoji = {"POSITIVE": "😊", "NEUTRAL": "", "CONCERNED": "😟", "FRUSTRATED": "😤"}.get(sentiment_text, "")
+
+                brief += f"""{i}. {urgency_marker}**{subject}**
+   From: {sender} | {date} {sentiment_emoji}
+"""
+                # Add recommended action if available
+                if sender_sentiment.get('recommended_action'):
+                    brief += f"   → {sender_sentiment.get('recommended_action')}\n"
+                brief += "\n"
+        else:
+            brief += "✅ No conversations need your action right now!\n\n"
+
+        # ACTIONED section (things you've already replied to)
+        brief += f"""---
+
+## ✅ ACTIONED ({len(actioned)} conversations - you replied)
+
+"""
+        if actioned:
+            for i, thread in enumerate(actioned[:5], 1):
+                subject = thread.get('subject', 'No Subject')
+                last_sent = thread.get('last_sent', {})
+                sent_date = last_sent.get('date', '')[:16]
+                brief += f"{i}. {subject} (replied {sent_date})\n"
+
+            if len(actioned) > 5:
+                brief += f"\n... and {len(actioned) - 5} more conversations you've handled\n"
+        else:
+            brief += "No recent replies tracked.\n"
+
+        brief += "\n"
+
+        # WAITING FOR REPLY section
+        brief += f"""---
+
+## 📤 WAITING FOR REPLY ({len(waiting)} sent, awaiting response)
+
+"""
+        if waiting:
+            for i, thread in enumerate(waiting[:10], 1):
+                subject = thread.get('subject', 'No Subject')
+                last_sent = thread.get('last_sent', {})
+                sent_date = last_sent.get('date', '')[:16]
+
+                # Calculate days waiting (simple check based on date string)
+                stale_marker = ""
+                try:
+                    # Check if date contains "Friday" or earlier day for stale detection
+                    if any(day in sent_date for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday']):
+                        stale_marker = " ⚠️ STALE"
+                except:
+                    pass
+
+                brief += f"{i}. {subject} (sent {sent_date}){stale_marker}\n"
+
+            if len(waiting) > 10:
+                brief += f"\n... and {len(waiting) - 10} more awaiting reply\n"
+        else:
+            brief += "No outstanding sent emails awaiting reply.\n"
+
+        brief += "\n"
+
+        # Relationship intelligence (external senders only)
+        if sentiment:
+            brief += f"""---
+
+## 📈 STAKEHOLDER INTELLIGENCE
+
+"""
+            for sender, data in list(sentiment.items())[:5]:
+                health = data.get("relationship_health", 75)
+                health_emoji = "🟢" if health >= 75 else "🟡" if health >= 60 else "🔴"
+
+                brief += f"""**{sender}**
+   {health_emoji} Health: {health}/100 | Sentiment: {data.get('sentiment', 'NEUTRAL')}
+   Recommended: {data.get('recommended_action', 'Continue monitoring')}
+
+"""
+
+        # Footer with stats
+        brief += f"""---
+
+## 💰 PROCESSING STATS
+
+- Model: Gemma2 9B (100% local, zero cost)
+- Threads analyzed: {total_threads}
+- System notifications filtered: (auto-removed)
+- Ollama calls: {self.api_calls}
+- Cost: $0.00
+
+**Summary:**
+- 🎯 {len(needs_action)} conversations need action
+- ✅ {len(actioned)} already handled
+- 📤 {len(waiting)} awaiting reply
+
+---
+
+*Generated by Maia Email Intelligence v2 (Thread-Aware)*
+*Updates hourly | Last run: {now.strftime('%I:%M %p')}*
 """
 
         return brief
