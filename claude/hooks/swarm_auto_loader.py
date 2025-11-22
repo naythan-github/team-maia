@@ -3,11 +3,14 @@
 Swarm Auto-Loader - Stage 0.8 Enhancement for Automatic Agent Persistence
 Phase 134 - Implement Working Principle #15
 Phase 134.3 - Per-Context Isolation (Multi-Context Concurrency Fix)
+Phase 176 - Default Agent Loading + Recovery Protocol
 
 Purpose:
 - Invoke SwarmOrchestrator when routing confidence >70% and complexity >3
 - Create session state file for Maia agent context loading
 - Per-context isolation (each Claude Code window has independent session)
+- Default agent loading (maia_core_agent when no session exists)
+- Recovery protocol integration (checkpoint + git context)
 - Graceful degradation for all error scenarios
 - Background logging integration with Phase 125
 
@@ -551,6 +554,153 @@ def close_session():
         print(f"   Already using natural routing")
 
     sys.exit(0)
+
+
+# =============================================================================
+# Phase 176: Default Agent Loading + Recovery Protocol
+# =============================================================================
+
+def load_default_agent() -> Optional[str]:
+    """
+    Load Maia Core Agent as default when no session exists.
+
+    Phase 176: Default agent provides reliability-focused foundation
+    for all sessions before specialist routing.
+
+    Returns:
+        "maia_core_agent" if loaded, None if session already exists
+
+    Performance: <50ms
+    """
+    session_file = get_session_file_path()
+
+    # If session already exists, don't override
+    if session_file.exists():
+        try:
+            with open(session_file, 'r') as f:
+                json.load(f)  # Validate it's valid JSON
+            return None  # Session exists, don't load default
+        except (json.JSONDecodeError, IOError):
+            pass  # Corrupted session, proceed to load default
+
+    # Verify maia_core_agent.md exists
+    agent_file = MAIA_ROOT / "claude" / "agents" / "maia_core_agent.md"
+    if not agent_file.exists():
+        log_error(f"Default agent file not found: {agent_file}")
+        return None
+
+    # Create session state for default agent
+    default_classification = {
+        "confidence": 1.0,
+        "complexity": 1,
+        "primary_domain": "core",
+    }
+
+    success = create_session_state(
+        agent="maia_core_agent",
+        domain="core",
+        classification=default_classification,
+        query="[Default agent loaded - no prior session]"
+    )
+
+    if success:
+        return "maia_core_agent"
+    return None
+
+
+def get_recovery_context() -> Dict[str, Any]:
+    """
+    Get recovery context from checkpoint manager.
+
+    Phase 176: Integrates with checkpoint_manager.py for session recovery.
+    Combines checkpoint data with git history per FR-2.2.
+
+    Returns:
+        Recovery context dictionary with checkpoint and git info
+
+    Performance: <5s (includes git operations)
+    Graceful: Never raises, always returns valid dict
+    """
+    context: Dict[str, Any] = {
+        'checkpoint': None,
+        'git_commits': [],
+        'message': None,
+    }
+
+    try:
+        # Try to import checkpoint_manager
+        sys.path.insert(0, str(MAIA_ROOT / "claude" / "tools"))
+        from checkpoint_manager import CheckpointManager
+
+        # Get default checkpoints directory
+        checkpoints_dir = MAIA_ROOT / "claude" / "data" / "checkpoints"
+
+        if checkpoints_dir.exists():
+            manager = CheckpointManager(checkpoints_dir=checkpoints_dir)
+            checkpoint_context = manager.get_recovery_context(include_git=True)
+
+            context['checkpoint'] = checkpoint_context.get('checkpoint')
+            context['git_commits'] = checkpoint_context.get('git_commits', [])
+            context['message'] = checkpoint_context.get('message')
+        else:
+            context['message'] = "No checkpoints directory found"
+
+    except ImportError:
+        context['message'] = "Checkpoint manager not available"
+    except Exception as e:
+        context['message'] = f"Error loading recovery context: {e}"
+
+    return context
+
+
+def should_show_recovery() -> bool:
+    """
+    Determine if recovery prompt should be shown to user.
+
+    Phase 176: Returns True if checkpoint exists from prior work.
+
+    Returns:
+        True if recovery context available, False otherwise
+    """
+    try:
+        sys.path.insert(0, str(MAIA_ROOT / "claude" / "tools"))
+        from checkpoint_manager import CheckpointManager
+
+        checkpoints_dir = MAIA_ROOT / "claude" / "data" / "checkpoints"
+
+        if not checkpoints_dir.exists():
+            return False
+
+        manager = CheckpointManager(checkpoints_dir=checkpoints_dir)
+        checkpoint = manager.load_latest_checkpoint()
+
+        return checkpoint is not None
+
+    except Exception:
+        return False
+
+
+def format_recovery_display() -> str:
+    """
+    Format recovery context for display to user.
+
+    Returns:
+        Formatted string for terminal display
+    """
+    try:
+        sys.path.insert(0, str(MAIA_ROOT / "claude" / "tools"))
+        from checkpoint_manager import CheckpointManager
+
+        checkpoints_dir = MAIA_ROOT / "claude" / "data" / "checkpoints"
+
+        if checkpoints_dir.exists():
+            manager = CheckpointManager(checkpoints_dir=checkpoints_dir)
+            return manager.format_recovery_for_display()
+
+    except Exception as e:
+        return f"Error formatting recovery: {e}"
+
+    return "No recovery context available"
 
 
 def main():

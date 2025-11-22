@@ -1,0 +1,20 @@
+{
+  "session_context_id": "cli_test",
+  "current_task": {
+    "description": "Phase 176: Maia Core Agent + Checkpoint System - TDD complete, all 70 tests passing",
+    "status": "pending",
+    "progress_percentage": 0
+  },
+  "checkpoint_id": "27d48060-4076-4dec-997d-a48a9b0fdb96",
+  "timestamp": "2025-11-22T10:48:22.331908Z",
+  "todo_list": [],
+  "key_decisions": [],
+  "files_modified": [],
+  "git_state": {
+    "branch": "main",
+    "last_commit": "55eac98",
+    "uncommitted_changes": true
+  },
+  "recovery_instructions": "",
+  "next_steps": []
+}
