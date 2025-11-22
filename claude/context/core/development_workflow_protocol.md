@@ -1,5 +1,6 @@
 # Development Workflow Protocol
 **Created**: 2025-10-02 (Phase 81)
+**Updated**: 2025-11-22 (Phase 170 - Consolidated Structure)
 **Purpose**: Define HOW and WHEN Maia uses experimental/ vs production directories
 **Critical**: Prevents sprawl by ensuring prototypes don't pollute production
 
@@ -7,10 +8,33 @@
 
 **Historical Issue**: Maia builds new features directly in production directories:
 - Email RAG system (Phase 80B): 3 implementations created in `claude/tools/` during development
-- Should have been in `claude/extensions/experimental/` during prototyping
+- Should have been in experimental/ subdirectory during prototyping
 - Result: 3 "production" files when only 1 should be there
 
 **Root Cause**: Anti-sprawl system created extension zones but **never told Maia to use them**.
+
+## 📁 Consolidated Directory Structure (Phase 170)
+
+**Simplified model** - Everything lives within its category:
+
+```
+claude/
+├── tools/
+│   ├── sre/                    # Production SRE tools
+│   ├── security/               # Production security tools
+│   ├── productivity/           # Production productivity tools
+│   ├── experimental/           # WIP tools (any category)
+│   └── archive/                # Deprecated/rejected tools
+│       └── 2025/               # Archived by year
+├── agents/
+│   ├── *.md                    # Production agents
+│   ├── experimental/           # WIP agents
+│   └── archive/                # Deprecated agents
+└── data/
+    └── (no experimental - data is data)
+```
+
+**Key principle**: `experimental/` and `archive/` are subdirectories within each category, not a separate `extensions/` hierarchy.
 
 ## 📋 Mandatory Development Workflow
 
@@ -28,11 +52,7 @@ START: You're about to create a new file
     NO  → STOP - Check immutable_paths.json first
 
 [Q3] Am I creating a test file?
-    YES → claude/extensions/experimental/tests/
-    NO  → Continue to next question
-
-[Q4] Is this user-specific customization?
-    YES → claude/extensions/personal/
+    YES → claude/tools/experimental/tests/
     NO  → Continue to next question
 ```
 
@@ -40,7 +60,7 @@ START: You're about to create a new file
 
 **Phase 1: Prototyping** 🔬
 ```
-Location: claude/extensions/experimental/
+Location: claude/tools/experimental/
 
 When to Use:
 - Building a NEW tool, agent, or feature
@@ -59,9 +79,9 @@ Naming Rules:
 Example:
 User asks: "Build email semantic search"
 Maia creates:
-  claude/extensions/experimental/email_rag_v1.py
-  claude/extensions/experimental/email_rag_v2_ollama.py
-  claude/extensions/experimental/email_rag_v3_enhanced.py
+  claude/tools/experimental/email_rag_v1.py
+  claude/tools/experimental/email_rag_v2_ollama.py
+  claude/tools/experimental/email_rag_v3_enhanced.py
 ```
 
 **Phase 2: Testing & Iteration** 🧪
@@ -111,23 +131,22 @@ Steps:
 1. Choose best implementation (delete/archive others)
 2. Rename with semantic naming (remove version indicators)
 3. Move to appropriate production directory:
-   - claude/tools/{semantic_name}.py
+   - claude/tools/{category}/{semantic_name}.py
    - claude/agents/{semantic_name}_agent.md
    - claude/commands/{semantic_name}.md
 4. Update documentation:
    - SYSTEM_STATE.md (add to current phase)
-   - README.md (add to capabilities)
-   - claude/context/tools/available.md (tool catalog)
+   - capability_index.md (add to capabilities)
 5. Git commit with production marker
 6. Delete/archive experimental versions
 
 Example Graduation:
-  FROM: claude/extensions/experimental/email_rag_v2_ollama.py
+  FROM: claude/tools/experimental/email_rag_v2_ollama.py
   TO:   claude/tools/email_rag_system.py
 
   Archive:
-    claude/extensions/archive/2025/email_rag_v1_prototype.py
-    claude/extensions/archive/2025/email_rag_v3_rejected.py
+    claude/tools/archive/2025/email_rag_v1_prototype.py
+    claude/tools/archive/2025/email_rag_v3_rejected.py
 ```
 
 ### PRODUCTION WORKFLOW (Existing Code)
@@ -169,7 +188,7 @@ If genuinely production-ready (rare):
 
 ### "I'm Building Something New"
 ```
-→ claude/extensions/experimental/
+→ claude/tools/experimental/
 → Iterate freely
 → Test thoroughly
 → Graduate ONE winner to production
@@ -185,15 +204,9 @@ If genuinely production-ready (rare):
 
 ### "I'm Testing an Approach"
 ```
-→ claude/extensions/experimental/tests/
+→ claude/tools/experimental/tests/
 → OR experimental/{feature_name}_test.py
 → Keep tests in experimental/ until feature graduates
-```
-
-### "User Wants Custom Behavior"
-```
-→ claude/extensions/personal/
-→ User-specific only, not shared
 ```
 
 ## 📊 Anti-Patterns to Avoid
@@ -212,15 +225,15 @@ Result: 4 production files, sprawl created
 **✅ DO THIS INSTEAD**:
 ```
 Building new email search system:
-  claude/extensions/experimental/email_search_base.py
-  claude/extensions/experimental/email_search_ollama.py
-  claude/extensions/experimental/email_search_gpu.py
+  claude/tools/experimental/email_search_base.py
+  claude/tools/experimental/email_search_ollama.py
+  claude/tools/experimental/email_search_gpu.py
 
 Test, choose winner:
   claude/tools/email_search_system.py (graduated)
 
 Archive losers:
-  claude/extensions/archive/2025/email_search_prototypes/
+  claude/tools/archive/2025/email_search_prototypes/
 
 Result: 1 production file, clean system
 ```
@@ -233,16 +246,16 @@ When graduating from experimental/ → production:
 ## Graduation Review: [Feature Name]
 
 ### Experimental Files
-- [ ] claude/extensions/experimental/[file1].py
-- [ ] claude/extensions/experimental/[file2].py
-- [ ] claude/extensions/experimental/[file3].py
+- [ ] claude/tools/experimental/[file1].py
+- [ ] claude/tools/experimental/[file2].py
+- [ ] claude/tools/experimental/[file3].py
 
 ### Chosen Winner
 **File**: [chosen_file].py
 **Reason**: [why this approach won]
 
 ### Production Destination
-**Target**: claude/tools/[semantic_name].py
+**Target**: claude/tools/{category}/[semantic_name].py
 **Protection Level**: MEDIUM (claude/tools/)
 
 ### Pre-Graduation Validation
@@ -257,8 +270,7 @@ When graduating from experimental/ → production:
 
 ### Documentation Updates Required
 - [ ] SYSTEM_STATE.md (add to current phase)
-- [ ] README.md (add to capabilities section)
-- [ ] claude/context/tools/available.md (tool catalog)
+- [ ] capability_index.md (add to capabilities)
 
 ### Cleanup Actions
 - [ ] Move winner to production with semantic name
@@ -309,9 +321,9 @@ When graduating from experimental/ → production:
 Day 1: Prototyping
 User: "Build email semantic search with RAG"
 Maia: "I'll prototype in experimental/"
-  CREATE: claude/extensions/experimental/email_rag_base.py
-  CREATE: claude/extensions/experimental/email_rag_ollama.py
-  CREATE: claude/extensions/experimental/email_rag_enhanced.py
+  CREATE: claude/tools/experimental/email_rag_base.py
+  CREATE: claude/tools/experimental/email_rag_ollama.py
+  CREATE: claude/tools/experimental/email_rag_enhanced.py
 
 Day 2: Testing
 Maia: "Testing all three approaches..."
@@ -336,16 +348,9 @@ Maia: "Graduating to production..."
     → archive/2025/email_prototypes/enhanced_llm_approach.py
 
   UPDATE: SYSTEM_STATE.md with Phase 80B
-  UPDATE: README.md with email RAG capability
+  UPDATE: capability_index.md with email RAG capability
 
 Result: 1 production file, 2 archived prototypes, clean system
-```
-
-**What ACTUALLY happened** (anti-pattern):
-```
-All 3 created directly in claude/tools/ during development
-All 3 committed as production
-Result: Sprawl, confusion about which is "real", no clear graduation
 ```
 
 ## 🔧 Enforcement Mechanisms
@@ -391,5 +396,5 @@ This protocol is working when:
 3. Check production directories for sprawl indicators
 4. Verify documentation matches actual files
 
-**Version**: 1.0 (2025-10-02)
+**Version**: 2.0 (2025-11-22)
 **Next Review**: 2025-12-31 (Q1 2026)
