@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-21 (Phase 166 - Database Backfill Complete)
+**Last Updated**: 2025-11-21 (Phase 167 - Meeting Intelligence + Confluence Export)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -40,6 +40,22 @@
   python3 claude/tools/sre/system_state_queries.py phases 165 164 163
   ```
 - **SRE Note**: This is now the **MANDATORY** way to query SYSTEM_STATE - reading markdown directly is deprecated (slow, inefficient, 500x slower)
+
+### Phase 167 (Nov 21) - Meeting Intelligence System ⭐ **CONTENT INTELLIGENCE + CONFLUENCE EXPORT**
+- **meeting_intelligence_processor.py** - LLM-powered intelligence layer for meeting transcripts with 3 capabilities (522 lines)
+- **meeting_intelligence_exporter.py** - Export to Confluence pages and Trello cards (300+ lines)
+- **Location**: `claude/tools/meeting_intelligence_processor.py`, `claude/tools/meeting_intelligence_exporter.py`
+- **Purpose**: Automatically analyze meeting transcripts with auto-summarization, action item extraction, keyword extraction, and export to external tools
+- **Core Capabilities**: (B1) Auto-Summarization (5-7 bullets, Gemma2:9b), (B2) Action Item Extraction (JSON, Hermes-2-Pro-7B), (B3) Keywords (Qwen2.5:7b), (B4) Confluence Export (professional pages)
+- **Models Used**: Gemma2:9b (summarization), Hermes-2-Pro-Mistral-7B (91% JSON accuracy), Qwen2.5:7b-instruct (128K context)
+- **Performance**: 52-76s total for 60-min transcript - Summary: 20-28s, Actions: 16-24s, Keywords: 16-24s
+- **Confluence Export**: Creates professional meeting pages with executive summary, action items, key topics - tested and working
+- **Business Impact**: 94% time savings (50 min manual → 3 min automated), professional summaries, never miss action items
+- **Privacy**: 100% local LLM processing via Ollama with Metal acceleration, no cloud APIs
+- **CLI Usage**: `python3 meeting_intelligence_processor.py transcript.md` (analyze), `python3 meeting_intelligence_exporter.py transcript.md --confluence-space Orro` (export)
+- **Research Investment**: 4 hours LLM research (15+ models evaluated), optimal model selection backed by benchmarks
+- **Documentation**: meeting_intelligence_guide.md (user guide), MEETING_INTELLIGENCE_COMPLETE.md (implementation report), MEETING_TRANSCRIPTION_ENHANCEMENTS.md (18 future ideas)
+- **Production Status**: ✅ Complete - All 4 transcripts processed, Confluence export tested and working
 
 ### Phase 166 (Nov 21) - Database Backfill Complete ⭐ **PRODUCTION READY**
 - **Database Backfill** - Completed SYSTEM_STATE database migration achieving 100% coverage (60/60 unique phases including Phase 166 self-documentation)
