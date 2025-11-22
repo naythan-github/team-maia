@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-22 (Phase 171 - Comprehensive Test Suite)
+**Last Updated**: 2025-11-22 (Phase 172 - Git Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -866,17 +866,18 @@
 
 ---
 
-## 👥 All Agents (58 Agents)
+## 👥 All Agents (59 Agents)
 
 ### Information Management (3 agents)
 - **Information Management Orchestrator** - Coordinates all 7 information mgmt tools
 - **Stakeholder Intelligence Agent** - Relationship management natural language interface
 - **Decision Intelligence Agent** - Guided decision capture + quality coaching
 
-### SRE & DevOps (5 agents)
+### SRE & DevOps (6 agents)
 - **SRE Principal Engineer Agent** - Site reliability, incident response, chaos engineering
 - **DevOps Principal Architect Agent** - CI/CD architecture, infrastructure automation
 - **Principal Endpoint Engineer Agent** - Endpoint management specialist
+- **Git Specialist Agent** - Repository management, conflict resolution, history manipulation, branching strategies ⭐ **Phase 172**
 - **PagerDuty Specialist Agent** - AIOps incident management, Event Intelligence (ML), Modern Incident Response ⭐ **Phase 144**
 - **OpsGenie Specialist Agent** - Incident management, alerting optimization, on-call scheduling ⭐ **Phase 143**
 
@@ -1224,7 +1225,7 @@ python3 claude/tools/capability_checker.py "your requirement description"
 ## 📈 Statistics
 
 **Tools**: 205+ across 12 categories (Phase 135.5: WSL DR support, Phase 134.2: +3 monitoring tools)
-**Agents**: 58 across 11 specializations (Phase 159: +1 IT Glue, Phase 157: +1 Snowflake Data Cloud, Phase 156: +1 Document Conversion)
+**Agents**: 59 across 11 specializations (Phase 172: +1 Git Specialist, Phase 159: +1 IT Glue, Phase 157: +1 Snowflake Data Cloud)
 **Token Cost**: ~3K (acceptable overhead for zero amnesia)
 **Always Loaded**: Yes (in ALL context scenarios)
 **Updated**: Every new tool/agent (2 min)
