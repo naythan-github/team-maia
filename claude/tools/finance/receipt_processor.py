@@ -28,6 +28,7 @@ MAIA_ROOT = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.finance.receipt_ocr import ReceiptOCR
+from claude.tools.finance.vision_ocr import HybridOCR, VisionOCR, VISION_AVAILABLE
 from claude.tools.finance.receipt_parser import ReceiptParser, Receipt
 from claude.tools.macos_mail_bridge import MacOSMailBridge
 from claude.tools.confluence_client import ConfluenceClient
@@ -65,10 +66,23 @@ class ReceiptProcessor:
     # Processed receipts tracking
     STATE_FILE = os.path.join(MAIA_ROOT, "claude", "data", "finance", "processed_receipts.json")
 
-    def __init__(self):
-        """Initialize processor components"""
+    def __init__(self, use_vision: bool = True):
+        """
+        Initialize processor components
+
+        Args:
+            use_vision: Use Apple Vision OCR (Neural Engine) when available
+        """
         self.mail_bridge = MacOSMailBridge()
-        self.ocr = ReceiptOCR()
+
+        # Use HybridOCR (Vision + Tesseract fallback) for best accuracy
+        if use_vision and VISION_AVAILABLE:
+            self.ocr = HybridOCR(confidence_threshold=80.0)
+            print("✅ Using Vision OCR (Neural Engine) with Tesseract fallback")
+        else:
+            self.ocr = ReceiptOCR()
+            print("⚠️  Using Tesseract OCR (Vision unavailable)")
+
         self.parser = ReceiptParser()
         self.confluence = ConfluenceClient()
 
@@ -476,6 +490,33 @@ def process_new_receipts(rag=None, hours_ago: int = 24) -> Dict[str, Any]:
         return {"processed": 0, "error": str(e)}
 
 
+def compare_ocr_engines(image_path: str) -> Dict[str, Any]:
+    """
+    Compare Vision vs Tesseract OCR on a specific image
+
+    Args:
+        image_path: Path to receipt image
+
+    Returns:
+        Comparison results with confidence scores and text
+    """
+    from claude.tools.finance.vision_ocr import VisionOCR
+
+    print(f"\n🔬 OCR Engine Comparison: {image_path}")
+    print("=" * 60)
+
+    ocr = VisionOCR()
+    comparison = ocr.compare_engines(image_path)
+
+    print(f"\n📊 Results:")
+    print(f"   Vision Confidence:    {comparison['vision']['confidence']:.1f}%")
+    print(f"   Tesseract Confidence: {comparison['tesseract']['confidence']:.1f}%")
+    print(f"   Winner: {comparison['winner'].upper()}")
+    print(f"   Delta: {'+' if comparison['confidence_delta'] > 0 else ''}{comparison['confidence_delta']:.1f}%")
+
+    return comparison
+
+
 def main():
     """CLI entry point"""
     import argparse
@@ -483,9 +524,16 @@ def main():
     parser = argparse.ArgumentParser(description="Process receipt emails")
     parser.add_argument("--hours", type=int, default=24, help="Look back period in hours")
     parser.add_argument("--test", action="store_true", help="Test mode (don't update Confluence)")
+    parser.add_argument("--compare", type=str, help="Compare OCR engines on a specific image")
+    parser.add_argument("--no-vision", action="store_true", help="Disable Vision OCR, use Tesseract only")
     args = parser.parse_args()
 
-    processor = ReceiptProcessor()
+    # OCR comparison mode
+    if args.compare:
+        compare_ocr_engines(args.compare)
+        return 0
+
+    processor = ReceiptProcessor(use_vision=not args.no_vision)
     stats = processor.process_new_receipts(hours_ago=args.hours)
 
     return 0 if stats.get("failed", 0) == 0 else 1
