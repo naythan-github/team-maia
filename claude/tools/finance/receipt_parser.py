@@ -118,6 +118,10 @@ class ReceiptParser:
         r'azure': ('Microsoft Azure', 'Cloud Services'),
         r'ssp\s*australia': ('SSP Australia', 'Food & Beverage'),
         r'grace\s*hare': ('The Grace Hare', 'Food & Beverage'),
+        r'amigos': ('Amigos y Familia', 'Food & Beverage'),
+        r'movida': ('MoVida', 'Food & Beverage'),
+        r'vapiano': ('Vapiano', 'Food & Beverage'),
+        r'namoo': ('Namoo', 'Food & Beverage'),
         r'qantas': ('Qantas', 'Travel'),
         r'virgin\s*australia': ('Virgin Australia', 'Travel'),
         r'jetstar': ('Jetstar', 'Travel'),
@@ -155,6 +159,7 @@ class ReceiptParser:
         r'check\s*tax[:\s]*[A\$]*\$?\s*(\d+[,.]?\d*\.?\d{0,2})',  # Check Tax format
         r'includes?\s*gst[:\s]*[A\$]*\$?\s*(\d+[,.]?\d*\.?\d{0,2})',
         r'gst\s*included[:\s]*[A\$]*\$?\s*(\d+[,.]?\d*\.?\d{0,2})',
+        r'total\s+includes?\s+gst\s+of[:\s]*[A\$]*\$?\s*(\d+[,.]?\d*\.?\d{0,2})',  # "Total includes GST of $2.55" (AMIGOS)
     ]
 
     def __init__(self):
@@ -183,16 +188,11 @@ class ReceiptParser:
         total_amount = self._extract_amount(text_lower)
         gst_amount = self._extract_gst(text_lower)
 
-        # Calculate subtotal if we have GST
+        # Calculate subtotal if we have both GST and total
         subtotal = None
         if gst_amount and total_amount:
             subtotal = total_amount - gst_amount
-
-        # If no GST found but have total, estimate (10% Australian GST)
-        if not gst_amount and total_amount:
-            # GST = Total / 11 (since Total = Subtotal + 10% of Subtotal = 1.1 * Subtotal)
-            gst_amount = (total_amount / Decimal('11')).quantize(Decimal('0.01'))
-            subtotal = total_amount - gst_amount
+        # Don't estimate GST - not all items are taxable, so GST can be 0-10% of total
 
         return Receipt(
             vendor=vendor,
@@ -263,29 +263,61 @@ class ReceiptParser:
 
     def _extract_amount(self, text_lower: str) -> Optional[Decimal]:
         """Extract total amount from text"""
-        amounts = []
+        # Priority 1: Look for explicit "Amount Paid", "Balance:", or "Total:" patterns (most reliable)
+        priority_patterns = [
+            r'amount\s*paid[:\s]*[A\$]*\$?\s*(\d+\.?\d{0,2})',
+            r'balance[:\s]+[A\$]*\$?\s*(\d+\.?\d{0,2})',  # "Balance: $28.00" format (AMIGOS)
+            r'total[:\s]+[A\$]*\$?\s*(\d+\.?\d{0,2})',  # "Total:" with colon
+            r'you\s*paid[:\s]*[A\$]*\$?\s*(\d+\.?\d{0,2})',
+        ]
 
+        for pattern in priority_patterns:
+            match = re.search(pattern, text_lower)
+            if match:
+                try:
+                    amount_str = match.group(1).replace(',', '').replace(' ', '')
+                    amount = Decimal(amount_str)
+                    # Sanity check: typical receipt is $1-$500
+                    if Decimal('0.50') < amount < Decimal('500'):
+                        return amount
+                except (InvalidOperation, ValueError):
+                    continue
+
+        # Priority 2: Standard patterns
+        amounts = []
         for pattern in self.AMOUNT_PATTERNS:
             matches = re.findall(pattern, text_lower)
             for match in matches:
                 try:
-                    # Clean and parse amount
                     amount_str = match.replace(',', '').replace(' ', '')
                     amount = Decimal(amount_str)
-                    if amount > 0:
+                    # Filter unrealistic amounts (likely OCR errors like 4817.75 from A$17.75)
+                    if Decimal('0.50') < amount < Decimal('500'):
                         amounts.append(amount)
                 except (InvalidOperation, ValueError):
                     continue
 
-        # Return the largest amount (usually the total)
+        # Return the largest reasonable amount
         if amounts:
             return max(amounts)
 
-        # Fallback: find any dollar amounts
-        all_amounts = re.findall(r'\$\s*(\d+\.?\d{0,2})', text_lower)
+        # Fallback: find any dollar amounts with decimal points (more likely to be real)
+        all_amounts = re.findall(r'\$\s*(\d{1,3}\.\d{2})\b', text_lower)
         if all_amounts:
             try:
-                return max(Decimal(a) for a in all_amounts if Decimal(a) > 0)
+                valid = [Decimal(a) for a in all_amounts if Decimal('0.50') < Decimal(a) < Decimal('500')]
+                if valid:
+                    return max(valid)
+            except (InvalidOperation, ValueError):
+                pass
+
+        # Last resort: find amounts at end of lines (common receipt format: "Item Name  17.50")
+        line_amounts = re.findall(r'\s(\d{1,3}\.\d{2})\s*$', text_lower, re.MULTILINE)
+        if line_amounts:
+            try:
+                valid = [Decimal(a) for a in line_amounts if Decimal('0.50') < Decimal(a) < Decimal('500')]
+                if valid:
+                    return max(valid)
             except (InvalidOperation, ValueError):
                 pass
 

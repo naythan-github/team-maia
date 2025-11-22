@@ -59,7 +59,7 @@ class ReceiptProcessor:
     RECEIPT_SENDER = "naythan.general@icloud.com"
 
     # Confluence settings
-    CONFLUENCE_SPACE = "Naythan"
+    CONFLUENCE_SPACE = "NAYT"
     CONFLUENCE_PAGE_TITLE = "Work Expense Receipts 2025"
 
     # Processed receipts tracking

@@ -564,16 +564,24 @@ class MacOSMailBridge:
         script = f'''
         tell application "Mail"
             try
-                set targetAccount to account "{account}"
-
-                -- Search across all mailboxes for the message ID
+                -- Search Inbox first (most common), then other mailboxes
+                set theMailbox to mailbox "Inbox" of account "{account}"
                 set msg to missing value
-                repeat with mb in mailboxes of targetAccount
-                    try
-                        set msg to (first message of mb whose id is {message_id})
-                        exit repeat
-                    end try
-                end repeat
+
+                try
+                    set msg to (first message of theMailbox whose id is {message_id})
+                end try
+
+                -- If not in Inbox, search other mailboxes
+                if msg is missing value then
+                    set targetAccount to account "{account}"
+                    repeat with mb in mailboxes of targetAccount
+                        try
+                            set msg to (first message of mb whose id is {message_id})
+                            exit repeat
+                        end try
+                    end repeat
+                end if
 
                 if msg is missing value then
                     return "ERROR::Message not found"
@@ -586,12 +594,11 @@ class MacOSMailBridge:
                     return "NONE"
                 end if
 
+                -- Get names only - file size/MIME type can fail on some messages
                 set output to ""
                 repeat with att in attachmentList
                     set attName to name of att
-                    set attSize to file size of att
-                    set attType to MIME type of att
-                    set output to output & attName & "::" & attSize & "::" & attType & "||"
+                    set output to output & attName & "||"
                 end repeat
 
                 return output
@@ -617,15 +624,23 @@ class MacOSMailBridge:
 
             attachments = []
             if result.strip():
-                for line in result.strip().split("||"):
-                    if line.strip() and "::" in line:
-                        parts = line.split("::")
-                        if len(parts) >= 3:
-                            attachments.append({
-                                "name": parts[0].strip(),
-                                "size": int(parts[1].strip()) if parts[1].strip().isdigit() else 0,
-                                "mime_type": parts[2].strip()
-                            })
+                for name in result.strip().split("||"):
+                    name = name.strip()
+                    if name:
+                        # Infer MIME type from extension
+                        ext = name.lower().split('.')[-1] if '.' in name else ''
+                        mime_map = {
+                            'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
+                            'png': 'image/png', 'gif': 'image/gif',
+                            'heic': 'image/heic', 'tiff': 'image/tiff',
+                            'pdf': 'application/pdf'
+                        }
+                        mime_type = mime_map.get(ext, 'application/octet-stream')
+                        attachments.append({
+                            "name": name,
+                            "size": 0,  # Not available
+                            "mime_type": mime_type
+                        })
 
             return attachments
 

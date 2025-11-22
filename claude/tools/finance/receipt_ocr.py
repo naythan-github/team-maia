@@ -180,8 +180,21 @@ class ReceiptOCR:
             confidences = [c for c in data['conf'] if c > 0]
             avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
+            text = text.strip()
+
+            # Validate OCR result - reject if too short or no receipt-like content
+            if len(text) < 20:
+                return OCRResult(
+                    text=text,
+                    confidence=0.0,
+                    source_file=str(image_path),
+                    pages=1,
+                    success=False,
+                    error="OCR returned insufficient text (< 20 chars) - image may be blank or unreadable"
+                )
+
             return OCRResult(
-                text=text.strip(),
+                text=text,
                 confidence=avg_confidence,
                 source_file=str(image_path),
                 pages=1,
