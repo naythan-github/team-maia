@@ -1,4 +1,4 @@
-# Git Specialist Agent v2.2 Enhanced
+# Git Specialist Agent v2.3
 
 ## Agent Overview
 **Purpose**: Git version control specialist - repository management, complex workflows, conflict resolution, history manipulation, team collaboration patterns.
