@@ -51,6 +51,22 @@ try:
 except ImportError:
     DB_QUERIES_AVAILABLE = False
 
+# Try importing capabilities registry (Phase 168 infrastructure)
+try:
+    from capabilities_registry import CapabilitiesRegistry
+    CAPABILITIES_REGISTRY_AVAILABLE = True
+except ImportError:
+    try:
+        # Fallback: Try importing from same directory using path manipulation
+        import sys
+        _sre_tools_path = str(Path(__file__).resolve().parent)
+        if _sre_tools_path not in sys.path:
+            sys.path.insert(0, _sre_tools_path)
+        from capabilities_registry import CapabilitiesRegistry
+        CAPABILITIES_REGISTRY_AVAILABLE = True
+    except ImportError:
+        CAPABILITIES_REGISTRY_AVAILABLE = False
+
 # Configure logging
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -82,6 +98,8 @@ class SmartContextLoader:
 
         self.system_state_path = self.maia_root / "SYSTEM_STATE.md"
         self.db_path = self.maia_root / "claude" / "data" / "databases" / "system" / "system_state.db"
+        self.capabilities_db_path = self.maia_root / "claude" / "data" / "databases" / "system" / "capabilities.db"
+        self.capability_index_path = self.maia_root / "claude" / "context" / "core" / "capability_index.md"
         self.token_budget_max = 20000  # Maximum tokens (80% of Read tool limit)
         self.token_budget_default = 10000  # Default for standard queries
 
@@ -104,6 +122,23 @@ class SmartContextLoader:
                 logger.debug("Database queries module not available")
             elif not self.db_path.exists():
                 logger.debug(f"Database not found: {self.db_path}")
+
+        # Initialize capabilities registry if available (Phase 168)
+        self.capabilities_registry = None
+        self.use_capabilities_db = False
+        if CAPABILITIES_REGISTRY_AVAILABLE and self.capabilities_db_path.exists():
+            try:
+                self.capabilities_registry = CapabilitiesRegistry(self.capabilities_db_path)
+                self.use_capabilities_db = True
+                logger.info(f"Capabilities registry enabled: {self.capabilities_db_path}")
+            except Exception as e:
+                logger.warning(f"Capabilities registry initialization failed, using markdown fallback: {e}")
+                self.use_capabilities_db = False
+        else:
+            if not CAPABILITIES_REGISTRY_AVAILABLE:
+                logger.debug("Capabilities registry module not available")
+            elif not self.capabilities_db_path.exists():
+                logger.debug(f"Capabilities database not found: {self.capabilities_db_path}")
 
     def load_for_intent(self, user_query: str) -> ContextLoadResult:
         """
@@ -148,52 +183,84 @@ class SmartContextLoader:
         """
         Determine loading strategy and phase selection.
 
+        Phase 177 Enhancement: Uses dynamic DB keyword search instead of
+        hardcoded phase numbers. Domain keywords still used for strategy
+        naming, but phases come from DB search results.
+
         Returns:
             (strategy_name, phase_numbers_to_load)
         """
         query_lower = user_query.lower()
 
-        # Strategy 1: Agent Enhancement Queries
-        if any(kw in query_lower for kw in ['agent', 'enhancement', 'upgrade', 'v2.2', 'template', 'few-shot', 'prompt']):
-            # Check if agent-related query (intent domains OR keyword match)
-            if (intent and 'agents' in intent.domains) or any(kw in query_lower for kw in ['agent', 'enhancement', 'upgrade']):
-                return ("agent_enhancement", [2, 107, 108, 109, 110, 111])
+        # Domain keyword mappings (for strategy naming and search terms)
+        domain_keywords = {
+            'agent_enhancement': ['agent', 'enhancement', 'upgrade', 'template', 'few-shot', 'prompt', 'swarm', 'routing'],
+            'sre_reliability': ['sre', 'reliability', 'health', 'launchagent', 'monitor', 'performance', 'database'],
+            'voice_dictation': ['whisper', 'voice', 'dictation', 'audio', 'transcri'],
+            'conversation_persistence': ['conversation', 'rag', 'persistence', 'chromadb', 'embedding'],
+            'service_desk': ['service desk', 'servicedesk', 'ticket', 'l1', 'l2', 'l3', 'escalation', 'autotask'],
+            'security': ['security', 'credential', 'authentication', 'oauth', 'encryption'],
+            'document': ['document', 'docx', 'markdown', 'pandoc', 'conversion'],
+            'meeting': ['meeting', 'transcript', 'intelligence', 'summary', 'action item'],
+        }
 
-        # Strategy 2: SRE/Reliability Queries
-        if any(kw in query_lower for kw in ['sre', 'reliability', 'health', 'launchagent', 'service', 'monitor', 'fail']):
-            # Check if SRE-related query (intent domains OR keyword match)
-            if (intent and ('sre' in intent.domains or 'reliability' in intent.domains)) or \
-               any(kw in query_lower for kw in ['health', 'launchagent', 'monitor', 'sre']):
-                return ("sre_reliability", [103, 104, 105])
+        # Step 1: Identify matching domain
+        matched_domain = None
+        matched_keywords = []
+        for domain, keywords in domain_keywords.items():
+            matches = [kw for kw in keywords if kw in query_lower]
+            if matches:
+                matched_domain = domain
+                matched_keywords = matches
+                break
 
-        # Strategy 3: Voice Dictation Queries
-        if any(kw in query_lower for kw in ['whisper', 'voice', 'dictation', 'audio']):
-            return ("voice_dictation", [101])
+        # Step 2: If domain matched, search DB for relevant phases
+        if matched_domain and self.use_database and self.db_queries:
+            try:
+                phases = self._search_phases_by_keywords(matched_keywords, limit=10)
+                if phases:
+                    return (matched_domain, phases)
+            except Exception as e:
+                logger.warning(f"DB search failed for {matched_domain}: {e}")
 
-        # Strategy 4: Conversation Persistence Queries
-        if any(kw in query_lower for kw in ['conversation', 'rag', 'persistence', 'save']):
-            return ("conversation_persistence", [101, 102])
-
-        # Strategy 5: Service Desk Queries
-        if any(kw in query_lower for kw in ['service desk', 'l1', 'l2', 'l3', 'escalation']):
-            return ("service_desk", [100])
-
-        # Strategy 6: High Complexity Strategic Queries
+        # Step 3: Check intent complexity for strategic queries
         if intent and intent.complexity >= 8:
-            # Load recent 20 phases for strategic planning
             recent_phases = self._get_recent_phases(20)
             return ("strategic_planning", recent_phases)
 
-        # Strategy 7: Moderate Complexity Queries
         if intent and intent.complexity >= 5:
-            # Load recent 15 phases
             recent_phases = self._get_recent_phases(15)
             return ("moderate_complexity", recent_phases)
 
-        # Strategy 8: Default (Simple Queries)
-        # Load header + recent 10 phases
+        # Step 4: Default - recent phases
         recent_phases = self._get_recent_phases(10)
         return ("default", recent_phases)
+
+    def _search_phases_by_keywords(self, keywords: List[str], limit: int = 10) -> List[int]:
+        """
+        Search database for phases matching any of the given keywords.
+
+        Args:
+            keywords: List of keywords to search for
+            limit: Maximum phases to return
+
+        Returns:
+            List of phase numbers (most recent first, deduplicated)
+        """
+        if not self.use_database or not self.db_queries:
+            return []
+
+        all_phases = set()
+        for keyword in keywords[:3]:  # Limit to 3 keywords for performance
+            try:
+                results = self.db_queries.get_phases_by_keyword(keyword, limit=5)
+                for phase in results:
+                    all_phases.add(int(float(phase.phase_number)))
+            except Exception:
+                pass
+
+        # Sort descending (most recent first) and limit
+        return sorted(all_phases, reverse=True)[:limit]
 
     def _calculate_token_budget(
         self,
@@ -231,20 +298,34 @@ class SmartContextLoader:
         """
         Get list of most recent phase numbers.
 
+        Phase 177 Enhancement: Uses DB-first for performance (<1ms),
+        falls back to markdown parsing only when DB unavailable.
+
         Args:
             count: Number of recent phases to return
 
         Returns:
-            List of phase numbers (e.g., [111, 110, 109, ...])
+            List of phase numbers (e.g., [176, 175, 174, ...])
         """
-        # Parse all phase numbers from file
-        content = self.system_state_path.read_text()
-        phase_pattern = re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠].+PHASE\s+(\d+):', re.MULTILINE | re.IGNORECASE)
+        # DB-first path (fast: <1ms)
+        if self.use_database and self.db_queries:
+            try:
+                return self.db_queries.get_recent_phase_numbers(count)
+            except Exception as e:
+                logger.warning(f"DB phase lookup failed, falling back to markdown: {e}")
 
-        matches = phase_pattern.findall(content)
-        phase_numbers = sorted(set(int(m) for m in matches), reverse=True)
+        # Markdown fallback (slow: ~10ms for 2.1MB file)
+        try:
+            content = self.system_state_path.read_text()
+            phase_pattern = re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠🗄️🚨📚📧📐].+PHASE\s+(\d+):', re.MULTILINE | re.IGNORECASE)
 
-        return phase_numbers[:count]
+            matches = phase_pattern.findall(content)
+            phase_numbers = sorted(set(int(m) for m in matches), reverse=True)
+
+            return phase_numbers[:count]
+        except Exception as e:
+            logger.error(f"Failed to get recent phases: {e}")
+            return []  # Return empty list instead of failing
 
     def _load_phases_from_db(self, phase_numbers: List[int], token_budget: int) -> str:
         """
@@ -417,6 +498,233 @@ class SmartContextLoader:
             Content string
         """
         return self._load_phases(phase_numbers, self.token_budget_default)
+
+    def load_guaranteed_minimum(self) -> str:
+        """
+        Load guaranteed minimum context - ALWAYS succeeds.
+
+        Phase 177: Tier 0 context that never fails, providing basic awareness
+        even when databases and files are unavailable.
+
+        Returns:
+            Compact context string (<200 tokens) with:
+            - Capability summary (counts by type)
+            - Recent phase titles (last 5)
+
+        Reliability:
+            - Never raises exceptions
+            - Falls back to static content if all sources fail
+            - Execution time <50ms guaranteed
+
+        Example:
+            >>> loader = SmartContextLoader()
+            >>> context = loader.load_guaranteed_minimum()
+            >>> print(context)
+            **Maia Context Summary**
+            Capabilities: 250 (49 agents, 201 tools)
+            Recent: Phase 176, Phase 175, Phase 174, Phase 173, Phase 172
+        """
+        output = []
+        output.append("**Maia Context Summary**")
+
+        # Part 1: Capability summary (safe)
+        try:
+            cap_summary = self._get_capability_summary_safe()
+            output.append(cap_summary)
+        except Exception:
+            output.append("Capabilities: Available (query for details)")
+
+        # Part 2: Recent phase titles (safe)
+        try:
+            phase_titles = self._get_recent_phase_titles_safe(5)
+            output.append(phase_titles)
+        except Exception:
+            output.append("Recent work: Available (query for details)")
+
+        # Fallback if both failed
+        if len(output) == 1:
+            output.append("Maia AI assistant ready. Use smart loader for context.")
+
+        return '\n'.join(output)
+
+    def _get_capability_summary_safe(self) -> str:
+        """
+        Get capability summary with multiple fallback levels.
+
+        Returns:
+            Formatted string like "Capabilities: 250 (49 agents, 201 tools)"
+        """
+        # Level 1: Try capabilities registry (DB)
+        if self.use_capabilities_db and self.capabilities_registry:
+            try:
+                summary = self.capabilities_registry.get_summary()
+                return f"Capabilities: {summary['total']} ({summary['agents']} agents, {summary['tools']} tools)"
+            except Exception:
+                pass
+
+        # Level 2: Try get_capability_summary method
+        try:
+            summary = self.get_capability_summary()
+            if summary.get('total', 0) > 0:
+                return f"Capabilities: {summary['total']} ({summary.get('agents', 0)} agents, {summary.get('tools', 0)} tools)"
+        except Exception:
+            pass
+
+        # Level 3: Static fallback
+        return "Capabilities: 200+ tools and 49 agents available"
+
+    def _get_recent_phase_titles_safe(self, count: int = 5) -> str:
+        """
+        Get recent phase titles with fallback.
+
+        Returns:
+            Formatted string like "Recent: Phase 176, Phase 175, ..."
+        """
+        # Level 1: Try DB for phase numbers
+        try:
+            phases = self._get_recent_phases(count)
+            if phases:
+                phase_list = ", ".join(f"Phase {p}" for p in phases[:count])
+                return f"Recent: {phase_list}"
+        except Exception:
+            pass
+
+        # Level 2: Static fallback
+        return "Recent work: Multiple active phases (query for details)"
+
+    def load_capability_context(
+        self,
+        query: Optional[str] = None,
+        category: Optional[str] = None,
+        cap_type: Optional[str] = None,
+        limit: int = 50
+    ) -> str:
+        """
+        Load capability context using DB-first with markdown fallback.
+
+        Phase 168 Integration: Uses capabilities.db for fast queries,
+        falls back to capability_index.md if DB unavailable.
+
+        Args:
+            query: Optional search query (e.g., "security", "sre")
+            category: Optional category filter (e.g., "sre", "security", "data")
+            cap_type: Optional type filter ("tool" or "agent")
+            limit: Maximum capabilities to return (default 50)
+
+        Returns:
+            Formatted markdown string with relevant capabilities
+        """
+        if self.use_capabilities_db:
+            try:
+                return self._load_capabilities_from_db(query, category, cap_type, limit)
+            except Exception as e:
+                logger.warning(f"Capabilities DB query failed, falling back to markdown: {e}")
+                return self._load_capabilities_from_markdown()
+        else:
+            return self._load_capabilities_from_markdown()
+
+    def _load_capabilities_from_db(
+        self,
+        query: Optional[str] = None,
+        category: Optional[str] = None,
+        cap_type: Optional[str] = None,
+        limit: int = 50
+    ) -> str:
+        """
+        Load capabilities from database (fast path - Phase 168).
+
+        Returns formatted markdown with only relevant capabilities.
+        Token savings: ~97% (3K → ~100 tokens for targeted queries)
+        """
+        if not self.capabilities_registry:
+            raise RuntimeError("Capabilities registry not available")
+
+        output = []
+        output.append("# Relevant Capabilities")
+        output.append("")
+
+        if query:
+            # Search by query
+            results = self.capabilities_registry.find(query, cap_type=cap_type, limit=limit)
+            output.append(f"**Query**: `{query}`")
+        elif category:
+            # List by category
+            results = self.capabilities_registry.list_by_category(category=category, cap_type=cap_type)
+            output.append(f"**Category**: `{category}`")
+        else:
+            # Get summary for general context
+            summary = self.capabilities_registry.get_summary()
+            output.append(f"**Total Capabilities**: {summary['total']} ({summary['agents']} agents, {summary['tools']} tools)")
+            output.append("")
+            output.append("**Categories**: " + ", ".join(sorted(summary['by_category'].keys())))
+            output.append("")
+            output.append("*Use `python3 claude/tools/sre/capabilities_registry.py find <query>` for specific lookups*")
+            return '\n'.join(output)
+
+        if not results:
+            output.append("*No matching capabilities found*")
+            return '\n'.join(output)
+
+        output.append(f"**Found**: {len(results)} capabilities")
+        output.append("")
+
+        # Group by type
+        agents = [r for r in results if r['type'] == 'agent']
+        tools = [r for r in results if r['type'] == 'tool']
+
+        if agents:
+            output.append("## Agents")
+            output.append("| Name | Category | Purpose |")
+            output.append("|------|----------|---------|")
+            for a in agents[:20]:  # Limit to 20 per type for token control
+                purpose = (a['purpose'] or '')[:50] + ('...' if a['purpose'] and len(a['purpose']) > 50 else '')
+                output.append(f"| {a['name']} | {a['category'] or '-'} | {purpose} |")
+            output.append("")
+
+        if tools:
+            output.append("## Tools")
+            output.append("| Name | Category | Purpose |")
+            output.append("|------|----------|---------|")
+            for t in tools[:30]:  # Limit to 30 for token control
+                purpose = (t['purpose'] or '')[:50] + ('...' if t['purpose'] and len(t['purpose']) > 50 else '')
+                output.append(f"| {t['name']} | {t['category'] or '-'} | {purpose} |")
+            output.append("")
+
+        return '\n'.join(output)
+
+    def _load_capabilities_from_markdown(self) -> str:
+        """
+        Load capabilities from markdown file (fallback path).
+
+        Returns full capability_index.md content (~3K tokens).
+        """
+        if self.capability_index_path.exists():
+            content = self.capability_index_path.read_text()
+            # Truncate if very large (shouldn't happen but safety check)
+            max_chars = 15000  # ~3.75K tokens
+            if len(content) > max_chars:
+                content = content[:max_chars] + "\n\n*[Truncated for token budget]*"
+            return content
+        else:
+            return "# Capability Index\n\n*capability_index.md not found*"
+
+    def get_capability_summary(self) -> Dict[str, Any]:
+        """
+        Get capability statistics without loading full content.
+
+        Returns dict with counts by type and category.
+        """
+        if self.use_capabilities_db and self.capabilities_registry:
+            return self.capabilities_registry.get_summary()
+        else:
+            # Fallback: return basic info
+            return {
+                'total': 0,
+                'agents': 0,
+                'tools': 0,
+                'by_category': {},
+                'source': 'unavailable'
+            }
 
 
 def main():

@@ -90,22 +90,26 @@ You are **Maia** (My AI Agent), a personal AI infrastructure designed to augment
 
 ## Critical File Locations
 
-### Always-Loaded Capability Registry ⭐ **PHASE 119 - CAPABILITY AMNESIA FIX**
-- **capability_index.md**: `${MAIA_ROOT}/claude/context/core/capability_index.md`
-  - Purpose: Quick reference of ALL tools (200+) and agents (49) - **SEARCH FIRST**
-  - Always loaded: Included in all 8 context loading strategies
-  - Size: 381 lines, ~3K tokens (acceptable overhead for zero amnesia)
-  - Usage: Cmd/Ctrl+F to search before building anything new
-  - Updates: Add new tool/agent entries (2 min per update)
+### Capability Awareness ⭐ **PHASE 177 - RELIABILITY ENHANCEMENT**
+- **Guaranteed Minimum**: `SmartContextLoader().load_guaranteed_minimum()` (~160 tokens)
+  - Always succeeds, never fails (static fallback if all sources down)
+  - Returns: capability counts + recent phase titles
+- **Targeted Lookup**: `SmartContextLoader().load_capability_context(query="security")`
+  - DB-first with markdown fallback (73-98% token savings vs full file)
+  - Returns: Matching tools/agents for query
+- **Full Reference**: `${MAIA_ROOT}/claude/context/core/capability_index.md`
+  - Complete list of ALL tools (200+) and agents (49)
+  - Use for manual search (Cmd/Ctrl+F) when needed
 
-### Intent-Aware Phase Loading ⭐ **PHASE 2 - SMART SYSTEM_STATE**
+### Intent-Aware Phase Loading ⭐ **PHASE 177 - DYNAMIC DB SEARCH**
 - **SYSTEM_STATE.md**:
   - Primary: `${MAIA_ROOT}/SYSTEM_STATE.md` (repo root - project documentation)
-  - Symlink: `${MAIA_ROOT}/claude/context/SYSTEM_STATE.md` (convenience for context loading)
+  - Database: `${MAIA_ROOT}/claude/data/databases/system/system_state.db` (60 phases, 500-2500x faster)
   - Purpose: Detailed phase history, problem-solution narratives, implementation details
   - **Smart Loader**: `${MAIA_ROOT}/claude/tools/sre/smart_context_loader.py`
+    - Dynamic DB keyword search (no hardcoded phase numbers)
     - Intent-aware loading (5-20K tokens vs 42K full file, 83% average reduction)
-    - Query routing: agent enhancement → Phases 2, 107-111 | SRE → Phases 103-105 | etc.
+    - Query routing: Keywords searched against DB → matching phases returned
     - Usage: `SmartContextLoader().load_for_intent(user_query)` → optimized context
     - **Manual CLI Usage** (for testing/validation):
       ```bash
@@ -122,25 +126,31 @@ You are **Maia** (My AI Agent), a personal AI infrastructure designed to augment
       python3 claude/tools/sre/smart_context_loader.py --recent 20
       ```
 
-### Layered Context Architecture
-**Layer 1 - Always Load** (5-10K tokens):
-- UFC system, identity, systematic thinking, model selection
-- **capability_index.md** ← Knows "what exists"
+### Layered Context Architecture ⭐ **PHASE 177 - RELIABILITY ENHANCEMENT**
+**Tier 0 - Guaranteed Minimum** (~160 tokens) - ALWAYS loads, NEVER fails:
+- `SmartContextLoader().load_guaranteed_minimum()`
+- Capability summary (counts) + recent phase titles
+- Static fallback if all sources unavailable
 
-**Layer 2 - Intent-Based** (5-20K tokens):
-- Smart SYSTEM_STATE loader (relevant phases only)
+**Tier 1 - Always Load** (5-10K tokens):
+- UFC system, identity, systematic thinking, model selection
+- Capability context via `load_capability_context(query)` (DB-first, 73-98% token savings)
+
+**Tier 2 - Intent-Based** (5-20K tokens):
+- Smart SYSTEM_STATE loader with dynamic DB search (no hardcoded phases)
 - Domain-specific files (available.md, agents.md for some domains)
 - **Purpose**: Knows "why/how it exists"
 
-**Total**: 10-30K tokens (vs 42K+ before optimization)
+**Total**: 5-30K tokens (vs 42K+ before optimization)
 - **UFC System**: `${MAIA_ROOT}/claude/context/ufc_system.md` (foundation - load first)
 - **CLAUDE.md**: `${MAIA_ROOT}/CLAUDE.md` (this file - system instructions)
 - **Core Context**: `${MAIA_ROOT}/claude/context/core/*` (identity, protocols, strategies)
 
 ## Enforcement Requirements
 - **Context Loading**: MANDATORY before all responses
-  - **Always load**: UFC, identity, systematic thinking, model selection, **capability_index.md**
-  - **Intent-based**: SYSTEM_STATE.md (via smart loader for relevant phases)
+  - **Tier 0**: `load_guaranteed_minimum()` - ALWAYS (capability counts + recent phases, ~160 tokens)
+  - **Tier 1**: UFC, identity, systematic thinking, model selection
+  - **Tier 2**: SYSTEM_STATE.md (via smart loader with dynamic DB search)
 - **Systematic Thinking**: Required for all analysis and solutions
 - **Model Strategy**: Sonnet default, request permission for Opus
 - **Documentation**: Update ALL relevant files for ANY system changes

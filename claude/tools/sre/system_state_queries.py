@@ -137,6 +137,51 @@ class SystemStateQueries:
             logger.error(f"Failed to get recent phases: {e}")
             raise
 
+    def get_recent_phase_numbers(self, count: int = 10) -> List[int]:
+        """
+        Get most recent phase numbers only (lightweight query for smart loader).
+
+        Args:
+            count: Number of phase numbers to return
+
+        Returns:
+            List of phase numbers as integers (most recent first)
+            Non-integer phase numbers (e.g., "172.2") are converted via int(float())
+
+        Performance:
+            ~0.2ms (vs 5-10ms for full PhaseRecord query)
+
+        Example:
+            >>> queries = SystemStateQueries()
+            >>> phases = queries.get_recent_phase_numbers(5)
+            >>> print(phases)  # [176, 175, 174, 173, 172]
+        """
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT phase_number FROM phases
+                ORDER BY CAST(phase_number AS REAL) DESC
+                LIMIT ?
+            """, (count,))
+
+            rows = cursor.fetchall()
+            conn.close()
+
+            # Handle both "172" and "172.2" style phase numbers
+            result = []
+            for row in rows:
+                try:
+                    result.append(int(float(row[0])))
+                except (ValueError, TypeError):
+                    pass  # Skip invalid phase numbers
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to get recent phase numbers: {e}")
+            raise
+
     def get_phases_by_keyword(self, keyword: str, limit: int = 20) -> List[PhaseRecord]:
         """
         Search for phases containing keyword in narrative text.
