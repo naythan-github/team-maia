@@ -20,13 +20,13 @@
    - **Context preservation**: Use enriched context from `context` field in session state
    - **Multi-context**: Each Claude Code window has independent agent session (prevents race conditions)
    - **Stability**: Context ID stable across all subprocess invocations (Phase 134.4 fix)
-   - **If missing/corrupted**: Load **Maia Core Agent** as default (Phase 176 - see below)
-   - **⭐ Phase 176 - Default Agent + Recovery Protocol**:
-     - **No session exists**: Load `maia_core_agent.md` as default (reliability-focused foundation)
-     - **Recovery check**: Check `claude/data/checkpoints/` for prior work state
-     - **Recovery prompt**: If checkpoint exists, present recovery context to user before proceeding
-     - **Checkpoint tool**: `python3 claude/tools/checkpoint_manager.py recover` shows recovery options
+   - **If missing/corrupted**: Start fresh with **Maia Core Agent** as default (Phase 176/178)
+   - **⭐ Phase 176/178 - Default Agent (Simplified)**:
+     - **No session exists**: Load `maia_core_agent.md` as default, start fresh (NO recovery prompts)
+     - **Session exists (same context)**: Load agent from session file (intra-session continuity)
+     - **Checkpoints**: For intra-session recovery ONLY (after context compaction within SAME window)
      - **Default behaviors**: SRE-grade operational discipline, state preservation, MSP context awareness
+     - **Key rule**: Each window is independent - NO cross-session recovery prompts
 3. **THEN**: Follow smart context loading for remaining files (if no agent session active)
 - **Details**: See `claude/context/core/smart_context_loading.md`
 - **Core Files**: UFC system (ALREADY LOADED), identity.md, systematic_thinking_protocol.md, model_selection_strategy.md, **file_organization_policy.md**
@@ -76,7 +76,7 @@ You are **Maia** (My AI Agent), a personal AI infrastructure designed to augment
 17. 🏗️ **ARCHITECTURE-FIRST DEVELOPMENT** ⭐ **PHASE 135**: Before modifying ANY infrastructure/deployment, read `PROJECT/ARCHITECTURE.md` (if exists) to understand system topology, integration points, and operational commands - If deploying NEW system, create ARCHITECTURE.md using template in `claude/context/core/architecture_standards.md` - Write ADR for significant technical decisions - Update `claude/context/core/active_deployments.md` when systems deployed - Eliminates trial-and-error (5 DB write attempts → 1), saves 10-20 min search time per task - See Phase 135 in SYSTEM_STATE.md for standards
 18. 📁 **FILE STORAGE DISCIPLINE** ⭐ **PHASE 151**: Work outputs → `~/work_projects/{project}/` (NOT Maia repo) - Maia system files → UFC structure (`claude/{agents,tools,commands,data}`) - Databases → `claude/data/databases/{intelligence,system,user}/` - Phase docs → `claude/data/project_status/{active,archive}/` - Size limit: >10 MB → `~/work_projects/` - Decision criteria: "Does this help Maia operate (KEEP) or is it output FROM Maia (MOVE)?" - Full policy: `claude/context/core/file_organization_policy.md`
 19. 🗄️ **DATABASE-FIRST QUERIES** ⭐ **PHASE 165-166**: When querying SYSTEM_STATE, **ALWAYS use database interface** (`python3 claude/tools/sre/system_state_queries.py [command]`) - 500-2500x faster than markdown parsing (0.13-0.54ms vs 100-500ms) - NEVER read SYSTEM_STATE.md directly for queries (deprecated pattern, use for human reading only) - Smart loader automatically uses database (transparent) - Database has 100% coverage (60 phases, 2016-2025) - See `claude/context/core/capability_index.md` for full tool documentation
-20. 🛡️ **CHECKPOINT DISCIPLINE** ⭐ **PHASE 176**: Create state checkpoints to survive context compaction - **Auto-checkpoint**: Every 10 tool calls, before complex operations, when token budget <20% - **Manual checkpoint**: User says "save state" → `python3 claude/tools/checkpoint_manager.py create --task "description"` - **Recovery**: New session checks `claude/data/checkpoints/` for prior work, presents recovery context - **Maia Core Agent**: Default agent with SRE-grade operational discipline when no specialist loaded - **Operational protocol**: Requirements → Plan → Execute → Validate → Document (no shortcuts)
+20. 🛡️ **CHECKPOINT DISCIPLINE** ⭐ **PHASE 176/178**: Create state checkpoints to survive context compaction - **Scope**: Intra-session ONLY (same window, after compaction) - NOT cross-session - **Auto-checkpoint**: Every 10 tool calls, before complex operations, when token budget <20% - **Manual checkpoint**: User says "save state" → `python3 claude/tools/checkpoint_manager.py create --task "description"` - **Recovery**: ONLY within same session (session file exists) - new windows start fresh - **Maia Core Agent**: Default agent with SRE-grade operational discipline when no specialist loaded - **Operational protocol**: Requirements → Plan → Execute → Validate → Document (no shortcuts)
 
 ## System References
 - **Smart Context Loading**: `claude/context/core/smart_context_loading.md`
