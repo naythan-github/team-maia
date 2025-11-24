@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-22 (Phase 168.1 - Capabilities DB Integration)
+**Last Updated**: 2025-11-24 (Phase 1 Agentic AI Enhancement - 3 New Tools)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,27 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 1 Agentic AI Enhancement (Nov 24) - 3 Learning Tools ⭐ **NEW TOOLING**
+- **agentic_email_search.py** - Iterative RAG with query refinement (8 tests, 420 lines)
+- **Location**: `claude/tools/rag/agentic_email_search.py`
+- **Purpose**: Query → Retrieve → Evaluate → Refine → Repeat (max 3x) for email search
+- **Integration**: Added `EmailRAGOllama.agentic_search()` method for seamless use
+- **Production Status**: ✅ Ready - 8/8 tests passing
+
+- **adaptive_routing.py** - Learning thresholds from task outcomes (14 tests, 450 lines)
+- **Location**: `claude/tools/orchestration/adaptive_routing.py`
+- **Purpose**: Track success rates, adjust agent loading thresholds per domain
+- **Integration**: Wired into `CoordinatorAgent` with `record_outcome()` method
+- **Database**: `claude/data/databases/intelligence/adaptive_routing.db`
+- **Production Status**: ✅ Ready - 14/14 tests passing
+
+- **output_critic.py** - Self-critique before delivery (16 tests, 650 lines)
+- **Location**: `claude/tools/orchestration/output_critic.py`
+- **Purpose**: Generator + Critic pattern - checks completeness, accuracy, safety
+- **Integration**: Hook at `claude/hooks/output_quality_hook.py`
+- **Check Categories**: completeness, accuracy, edge_cases, actionability, clarity, safety
+- **Production Status**: ✅ Ready - 16/16 tests passing
 
 ### Rapid7 InsightVM Agent (Nov 24) - MSP Vulnerability Management ⭐ **NEW AGENT**
 - **rapid7_insightvm_agent.md** - MSP vulnerability management specialist (183 lines, v2.3)

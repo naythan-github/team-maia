@@ -309,13 +309,14 @@ class AgentSelector:
         'endpoint': 'principal_endpoint_engineer',
     }
 
-    def __init__(self, agent_loader: AgentLoader = None, use_capability_registry: bool = False):
+    def __init__(self, agent_loader: AgentLoader = None, use_capability_registry: bool = False, use_adaptive_routing: bool = True):
         """
         Initialize with agent loader and optional capability registry.
 
         Args:
             agent_loader: Agent loader instance
             use_capability_registry: Use CapabilityRegistry for dynamic agent matching
+            use_adaptive_routing: Use AdaptiveRoutingSystem for learning thresholds (Phase 1 Agentic AI)
         """
         self.agent_loader = agent_loader or AgentLoader()
         self.use_registry = use_capability_registry and CAPABILITY_REGISTRY_AVAILABLE
@@ -331,6 +332,16 @@ class AgentSelector:
                 self.capability_registry = None
         else:
             self.capability_registry = None
+
+        # Initialize adaptive routing system (Phase 1 Agentic AI Enhancement)
+        self.use_adaptive_routing = use_adaptive_routing
+        self.adaptive_routing = None
+        if use_adaptive_routing:
+            try:
+                from adaptive_routing import AdaptiveRoutingSystem
+                self.adaptive_routing = AdaptiveRoutingSystem()
+            except ImportError:
+                self.use_adaptive_routing = False
 
     def select(self, intent: Intent, user_query: str) -> RoutingDecision:
         """
@@ -375,8 +386,22 @@ class AgentSelector:
 
         # Normal routing logic for other queries
         # Determine strategy based on complexity and domains
-        if intent.complexity <= 3 and len(intent.domains) == 1:
-            # Simple single-domain task
+        # Phase 1 Agentic AI: Use adaptive thresholds if available
+        primary_domain = intent.domains[0] if intent.domains else 'general'
+
+        if self.use_adaptive_routing and self.adaptive_routing:
+            should_load, reasoning = self.adaptive_routing.should_load_agent(
+                primary_domain, intent.complexity
+            )
+            agent_threshold = self.adaptive_routing.get_threshold(primary_domain).current_threshold
+        else:
+            # Fallback to fixed threshold
+            agent_threshold = 3
+            should_load = intent.complexity >= agent_threshold
+            reasoning = f"Fixed threshold: {intent.complexity} >= {agent_threshold}"
+
+        if not should_load and len(intent.domains) == 1:
+            # Simple single-domain task - no agent needed
             return self._route_single_agent(intent, user_query)
 
         elif intent.complexity <= 6 or len(intent.domains) <= 2:
@@ -570,6 +595,58 @@ class CoordinatorAgent:
                 reverse=True
             )[:5]
         }
+
+    def record_outcome(
+        self,
+        query: str,
+        domain: str,
+        complexity: int,
+        agent_used: str = None,
+        success: bool = True,
+        quality_score: float = 0.8,
+        user_corrections: int = 0
+    ):
+        """
+        Record task outcome for adaptive routing learning.
+
+        Phase 1 Agentic AI Enhancement: Feed outcomes back to
+        AdaptiveRoutingSystem so thresholds can learn.
+
+        Args:
+            query: Original user query
+            domain: Task domain (e.g., 'sre', 'security')
+            complexity: Task complexity (1-10)
+            agent_used: Agent that handled the task (None if no agent)
+            success: Whether task completed successfully
+            quality_score: Quality of result (0.0-1.0)
+            user_corrections: Number of user corrections needed
+        """
+        if not self.agent_selector.use_adaptive_routing:
+            return
+
+        if self.agent_selector.adaptive_routing is None:
+            return
+
+        try:
+            from adaptive_routing import TaskOutcome, generate_task_id
+            from datetime import datetime
+
+            outcome = TaskOutcome(
+                task_id=generate_task_id(),
+                timestamp=datetime.now(),
+                query=query,
+                domain=domain,
+                complexity=complexity,
+                agent_used=agent_used,
+                agent_loaded=agent_used is not None,
+                success=success,
+                quality_score=quality_score,
+                user_corrections=user_corrections
+            )
+
+            self.agent_selector.adaptive_routing.record_outcome(outcome)
+        except ImportError:
+            pass  # Graceful degradation
 
 
 # Convenience function

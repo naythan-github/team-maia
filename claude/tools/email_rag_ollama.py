@@ -461,6 +461,57 @@ class EmailRAGOllama:
             "db_path": self.db_path
         }
 
+    def agentic_search(
+        self,
+        query: str,
+        n_results: int = 10,
+        comprehensive: bool = False,
+        verbose: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Agentic email search with iterative refinement.
+
+        Uses the AgenticEmailSearch system (Phase 1 Agentic AI Enhancement)
+        to iteratively refine queries until sufficient results are found.
+
+        Args:
+            query: Search query
+            n_results: Number of results to return
+            comprehensive: Use comprehensive multi-query search
+            verbose: Print progress
+
+        Returns:
+            Dict with 'results', 'iterations', 'success' keys
+        """
+        try:
+            from claude.tools.rag.agentic_email_search import AgenticEmailSearch
+
+            searcher = AgenticEmailSearch(rag_instance=self)
+
+            if comprehensive:
+                result = searcher.search_comprehensive(query, n_results=n_results, verbose=verbose)
+            else:
+                result = searcher.search(query, n_results=n_results, verbose=verbose)
+
+            return {
+                'results': result.results,
+                'iterations': result.total_iterations,
+                'success': result.search_successful,
+                'summary': result.summary,
+                'original_query': result.original_query,
+                'final_query': result.final_query
+            }
+        except ImportError:
+            # Fallback to standard search if agentic module not available
+            return {
+                'results': self.smart_search(query, n_results=n_results),
+                'iterations': 1,
+                'success': True,
+                'summary': 'Standard search (agentic module not available)',
+                'original_query': query,
+                'final_query': query
+            }
+
 
 def main():
     """Production Email RAG with Ollama - Full Inbox Indexing"""
