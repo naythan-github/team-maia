@@ -54,12 +54,13 @@ class ContinuousEvaluationSystem:
     QUALITY_THRESHOLD_HIGH = 0.8
     ALERT_THRESHOLD = 0.4
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: Optional[str] = None, outcome_tracker: Optional[Any] = None):
         """
         Initialize Continuous Evaluation System.
 
         Args:
             db_path: Path to SQLite database for persistence
+            outcome_tracker: Optional OutcomeTracker for unified outcome storage (Phase 181 integration)
         """
         if db_path is None:
             maia_root = Path(__file__).resolve().parents[3]
@@ -67,6 +68,7 @@ class ContinuousEvaluationSystem:
 
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.outcome_tracker = outcome_tracker  # P4 integration
 
         self._init_database()
 
@@ -170,6 +172,30 @@ class ContinuousEvaluationSystem:
             pass  # Duplicate task_id
         finally:
             conn.close()
+
+        # P4 Integration: Also record to unified OutcomeTracker if available
+        if self.outcome_tracker is not None:
+            try:
+                from claude.tools.orchestration.outcome_tracker import Outcome
+                unified_outcome = Outcome(
+                    id=record.task_id,
+                    domain=record.domain,
+                    approach="agent_execution",
+                    success=record.task_completed,
+                    quality_score=record.output_quality,
+                    agent_used=record.agent_used,
+                    user_rating=record.user_rating,
+                    metadata={
+                        "auto_score": record.auto_score,
+                        "complexity": record.complexity,
+                        "issues_count": len(record.issues_found),
+                        "source": "continuous_eval"
+                    }
+                )
+                self.outcome_tracker.record_outcome(unified_outcome)
+            except Exception as e:
+                # Don't fail if OutcomeTracker has issues
+                pass
 
     def _update_agent_performance(self, agent: str):
         """Update aggregate performance for an agent"""

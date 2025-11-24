@@ -72,12 +72,13 @@ class AdaptiveRoutingSystem:
     THRESHOLD_MAX = 7  # Maximum complexity threshold
     DECAY_FACTOR = 0.95  # Weight decay for older samples
 
-    def __init__(self, db_path: Optional[str] = None):
+    def __init__(self, db_path: Optional[str] = None, outcome_tracker: Optional[Any] = None):
         """
         Initialize Adaptive Routing System.
 
         Args:
             db_path: Path to SQLite database for persistence
+            outcome_tracker: Optional OutcomeTracker for unified outcome storage (Phase 181 integration)
         """
         if db_path is None:
             maia_root = Path(__file__).resolve().parents[3]
@@ -85,6 +86,7 @@ class AdaptiveRoutingSystem:
 
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self.outcome_tracker = outcome_tracker  # P4 integration
 
         self._init_database()
         self.thresholds = self._load_thresholds()
@@ -272,6 +274,29 @@ class AdaptiveRoutingSystem:
 
         # Update threshold based on outcome
         self._update_threshold(outcome)
+
+        # P4 Integration: Also record to unified OutcomeTracker if available
+        if self.outcome_tracker is not None:
+            try:
+                from claude.tools.orchestration.outcome_tracker import Outcome
+                unified_outcome = Outcome(
+                    id=outcome.task_id,
+                    domain=outcome.domain,
+                    approach=f"complexity_{outcome.complexity}",
+                    success=outcome.success,
+                    quality_score=outcome.quality_score,
+                    agent_used=outcome.agent_used,
+                    user_correction=outcome.user_corrections > 0,
+                    metadata={
+                        "complexity": outcome.complexity,
+                        "agent_loaded": outcome.agent_loaded,
+                        "source": "adaptive_routing"
+                    }
+                )
+                self.outcome_tracker.record_outcome(unified_outcome)
+            except Exception as e:
+                # Don't fail if OutcomeTracker has issues
+                pass
 
     def _update_threshold(self, outcome: TaskOutcome):
         """Update threshold based on new outcome"""
