@@ -74,8 +74,8 @@ class SystemStateParser:
     PHASE_HEADER_PATTERNS = [
         # Format: ## 📄 PHASE 163: Title (2025-11-21) **STATUS**
         # Captures 151, 151.2, 134.4, etc.
-        # All emojis found: 🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐📁📂🎉🔒
-        re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐📁📂🎉🔒].+?PHASE\s+(\d+(?:\.\d+)?):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)\s*(?:\*\*(.+?)\*\*)?', re.IGNORECASE),
+        # All emojis found: 🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐📁📂🎉🔒🗜️🧾
+        re.compile(r'^##\s+[🔬🚀🎯🤖💼📋🎓🔗🛡️🎤📊🧠📄🔄📦⚙️🏗️💡🔧🎨🧪🗄️🚨📚📧📐📁📂🎉🔒🗜️🧾].+?PHASE\s+(\d+(?:\.\d+)?):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)\s*(?:\*\*(.+?)\*\*)?', re.IGNORECASE),
         # Format: ## PHASE 163: Title (2025-11-21)
         re.compile(r'^##\s+PHASE\s+(\d+(?:\.\d+)?):\s*(.+?)\s+\((\d{4}-\d{2}-\d{2})\)', re.IGNORECASE),
     ]

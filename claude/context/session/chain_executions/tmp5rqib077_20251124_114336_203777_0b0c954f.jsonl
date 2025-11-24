@@ -1,0 +1,37 @@
+{
+  "chain_id": "tmp5rqib077_20251124_114336_203777_0b0c954f",
+  "workflow_name": "tmp5rqib077",
+  "start_time": "2025-11-24T11:43:36.203852",
+  "end_time": "2025-11-24T11:43:36.203912",
+  "status": "completed",
+  "initial_input": {
+    "test": "convenience"
+  },
+  "subtask_executions": [
+    {
+      "subtask_id": 1,
+      "name": "Single",
+      "status": "completed",
+      "start_time": "2025-11-24T11:43:36.203866",
+      "end_time": "2025-11-24T11:43:36.203904",
+      "input_data": {
+        "test": "convenience"
+      },
+      "output_data": {
+        "output": "[Mock output for output]"
+      },
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 7,
+      "execution_time_ms": 0.038
+    }
+  ],
+  "final_output": {
+    "output": "[Mock output for output]"
+  },
+  "total_tokens": 7,
+  "total_time_ms": 0.038,
+  "success_count": 1,
+  "failure_count": 0
+}

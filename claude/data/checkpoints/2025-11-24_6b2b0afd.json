@@ -1,0 +1,20 @@
+{
+  "session_context_id": "cli_test",
+  "current_task": {
+    "description": "Contract RAG reliability fix - TDD complete, 9/9 tests passing",
+    "status": "pending",
+    "progress_percentage": 0
+  },
+  "checkpoint_id": "6b2b0afd-6631-4fe4-a87e-329330bfc74a",
+  "timestamp": "2025-11-24T03:21:29.133803Z",
+  "todo_list": [],
+  "key_decisions": [],
+  "files_modified": [],
+  "git_state": {
+    "branch": "main",
+    "last_commit": "206f070",
+    "uncommitted_changes": true
+  },
+  "recovery_instructions": "",
+  "next_steps": []
+}

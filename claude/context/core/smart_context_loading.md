@@ -54,6 +54,33 @@
      - Database: `${MAIA_ROOT}/claude/data/databases/system/system_state.db`
    - **Documentation**: See `claude/context/core/capability_index.md` (SYSTEM_STATE Query Interface section)
 
+7. **Smart Capability Loading** ⭐ **DATABASE-ACCELERATED - 73-98% TOKEN SAVINGS (Phase 168.1)**
+   - **Primary Path** ⭐ **NEW**: Capabilities DB query (replaces 3K token capability_index.md)
+     - **Tool**: `python3 claude/tools/sre/capabilities_registry.py [command]`
+     - **Commands**: `find QUERY`, `list --category sre`, `summary`
+     - **Coverage**: 208 capabilities (66 agents, 142 tools)
+     - **Smart Loader Integration**: `loader.load_capability_context(query="security")`
+   - **Token Savings**:
+     - Summary only: 98% savings (3,758 → 60 tokens)
+     - Targeted query: 73-94% savings depending on query specificity
+   - **Secondary Path**: Full `capability_index.md` markdown (legacy fallback)
+   - **Locations**:
+     - Registry CLI: `${MAIA_ROOT}/claude/tools/sre/capabilities_registry.py`
+     - Database: `${MAIA_ROOT}/claude/data/databases/system/capabilities.db`
+     - Markdown fallback: `${MAIA_ROOT}/claude/context/core/capability_index.md`
+   - **Usage**:
+     ```python
+     from claude.tools.sre.smart_context_loader import SmartContextLoader
+     loader = SmartContextLoader()
+
+     # Get compact summary (60 tokens)
+     summary = loader.load_capability_context()
+
+     # Query-based (73-94% savings)
+     security = loader.load_capability_context(query="security")
+     sre_tools = loader.load_capability_context(category="sre", cap_type="tool")
+     ```
+
 **DOMAIN-SMART LOADING (Load Based on Request)**:
 - **Simple Tasks** (math, basic questions): CORE ONLY (62% savings)
 - **Research/Analysis**: CORE + available.md + agents.md + systematic_tool_checking.md (25% savings)
