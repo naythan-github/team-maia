@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-22 (Phase 172 - Git Specialist Agent)
+**Last Updated**: 2025-11-22 (Phase 168.1 - Capabilities DB Integration)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,15 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Rapid7 InsightVM Agent (Nov 24) - MSP Vulnerability Management ⭐ **NEW AGENT**
+- **rapid7_insightvm_agent.md** - MSP vulnerability management specialist (183 lines, v2.3)
+- **Location**: `claude/agents/rapid7_insightvm_agent.md`
+- **Purpose**: InsightVM vulnerability discovery, risk prioritization, and remediation orchestration with ManageEngine PMP
+- **Core Capabilities**: query_vulns, prioritize_risks, map_patches, generate_remediation_plan, compliance_report, cross_tenant_trends
+- **MSP Features**: Client tier SLA enforcement (P1/P2/P3), cross-tenant trending, ManageEngine PMP patch mapping
+- **Integration**: InsightVM API + ManageEngine Patch Manager Plus API
+- **Production Status**: ✅ Ready - v1.0 with all 5 v2.3 patterns
 
 ### Phase 171 (Nov 22) - Comprehensive Test Suite ⭐ **SRE PRODUCTION VALIDATION**
 - **maia_comprehensive_test_suite.py** - Automated validation of ALL Maia components (572 tests, 7 categories)
@@ -31,6 +40,23 @@
 - **Fixes Applied**: 17 syntax errors discovered and fixed (broken path strings from bad search-replace)
 - **Production Status**: ✅ Complete - 572/572 tests passing (100%)
 - **SRE Value**: Run before deployments, after major changes, or periodically to catch regressions
+
+### Phase 168.1 (Nov 22) - Capabilities DB Integration ⭐ **73-98% TOKEN SAVINGS**
+- **Smart Loader Capabilities Integration** - DB-first capability loading replacing 3K token capability_index.md
+- **Location**: `claude/tools/sre/smart_context_loader.py` (integration), `claude/tools/sre/capabilities_registry.py` (registry)
+- **Purpose**: Load capability context from database instead of full markdown file, saving 73-98% tokens
+- **New Methods**:
+  - `loader.load_capability_context()` - Summary only (~60 tokens, 98% savings)
+  - `loader.load_capability_context(query="security")` - Targeted search (~1K tokens, 73% savings)
+  - `loader.load_capability_context(category="sre", cap_type="tool")` - Category filter
+  - `loader.get_capability_summary()` - Dict with counts
+- **Token Savings**:
+  - Markdown baseline: ~3,758 tokens (full capability_index.md)
+  - DB Summary: ~60 tokens (98% savings)
+  - DB Targeted query: ~1,000 tokens (73% savings)
+- **Graceful Fallback**: Falls back to capability_index.md if DB unavailable
+- **Test Suite**: `test_smart_loader_capabilities.py` (11/11 tests passing)
+- **Production Status**: ✅ Complete - Integrated into smart_context_loader.py
 
 ### ⭐ SYSTEM_STATE Query Interface (Phase 165-166) - DATABASE-FIRST PATTERN ⭐
 **CRITICAL: Use this tool instead of reading SYSTEM_STATE.md directly**
