@@ -426,6 +426,51 @@ python3 claude/tools/sre/save_state_security_checker.py --verbose
 
 **Security notes added to commit**: Warnings automatically added to commit message
 
+#### 4.4.1 Database Sync (MANDATORY) ⭐ **PHASE 179 - DATA INTEGRITY**
+**Sync SYSTEM_STATE.md to database after any phase updates**:
+```bash
+python3 claude/tools/sre/system_state_etl.py --recent 10
+```
+
+**Why required**:
+- Queries read from database (500-2500x faster than markdown)
+- Without sync, new phases invisible to smart context loader
+- Prevents data drift between markdown and database
+
+**What it does**:
+- Parses SYSTEM_STATE.md for recent phases
+- Extracts problems, solutions, metrics, files
+- Upserts to system_state.db
+
+**Exit codes**:
+- 0 = ✅ SUCCESS (phases synced)
+- 1 = ❌ PARSE ERROR (fix markdown format, re-run)
+
+**Skip if**: No phase updates in this save state (e.g., only tool changes)
+
+#### 4.4.2 Capabilities Scan (MANDATORY) ⭐ **PHASE 179 - TOOL DISCOVERY**
+**Rescan tools/agents after any capability changes**:
+```bash
+python3 claude/tools/sre/capabilities_registry.py scan
+```
+
+**Why required**:
+- Smart context loader uses capabilities.db for tool discovery
+- Without rescan, new tools/agents invisible to Maia
+- Scans filesystem directly (more reliable than markdown)
+
+**What it does**:
+- Scans `claude/agents/*.md` for agents
+- Scans `claude/tools/**/*.py` for tools
+- Extracts purpose, category, keywords
+- Upserts to capabilities.db
+
+**Exit codes**:
+- 0 = ✅ SUCCESS (capabilities updated)
+- 1 = ❌ SCAN ERROR (check file permissions)
+
+**Skip if**: No tool/agent changes in this save state (e.g., only documentation)
+
 #### 4.5 Create Comprehensive Commit
 ```bash
 git commit -m "$(cat <<'EOF'
@@ -490,7 +535,9 @@ git status
 - [ ] agents.md updated if agents added/modified
 - [ ] Session summary created if complex work
 - [ ] Design decisions documented if architectural changes
-- [ ] **Security validation passed (Phase 113)** ⭐ **NEW**
+- [ ] **Security validation passed (Phase 113)**
+- [ ] **Database sync completed (Phase 179)**
+- [ ] **Capabilities scan completed (Phase 179)** ⭐ **NEW**
 - [ ] Git commit created with comprehensive message
 - [ ] Git push successful
 - [ ] Anti-sprawl validation passed
@@ -519,7 +566,13 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 # 4. Security validation (Phase 113)
 python3 claude/tools/sre/save_state_security_checker.py --verbose
 
-# 5. Git commit & push
+# 5. Database sync (Phase 179 - if phase updates)
+python3 claude/tools/sre/system_state_etl.py --recent 10
+
+# 6. Capabilities scan (Phase 179 - if tool/agent changes)
+python3 claude/tools/sre/capabilities_registry.py scan
+
+# 7. Git commit & push
 git add -A
 git commit -m "[EMOJI] PHASE NNN: [Title]"
 git push
@@ -538,7 +591,13 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 # 7. Security validation (Phase 113 - MANDATORY)
 python3 claude/tools/sre/save_state_security_checker.py --verbose
 
-# 8. Git commit with full details & push
+# 8. Database sync (Phase 179 - if phase updates)
+python3 claude/tools/sre/system_state_etl.py --recent 10
+
+# 9. Capabilities scan (Phase 179 - if tool/agent changes)
+python3 claude/tools/sre/capabilities_registry.py scan
+
+# 10. Git commit with full details & push
 ```
 
 ---
