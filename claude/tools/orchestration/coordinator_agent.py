@@ -648,6 +648,28 @@ class CoordinatorAgent:
         except ImportError:
             pass  # Graceful degradation
 
+        # Phase 2: Also record to continuous evaluation system
+        try:
+            from continuous_eval import ContinuousEvaluationSystem, EvaluationRecord
+
+            eval_system = ContinuousEvaluationSystem()
+            eval_record = EvaluationRecord(
+                task_id=generate_task_id(),
+                timestamp=datetime.now(),
+                agent_used=agent_used,
+                query=query,
+                domain=domain,
+                complexity=complexity,
+                output_quality=quality_score,
+                task_completed=success,
+                user_rating=None,
+                auto_score=quality_score,
+                issues_found=[]
+            )
+            eval_system.record_evaluation(eval_record)
+        except ImportError:
+            pass  # Graceful degradation
+
 
 # Convenience function
 def route_query(user_query: str) -> RoutingDecision:
