@@ -91,6 +91,30 @@ MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift
 3. Regular verification against requirements.md
 4. Update documentation if requirements evolve
 
+### Phase 5: Registration & Sync ⭐ **PHASE 179 - MANDATORY**
+**CRITICAL**: New tools/agents must be registered in databases
+
+1. **Capabilities Scan** (if new tools/agents created)
+   ```bash
+   python3 claude/tools/sre/capabilities_registry.py scan
+   ```
+   - Registers new tools/agents in capabilities.db
+   - Makes them discoverable by smart context loader
+
+2. **SYSTEM_STATE Update** (if significant feature)
+   - Add phase entry documenting the new capability
+   - Run ETL to sync:
+   ```bash
+   python3 claude/tools/sre/system_state_etl.py --recent 10
+   ```
+
+3. **Save State Handoff**
+   - If TDD project complete, execute save_state workflow
+   - Ensures all databases synchronized
+   - Commits with proper phase documentation
+
+**Gate**: New capabilities are NOT production-ready until registered in databases
+
 ## 🤖 **AGENT PAIRING PROTOCOL** 🤖
 
 ### Automatic Agent Selection
@@ -276,6 +300,8 @@ claude/data/project_status/active/
 - **Agent continuity maintained** (no base Maia takeovers mid-project)
 - **Progress preserved** (can resume after any interruption)
 - **Incremental saves completed** (progress.md updated after each phase)
+- **Capabilities registered** (new tools/agents in capabilities.db) ⭐ **PHASE 179**
+- **Databases synchronized** (system_state.db + capabilities.db current) ⭐ **PHASE 179**
 
 ## Quality Gates
 1. **Requirements Gate**: No tests until "requirements complete" confirmation
@@ -284,6 +310,8 @@ claude/data/project_status/active/
 4. **Documentation Gate**: Requirements.md updated with any changes
 5. **Progress Gate**: Progress saved after EACH phase (not just at end)
 6. **Agent Continuity Gate**: Agent identity confirmed at phase transitions
+7. **Registration Gate** ⭐ **PHASE 179**: New tools/agents registered in capabilities.db
+8. **Sync Gate** ⭐ **PHASE 179**: Databases synced before declaring production-ready
 
 ## Risk Mitigation
 - Active probing during discovery phase
@@ -329,7 +357,8 @@ claude/data/project_status/active/
 ⚠️ **Config with logic**: If config changes affect behavior → TDD required
 
 ---
-*Last Updated: 2025-11-07*
+*Last Updated: 2025-11-24*
 *Status: MANDATORY Protocol - Enforced for ALL Development*
 *Agent Pairing: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)*
 *Agent Continuity: Explicit reload commands + incremental progress saving (ALWAYS)*
+*Database Sync: Phase 5 registration + sync mandatory before production (PHASE 179)*

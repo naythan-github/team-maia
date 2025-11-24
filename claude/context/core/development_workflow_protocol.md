@@ -1,6 +1,6 @@
 # Development Workflow Protocol
 **Created**: 2025-10-02 (Phase 81)
-**Updated**: 2025-11-22 (Phase 170 - Consolidated Structure)
+**Updated**: 2025-11-24 (Phase 179 - Database Sync Integration)
 **Purpose**: Define HOW and WHEN Maia uses experimental/ vs production directories
 **Critical**: Prevents sprawl by ensuring prototypes don't pollute production
 
@@ -137,8 +137,11 @@ Steps:
 4. Update documentation:
    - SYSTEM_STATE.md (add to current phase)
    - capability_index.md (add to capabilities)
-5. Git commit with production marker
-6. Delete/archive experimental versions
+5. Database sync (MANDATORY - Phase 179):
+   - python3 claude/tools/sre/capabilities_registry.py scan
+   - python3 claude/tools/sre/system_state_etl.py --recent 10
+6. Git commit with production marker
+7. Delete/archive experimental versions
 
 Example Graduation:
   FROM: claude/tools/experimental/email_rag_v2_ollama.py
