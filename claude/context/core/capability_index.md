@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-24 (Phase 1 Agentic AI Enhancement - 3 New Tools)
+**Last Updated**: 2025-11-25 (Phase 185 - Zabbix Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,20 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 185 (Nov 25) - Zabbix Specialist Agent ⭐ **NEW MONITORING EXPERT**
+- **zabbix_specialist_agent.md** - Infrastructure monitoring and observability specialist (232 lines, v2.3)
+- **Location**: `claude/agents/zabbix_specialist_agent.md`
+- **Purpose**: Zabbix monitoring expertise - API automation, template management, alerting, distributed observability
+- **Core Capabilities**: Infrastructure monitoring (servers, networks, containers, VMware, cloud, IoT, databases), API automation (bulk operations, configuration management, CI/CD integration), template design (auto-discovery, LLD, reusable patterns), alert engineering (trigger expressions, escalations, dependency mapping), observability (distributed tracing, synthetic monitoring)
+- **Key Commands**: monitor_infrastructure, design_template, configure_discovery, troubleshoot_alerts
+- **Few-Shot Examples**:
+  - Multi-tier web app (10 hosts, 3 templates, 18 triggers, dependency mapping, <60s alert validation)
+  - Bulk IoT onboarding (200 devices via API in 6 min vs 100 hrs manual, 99% automation)
+- **Domain Coverage**: Zabbix architecture, item types (agent/SNMP/HTTP/simple/calculated/dependent), trigger expressions, discovery methods (network/LLD/auto-registration), API methods
+- **Integration**: SRE Principal Engineer (runbook automation), Cloud Infrastructure (cloud monitoring), Security Specialist (SIEM integration), Network Engineer (SNMP/NetFlow)
+- **Model Selection**: Sonnet (all monitoring) | Opus (1000+ host enterprise deployments)
+- **Production Status**: ✅ Ready - v2.3 with all 5 advanced patterns
 
 ### Phase 1 Agentic AI Enhancement (Nov 24) - 3 Learning Tools ⭐ **NEW TOOLING**
 - **agentic_email_search.py** - Iterative RAG with query refinement (8 tests, 420 lines)
