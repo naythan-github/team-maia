@@ -32,7 +32,7 @@ class PMPOAuthManager:
     AUTH_URL = "https://accounts.zoho.com.au/oauth/v2/auth"
     TOKEN_URL = "https://accounts.zoho.com.au/oauth/v2/token"
     REDIRECT_URI = "http://localhost:8080/oauth2callback"
-    SCOPES = "PatchManagerPlusCloud.Common.READ,PatchManagerPlusCloud.Common.Update"
+    SCOPES = "PatchManagerPlusCloud.restapi.READ,PatchManagerPlusCloud.PatchMgmt.READ,PatchManagerPlusCloud.PatchMgmt.UPDATE"
 
     KEYCHAIN_ACCOUNT = "naythan.dawe@orro.group"
     TOKEN_FILE = Path.home() / ".maia/credentials/pmp_tokens.json.enc"
@@ -77,12 +77,16 @@ class PMPOAuthManager:
     def _get_or_create_encryption_key(self) -> str:
         """Get or create Fernet encryption key in Keychain"""
         try:
-            return keyring.get_password("maia_pmp", "encryption_key")
+            key = keyring.get_password("maia_pmp", "encryption_key")
+            if key:
+                return key
         except Exception:
-            # Create new key
-            key = Fernet.generate_key().decode()
-            keyring.set_password("maia_pmp", "encryption_key", key)
-            return key
+            pass
+
+        # Create new key
+        key = Fernet.generate_key().decode()
+        keyring.set_password("maia_pmp", "encryption_key", key)
+        return key
 
     def _save_tokens(self, tokens: Dict):
         """Save tokens to encrypted file"""
@@ -268,13 +272,14 @@ class PMPOAuthManager:
         print(f"\n💾 Tokens saved to: {self.TOKEN_FILE}")
         print("=" * 60)
 
-    def api_request(self, method: str, endpoint: str, **kwargs) -> requests.Response:
+    def api_request(self, method: str, endpoint: str, _retry_count: int = 0, **kwargs) -> requests.Response:
         """
         Make authenticated API request with rate limiting and error handling
 
         Args:
             method: HTTP method (GET, POST, etc.)
             endpoint: API endpoint (e.g., '/api/1.4/patch/allpatches')
+            _retry_count: Internal recursion guard
             **kwargs: Additional arguments for requests (params, json, etc.)
         """
         self._check_rate_limit()
@@ -283,6 +288,8 @@ class PMPOAuthManager:
         headers = kwargs.pop('headers', {})
         headers['Authorization'] = f'Zoho-oauthtoken {token}'
 
+        # Use server_url (patch.manageengine.com.au) not api_domain
+        # PMP Cloud uses patch.manageengine.com.au with OAuth tokens
         url = f"{self.server_url}{endpoint}"
 
         try:
@@ -291,13 +298,13 @@ class PMPOAuthManager:
             )
 
             # Handle common errors
-            if response.status_code == 401:
+            if response.status_code == 401 and _retry_count < 1:
                 print("⚠️  Token expired or invalid. Refreshing...")
                 tokens = self._load_tokens()
                 if tokens and 'refresh_token' in tokens:
                     self.refresh_access_token(tokens['refresh_token'])
-                    # Retry with new token
-                    return self.api_request(method, endpoint, **kwargs)
+                    # Retry with new token (max 1 retry)
+                    return self.api_request(method, endpoint, _retry_count=_retry_count+1, **kwargs)
                 else:
                     raise RuntimeError("Token refresh failed. Re-authorize required.")
 
@@ -311,6 +318,11 @@ class PMPOAuthManager:
                 print(f"⚠️  Server error: {response.status_code}. Retrying...")
                 time.sleep(5)
                 return self.api_request(method, endpoint, **kwargs)
+
+            if response.status_code >= 400:
+                # Log error details for debugging
+                error_detail = f"Status: {response.status_code}, Body: {response.text[:200]}"
+                print(f"⚠️  API Error Details: {error_detail}")
 
             response.raise_for_status()
             return response
@@ -340,9 +352,10 @@ def main():
     elif command == 'test':
         print("🧪 Testing API connectivity...")
 
-        # Test 1: Server properties
-        print("\n1️⃣  GET /api/1.3/patch/serverproperties")
-        response = manager.api_request('GET', '/api/1.3/patch/serverproperties')
+        # Test 1: Patch summary
+        print("\n1️⃣  GET /api/1.4/patch/summary")
+        response = manager.api_request('GET', '/api/1.4/patch/summary')
+        print(f"   Status: {response.status_code}")
         data = response.json()
         print(f"   ✅ Success: {data}")
 
@@ -350,9 +363,10 @@ def main():
         print("\n2️⃣  GET /api/1.4/patch/allpatches?limit=5")
         response = manager.api_request('GET', '/api/1.4/patch/allpatches', params={'limit': 5})
         data = response.json()
-        print(f"   ✅ Success: {len(data.get('patches', []))} patches returned")
+        patch_count = len(data.get('patches', data.get('data', [])))
+        print(f"   ✅ Success: {patch_count} patches returned")
 
-        print("\n✅ All tests passed!")
+        print("\n✅ All API tests passed!")
 
     elif command == 'refresh':
         print("🔄 Forcing token refresh...")

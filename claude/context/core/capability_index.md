@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-25 (Phase 185 - Zabbix Specialist Agent)
+**Last Updated**: 2025-11-25 (Phase 187 - ManageEngine PMP OAuth Manager)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,18 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 187 (Nov 25) - ManageEngine PMP OAuth Manager ⭐ **NEW API INTEGRATION**
+- **pmp_oauth_manager.py** - Production-grade OAuth 2.0 for ManageEngine Patch Manager Plus Cloud (390 lines)
+- **Location**: `claude/tools/pmp/pmp_oauth_manager.py`
+- **Purpose**: Secure API integration with PMP Cloud - OAuth flow, token management, encrypted storage, rate limiting
+- **Core Capabilities**: OAuth 2.0 authorization (local callback server), macOS Keychain credential storage, encrypted token management (Fernet), auto token refresh (1-hour expiry), rate limiting (3000 req/5min), production error handling (401/403/429/500)
+- **Security**: 3-tier protection (Keychain → Encrypted file → File permissions 600), zero credential exposure in logs/git
+- **API Tested**: `/api/1.4/patch/summary` working (3,566 patches, 3,358 systems)
+- **OAuth Scopes**: `PatchManagerPlusCloud.restapi.READ`, `PatchManagerPlusCloud.PatchMgmt.READ`, `PatchManagerPlusCloud.PatchMgmt.UPDATE`
+- **CLI Commands**: `authorize` (OAuth flow), `test` (API connectivity), `refresh` (token refresh)
+- **Integration**: Patch Manager Plus API Specialist Agent, SRE Principal Engineer (error handling design)
+- **Production Status**: ✅ Ready - OAuth working, API tested with real data
 
 ### Phase 185 (Nov 25) - Zabbix Specialist Agent ⭐ **NEW MONITORING EXPERT**
 - **zabbix_specialist_agent.md** - Infrastructure monitoring and observability specialist (232 lines, v2.3)
