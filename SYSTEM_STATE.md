@@ -48970,3 +48970,7 @@ pytest PHASE_192_INTEGRATION_TESTS.py::TestSmartContextLoaderIntegration -v  # 3
 
 **Status**: Testing with 'at' command for job scheduling...
 
+
+
+**Status**: Final test with full logging (no --quiet flag)...
+
