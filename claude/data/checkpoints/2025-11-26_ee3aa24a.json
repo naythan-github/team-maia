@@ -1,0 +1,20 @@
+{
+  "session_context_id": "cli_test",
+  "current_task": {
+    "description": "Technical recruitment analysis: Krishna Durgasi, Sayan Maity, Steve Daalmeyer CV review for Senior Cloud Engineer role. Created comprehensive interview pack (12 questions, 100-point scoring) and 3-candidate comparison analysis with Azure Architect collaboration.",
+    "status": "pending",
+    "progress_percentage": 0
+  },
+  "checkpoint_id": "ee3aa24a-563e-4ecb-a551-47b319895a01",
+  "timestamp": "2025-11-26T09:01:37.736967Z",
+  "todo_list": [],
+  "key_decisions": [],
+  "files_modified": [],
+  "git_state": {
+    "branch": "main",
+    "last_commit": "6ee02fb",
+    "uncommitted_changes": true
+  },
+  "recovery_instructions": "",
+  "next_steps": []
+}
