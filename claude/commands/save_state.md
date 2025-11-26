@@ -540,8 +540,46 @@ git status
 - [ ] Git push successful
 - [ ] Anti-sprawl validation passed
 - [ ] No phantom dependencies introduced
+- [ ] Agent session reviewed (close if milestone complete)
 
-#### 5.3 Success Confirmation
+#### 5.3 Agent Session Review (If Active)
+
+**Check if specialist agent session should be closed after major milestone:**
+
+```bash
+# Check for active session
+CONTEXT_ID=$(python3 claude/hooks/swarm_auto_loader.py get_context_id 2>/dev/null || echo $PPID)
+SESSION_FILE="/tmp/maia_active_swarm_session_${CONTEXT_ID}.json"
+
+if [ -f "$SESSION_FILE" ]; then
+    echo "ℹ️  Active agent session detected:"
+    python3 -c "import json; data=json.load(open('$SESSION_FILE')); print(f\"   Agent: {data.get('agent', 'unknown')}\"); print(f\"   Domain: {data.get('domain', 'unknown')}\")" 2>/dev/null || echo "   (Unable to read session details)"
+
+    read -p "Close agent session and restore natural routing? [Y/n] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        python3 claude/hooks/swarm_auto_loader.py close_session
+    else
+        echo "✅ Keeping agent session active"
+    fi
+else
+    echo "✅ No active agent session (already using natural routing)"
+fi
+```
+
+**When to close agent session**:
+- ✅ Tier 3 comprehensive save state (major milestone complete)
+- ✅ Switching to different domain/project
+- ✅ Want fresh specialist routing for next session
+
+**When to keep agent session**:
+- ⏸️ Tier 1 quick checkpoint (mid-work, continuing same task)
+- ⏸️ Tier 2 standard save state but same domain
+- ⏸️ Multi-day project with same specialist agent
+
+---
+
+#### 5.4 Success Confirmation
 **Confirm these statements are true**:
 - ✅ All system changes are documented
 - ✅ Phase progression is clearly marked
@@ -549,6 +587,7 @@ git status
 - ✅ Git history captures complete change context
 - ✅ Next session can resume without context loss
 - ✅ Pre-flight checks would pass for next save state
+- ✅ Agent session reviewed (closed if milestone complete)
 
 ---
 
@@ -564,11 +603,13 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 # 4. Security validation (Phase 113)
 python3 claude/tools/sre/save_state_security_checker.py --verbose
 
-# 5. Database sync (Phase 179 - if phase updates)
-python3 claude/tools/sre/system_state_etl.py --recent 10
+# 5. ~~Database sync~~ ⭐ AUTOMATED (Phase 192 - LaunchAgent daily 2 AM)
+#    Manual trigger only if immediate sync needed:
+#    python3 claude/tools/sre/system_state_etl.py --recent 10
 
-# 6. Capabilities scan (Phase 179 - if tool/agent changes)
-python3 claude/tools/sre/capabilities_registry.py scan
+# 6. ~~Capabilities scan~~ ⭐ AUTOMATED (Phase 192 - 100% coverage)
+#    Manual rescan only if validation needed:
+#    python3 claude/tools/sre/capabilities_registry.py scan
 
 # 7. Git commit & push
 git add -A
@@ -589,13 +630,17 @@ python3 claude/tools/sre/save_state_preflight_checker.py --check
 # 7. Security validation (Phase 113 - MANDATORY)
 python3 claude/tools/sre/save_state_security_checker.py --verbose
 
-# 8. Database sync (Phase 179 - if phase updates)
-python3 claude/tools/sre/system_state_etl.py --recent 10
+# 8. ~~Database sync~~ ⭐ AUTOMATED (Phase 192 - LaunchAgent daily 2 AM)
+#    Manual trigger only if immediate sync needed:
+#    python3 claude/tools/sre/system_state_etl.py --recent 10
 
-# 9. Capabilities scan (Phase 179 - if tool/agent changes)
-python3 claude/tools/sre/capabilities_registry.py scan
+# 9. ~~Capabilities scan~~ ⭐ AUTOMATED (Phase 192 - 100% coverage)
+#    Manual rescan only if validation needed:
+#    python3 claude/tools/sre/capabilities_registry.py scan
 
 # 10. Git commit with full details & push
+
+# 11. Agent session review (for Tier 3 only - see Phase 5.3)
 ```
 
 ---
