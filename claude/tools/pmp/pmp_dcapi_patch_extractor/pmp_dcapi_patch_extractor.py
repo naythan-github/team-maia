@@ -28,6 +28,9 @@ from typing import Optional, Dict, List, Tuple
 from datetime import datetime
 from enum import Enum
 
+# Add parent directory to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 try:
     from claude.tools.pmp.pmp_oauth_manager import PMPOAuthManager
 except ImportError:
@@ -220,6 +223,23 @@ class PMPDCAPIExtractor:
             )
         """)
 
+        # Create dedicated DCAPI patch mappings table
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS dcapi_patch_mappings (
+                mapping_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                resource_id TEXT NOT NULL,
+                patch_id TEXT NOT NULL,
+                patchname TEXT,
+                severity TEXT,
+                patch_status TEXT,
+                bulletinid TEXT,
+                vendor_name TEXT,
+                installed_time TEXT,
+                extracted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(resource_id, patch_id)
+            )
+        """)
+
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_dcapi_checkpoints_snapshot
             ON dcapi_extraction_checkpoints(snapshot_id)
@@ -228,6 +248,16 @@ class PMPDCAPIExtractor:
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_dcapi_gaps_snapshot
             ON dcapi_extraction_gaps(snapshot_id)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_dcapi_mappings_resource
+            ON dcapi_patch_mappings(resource_id)
+        """)
+
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_dcapi_mappings_patch
+            ON dcapi_patch_mappings(patch_id)
         """)
 
         conn.commit()
@@ -249,7 +279,7 @@ class PMPDCAPIExtractor:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        cursor.execute("SELECT COUNT(DISTINCT resource_id) FROM patch_system_mapping")
+        cursor.execute("SELECT COUNT(DISTINCT resource_id) FROM dcapi_patch_mappings")
         systems_count = cursor.fetchone()[0]
 
         coverage_pct = (systems_count / TOTAL_SYSTEMS) * 100
@@ -491,7 +521,7 @@ class PMPDCAPIExtractor:
         # Check token age and refresh if needed
         self.check_token_age_and_refresh()
 
-        url = "https://patch.manageengine.com.au/dcapi/threats/systemreport/patches"
+        endpoint = "/dcapi/threats/systemreport/patches"
         params = {
             'page': page,
             'pageLimit': SYSTEMS_PER_PAGE
@@ -499,7 +529,7 @@ class PMPDCAPIExtractor:
 
         for attempt in range(1, MAX_RETRY_ATTEMPTS + 1):
             try:
-                response = self.oauth_manager.api_request('GET', url, params=params)
+                response = self.oauth_manager.api_request('GET', endpoint, params=params)
 
                 # Parse response
                 data = response.json()
@@ -584,7 +614,7 @@ class PMPDCAPIExtractor:
             try:
                 for patch in patches:
                     cursor.execute("""
-                        INSERT OR REPLACE INTO patch_system_mapping (
+                        INSERT OR REPLACE INTO dcapi_patch_mappings (
                             resource_id, patch_id, patchname, severity,
                             patch_status, bulletinid, vendor_name, installed_time
                         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)

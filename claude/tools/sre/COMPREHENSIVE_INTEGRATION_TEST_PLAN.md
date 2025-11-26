@@ -737,7 +737,42 @@ git status --porcelain | wc -l  # Should be 0 for clean state
 
 ---
 
-### 5.3 Hook System Validation
+### 5.3 Quality Auditing & Validation
+
+**Phase Context**: Phase 196 (Phantom tool audit separation)
+
+**Tests**:
+```bash
+# T5.3.1 - Phantom Tool Audit
+python3 claude/tools/sre/phantom_tool_auditor.py --summary
+
+# T5.3.2 - Save State Preflight Check
+python3 claude/tools/sre/save_state_preflight_checker.py --check
+
+# T5.3.3 - Phantom Audit Detailed Report (on-demand)
+python3 claude/tools/sre/phantom_tool_auditor.py --report ~/work_projects/phantom_audit.json
+```
+
+**Expected Results**:
+- Phantom audit: 210 references (82 unique), WARN severity acceptable
+- Preflight check: All critical checks pass (git, permissions, disk space)
+- Detailed report: JSON with phantom details and remediation suggestions
+
+**Validation**:
+- [ ] Phantom audit completes (WARN/INFO acceptable, ALERT requires cleanup)
+- [ ] Preflight checker passes critical gates
+- [ ] No phantom check in preflight (moved to separate tool)
+- [ ] Phantom auditor discovers 1000+ valid tools
+
+**Design Notes**:
+- Phantom check removed from preflight (not a critical save_state blocker)
+- Dedicated auditor with smart filtering (skips template placeholders)
+- Expanded search paths: claude/{tools,hooks,commands,agents}
+- Execution: On-demand, monthly scheduled, optional in CI
+
+---
+
+### 5.4 Hook System Validation
 
 **Phase Context**: Phase 134 (Agent persistence), Phase 193 (Context enforcement)
 

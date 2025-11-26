@@ -20,8 +20,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-# Maia root directory
-MAIA_ROOT = Path(__file__).parent.parent.parent.absolute()
+# Maia root directory (4 levels up from claude/tools/sre/run_comprehensive_tests.py)
+MAIA_ROOT = Path(__file__).parent.parent.parent.parent.absolute()
 
 class TestRunner:
     """Orchestrates comprehensive integration test execution"""
@@ -314,6 +314,14 @@ print('✅ T3.2.1: PMP OAuth manager imports')
             "T5.2.4 - Path Sync Validation"
         )
         results["tests"].append({"id": "T5.2.4", "name": "Path Sync", "passed": success})
+
+        # T5.3.1 - Phantom Tool Audit
+        success, output = self.run_command(
+            'python3 claude/tools/sre/phantom_tool_auditor.py --summary',
+            "T5.3.1 - Phantom Tool Audit (Quality Check)",
+            timeout=60
+        )
+        results["tests"].append({"id": "T5.3.1", "name": "Phantom Tool Audit", "passed": success})
 
         return results
 

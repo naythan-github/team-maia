@@ -222,9 +222,9 @@ class SaveStatePreFlightChecker:
         print("\n💾 Checking Disk Space...")
         self.check_disk_space()
 
-        # Phantom tool check
-        print("\n👻 Checking for Phantom Tool References...")
-        self.check_phantom_tools_in_commands()
+        # Phantom tool check - REMOVED (moved to dedicated audit tool)
+        # Use: python3 claude/tools/sre/phantom_tool_auditor.py
+        # Reason: Not a critical blocker for save_state, better as periodic quality audit
 
         # Calculate results
         total_checks = len(self.checks_passed) + len(self.checks_failed)
