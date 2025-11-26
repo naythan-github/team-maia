@@ -85,35 +85,129 @@ MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift
 4. Confirm test coverage matches requirements
 5. No implementation until all requirement tests exist
 
+### Phase 3.5: Integration Test Design ⭐ **NEW - MANDATORY**
+**CRITICAL**: Design integration tests BEFORE implementation
+
+Integration tests verify cross-component interactions, not just isolated unit behavior. These tests catch the gaps that unit tests miss (N+1 queries, circuit breaker failures, missing observability).
+
+**Required Test Categories**:
+
+1. **Cross-Component Integration Tests** (MANDATORY)
+   - Test interactions between modules/services
+   - Verify data flow across boundaries
+   - Validate error propagation
+   - Example: `test_end_to_end_workflow()`, `test_database_to_api_integration()`
+
+2. **External Integration Tests** (if applicable)
+   - Test interactions with external services (APIs, databases, queues)
+   - Use test doubles/mocks for external dependencies
+   - Validate contract adherence
+   - Example: `test_api_client_handles_rate_limits()`, `test_database_connection_pooling()`
+
+3. **State Management Tests** (if applicable)
+   - Test data persistence across operations
+   - Validate transaction boundaries
+   - Test rollback scenarios
+   - Example: `test_transaction_rollback_on_error()`, `test_session_state_persistence()`
+
+**SRE Collaboration** (Phase 3.5):
+- SRE Agent reviews integration test design
+- Validates failure mode coverage
+- Ensures observability test coverage
+- Approves integration test plan
+
+**Gate**: No implementation until integration test plan approved
+
 ### Phase 4: Implementation
 1. Standard TDD red-green-refactor cycle
 2. Make tests pass one at a time
 3. Regular verification against requirements.md
 4. Update documentation if requirements evolve
 
-### Phase 5: Registration & Sync ⭐ **PHASE 179 - MANDATORY**
-**CRITICAL**: New tools/agents must be registered in databases
+### Phase 5: Integration Test Execution & Registration ⭐ **ENHANCED - MANDATORY**
+**CRITICAL**: Execute integration tests and register new capabilities
 
-1. **Capabilities Scan** (if new tools/agents created)
+1. **Unit Test Verification** (existing)
+   - All Phase 3 requirement tests passing
+   - Code coverage >80%
+
+2. **Integration Test Execution** ⭐ **NEW**
+   - Run Phase 3.5 integration tests
+   - Verify cross-component interactions
+   - Validate state management
+   - **Gate**: All integration tests must pass
+
+3. **Capabilities Scan** (if new tools/agents created)
    ```bash
    python3 claude/tools/sre/capabilities_registry.py scan
    ```
    - Registers new tools/agents in capabilities.db
    - Makes them discoverable by smart context loader
 
-2. **SYSTEM_STATE Update** (if significant feature)
+4. **SYSTEM_STATE Update** (if significant feature)
    - Add phase entry documenting the new capability
    - Run ETL to sync:
    ```bash
    python3 claude/tools/sre/system_state_etl.py --recent 10
    ```
 
-3. **Save State Handoff**
+5. **Save State Handoff**
    - If TDD project complete, execute save_state workflow
    - Ensures all databases synchronized
    - Commits with proper phase documentation
 
-**Gate**: New capabilities are NOT production-ready until registered in databases
+**Gate**: New capabilities NOT production-ready until:
+- ✅ Unit tests passing
+- ✅ Integration tests passing ⭐ **NEW**
+- ✅ Databases synchronized
+
+### Phase 6: Post-Implementation Validation ⭐ **NEW - MANDATORY**
+**CRITICAL**: Production readiness validation before declaring complete
+
+This phase catches production issues that unit/integration tests miss (performance degradation, circuit breaker failures, missing observability).
+
+**Required Validation Categories**:
+
+1. **Performance Testing** (MANDATORY)
+   - Load test at 10x expected traffic
+   - Validate P95/P99 latency meets SLOs
+   - Resource utilization acceptable (<70% CPU/memory)
+   - Query count assertions (prevent N+1)
+   - Example: `test_api_latency_under_10x_load()`, `test_max_query_count()`
+
+2. **Resilience Testing** (MANDATORY)
+   - Circuit breaker validation (dependency failures)
+   - Fallback behavior verification
+   - Graceful degradation tests
+   - Retry logic with exponential backoff
+   - Example: `test_circuit_breaker_opens_on_errors()`, `test_fallback_to_cache()`
+
+3. **Observability Validation** (MANDATORY)
+   - Structured logs emitted for key operations
+   - Metrics exported (RED: Rate, Errors, Duration)
+   - Trace context propagated
+   - Dashboard smoke test
+   - Example: `test_logs_contain_request_id()`, `test_metrics_exported()`
+
+4. **Smoke Testing** (MANDATORY)
+   - End-to-end happy path in production-like environment
+   - Health check endpoints responding
+   - Critical user journeys functional
+   - Example: `test_smoke_create_user_e2e()`, `test_health_check_returns_200()`
+
+5. **Contract Testing** (if public API)
+   - API response schemas validated
+   - Backward compatibility verified
+   - OpenAPI spec generation/validation
+   - Example: `test_api_matches_published_schema()`, `test_backward_compatibility()`
+
+**SRE Production Readiness Review** (Phase 6):
+- SRE Agent validates all 5 validation categories
+- Reviews performance test results against SLOs
+- Approves resilience and observability implementation
+- Signs off on production deployment
+
+**Gate**: Production deployment NOT approved until all validation passing
 
 ## 🤖 **AGENT PAIRING PROTOCOL** 🤖
 
@@ -302,6 +396,11 @@ claude/data/project_status/active/
 - **Incremental saves completed** (progress.md updated after each phase)
 - **Capabilities registered** (new tools/agents in capabilities.db) ⭐ **PHASE 179**
 - **Databases synchronized** (system_state.db + capabilities.db current) ⭐ **PHASE 179**
+- **Integration tests passing** (cross-component, external, state management) ⭐ **PHASE 193**
+- **Performance validated** (P95/P99 latency meets SLOs, no N+1 queries) ⭐ **PHASE 193**
+- **Resilience tested** (circuit breakers, fallbacks, graceful degradation) ⭐ **PHASE 193**
+- **Observability confirmed** (logs/metrics/traces emitted, dashboard functional) ⭐ **PHASE 193**
+- **Production readiness approved** (SRE sign-off on all validation categories) ⭐ **PHASE 193**
 
 ## Quality Gates
 1. **Requirements Gate**: No tests until "requirements complete" confirmation
@@ -312,6 +411,9 @@ claude/data/project_status/active/
 6. **Agent Continuity Gate**: Agent identity confirmed at phase transitions
 7. **Registration Gate** ⭐ **PHASE 179**: New tools/agents registered in capabilities.db
 8. **Sync Gate** ⭐ **PHASE 179**: Databases synced before declaring production-ready
+9. **Integration Test Design Gate** ⭐ **PHASE 193**: Phase 3.5 integration tests designed and approved
+10. **Integration Execution Gate** ⭐ **PHASE 193**: Phase 5 integration tests passing
+11. **Production Readiness Gate** ⭐ **PHASE 193**: Phase 6 all validation passing (performance, resilience, observability, smoke, contracts)
 
 ## Risk Mitigation
 - Active probing during discovery phase
@@ -357,8 +459,9 @@ claude/data/project_status/active/
 ⚠️ **Config with logic**: If config changes affect behavior → TDD required
 
 ---
-*Last Updated: 2025-11-24*
+*Last Updated: 2025-11-26*
 *Status: MANDATORY Protocol - Enforced for ALL Development*
 *Agent Pairing: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)*
 *Agent Continuity: Explicit reload commands + incremental progress saving (ALWAYS)*
 *Database Sync: Phase 5 registration + sync mandatory before production (PHASE 179)*
+*Integration & Validation: Phase 3.5 integration tests + Phase 6 production validation (PHASE 193)*
