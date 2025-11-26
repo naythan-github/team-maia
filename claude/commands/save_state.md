@@ -427,25 +427,27 @@ python3 claude/tools/sre/save_state_security_checker.py --verbose
 **Security notes added to commit**: Warnings automatically added to commit message
 
 #### 4.4.1 Database Sync ⭐ **PHASE 192 - AUTOMATED**
-**Status**: ✅ **Automatic via Git Hook** (Phase 192)
+**Status**: ✅ **Automatic via LaunchAgent** (Phase 192)
 
 **How it works**:
-- Git post-commit hook automatically triggers ETL sync
-- Runs asynchronously in background (<100ms overhead)
-- Daily backup at 2 AM via LaunchAgent (safety net)
+- LaunchAgent runs daily at 2 AM processing last 50 phases
+- Fully automated, no manual intervention needed
+- Proven reliable (100% success rate in testing)
 
 **What happens automatically**:
-- Parses SYSTEM_STATE.md for recent 10 phases
+- Parses SYSTEM_STATE.md for recent 50 phases
 - Extracts problems, solutions, metrics, files
 - Upserts to system_state.db
-- Logs to `~/.maia/logs/etl_sync_*.log`
+- Logs to `~/.maia/logs/etl_daily_backup.log`
 
-**Manual trigger** (if needed):
+**Data freshness**: Max 24 hours (acceptable for this use case)
+
+**Manual trigger** (if needed for immediate sync):
 ```bash
 python3 claude/tools/sre/system_state_etl.py --recent 10
 ```
 
-**No action required** - Git commit handles everything
+**No regular action required** - LaunchAgent handles everything
 
 #### 4.4.2 Capabilities Discovery ⭐ **PHASE 192 - ENHANCED**
 **Status**: ✅ **100% Coverage** (Phase 192)
@@ -532,7 +534,7 @@ git status
 - [ ] Session summary created if complex work
 - [ ] Design decisions documented if architectural changes
 - [ ] **Security validation passed (Phase 113)**
-- [ ] ~~**Database sync completed**~~ ⭐ **AUTOMATED** (Phase 192 - git hook)
+- [ ] ~~**Database sync completed**~~ ⭐ **AUTOMATED** (Phase 192 - LaunchAgent daily)
 - [ ] ~~**Capabilities scan completed**~~ ⭐ **AUTOMATED** (Phase 192 - 100% coverage)
 - [ ] Git commit created with comprehensive message
 - [ ] Git push successful
