@@ -426,50 +426,46 @@ python3 claude/tools/sre/save_state_security_checker.py --verbose
 
 **Security notes added to commit**: Warnings automatically added to commit message
 
-#### 4.4.1 Database Sync (MANDATORY) ⭐ **PHASE 179 - DATA INTEGRITY**
-**Sync SYSTEM_STATE.md to database after any phase updates**:
+#### 4.4.1 Database Sync ⭐ **PHASE 192 - AUTOMATED**
+**Status**: ✅ **Automatic via Git Hook** (Phase 192)
+
+**How it works**:
+- Git post-commit hook automatically triggers ETL sync
+- Runs asynchronously in background (<100ms overhead)
+- Daily backup at 2 AM via LaunchAgent (safety net)
+
+**What happens automatically**:
+- Parses SYSTEM_STATE.md for recent 10 phases
+- Extracts problems, solutions, metrics, files
+- Upserts to system_state.db
+- Logs to `~/.maia/logs/etl_sync_*.log`
+
+**Manual trigger** (if needed):
 ```bash
 python3 claude/tools/sre/system_state_etl.py --recent 10
 ```
 
-**Why required**:
-- Queries read from database (500-2500x faster than markdown)
-- Without sync, new phases invisible to smart context loader
-- Prevents data drift between markdown and database
+**No action required** - Git commit handles everything
 
-**What it does**:
-- Parses SYSTEM_STATE.md for recent phases
-- Extracts problems, solutions, metrics, files
-- Upserts to system_state.db
+#### 4.4.2 Capabilities Discovery ⭐ **PHASE 192 - ENHANCED**
+**Status**: ✅ **100% Coverage** (Phase 192)
 
-**Exit codes**:
-- 0 = ✅ SUCCESS (phases synced)
-- 1 = ❌ PARSE ERROR (fix markdown format, re-run)
+**Improvements**:
+- Recursive scanning finds ALL tools (478/478 = 100%)
+- Discovery hint always visible in guaranteed minimum context
+- Confluence tools: 18/18 found (was 3/18)
+- Database optimized with WAL mode
 
-**Skip if**: No phase updates in this save state (e.g., only tool changes)
-
-#### 4.4.2 Capabilities Scan (MANDATORY) ⭐ **PHASE 179 - TOOL DISCOVERY**
-**Rescan tools/agents after any capability changes**:
+**Manual rescan** (optional):
 ```bash
 python3 claude/tools/sre/capabilities_registry.py scan
 ```
 
-**Why required**:
-- Smart context loader uses capabilities.db for tool discovery
-- Without rescan, new tools/agents invisible to Maia
-- Scans filesystem directly (more reliable than markdown)
+**When to rescan**:
+- After adding new tools/agents (optional - discovery is dynamic)
+- After major refactoring (to update categories/metadata)
 
-**What it does**:
-- Scans `claude/agents/*.md` for agents
-- Scans `claude/tools/**/*.py` for tools
-- Extracts purpose, category, keywords
-- Upserts to capabilities.db
-
-**Exit codes**:
-- 0 = ✅ SUCCESS (capabilities updated)
-- 1 = ❌ SCAN ERROR (check file permissions)
-
-**Skip if**: No tool/agent changes in this save state (e.g., only documentation)
+**No regular action required** - capabilities auto-discovered
 
 #### 4.5 Create Comprehensive Commit
 ```bash
@@ -536,8 +532,8 @@ git status
 - [ ] Session summary created if complex work
 - [ ] Design decisions documented if architectural changes
 - [ ] **Security validation passed (Phase 113)**
-- [ ] **Database sync completed (Phase 179)**
-- [ ] **Capabilities scan completed (Phase 179)** ⭐ **NEW**
+- [ ] ~~**Database sync completed**~~ ⭐ **AUTOMATED** (Phase 192 - git hook)
+- [ ] ~~**Capabilities scan completed**~~ ⭐ **AUTOMATED** (Phase 192 - 100% coverage)
 - [ ] Git commit created with comprehensive message
 - [ ] Git push successful
 - [ ] Anti-sprawl validation passed
