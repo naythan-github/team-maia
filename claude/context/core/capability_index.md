@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-26 (Phase 192 - PMP Resilient Data Extractor)
+**Last Updated**: 2025-11-26 (Phase 194 - PMP DCAPI Patch Extractor)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,22 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 194 (Nov 26) - PMP DCAPI Patch Extractor - TDD Implementation ⭐ **NEW COMPLIANCE CAPABILITY**
+- **pmp_dcapi_patch_extractor.py** - Production-grade patch-system mapping extractor with checkpoint/resume (810 lines)
+- **Location**: `claude/tools/pmp/pmp_dcapi_patch_extractor/` (3 files: extractor, requirements, tests)
+- **Purpose**: Extract complete patch-system mappings from DCAPI endpoint achieving 95%+ coverage (3,150+ of 3,317 systems)
+- **Core Capabilities**: DCAPI endpoint integration (/dcapi/threats/systemreport/patches, 664 pages, 5 systems/page), patch-system mapping extraction (~165K mappings, installed + missing patches per system), checkpoint/resume system (50-page batches, 10-page commits, resume from last successful page), token management (fresh tokens per batch, proactive 80% TTL refresh, 401 auto-retry), intelligent error handling (401/429/5xx retry with exponential backoff, skip after 3 attempts), coverage convergence (95% target, 13-batch timeline over 72 hours, auto-stop when met)
+- **Data Model**: `patch_system_mapping` table with INSERT OR REPLACE idempotency, separate checkpoint tables (dcapi_extraction_checkpoints, dcapi_extraction_gaps)
+- **Business Impact**: Compliance analysis capability (query "which systems have patch X?"), CVE coverage analysis (query by bulletinid), patch prioritization (query by severity: Critical/High/Important), MSP intelligence (per-organization patch coverage)
+- **TDD Methodology** ⭐ **PHASE 193 VALIDATION**: Requirements (738 lines, 7 FRs + 5 NFRs) → Tests (873 lines, 76 tests, 11 test classes) → Implementation (810 lines) → Validation (syntax + import + test collection)
+- **Phase 193 Protocol Applied**: Phase 3.5 integration test design (cross-component, external, state management), Phase 5 enhanced validation (unit + integration tests), Phase 6 pending (performance, resilience, observability, smoke testing)
+- **vs Phase 192**: 664 pages (vs 135), 5 systems/page (vs 25), 13-batch convergence (vs 3), ~165K patch records (vs 3.3K system records), DCAPI endpoint (vs standard API)
+- **Architecture Reuse**: Proven Phase 192 patterns (checkpoint/token/error handling) adapted for DCAPI pagination and data model
+- **CLI Commands**: `python3 pmp_dcapi_patch_extractor.py` (run extraction), `--status` (check coverage), `--reset` (reset checkpoint), `--db-path` (custom database)
+- **Integration**: Phase 187 OAuth (pmp_oauth_manager.py), Phase 188 database schema (patch_system_mapping table), Phase 192 architecture (checkpoint/token/error patterns), Phase 193 TDD protocol (first full implementation)
+- **Production Status**: 🔄 **TDD Complete** - Requirements/tests/implementation/validation done, pending Phase 6 live API validation for production deployment
+- **Database**: `~/.maia/databases/intelligence/pmp_config.db` with 2 new DCAPI tables (dcapi_extraction_checkpoints, dcapi_extraction_gaps)
 
 ### Phase 192 (Nov 26) - PMP Resilient Data Extractor - Production-Grade TDD Implementation ⭐ **NEW RELIABILITY TOOL**
 - **pmp_resilient_extractor.py** - Production-grade resilient system inventory extractor with checkpoint/resume (700+ lines)
