@@ -91,8 +91,14 @@ class CapabilitiesRegistry:
         if schema_path.exists():
             conn.executescript(schema_path.read_text())
         else:
-            # Inline schema if file not found
+            # Inline schema if file not found (Phase 192: optimized)
             conn.executescript("""
+                PRAGMA journal_mode = WAL;
+                PRAGMA synchronous = NORMAL;
+                PRAGMA cache_size = -2000;
+                PRAGMA temp_store = MEMORY;
+                PRAGMA busy_timeout = 5000;
+
                 CREATE TABLE IF NOT EXISTS capabilities (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     name TEXT UNIQUE NOT NULL,
@@ -116,9 +122,17 @@ class CapabilitiesRegistry:
         conn.close()
 
     def _get_connection(self) -> sqlite3.Connection:
-        """Get database connection."""
+        """Get database connection with optimized settings (Phase 192)."""
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
+
+        # Apply performance PRAGMAs (Phase 192)
+        conn.execute("PRAGMA journal_mode = WAL")
+        conn.execute("PRAGMA synchronous = NORMAL")
+        conn.execute("PRAGMA cache_size = -2000")
+        conn.execute("PRAGMA temp_store = MEMORY")
+        conn.execute("PRAGMA busy_timeout = 5000")
+
         return conn
 
     def _infer_category(self, name: str, content: str) -> Optional[str]:
@@ -244,25 +258,11 @@ class CapabilitiesRegistry:
         all_caps.extend(agents)
         print(f"   Found {len(agents)} agents")
 
-        # Scan tools (multiple directories)
+        # Scan tools (recursive scan of all claude/tools/)
         print("\n🔧 Scanning tools...")
-        tool_dirs = [
-            "claude/tools/sre",
-            "claude/tools/security",
-            "claude/tools/monitoring",
-            "claude/tools/mcp",
-            "claude/tools/fobs",
-            "claude/tools/services",
-            "claude/tools/rag",
-        ]
-
-        total_tools = 0
-        for tool_dir in tool_dirs:
-            tools = self.scan_directory(tool_dir, "tool")
-            all_caps.extend(tools)
-            if tools:
-                print(f"   {tool_dir}: {len(tools)} tools")
-                total_tools += len(tools)
+        tools = self.scan_directory("claude/tools", "tool")
+        all_caps.extend(tools)
+        print(f"   Found {len(tools)} tools across all directories")
 
         # Insert into database
         print(f"\n💾 Inserting {len(all_caps)} capabilities into database...")

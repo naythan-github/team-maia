@@ -534,6 +534,9 @@ class SmartContextLoader:
         except Exception:
             output.append("Capabilities: Available (query for details)")
 
+        # Part 1.5: Discovery hint (Phase 192 - always visible)
+        output.append("🔍 **Discovery**: Use `load_capability_context(query='X')` for Phase 0 checks")
+
         # Part 2: Recent phase titles (safe)
         try:
             phase_titles = self._get_recent_phase_titles_safe(5)
