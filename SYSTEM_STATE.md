@@ -48836,3 +48836,7 @@ pytest PHASE_192_INTEGRATION_TESTS.py::TestSmartContextLoaderIntegration -v  # 3
 
 **Status**: Testing...
 
+
+
+**Status**: Testing with explicit cd to repo directory...
+
