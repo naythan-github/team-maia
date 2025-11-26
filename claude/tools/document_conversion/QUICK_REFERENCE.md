@@ -13,6 +13,16 @@
 python3 ~/git/maia/claude/tools/document_conversion/convert_md_to_docx.py YOUR_FILE.md
 ```
 
+### **Job Descriptions** ⭐ **NEW - Phase 177**
+
+```bash
+# Cleanup existing DOCX (fix bullets, formatting)
+python3 ~/git/maia/claude/tools/document_conversion/prepare_docx_for_markdown.py JD.docx
+
+# Convert cleaned markdown to styled DOCX
+python3 ~/git/maia/claude/tools/document_conversion/convert_md_to_docx.py JD.md
+```
+
 ### **PIR (Security Incidents Only)**
 
 ```bash
@@ -32,6 +42,11 @@ python3 ~/git/maia/claude/tools/security/pir_template_manager.py create \
 ```
 What are you doing?
 │
+├─ Job Description?
+│  ├─ Cleanup existing DOCX? → prepare_docx_for_markdown.py
+│  ├─ New from template? → job_description_template_lean.md
+│  └─ Convert to styled DOCX? → convert_md_to_docx.py
+│
 ├─ Converting markdown → DOCX?
 │  ├─ Is it a PIR?
 │  │  └─ Use: convert_pir_v3.py
@@ -48,6 +63,8 @@ What are you doing?
 
 | Template | Location | Use For |
 |----------|----------|---------|
+| **job_description_template_lean.md** ⭐ | `~/git/maia/claude/templates/` | New JDs (Orro standard) |
+| **job_description_template.md** | `~/git/maia/claude/templates/` | New JDs (comprehensive) |
 | **orro_corporate_reference.docx** | `~/git/maia/claude/tools/document_conversion/templates/` | ANY markdown conversion ⭐ |
 | **pir_orro_reference.docx** | `~/work_projects/pir_converter/` | PIR markdown conversion |
 | **pir_credential_stuffing_template.docx** | `~/git/maia/claude/tools/security/pir_templates/` | New PIR creation (Jinja2) |
