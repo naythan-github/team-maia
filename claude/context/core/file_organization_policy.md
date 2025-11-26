@@ -1,370 +1,212 @@
 # File Organization Policy
-
-**Purpose**: Define clear rules for where files should be saved to maintain UFC structure and prevent repository pollution.
-
-**Enforcement**: Mandatory core context loading + pre-commit hook + validation tool
+**Purpose**: Clear rules for file placement to maintain UFC structure
+**Enforcement**: Core context + pre-commit hook + validation tool
 
 ---
 
-## 🚨 DECISION TREE: Where Should I Save This File?
+## DECISION TREE
 
-### STEP 1: Is this a Maia system file or work output?
+### STEP 1: Maia System File or Work Output?
 
-**Maia system file** (helps Maia operate):
-- Tools, agents, commands that make Maia work
-- Maia operational databases (routing, tool usage, etc.)
-- System documentation and protocols
+**Maia system** (helps Maia operate): Tools, agents, commands, operational DBs, system docs
 → Continue to **STEP 2**
 
-**Work output** (produced BY Maia for operational work):
-- ServiceDesk analysis reports
-- Infrastructure team data
-- Client deliverables
-- Recruitment tests
-- One-off analysis files
+**Work output** (produced BY Maia): ServiceDesk analysis, infrastructure data, client deliverables, recruitment tests, one-off analysis
 → Save to `~/work_projects/{project_name}/`
 
-**Decision Criteria**: "Does this file help Maia operate, or is it output FROM Maia?"
+**Rule**: "Does this help Maia operate (KEEP) or is it output FROM Maia (MOVE)?"
 
 ---
 
-### STEP 2: What type of Maia file is it?
+### STEP 2: File Type Location
 
-| File Type | Location | Examples |
-|-----------|----------|----------|
-| **Agent Definition** | `claude/agents/` | `*_agent.md` |
-| **Tool Implementation** | `claude/tools/` | `*.py` scripts |
-| **Command** | `claude/commands/` | `*.md` slash commands |
-| **System Context** | `claude/context/core/` | System-wide policies, protocols |
-| **Domain Knowledge** | `claude/context/knowledge/{domain}/` | Reference materials |
-| **Operational Database** | `claude/data/databases/{category}/` | `*.db` files (see categories below) |
-| **RAG Database** | `claude/data/rag_databases/` | Vector stores, ChromaDB |
-| **Phase Documentation** | `claude/data/project_status/active/` | Phase docs <30 days old |
-| **Archived Phase Docs** | `claude/data/project_status/archive/{YYYY-QQ}/` | Phase docs >30 days old |
-| **Project Plans** | `claude/data/project_status/active/` | `{PROJECT}_PLAN.md`, `{PROJECT}_progress.md` |
-| **Test Files** | `tests/` | `test_*.py` |
+| Type | Location | Examples |
+|------|----------|----------|
+| Agent | `claude/agents/` | `*_agent.md` |
+| Tool | `claude/tools/` | `*.py` scripts |
+| Command | `claude/commands/` | `*.md` slash commands |
+| System Context | `claude/context/core/` | Policies, protocols |
+| Domain Knowledge | `claude/context/knowledge/{domain}/` | Reference materials |
+| Operational DB | `claude/data/databases/{category}/` | `*.db` (see categories) |
+| RAG DB | `claude/data/rag_databases/` | Vector stores, ChromaDB |
+| Phase Docs (active) | `claude/data/project_status/active/` | <30 days old |
+| Phase Docs (archive) | `claude/data/project_status/archive/{YYYY-QQ}/` | >30 days old |
+| Project Plans | `claude/data/project_status/active/` | `{PROJECT}_PLAN.md` |
+| Tests | `tests/` | `test_*.py` |
 
 ---
 
 ## FORBIDDEN LOCATIONS
 
-❌ **Repository Root** (only 6 core files + 3 operational directories allowed):
-- ✅ ALLOWED FILES: `CLAUDE.md`, `README.md`, `SYSTEM_STATE.md`, `SYSTEM_STATE_ARCHIVE.md`
-- ✅ ALLOWED DIRECTORIES: `${MAIA_ROOT}/` (path manager template), `get_path_manager().get_path('backup') /` (backup system), `scripts/` (production launcher scripts)
-- ❌ FORBIDDEN: All other files
+**Repository Root** (only 4 core files + 3 operational dirs):
+- ✅ `CLAUDE.md`, `README.md`, `SYSTEM_STATE.md`, `SYSTEM_STATE_ARCHIVE.md`
+- ✅ `${MAIA_ROOT}/`, `backup/`, `scripts/`
+- ❌ All other files
 
-❌ **claude/data/ root** (use subdirectories):
-- Use `databases/`, `project_status/`, `rag_databases/`, etc.
-- NOT directly in `claude/data/`
+**claude/data/ root**: Use subdirectories (databases/, project_status/, rag_databases/)
 
-❌ **Maia repo for work outputs**:
-- ServiceDesk analysis → `~/work_projects/servicedesk_analysis/`
-- Infrastructure team data → `~/work_projects/infrastructure_team/`
-- Recruitment tests → `~/work_projects/recruitment/`
+**Maia repo for work outputs**: ❌ NEVER - All work → `~/work_projects/`
 
 ---
 
 ## SIZE LIMITS
 
-**Rule**: Files >10 MB MUST be in `~/work_projects/` (NOT Maia repository)
-
-**Exception**: RAG databases in `claude/data/rag_databases/` (can exceed 10 MB)
-
-**Rationale**: Large operational datasets bloat repository and slow git operations.
+**Rule**: Files >10 MB → `~/work_projects/` (NOT Maia repo)
+**Exception**: RAG databases in `claude/data/rag_databases/`
 
 ---
 
 ## DATABASE ORGANIZATION
 
-**Location**: All `*.db` files → `claude/data/databases/{category}/`
-
-**Categories**:
+**Location**: All `*.db` → `claude/data/databases/{category}/`
 
 | Category | Purpose | Examples |
 |----------|---------|----------|
-| **intelligence/** | Intelligence gathering databases | `security_intelligence.db`, `rss_intelligence.db`, `servicedesk_operations_intelligence.db` |
-| **system/** | Maia system operational databases | `routing_decisions.db`, `tool_usage.db`, `documentation_enforcement.db`, `project_registry.db` |
-| **user/** | User-specific databases | `*_naythan.db` (autonomous_alerts, background_learning, etc.) |
-| **archive/** | Deprecated/experimental databases | Old databases no longer in use |
+| intelligence/ | Intelligence gathering | `security_intelligence.db`, `rss_intelligence.db` |
+| system/ | Maia system operations | `routing_decisions.db`, `tool_usage.db` |
+| user/ | User-specific | `*_naythan.db` (autonomous_alerts, etc.) |
+| archive/ | Deprecated/experimental | Old databases |
 
-**Exception**: `claude/data/rag_databases/` for vector databases (ChromaDB, etc.)
+**Exception**: `claude/data/rag_databases/` for vector databases
 
 ---
 
-## TDD PROJECT FILE ORGANIZATION
+## TDD PROJECT ORGANIZATION
 
-### Maia System Development (improving Maia itself)
-
-**Structure**:
+### Maia System Development
 ```
 claude/tools/{tool_name}/
-├── requirements.md          # TDD requirements document
-├── implementation.py        # Tool implementation
-└── README.md               # Tool documentation
+├── requirements.md
+├── implementation.py
+└── README.md
 
 tests/
-└── test_{tool_name}.py     # Test suite
+└── test_{tool_name}.py
 ```
 
-**Example**: Developing new analysis tool
-- `claude/tools/analysis_pattern_library/requirements.md`
-- `claude/tools/analysis_pattern_library/implementation.py`
-- `tests/test_analysis_pattern_library.py`
-
----
-
-### Work Projects (using Maia for operational work)
-
-**Structure**:
+### Work Projects
 ```
 ~/work_projects/{project}/
-├── requirements.md          # Project requirements
-├── implementation.py        # Implementation (if applicable)
-├── test_requirements.py     # Tests
-├── data/                    # Project data files
-└── README.md               # Project documentation
+├── requirements.md
+├── implementation.py (if applicable)
+├── test_requirements.py
+├── data/
+└── README.md
 ```
 
-**Example**: ServiceDesk analysis project
-- `~/work_projects/servicedesk_analysis/requirements.md`
-- `~/work_projects/servicedesk_analysis/data/servicedesk_tickets.db`
-- `~/work_projects/servicedesk_analysis/analysis_results/`
+---
+
+## PROJECT DOCUMENTATION
+
+| Type | When | Location | Purpose |
+|------|------|----------|---------|
+| requirements.md | ALWAYS for TDD | With implementation | Technical specs |
+| {PROJECT}_PLAN.md | Multi-phase (>3 phases) | `project_status/active/` | High-level plan |
+| {PROJECT}_progress.md | Multi-phase | `project_status/active/` | Progress tracking |
+| README.md | All tools/projects | With implementation | Usage guide |
 
 ---
 
-## PROJECT DOCUMENTATION TYPES
+## IMPLEMENTATION PLANS
 
-### When to create what:
-
-| File Type | When to Create | Location | Purpose |
-|-----------|---------------|----------|---------|
-| **requirements.md** | ALWAYS for TDD development | With implementation | Technical specs, acceptance criteria |
-| **{PROJECT}_PLAN.md** | Multi-phase projects (>3 phases) | `claude/data/project_status/active/` | High-level project plan, phases, timeline |
-| **{PROJECT}_progress.md** | Multi-phase projects | `claude/data/project_status/active/` | Incremental progress tracking |
-| **README.md** | All tools/projects | With implementation | Usage guide, documentation |
-
-### File Relationships:
-- **PROJECT_PLAN.md**: "What phases?" (strategic)
-- **requirements.md**: "What functionality?" (tactical)
-- **progress.md**: "What's done?" (tracking)
-
----
-
-## IMPLEMENTATION PLAN ORGANIZATION
-
-**When creating implementation plans**:
-- Multi-phase projects → `claude/data/project_status/active/{PROJECT}_PLAN.md`
-- Include agent reload commands (per Phase 150 protocol)
-- Include progress saving checkpoints
-- Reference requirements.md for technical details
+Multi-phase projects → `claude/data/project_status/active/{PROJECT}_PLAN.md`
 
 **Template**:
 ```markdown
 ## Phase 1: [Name]
-**AGENT**: Load SRE Principal Engineer Agent + [Domain Specialist]
-**Command**: "load sre_principal_engineer_agent"
-
+**AGENT**: Load [agents]
+**Command**: "load agent_name"
 [Phase steps...]
-
-**Save Progress**: Update {PROJECT}_progress.md with Phase 1 completion
+**Save Progress**: Update progress.md
 ```
 
 ---
 
 ## PHASE DOCUMENTATION ARCHIVAL
 
-**Active** (`claude/data/project_status/active/`):
-- Last 5 phases OR last 30 days (whichever is more)
-- Current project plans and progress trackers
-
-**Archive** (`claude/data/project_status/archive/{YYYY-QQ}/`):
-- Phase docs >30 days old
-- Completed project plans
-- Organized by quarter (2025-Q4, 2025-Q3, etc.)
-
-**Cleanup**: Delete phase docs >1 year old (history preserved in SYSTEM_STATE.md)
+**Active** (`project_status/active/`): Last 5 phases OR last 30 days
+**Archive** (`project_status/archive/{YYYY-QQ}/`): >30 days old
+**Cleanup**: Delete >1 year old (history in SYSTEM_STATE.md)
 
 ---
 
 ## VALIDATION WORKFLOW
 
-### Before Saving Any File:
-
-1. **Ask**: Is this Maia system file or work output?
-2. **Check**: What type of file is it? (agent, tool, database, etc.)
-3. **Verify**: Does size exceed 10 MB?
-4. **Validate**: Use `validate_file_location.py` tool (optional):
-   ```bash
-   python3 claude/tools/validate_file_location.py "path/to/file" "file purpose"
-   ```
-
-### Tool Output:
-```
-✅ Valid: Compliant with file organization policy
-   OR
-❌ Invalid: Work outputs should not be in Maia repository
-   Recommended: ~/work_projects/servicedesk_analysis/
-   Policy violated: Operational Data Separation Policy
-```
+### Before Saving:
+1. Maia system file or work output?
+2. What type? (agent, tool, database, etc.)
+3. Size >10 MB?
+4. Optional: `python3 claude/tools/validate_file_location.py "path" "purpose"`
 
 ---
 
-## ENFORCEMENT MECHANISMS
+## ENFORCEMENT LAYERS
 
-### Layer 1: Preventive (This Policy)
-- Loaded in mandatory core context (every session)
-- Provides clear guidance before files created
-
-### Layer 2: Runtime Validation (Optional)
-- `validate_file_location.py` tool
-- Agents can call to check before saving
-
-### Layer 3: Git-Time Enforcement (Pre-Commit Hook)
-- `claude/hooks/pre_commit_file_organization.py`
-- Blocks commits violating policy
-- Can bypass with `--no-verify` if urgent
-
-### Layer 4: Documentation Reference
-- `identity.md` Working Principle #19
-- Quick reference for file storage rules
+**Layer 1**: This policy (mandatory core context)
+**Layer 2**: `validate_file_location.py` tool (optional)
+**Layer 3**: Pre-commit hook (`pre_commit_file_organization.py`)
+**Layer 4**: `identity.md` Working Principle #19
 
 ---
 
 ## COMMON SCENARIOS
 
-### Scenario 1: Creating ServiceDesk Analysis
-**File**: `ServiceDesk_Tier_Analysis.xlsx`
-**Purpose**: "Analysis of L1/L2/L3 ticket distribution"
-**Decision**: Work output → `~/work_projects/servicedesk_analysis/`
-**NOT**: `claude/data/ServiceDesk_Tier_Analysis.xlsx` ❌
-
-### Scenario 2: Creating New Agent
-**File**: `data_analyst_agent.md`
-**Purpose**: "Maia agent for data analysis"
-**Decision**: Maia system file → `claude/agents/data_analyst_agent.md` ✅
-
-### Scenario 3: Creating Analysis Database
-**File**: `project_metrics.db`
-**Purpose**: "Database tracking project completion metrics"
-**Decision**: Maia system database → `claude/data/databases/system/project_metrics.db` ✅
-
-### Scenario 4: Creating Phase Documentation
-**File**: `PHASE_151_COMPLETE.md`
-**Purpose**: "Documentation of Phase 151 completion"
-**Decision**: Recent phase doc → `claude/data/project_status/active/PHASE_151_COMPLETE.md` ✅
-**After 30 days**: Move to `claude/data/project_status/archive/2025-Q4/`
-
-### Scenario 5: Creating Large Dataset
-**File**: `servicedesk_tickets.db` (154 MB)
-**Purpose**: "ServiceDesk ticket database for analysis"
-**Decision**: >10 MB work output → `~/work_projects/servicedesk_analysis/data/servicedesk_tickets.db` ✅
-**NOT**: `claude/data/servicedesk_tickets.db` ❌ (violates size limit)
+| Scenario | File | Decision | Location |
+|----------|------|----------|----------|
+| ServiceDesk Analysis | ServiceDesk_Tier_Analysis.xlsx | Work output | `~/work_projects/servicedesk_analysis/` |
+| New Agent | data_analyst_agent.md | Maia system | `claude/agents/` |
+| Analysis DB | project_metrics.db | Maia system | `claude/data/databases/system/` |
+| Phase Doc | PHASE_151_COMPLETE.md | Recent phase | `project_status/active/` (then archive) |
+| Large Dataset | servicedesk_tickets.db (154MB) | >10MB work output | `~/work_projects/.../data/` |
 
 ---
 
-## MIGRATION GUIDANCE
+## POST-REORGANIZATION SYNC ⭐ PHASE 169
 
-### If Files Currently Misplaced:
-
-**DO NOT move files immediately** - requires dependency analysis first.
-
-**Proper cleanup workflow**:
-1. Analyze dependencies (`grep -r "filename" claude/tools/ claude/hooks/`)
-2. Check SYSTEM_STATE.md for production system status
-3. Test incremental movement (1 file at a time)
-4. Consider symlink strategy (safer than direct movement)
-5. Validate all dependent systems after each move
-
-**See**: Anti-Breakage Protocol (`claude/context/core/anti_breakage_protocol.md`)
-
----
-
-## EXCEPTIONS
-
-### When size limit doesn't apply:
-- ✅ RAG databases in `claude/data/rag_databases/` (can exceed 10 MB)
-- ✅ Test fixtures in `tests/fixtures/` (if needed for testing)
-
-### When work output can stay in Maia repo:
-- ❌ **NEVER** - All work outputs → `~/work_projects/`
-
-### When root directory files allowed:
-- ✅ Only 4 core files: `CLAUDE.md`, `README.md`, `SYSTEM_STATE.md`, `SYSTEM_STATE_ARCHIVE.md`
-
----
-
-## POST-REORGANIZATION DATABASE SYNC ⭐ **PHASE 169**
-
-**After moving or reorganizing files, run these commands to keep databases current:**
-
+**After moving/reorganizing files:**
 ```bash
-# Step 1: Re-scan capabilities database (tools + agents registry)
-python3 claude/tools/sre/capabilities_registry.py scan
+# Re-scan capabilities + fix system_state.db paths
+python3 claude/tools/sre/path_sync.py sync
 
-# Step 2: Auto-fix paths in system_state.db (historical phases)
+# Or separately:
+python3 claude/tools/sre/capabilities_registry.py scan
 python3 claude/tools/sre/path_sync.py auto-fix
 
-# Or run both in one command:
-python3 claude/tools/sre/path_sync.py sync
-```
-
-**What each tool does:**
-- **capabilities_registry.py scan**: Rebuilds capabilities.db with current file locations (66 agents, 144 tools)
-- **path_sync.py auto-fix**: Detects moved files and updates path references in system_state.db narrative_text
-- **path_sync.py sync**: Runs both (capabilities scan + system_state path fix)
-
-**When to run:**
-- After any file reorganization or cleanup
-- After archiving old phase documentation
-- After moving tools between directories
-- After renaming agents or tools
-
-**Dry-run first** (optional):
-```bash
+# Dry-run first:
 python3 claude/tools/sre/path_sync.py auto-fix --dry-run
 ```
 
+**When to run**: After file reorganization, archiving, moving tools, renaming agents
+
 ---
 
-## PRE-COMMIT HOOK INSTALLATION
+## PRE-COMMIT HOOK
 
-**Automatic** (recommended):
+**Install**:
 ```bash
 ln -s ../../claude/hooks/pre_commit_file_organization.py .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 
-**Manual** (copy file):
-```bash
-cp claude/hooks/pre_commit_file_organization.py .git/hooks/pre-commit
-chmod +x .git/hooks/pre-commit
-```
-
-**Bypass** (if urgent):
-```bash
-git commit --no-verify
-```
+**Bypass** (if urgent): `git commit --no-verify`
 
 ---
 
 ## SUCCESS METRICS
 
-**Compliant Repository**:
-- Root directory: 4 core files + 3 operational directories (path manager + scripts/) only
-- claude/data/ root: <20 files (rest in subdirectories)
-- No files >10 MB (except rag_databases/)
+**Compliant**:
+- Root: 4 core files + 3 operational dirs only
+- claude/data/ root: <20 files
+- No files >10MB (except rag_databases/)
 - No work outputs in Maia repo
-- All databases in databases/{category}/
+- All DBs in databases/{category}/
 
-**Non-Compliant Repository**:
-- Root directory: 10+ files (excluding allowed operational directories)
+**Non-Compliant**:
+- Root: 10+ files
 - claude/data/ root: 200+ files
-- Multiple files >10 MB
+- Multiple files >10MB
 - Work outputs mixed with system files
-- Databases scattered throughout
 
 ---
 
-**Version**: 1.0
-**Last Updated**: 2025-11-07
-**Status**: Active - Mandatory Core Context Loading
+**Version**: 1.0 | **Updated**: 2025-11-07 | **Status**: Active - Mandatory Core Context
