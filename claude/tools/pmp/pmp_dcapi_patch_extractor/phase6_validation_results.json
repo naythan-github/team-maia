@@ -1,0 +1,72 @@
+{
+  "category_1_live_api": {
+    "connectivity": {
+      "status": "PASS",
+      "status_code": 200,
+      "response_time_ms": 3083
+    },
+    "pagination": {
+      "page_1": {
+        "status": "PASS",
+        "system_count": 30
+      },
+      "page_2": {
+        "status": "PASS",
+        "system_count": 30
+      },
+      "page_111": {
+        "status": "PASS",
+        "system_count": 17
+      }
+    },
+    "data_structure": {
+      "status": "PASS",
+      "system_count": 30,
+      "sample_patch_count": 28,
+      "fields_validated": [
+        "resource_id",
+        "patches",
+        "patch_id",
+        "patchname",
+        "severity",
+        "patch_status"
+      ]
+    }
+  },
+  "category_2_performance": {
+    "elapsed_time_s": 3.19,
+    "throughput_systems_per_sec": 0.0,
+    "memory_peak_mb": 2.34,
+    "time_target_pass": true,
+    "throughput_target_pass": false,
+    "memory_target_pass": true,
+    "overall_pass": false
+  },
+  "category_3_resilience": {
+    "checkpoint_system": {
+      "status": "PASS",
+      "table_exists": true,
+      "checkpoint_count": 0
+    },
+    "token_refresh": {
+      "status": "PASS",
+      "token1_length": 70,
+      "token2_length": 70
+    }
+  },
+  "category_4_observability": {
+    "status": "PASS",
+    "logger_exists": true,
+    "logger_name": "pmp_dcapi_patch_extractor"
+  },
+  "category_5_smoke": {
+    "database_integrity": {
+      "status": "PASS",
+      "tables": {
+        "patch_system_mapping": true,
+        "snapshots": true,
+        "dcapi_extraction_checkpoints": true
+      }
+    }
+  }
+}
