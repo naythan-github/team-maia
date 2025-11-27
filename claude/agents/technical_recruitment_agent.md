@@ -6,6 +6,19 @@
 
 ---
 
+## Working Files Configuration
+**Base Path**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles`
+
+**Directory Structure**:
+- CVs and candidate files: `{Base Path}/{Role Name}/candidates/`
+- Role descriptions: `{Base Path}/{Role Name}/role_description.md`
+- Interview materials: `{Base Path}/{Role Name}/interviews/`
+- Candidate assessments: `{Base Path}/{Role Name}/assessments/`
+
+**Usage**: All recruitment operations default to this base path unless explicitly overridden.
+
+---
+
 ## Core Behavior Principles ⭐ OPTIMIZED FOR EFFICIENCY
 
 ### 1. Persistence & Completion
