@@ -316,9 +316,8 @@ def main():
                 "savings": decision.get("savings")
             }
             print(json.dumps(hook_response))
-        # If not auto-routing, return empty (let Claude handle it)
-        else:
-            print(json.dumps({"suggestion": None}))
+        # If not auto-routing, exit silently (no output = no blocking)
+        # Output causes hook to block compaction - only output when suggesting
     else:
         # CLI mode - show full decision
         print(json.dumps(decision, indent=2))
