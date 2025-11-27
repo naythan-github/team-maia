@@ -194,7 +194,7 @@ class PMPOAuthManager:
             'redirect_uri': self.REDIRECT_URI
         }
 
-        response = requests.post(self.TOKEN_URL, data=data, timeout=30)
+        response = requests.post(self.TOKEN_URL, data=data, timeout=(10, 30))
 
         if response.status_code != 200:
             raise RuntimeError(
@@ -214,7 +214,7 @@ class PMPOAuthManager:
             'client_secret': self.client_secret
         }
 
-        response = requests.post(self.TOKEN_URL, data=data, timeout=30)
+        response = requests.post(self.TOKEN_URL, data=data, timeout=(10, 30))
 
         if response.status_code != 200:
             raise RuntimeError(
@@ -294,7 +294,7 @@ class PMPOAuthManager:
 
         try:
             response = requests.request(
-                method, url, headers=headers, timeout=30, **kwargs
+                method, url, headers=headers, timeout=(10, 30), **kwargs
             )
 
             # Handle common errors

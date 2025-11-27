@@ -11,6 +11,7 @@
     "/Users/naythandawe/Downloads/final_unique_descriptions.csv",
     "/Users/naythandawe/Downloads/Install Wavebox 10.140.38.2.dmg",
     "/Users/naythandawe/Downloads/August 2025 - Month End Report Moir Group-  Invoicing.eml",
+    "/Users/naythandawe/Downloads/.com.microsoft.VSCode.wOQCI9",
     "/Users/naythandawe/Downloads/JabraDirectSetup.dmg",
     "/Users/naythandawe/Downloads/TG Pro 2.98.dmg",
     "/Users/naythandawe/Downloads/Senior EndPoint Engineer - Orro Cloud (The Onset).docx",
@@ -370,6 +371,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/itglue-moir.7z",
       "timestamp": "2025-11-26T10:00:55.839032"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/.com.microsoft.VSCode.wOQCI9",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/.com.microsoft.VSCode.wOQCI9",
+      "timestamp": "2025-11-27T16:04:10.666888"
     }
   ]
 }

@@ -1,0 +1,2 @@
+{"timestamp": "2025-11-27T07:23:49.059111", "prompt_preview": "load the sre agent", "task_type": "unknown", "auto_routed": false, "model": "claude-sonnet", "savings_percent": 0.0, "reason": "Unknown task type - default to Claude Sonnet for safety"}
+{"timestamp": "2025-11-27T07:23:49.151134", "prompt_preview": "write a python function to parse CSV files", "task_type": "code_generation", "auto_routed": true, "model": "codellama:13b", "savings_percent": 99.3, "reason": "Code generation with CodeLlama 13B (specialized for code)"}
