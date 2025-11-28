@@ -32,7 +32,9 @@ class PMPOAuthManager:
     AUTH_URL = "https://accounts.zoho.com.au/oauth/v2/auth"
     TOKEN_URL = "https://accounts.zoho.com.au/oauth/v2/token"
     REDIRECT_URI = "http://localhost:8080/oauth2callback"
-    SCOPES = "PatchManagerPlusCloud.restapi.READ,PatchManagerPlusCloud.PatchMgmt.READ,PatchManagerPlusCloud.PatchMgmt.UPDATE"
+    # CORRECT scopes (matches colleague's working PowerShell script)
+    # Common.READ gives access to systems/computers (not SOM.READ!)
+    SCOPES = "PatchManagerPlusCloud.Common.READ,PatchManagerPlusCloud.PatchMgmt.READ"
 
     KEYCHAIN_ACCOUNT = "naythan.dawe@orro.group"
     TOKEN_FILE = Path.home() / ".maia/credentials/pmp_tokens.json.enc"

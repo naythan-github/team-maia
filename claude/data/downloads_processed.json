@@ -44,6 +44,7 @@
     "/Users/naythandawe/Downloads/Paul Roberts Minimal Talent Pack for Identity Engineer at Orro Group.pdf",
     "/Users/naythandawe/Downloads/linkedin_dashboard_demo.md",
     "/Users/naythandawe/Downloads/NordVPN.pkg",
+    "/Users/naythandawe/Downloads/Export-PatchManagerPlusPatches.ps1",
     "/Users/naythandawe/Downloads/Samuel Nou - Talent Pack for Endpoint Engineer at Orro Group.pdf",
     "/Users/naythandawe/Downloads/final_reviewed_unique_descriptions.csv",
     "/Users/naythandawe/Downloads/Unconfirmed 764983.crdownload",
@@ -377,6 +378,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/.com.microsoft.VSCode.wOQCI9",
       "timestamp": "2025-11-27T16:04:10.666888"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Export-PatchManagerPlusPatches.ps1",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Export-PatchManagerPlusPatches.ps1",
+      "timestamp": "2025-11-28T07:28:10.398872"
     }
   ]
 }
