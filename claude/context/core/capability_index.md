@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-27 (Phase 196 - PMP DCAPI Production Extraction Complete)
+**Last Updated**: 2025-11-28 (Phase 202 - Azure Local Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,20 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 202 (Nov 28) - Azure Local Specialist Agent - Hybrid Infrastructure Expertise ⭐ **NEW AGENT**
+- **Azure Local Specialist Agent** (`claude/agents/azure_local_specialist_agent.md`) - Production-ready v1.0 agent for Azure Local (formerly Azure Stack HCI) on-premises hyper-converged infrastructure
+- **Location**: `claude/agents/azure_local_specialist_agent.md` (222 lines)
+- **Purpose**: On-premises HCI cluster design, Arc-enabled hybrid operations, edge/ROBO deployments, disconnected operations, AI/ML workloads on validated hardware
+- **Core Capabilities**: Cluster design (2-16 nodes, Storage Spaces Direct, validated hardware selection from Dell/Lenovo/HPE OEM catalog), hybrid operations (Azure Arc integration, cloud witness, disconnected mode with USB witness), edge scenarios (ROBO deployments, low-bandwidth optimization, air-gapped facilities), AI/ML workloads (GPU clusters for inference, local AI search with RAG, AKS offline deployment)
+- **Key Commands**: `design_azure_local_cluster` (hardware sizing, network topology, storage config), `arc_integration_setup` (connect to Azure, enable Arc services), `edge_scenario_design` (ROBO/disconnected optimization), `migrate_to_azure_local` (P2V from legacy infrastructure)
+- **Hardware Platforms**: Dell AX-640/AX-740xd (Premier solutions), Lenovo ThinkAgile MX3530/MX1020 (GPU/edge validated), HPE ProLiant DL380 Gen11 (HCI-certified)
+- **Differentiation**: Specialized on-prem infrastructure focus vs existing Azure agents (Azure Architect = cloud-only, Azure Solutions Architect = surface-level hybrid mention), Microsoft rebrand (Azure Stack HCI → Azure Local Nov 2024) signals distinct product category
+- **Few-Shot Examples**: (1) Retail edge - 45 stores, 2-node clusters, disconnected ops, $810K budget; (2) Manufacturing AI - GPU cluster, air-gapped, 50TB models, 17% inference improvement
+- **Integration Points**: Azure Solutions Architect Agent (hybrid networking, ExpressRoute), SRE Principal Engineer Agent (monitoring, SLOs), Cloud Security Specialist Agent (Defender for Cloud)
+- **Production Status**: ✅ **READY** - v1.0 with all 5 v2.3 advanced patterns, validated against template (222 lines, 3 ADVANCED PATTERN, 1 test frequently, 2 self-reflection), registered in capabilities database (76 agents total)
+- **Usage**: Load when user asks about Azure Stack HCI, Azure Local, on-prem hyper-converged infrastructure, edge deployments, ROBO scenarios, disconnected operations, or hybrid cloud with hardware focus
+- **Research Sources**: Microsoft Learn Azure Local rebrand docs (Nov 2024), features include full-stack bare metal, 100+ validated hardware platforms, disconnected operations (preview), AI/ML workloads with local AI search
 
 ### Phase 196 (Nov 27) - PMP DCAPI Production Extraction Complete - Schema Fix + Gap Analysis ⭐ **PRODUCTION SUCCESS**
 - **Achievement**: Full production extraction of PMP DCAPI patch data (111 pages, 2,417 systems, 89,571 mappings) with dedicated table schema fix + comprehensive gap analysis
