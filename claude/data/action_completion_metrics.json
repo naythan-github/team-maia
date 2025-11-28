@@ -3,23 +3,6 @@
   "weekly_completion": [
     {
       "week_of": "2025-11-26",
-      "synced_at": "2025-11-26T13:45:09.594151",
-      "vtt": {
-        "completed": 0,
-        "pending": 3,
-        "overdue": 2
-      },
-      "confluence": {
-        "completed": 0,
-        "pending": 0,
-        "overdue": 0
-      },
-      "total_completed": 0,
-      "total_pending": 3,
-      "total_overdue": 2
-    },
-    {
-      "week_of": "2025-11-26",
       "synced_at": "2025-11-26T17:45:17.617000",
       "vtt": {
         "completed": 0,
@@ -204,23 +187,26 @@
       "total_completed": 0,
       "total_pending": 3,
       "total_overdue": 2
+    },
+    {
+      "week_of": "2025-11-28",
+      "synced_at": "2025-11-28T15:55:21.395769",
+      "vtt": {
+        "completed": 0,
+        "pending": 3,
+        "overdue": 2
+      },
+      "confluence": {
+        "completed": 0,
+        "pending": 0,
+        "overdue": 0
+      },
+      "total_completed": 0,
+      "total_pending": 3,
+      "total_overdue": 2
     }
   ],
   "overdue_alerts": [
-    {
-      "action": "Get services team to audit Intune deployments via Lighthouse",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-11-24T08:09:42.504686"
-    },
-    {
-      "action": "Provide Intune deployment status report",
-      "due_date": "2025-10-10T19:28:29.629Z",
-      "owner": "Naythan",
-      "source": "vtt",
-      "checked_at": "2025-11-24T08:09:42.504854"
-    },
     {
       "action": "Get services team to audit Intune deployments via Lighthouse",
       "due_date": "2025-10-10T19:28:29.629Z",
@@ -556,6 +542,20 @@
       "owner": "Naythan",
       "source": "vtt",
       "checked_at": "2025-11-28T11:55:09.272982"
+    },
+    {
+      "action": "Get services team to audit Intune deployments via Lighthouse",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-11-28T15:55:16.512061"
+    },
+    {
+      "action": "Provide Intune deployment status report",
+      "due_date": "2025-10-10T19:28:29.629Z",
+      "owner": "Naythan",
+      "source": "vtt",
+      "checked_at": "2025-11-28T15:55:16.512330"
     }
   ]
 }

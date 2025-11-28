@@ -182,11 +182,25 @@ class PMPSystemReportExtractor:
                 response = requests.get(url, headers=headers, params=request_params, timeout=(10, 30))
 
                 if response.status_code == 200:
-                    data = response.json()
-                    # Extract message_response wrapper if present
-                    if 'message_response' in data:
-                        return data['message_response']
-                    return data
+                    # Check for HTML throttling page (not JSON)
+                    content = response.text
+                    if content.strip().startswith('<') or '<!DOCTYPE' in content or '<html' in content.lower():
+                        # API returned HTML instead of JSON - likely throttled
+                        print(f"   ⚠️  Received HTML response (throttling). Waiting 60s...")
+                        time.sleep(60)
+                        continue
+
+                    try:
+                        data = response.json()
+                        # Extract message_response wrapper if present
+                        if 'message_response' in data:
+                            return data['message_response']
+                        return data
+                    except ValueError as e:
+                        # JSON parse error - likely empty or malformed response
+                        print(f"   ⚠️  JSON parse error (throttling?). Waiting 60s...")
+                        time.sleep(60)
+                        continue
                 elif response.status_code == 429:
                     # Rate limited - wait and retry
                     retry_after = int(response.headers.get('Retry-After', 60))
@@ -335,7 +349,7 @@ class PMPSystemReportExtractor:
                 break
 
             page += 1
-            time.sleep(0.1)  # Rate limiting
+            time.sleep(0.25)  # Rate limiting between pages (PowerShell: 250ms)
 
         return all_patches
 
@@ -431,7 +445,7 @@ class PMPSystemReportExtractor:
             if idx % 10 == 0:
                 print(f"      Progress: {systems_processed}/{len(systems)} systems, {total_patches:,} patches")
 
-            time.sleep(0.25)  # Rate limiting
+            time.sleep(1.0)  # Rate limiting between systems (PowerShell: 1000ms)
 
         # Complete extraction
         error_summary = '\n'.join(errors) if errors else None
