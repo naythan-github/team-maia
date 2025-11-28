@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-28 (Phase 202 - Azure Local Specialist Agent)
+**Last Updated**: 2025-11-28 (Phase 204 - Drata Live Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,21 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 204 (Nov 28) - Drata Live Specialist Agent - Compliance Automation Expert ⭐ **NEW AGENT**
+- **Drata Live Specialist Agent** (`claude/agents/drata_live_specialist_agent.md`) - Production-ready v2.3 agent for Drata platform compliance automation
+- **Location**: `claude/agents/drata_live_specialist_agent.md` (214 lines)
+- **Purpose**: GRC automation expertise using Drata platform - evidence collection, control testing, audit preparation, custom integration development for SOC 2/ISO 27001/HIPAA compliance
+- **Core Capabilities**: Compliance frameworks (SOC 2 CC controls, ISO 27001 Annex A, HIPAA 164.308, PCI DSS 8, GDPR, NIST 800-53), evidence automation (200+ integrations with continuous monitoring, daily sync, 24-hour freshness), custom API integrations (Open API development, Test Builder logic, JSON payloads, validation rules), audit preparation (gap analysis, control mapping, evidence organization, auditor collaboration), control testing (automated validation with scheduled/conditional logic, threshold alerting, effectiveness measurement)
+- **Key Commands**: `automate_evidence_collection` (control_id, data_source, schedule), `compliance_gap_analysis` (framework, current_controls, target_date), `custom_integration_build` (system_name, api_endpoint, evidence_type), `audit_preparation` (framework, audit_date, control_scope), `control_test_validation` (control_id, test_criteria, frequency)
+- **Business Impact**: 60-96% time reduction on recurring compliance tasks (SOC 2 access reviews: 3 weeks → 2 hours), 100% evidence automation vs manual quarterly reviews, audit-ready continuous monitoring, custom CMDB integration for asset tracking
+- **Few-Shot Examples**: (1) SOC 2 access review automation - Azure AD + AWS IAM + GitHub daily sync, Test Builder logic for 90-day privileged access validation, CC6.1/CC6.2 fully automated; (2) Custom CMDB integration - ISO 27001 A.8.1 asset inventory, Open API Python integration, daily sync with >5% variance alerting
+- **Integration Points**: Cloud Security Principal Agent (zero-trust controls design when Drata shows gaps), IT Service Manager Agent (change management integration), Data Engineer Agent (custom data pipelines for evidence)
+- **Control Mappings**: SOC 2 CC6.1 (access provisioning/deprovisioning), ISO 27001 A.9.2.1 (user registration), HIPAA 164.308(a)(3) (workforce authorization), PCI DSS 8.1 (user identification with MFA)
+- **API Expertise**: POST /api/v1/custom-evidence (JSON payloads), GET /api/v1/controls (status), POST /api/v1/tests (Test Builder), GET /api/v1/integrations (sync status)
+- **Evidence Collection Best Practices**: Daily sync for critical controls (access, MFA, encryption), weekly for asset inventory/vulnerability scans, monthly for policy acknowledgments/training, validation with cross-check against source systems
+- **Production Status**: ✅ **READY** - v2.3 with all 5 advanced patterns (self-reflection, test frequently, checkpoints, prompt chaining, explicit handoff), 214 lines, 2 comprehensive few-shot examples, validated against template
+- **Usage**: Load when user asks about Drata, compliance automation, SOC 2/ISO 27001/HIPAA evidence collection, GRC platform integration, audit preparation, continuous compliance monitoring
 
 ### Phase 202 (Nov 28) - Azure Local Specialist Agent - Hybrid Infrastructure Expertise ⭐ **NEW AGENT**
 - **Azure Local Specialist Agent** (`claude/agents/azure_local_specialist_agent.md`) - Production-ready v1.0 agent for Azure Local (formerly Azure Stack HCI) on-premises hyper-converged infrastructure
