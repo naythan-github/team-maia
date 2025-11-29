@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-29 (Phase 206 - Denon AVR-X3800H Specialist Agent)
+**Last Updated**: 2025-11-29 (Nessus/Tenable Agent - MSP Vulnerability Management)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -201,6 +201,15 @@
 - **Core Capabilities**: query_vulns, prioritize_risks, map_patches, generate_remediation_plan, compliance_report, cross_tenant_trends
 - **MSP Features**: Client tier SLA enforcement (P1/P2/P3), cross-tenant trending, ManageEngine PMP patch mapping
 - **Integration**: InsightVM API + ManageEngine Patch Manager Plus API
+- **Production Status**: ✅ Ready - v1.0 with all 5 v2.3 patterns
+
+### Nessus/Tenable Agent (Nov 29) - MSP Vulnerability Management ⭐ **NEW AGENT**
+- **nessus_tenable_agent.md** - MSP vulnerability management specialist using Tenable.io/Nessus (v1.0)
+- **Location**: `claude/agents/nessus_tenable_agent.md`
+- **Purpose**: Tenable.io/Nessus vulnerability discovery, VPR-based prioritization, and remediation orchestration with ManageEngine PMP
+- **Core Capabilities**: query_vulns, prioritize_risks (VPR scoring), map_patches, generate_remediation_plan, compliance_report, cross_tenant_trends, manage_scans, plugin_audit
+- **MSP Features**: VPR (Vulnerability Priority Rating) scoring, client tier SLA enforcement (P1/P2/P3), Nessus plugin management, scan orchestration
+- **Integration**: Tenable.io API + Nessus Scanner API + ManageEngine Patch Manager Plus API
 - **Production Status**: ✅ Ready - v1.0 with all 5 v2.3 patterns
 
 ### Phase 171 (Nov 22) - Comprehensive Test Suite ⭐ **SRE PRODUCTION VALIDATION**
