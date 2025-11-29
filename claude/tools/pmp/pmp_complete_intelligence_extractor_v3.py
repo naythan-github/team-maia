@@ -271,6 +271,7 @@ class PMPCompleteIntelligenceExtractor:
     def fetch_json(self, endpoint: str, page: Optional[int] = None, max_retries: int = 3) -> Optional[Dict]:
         """
         Fetch JSON data from API endpoint with retry logic.
+        Copied from DCAPI extractor reliability patterns.
 
         Args:
             endpoint: API endpoint path
@@ -285,7 +286,7 @@ class PMPCompleteIntelligenceExtractor:
         for attempt in range(1, max_retries + 1):
             try:
                 token = self.oauth_manager.get_valid_token()
-                headers = {"Authorization": f"Bearer {token}"}
+                headers = {"Authorization": f"Zoho-oauthtoken {token}"}  # FIX: Use Zoho format, not Bearer!
                 url = f"{self.base_url}{endpoint}"
 
                 # Only add page param if specified (API rejects pageLimit!)
@@ -294,11 +295,25 @@ class PMPCompleteIntelligenceExtractor:
                 response = requests.get(url, headers=headers, params=params, timeout=(10, 30))
 
                 if response.status_code == 200:
-                    data = response.json()
-                    # Extract message_response wrapper
-                    if 'message_response' in data:
-                        return data['message_response']
-                    return data
+                    # Check for HTML throttling page (not JSON)
+                    content = response.text
+                    if content.strip().startswith('<') or '<!DOCTYPE' in content or '<html' in content.lower():
+                        # API returned HTML instead of JSON - likely throttled
+                        print(f"   ⚠️  Received HTML response (throttling). Waiting 60s...")
+                        time.sleep(60)
+                        continue
+
+                    try:
+                        data = response.json()
+                        # Extract message_response wrapper
+                        if 'message_response' in data:
+                            return data['message_response']
+                        return data
+                    except ValueError as e:
+                        # JSON parse error - likely empty or malformed response
+                        print(f"   ⚠️  JSON parse error (throttling?). Waiting 60s...")
+                        time.sleep(60)
+                        continue
                 elif response.status_code == 429:
                     # Rate limited - wait and retry
                     retry_after = int(response.headers.get('Retry-After', 60))
@@ -372,8 +387,34 @@ class PMPCompleteIntelligenceExtractor:
                 expected_pages = (total_count + PAGE_SIZE - 1) // PAGE_SIZE
                 print(f"      Total records: {total_count:,} ({expected_pages} pages @ 25/page)")
 
-            # Get records for this page
-            records = data.get(data_key, [])
+            # Get records for this page - FIX: Check multiple possible field names
+            # API returns different field names for same data across endpoints
+            records = None
+
+            # Try primary field name first
+            if data_key in data:
+                records = data[data_key]
+            # Try common alternatives
+            elif 'data' in data:
+                records = data['data']
+            # Try singular/plural variations
+            elif data_key.endswith('s') and data_key[:-1] in data:
+                records = data[data_key[:-1]]  # e.g., 'allpatches' → 'allpatch'
+            elif data_key + 's' in data:
+                records = data[data_key + 's']  # e.g., 'patch' → 'patches'
+            # Try common field name patterns for specific endpoint types
+            elif 'allpatches' in data_key or 'patches' in data_key:
+                # Patch endpoints: try patches/allpatches
+                records = data.get('patches', data.get('allpatches', []))
+            elif 'allsystems' in data_key or 'systems' in data_key or 'computers' in data_key:
+                # System endpoints: try computers/systems/allsystems
+                records = data.get('computers', data.get('systems', data.get('allsystems', [])))
+            elif 'policies' in data_key or 'deploymentpolicies' in data_key:
+                # Policy endpoints: try deploymenttemplate/policies
+                records = data.get('deploymenttemplate', data.get('policies', []))
+            else:
+                records = []
+
             if not records:
                 break
 

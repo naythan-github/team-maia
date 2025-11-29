@@ -153,6 +153,50 @@ Successfully implemented production-grade ITGlue REST API client following TDD m
 
 ---
 
+## ✅ Phase 6.5: Document Upload Endpoint Fixed (2025-11-29)
+
+### Issue Resolved
+**Problem**: Document upload endpoint returning HTTP 400 "Invalid JSON format"
+**Root Cause**: Incorrect payload format - was using flat multipart structure instead of ITGlue's JSON API format
+
+### Solution Implemented
+Complete two-step upload process:
+1. **Step 1**: Create document via `POST /documents` with JSON API payload
+2. **Step 2**: Attach file via `POST /documents/:id/relationships/attachments` with base64-encoded content
+
+### Code Changes
+- Added `import base64` to client.py
+- Rewrote `upload_document()` method (43 lines → 97 lines)
+- Proper JSON API format with `data.type` and `data.attributes`
+- Base64 encoding for file content
+- Graceful handling of attachment failures
+
+### Validation
+```
+✅ Test 1: Network Infrastructure Doc (12,788 bytes) - SUCCESS
+✅ Test 2: SOP Server Patching (10,952 bytes) - SUCCESS
+```
+
+### API Discoveries
+During investigation, discovered ITGlue API limitations:
+- ✅ `POST /documents` - Works with API key
+- ✅ `POST /documents/:id/relationships/attachments` - Works with API key
+- ❌ `GET /documents` - Endpoint doesn't exist (404)
+- ❌ `GET /documents/:id` - Requires JWT auth, not API key (401)
+
+**Implication**: Documents can be created but not listed with API key authentication
+
+### Documentation Updates
+- Updated QUICKSTART.md with working upload example
+- Added "API Limitations" section documenting quirks
+- Noted JWT requirement for document retrieval
+- Updated "List All Entities" to remove document listing
+
+### Status
+✅ **RESOLVED** - Document upload fully operational with real-world validation
+
+---
+
 ## Production Readiness Checklist
 
 ### ✅ Completed

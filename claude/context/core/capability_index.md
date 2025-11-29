@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-29 (Phase 205 - Dirac Live Specialist Agent)
+**Last Updated**: 2025-11-29 (Phase 206 - Denon AVR-X3800H Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,18 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 206 (Nov 29) - Denon AVR-X3800H Specialist Agent - Home Theater Receiver Expert ⭐ **NEW AGENT**
+- **Denon AVR-X3800H Specialist Agent** (`claude/agents/denon_x3800h_specialist_agent.md`) - Production-ready v2.3 agent for Denon X3800H/AVC-X3800H receiver setup, calibration, and optimization
+- **Location**: `claude/agents/denon_x3800h_specialist_agent.md` (274 lines)
+- **Purpose**: Complete AVR expertise for X3800H receiver - speaker configuration, Audyssey/Dirac calibration, Dolby Atmos setup, HDMI video optimization, multi-zone control, troubleshooting
+- **Core Capabilities**: Initial setup (speaker wiring verification, HDMI 2.1 connections, network configuration, firmware updates), audio calibration (Audyssey MultEQ XT32 8-position measurement, Dynamic EQ settings, LFC for apartments, manual EQ refinement, Dirac Live upgrade path), immersive audio (Dolby Atmos 5.1.2/5.1.4/5.2.4/7.1.4 configurations, DTS:X, IMAX Enhanced, Auro-3D, height speaker assignment), video optimization (8K HDMI Enhanced vs Standard mode, 4K/120Hz for gaming, HDR10/Dolby Vision/HLG, eARC audio return), multi-zone control (Zone 2/3 setup, HEOS streaming integration, independent source routing), troubleshooting (HDMI handshake failures, Enhanced mode incompatibility, Atmos not detected, Audyssey calibration failures, network connectivity)
+- **Key Commands**: `configure_speaker_layout` (speaker_count, height_speakers, subwoofer_count), `calibrate_audyssey` (mic_positions, target_curve, dynamic_eq), `optimize_hdmi_setup` (resolution, hdr_format, source_devices), `troubleshoot_audio` (symptoms, source_device, audio_format), `setup_multizone` (zone_speakers, source_routing, volume_control)
+- **Few-Shot Examples**: (1) 5.2.4 Dolby Atmos setup - Complete workflow from physical speaker connections (Klipsch RP-6000F/RP-504C/RP-502S/RP-500SA height/dual R-100SW subs) through Audyssey 8-position calibration (ear level 37", HVAC off, silent room), height speaker optimization, dual-subwoofer phase alignment, Dynamic EQ settings, Atmos test validation; (2) HDMI handshake troubleshooting - Apple TV 4K black screen every 10 minutes diagnosis, Enhanced HDMI mode HDCP re-authentication failure, per-input mode optimization (Standard for Apple TV 4K/60Hz, Enhanced for PS5/Xbox 4K/120Hz), CEC control optimization
+- **Integration Points**: Dirac Live Specialist Agent (upgrade from Audyssey to Dirac Live + DLBC + ART for advanced room correction), Home Automation Specialist Agent (Control4/Crestron integration for theater control), HEOS Specialist Agent (multi-zone whole-home streaming)
+- **Technical Depth**: X3800H specifications (9.4 channels with 4 independent sub outputs, 105W/ch @ 8Ω, 7 HDMI inputs + 3 outputs with 8K/60Hz/4K/120Hz), Audyssey best practices (6-8 mic positions minimum, 3×3 grid for Atmos, ear level 36-38", Dynamic EQ reference offset 0dB cinema/-5dB casual, LFC for neighbors), Atmos configurations (5.1.2 minimal, 5.1.4 recommended, 5.2.4 enhanced bass, 7.1.4 maximum), HDMI Enhanced mode (4K/120Hz/8K/VRR for gaming) vs Standard mode (4K/60Hz sufficient for streaming), common issues (HDMI handshake = try Standard mode, Atmos not working = verify bitstream audio output, Audyssey failed = reduce ambient noise, network issues = use wired Ethernet)
+- **Production Status**: ✅ **READY** - v2.3 with all 5 advanced patterns (self-reflection & review, test frequently, self-reflection checkpoints, prompt chaining, explicit handoff with JSON), 274 lines (comprehensive AVR coverage), 2 detailed few-shot examples with THOUGHT→PLAN→ACTION→SELF-REFLECTION workflow, validated against template
+- **Usage**: Load when user asks about Denon X3800H, AVR-X3800H, AVC-X3800H, receiver setup, Audyssey calibration, Dolby Atmos configuration, HDMI troubleshooting, home theater AVR optimization, multi-zone setup
 
 ### Phase 205 (Nov 29) - Dirac Live Specialist Agent - Room Acoustic Analysis Expert ⭐ **NEW AGENT**
 - **Dirac Live Specialist Agent** (`claude/agents/dirac_live_specialist_agent.md`) - Production-ready v2.3 agent for room acoustic analysis and speaker calibration using Dirac Live platform

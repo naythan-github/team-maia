@@ -44,12 +44,11 @@ orgs = client.list_organizations()
 # Configurations (for specific org)
 configs = client.list_configurations(organization_id='YOUR_ORG_ID')
 
-# Documents
-docs = client.list_documents(organization_id='YOUR_ORG_ID')
-
 # Passwords
 passwords = client.list_passwords(organization_id='YOUR_ORG_ID')
 ```
+
+**Note**: Document listing requires JWT authentication and is not supported with API key auth. Documents can be created and uploaded but not listed via the API.
 
 ### Create Configuration
 ```python
@@ -64,13 +63,21 @@ print(f"Created: {config.id}")
 
 ### Upload Document
 ```python
+# Upload document with file attachment (two-step process)
 doc = client.upload_document(
     organization_id='4489414129010794',
     file_path='/path/to/network_diagram.pdf',
     name='Network Diagram.pdf'
 )
 print(f"Uploaded: {doc.name} ({doc.size:,} bytes)")
+# Returns: Document object with ID, name, size, and upload date
+# File is automatically base64-encoded and attached
 ```
+
+**How it works**:
+1. Creates document via `POST /documents`
+2. Attaches file via `POST /documents/:id/relationships/attachments` with base64 encoding
+3. Returns document metadata including attachment size and upload date
 
 ### Create Password
 ```python
@@ -302,6 +309,26 @@ for org in orgs:
     print(f"  Passwords: {len(passwords)}")
     print()
 ```
+
+---
+
+## ⚠️ API Limitations
+
+ITGlue's API has some quirks with document operations:
+
+### Document Operations with API Key Auth
+✅ **Works**: `POST /documents` - Create document
+✅ **Works**: `POST /documents/:id/relationships/attachments` - Attach files
+❌ **Doesn't Work**: `GET /documents` - No listing endpoint
+❌ **Doesn't Work**: `GET /documents/:id` - Requires JWT auth (not API key)
+
+### Workarounds
+- **Document Upload**: Use `client.upload_document()` - creates document + attaches file in one call
+- **Document Tracking**: Keep document IDs from creation responses (no listing available)
+- **Flexible Assets**: Consider using Flexible Assets for documentation that needs to be queried
+
+### What This Means
+You can create and upload documents via API, but can't list or retrieve them with API key authentication. Documents are viewable in ITGlue UI via the returned `resource-url`.
 
 ---
 

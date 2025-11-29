@@ -13,6 +13,7 @@ import requests
 import logging
 import time
 import json
+import base64
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pathlib import Path
@@ -662,44 +663,97 @@ class ITGlueClient:
         file_path: str,
         name: Optional[str] = None
     ) -> Document:
-        """Upload document to ITGlue"""
+        """
+        Upload document to ITGlue.
+
+        Uses two-step process:
+        1. Create document via POST /documents
+        2. Attach file via POST /documents/:id/relationships/attachments
+
+        Args:
+            organization_id: ITGlue organization ID
+            file_path: Path to file to upload
+            name: Document name (defaults to filename)
+
+        Returns:
+            Document object with attachment metadata
+        """
         if not name:
             name = Path(file_path).name
 
-        with open(file_path, 'rb') as f:
-            files = {'file': (name, f)}
-            payload = {
-                'organization_id': organization_id,
-                'name': name
+        # Step 1: Create document
+        payload = {
+            'data': {
+                'type': 'documents',
+                'attributes': {
+                    'name': name,
+                    'organization-id': organization_id
+                }
             }
+        }
 
-            response = self._make_request(
-                'POST',
-                '/documents',
-                data=payload,
-                files=files,
-                timeout=60  # Longer timeout for uploads
-            )
+        response = self._make_request('POST', '/documents', data=payload)
 
-        if response.status_code == 201:
-            data = response.json()
-            item = data.get('data', {})
-            attrs = item.get('attributes', {})
+        if response.status_code != 201:
+            raise ITGlueAPIError(f"Failed to create document: {response.status_code} - {response.text}")
 
-            doc = Document(
-                id=item['id'],
-                name=attrs['name'],
-                size=attrs.get('size', 0),
-                organization_id=organization_id,
-                upload_date=datetime.now()
-            )
+        # Extract document ID
+        doc_data = response.json()
+        doc_item = doc_data.get('data', {})
+        doc_id = doc_item['id']
+        doc_attrs = doc_item.get('attributes', {})
 
-            # Cache metadata
-            self.cache.cache_documents([doc])
+        # Step 2: Attach file
+        with open(file_path, 'rb') as f:
+            file_content = f.read()
 
-            return doc
+        # Base64 encode file content
+        base64_content = base64.b64encode(file_content).decode('utf-8')
 
-        raise ITGlueAPIError(f"Failed to upload document: {response.status_code}")
+        # Create attachment payload
+        attachment_payload = {
+            'data': {
+                'type': 'attachments',
+                'attributes': {
+                    'attachment': {
+                        'content': base64_content,
+                        'file_name': name
+                    }
+                }
+            }
+        }
+
+        # Attach file to document
+        attach_response = self._make_request(
+            'POST',
+            f'/documents/{doc_id}/relationships/attachments',
+            data=attachment_payload,
+            timeout=60  # Longer timeout for uploads
+        )
+
+        if attach_response.status_code != 201:
+            logger.warning(f"Document created but file attachment failed: {attach_response.status_code}")
+            # Still return the document even if attachment failed
+        else:
+            # Get attachment metadata
+            attach_data = attach_response.json()
+            attach_item = attach_data.get('data', {})
+            attach_attrs = attach_item.get('attributes', {})
+            logger.info(f"File attached successfully: {attach_attrs.get('download-url')}")
+
+        # Create document object
+        doc = Document(
+            id=doc_id,
+            name=doc_attrs['name'],
+            size=attach_attrs.get('attachment-file-size', 0) if attach_response.status_code == 201 else 0,
+            organization_id=organization_id,
+            upload_date=datetime.fromisoformat(doc_attrs['created-at'].replace('Z', '+00:00'))
+        )
+
+        # Cache metadata
+        self.cache.cache_documents([doc])
+
+        return doc
 
     def download_document(self, document_id: str, output_path: str) -> bool:
         """Download document from ITGlue"""
