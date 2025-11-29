@@ -558,19 +558,63 @@ def close_session():
 
 # =============================================================================
 # Phase 176: Default Agent Loading + Recovery Protocol
+# Phase 207: User-Specific Default Agent Preferences
 # =============================================================================
+
+def load_user_preferences() -> Dict[str, Any]:
+    """
+    Load user-specific preferences for Maia system behavior.
+
+    Phase 207: Allows users to customize default agent based on their
+    primary work domain (e.g., SRE, security, development).
+
+    Returns:
+        User preferences dict with default_agent and fallback_agent.
+        Falls back to system defaults if preferences unavailable.
+
+    Performance: <5ms
+    Graceful: Never raises, always returns valid dict
+    """
+    default_prefs = {
+        "default_agent": "maia_core_agent",
+        "fallback_agent": "maia_core_agent"
+    }
+
+    try:
+        prefs_file = MAIA_ROOT / "claude" / "data" / "user_preferences.json"
+        if not prefs_file.exists():
+            return default_prefs
+
+        with open(prefs_file, 'r') as f:
+            user_prefs = json.load(f)
+
+        # Validate required fields
+        if "default_agent" not in user_prefs:
+            log_error("user_preferences.json missing 'default_agent' field")
+            return default_prefs
+
+        return {
+            "default_agent": user_prefs.get("default_agent", "maia_core_agent"),
+            "fallback_agent": user_prefs.get("fallback_agent", "maia_core_agent")
+        }
+
+    except (json.JSONDecodeError, IOError) as e:
+        log_error(f"Failed to load user preferences: {e}")
+        return default_prefs
+
 
 def load_default_agent() -> Optional[str]:
     """
-    Load Maia Core Agent as default when no session exists.
+    Load user-preferred default agent when no session exists.
 
     Phase 176: Default agent provides reliability-focused foundation
-    for all sessions before specialist routing.
+    Phase 207: User preferences allow customization (e.g., SRE as default)
 
     Returns:
-        "maia_core_agent" if loaded, None if session already exists
+        Agent name if loaded, None if session already exists
 
     Performance: <50ms
+    Graceful fallback: user_prefs → fallback_agent → maia_core_agent
     """
     session_file = get_session_file_path()
 
@@ -583,28 +627,56 @@ def load_default_agent() -> Optional[str]:
         except (json.JSONDecodeError, IOError):
             pass  # Corrupted session, proceed to load default
 
-    # Verify maia_core_agent.md exists
-    agent_file = MAIA_ROOT / "claude" / "agents" / "maia_core_agent.md"
+    # Phase 207: Load user preferences
+    user_prefs = load_user_preferences()
+    default_agent = user_prefs["default_agent"]
+    fallback_agent = user_prefs["fallback_agent"]
+
+    # Try user's preferred default agent
+    agent_file = MAIA_ROOT / "claude" / "agents" / f"{default_agent}.md"
     if not agent_file.exists():
-        log_error(f"Default agent file not found: {agent_file}")
-        return None
+        # Try with _agent suffix
+        agent_file = MAIA_ROOT / "claude" / "agents" / f"{default_agent}_agent.md"
+
+    if not agent_file.exists():
+        log_error(f"Preferred default agent not found: {default_agent}, falling back to {fallback_agent}")
+        default_agent = fallback_agent
+        agent_file = MAIA_ROOT / "claude" / "agents" / f"{fallback_agent}.md"
+
+        # Last resort: hardcoded maia_core_agent
+        if not agent_file.exists():
+            agent_file = MAIA_ROOT / "claude" / "agents" / "maia_core_agent.md"
+            default_agent = "maia_core_agent"
+
+        if not agent_file.exists():
+            log_error(f"No default agent available (tried {user_prefs['default_agent']}, {fallback_agent}, maia_core_agent)")
+            return None
+
+    # Determine domain from agent name
+    domain_map = {
+        "sre_principal_engineer_agent": "sre",
+        "security_specialist_agent": "security",
+        "devops_principal_architect_agent": "devops",
+        "maia_core_agent": "core",
+    }
+    domain = domain_map.get(default_agent, "core")
 
     # Create session state for default agent
     default_classification = {
         "confidence": 1.0,
         "complexity": 1,
-        "primary_domain": "core",
+        "primary_domain": domain,
     }
 
     success = create_session_state(
-        agent="maia_core_agent",
-        domain="core",
+        agent=default_agent,
+        domain=domain,
         classification=default_classification,
         query="[Default agent loaded - no prior session]"
     )
 
     if success:
-        return "maia_core_agent"
+        return default_agent
     return None
 
 

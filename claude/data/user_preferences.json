@@ -1,0 +1,7 @@
+{
+  "default_agent": "sre_principal_engineer_agent",
+  "fallback_agent": "maia_core_agent",
+  "version": "1.0",
+  "description": "User-specific preferences for Maia system behavior",
+  "updated": "2025-11-29T05:34:00Z"
+}
