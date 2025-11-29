@@ -20,13 +20,15 @@
    - **Context preservation**: Use enriched context from `context` field in session state
    - **Multi-context**: Each Claude Code window has independent agent session (prevents race conditions)
    - **Stability**: Context ID stable across all subprocess invocations (Phase 134.4 fix)
-   - **If missing/corrupted**: Start fresh with **Maia Core Agent** as default (Phase 176/178)
-   - **⭐ Phase 176/178 - Default Agent (Simplified)**:
-     - **No session exists**: Load `maia_core_agent.md` as default, start fresh (NO recovery prompts)
+   - **If missing/corrupted**: Load user's preferred default agent from preferences (Phase 176/178/207)
+   - **⭐ Phase 176/178/207 - Default Agent with User Preferences**:
+     - **No session exists**: Read `claude/data/user_preferences.json` → load agent specified in `default_agent` field (e.g., `sre_principal_engineer_agent.md`)
+     - **Fallback chain**: If preferences file missing/invalid → load `maia_core_agent.md` as system default
      - **Session exists (same context)**: Load agent from session file (intra-session continuity)
      - **Checkpoints**: For intra-session recovery ONLY (after context compaction within SAME window)
-     - **Default behaviors**: SRE-grade operational discipline, state preservation, MSP context awareness
+     - **Default behaviors**: SRE-grade operational discipline (if SRE default), state preservation, MSP context awareness
      - **Key rule**: Each window is independent - NO cross-session recovery prompts
+     - **User customization**: Edit `claude/data/user_preferences.json` to change default agent (NO recovery prompts)
 3. **THEN**: Follow smart context loading for remaining files (if no agent session active)
 - **Details**: See `claude/context/core/smart_context_loading.md`
 - **Core Files**: UFC system (ALREADY LOADED), identity.md, systematic_thinking_protocol.md, model_selection_strategy.md, **file_organization_policy.md**

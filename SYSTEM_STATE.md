@@ -36,6 +36,10 @@ Implemented user-specific default agent customization system, allowing users to 
   - New function: `load_user_preferences()` - Loads user config with graceful fallbacks (<5ms)
   - Enhanced function: `load_default_agent()` - Uses user prefs instead of hardcoded maia_core_agent
   - Fallback chain: user_prefs → fallback_agent → maia_core_agent (triple-layer reliability)
+- `CLAUDE.md` - Updated context loading protocol (lines 23-31)
+  - Changed: "Load maia_core_agent.md as default" → "Read user_preferences.json → load specified default_agent"
+  - Added: Fallback chain documentation and user customization instructions
+  - Result: Claude now reads preferences file during context loading when no session exists
 
 **User Preferences Schema**:
 ```json
