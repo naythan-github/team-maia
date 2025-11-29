@@ -14,6 +14,7 @@ import logging
 import time
 import json
 import base64
+import markdown
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 from pathlib import Path
@@ -627,6 +628,215 @@ class ITGlueClient:
             )
 
         raise ITGlueAPIError(f"Failed to create password: {response.status_code}")
+
+    # ============= Flexible Asset Operations =============
+
+    def create_flexible_asset_type(
+        self,
+        name: str,
+        description: str,
+        icon: str = 'sitemap',
+        fields: Optional[List[Dict[str, Any]]] = None
+    ) -> Dict[str, Any]:
+        """
+        Create a flexible asset type with custom fields.
+
+        Args:
+            name: Name of the asset type
+            description: Description of the asset type
+            icon: Font Awesome icon name (default: 'sitemap')
+            fields: List of field definitions with structure:
+                    [{
+                        'name': 'Field Name',
+                        'kind': 'Text' | 'Textbox' | 'Date' | 'Checkbox' | ...,
+                        'order': 1,
+                        'required': True/False,
+                        'show-in-list': True/False,
+                        'use-for-title': True/False
+                    }, ...]
+
+        Returns:
+            Created flexible asset type data including ID and field IDs
+
+        Example:
+            >>> fields = [
+            ...     {'name': 'Title', 'kind': 'Text', 'order': 1, 'required': True, 'use-for-title': True},
+            ...     {'name': 'Content', 'kind': 'Textbox', 'order': 2, 'required': False}
+            ... ]
+            >>> asset_type = client.create_flexible_asset_type(
+            ...     name='MSP Documentation',
+            ...     description='General documentation with rich text',
+            ...     fields=fields
+            ... )
+        """
+        if not fields:
+            fields = [
+                {
+                    'name': 'Title',
+                    'kind': 'Text',
+                    'order': 1,
+                    'required': True,
+                    'show-in-list': True,
+                    'use-for-title': True
+                },
+                {
+                    'name': 'Content',
+                    'kind': 'Textbox',
+                    'order': 2,
+                    'required': False,
+                    'show-in-list': False
+                }
+            ]
+
+        payload = {
+            'data': {
+                'type': 'flexible-asset-types',
+                'attributes': {
+                    'name': name,
+                    'description': description,
+                    'icon': icon,
+                    'enabled': True,
+                    'show-in-menu': True
+                },
+                'relationships': {
+                    'flexible-asset-fields': {
+                        'data': [
+                            {
+                                'type': 'flexible-asset-fields',
+                                'attributes': field
+                            }
+                            for field in fields
+                        ]
+                    }
+                }
+            }
+        }
+
+        response = self._make_request('POST', '/flexible_asset_types', data=payload)
+
+        if response.status_code == 201:
+            data = response.json()
+            logger.info(f"Created flexible asset type: {name} (ID: {data['data']['id']})")
+            return data['data']
+
+        raise ITGlueAPIError(f"Failed to create flexible asset type: {response.status_code} - {response.text}")
+
+    def create_flexible_asset(
+        self,
+        organization_id: str,
+        flexible_asset_type_id: str,
+        traits: Dict[str, Any]
+    ) -> FlexibleAsset:
+        """
+        Create a flexible asset instance.
+
+        Args:
+            organization_id: ITGlue organization ID
+            flexible_asset_type_id: ID of the flexible asset type
+            traits: Dictionary of field values, e.g., {'title': 'My Doc', 'content': '<p>HTML content</p>'}
+
+        Returns:
+            FlexibleAsset object
+
+        Example:
+            >>> asset = client.create_flexible_asset(
+            ...     organization_id='123',
+            ...     flexible_asset_type_id='456',
+            ...     traits={'title': 'Network Diagram', 'content': '<h1>Network</h1>'}
+            ... )
+        """
+        payload = {
+            'data': {
+                'type': 'flexible-assets',
+                'attributes': {
+                    'organization-id': int(organization_id),
+                    'flexible-asset-type-id': int(flexible_asset_type_id),
+                    'traits': traits
+                }
+            }
+        }
+
+        response = self._make_request('POST', '/flexible_assets', data=payload)
+
+        if response.status_code == 201:
+            data = response.json()
+            item = data.get('data', {})
+            attrs = item.get('attributes', {})
+
+            asset = FlexibleAsset(
+                id=item['id'],
+                name=attrs['name'],
+                organization_id=organization_id,
+                flexible_asset_type_id=flexible_asset_type_id,
+                traits=attrs.get('traits', {})
+            )
+
+            logger.info(f"Created flexible asset: {asset.name} (ID: {asset.id})")
+            return asset
+
+        raise ITGlueAPIError(f"Failed to create flexible asset: {response.status_code} - {response.text}")
+
+    def create_flexible_asset_from_markdown(
+        self,
+        organization_id: str,
+        flexible_asset_type_id: str,
+        file_path: str,
+        title: Optional[str] = None
+    ) -> FlexibleAsset:
+        """
+        Create a flexible asset from markdown file.
+
+        Converts markdown to HTML and creates a flexible asset with:
+        - 'title' field: Document title (from first # heading or filename)
+        - 'content' field: Markdown converted to HTML
+
+        Args:
+            organization_id: ITGlue organization ID
+            flexible_asset_type_id: ID of the flexible asset type (must have 'title' and 'content' fields)
+            file_path: Path to markdown file
+            title: Optional override for title (defaults to first heading or filename)
+
+        Returns:
+            FlexibleAsset object
+
+        Example:
+            >>> asset = client.create_flexible_asset_from_markdown(
+            ...     organization_id='123',
+            ...     flexible_asset_type_id='456',
+            ...     file_path='/path/to/network_doc.md'
+            ... )
+        """
+        # Read markdown file
+        with open(file_path, 'r') as f:
+            md_content = f.read()
+
+        # Extract title if not provided
+        if not title:
+            # Try to find first # heading
+            title_lines = [line for line in md_content.split('\n') if line.startswith('#')]
+            if title_lines:
+                title = title_lines[0].lstrip('#').strip()
+            else:
+                # Fall back to filename
+                title = Path(file_path).stem.replace('_', ' ')
+
+        # Convert markdown to HTML
+        html_content = markdown.markdown(
+            md_content,
+            extensions=['tables', 'fenced_code', 'nl2br']
+        )
+
+        # Create flexible asset with title and content
+        traits = {
+            'title': title,
+            'content': html_content
+        }
+
+        return self.create_flexible_asset(
+            organization_id=organization_id,
+            flexible_asset_type_id=flexible_asset_type_id,
+            traits=traits
+        )
 
     # ============= Document Operations =============
 

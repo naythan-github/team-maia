@@ -79,6 +79,45 @@ print(f"Uploaded: {doc.name} ({doc.size:,} bytes)")
 2. Attaches file via `POST /documents/:id/relationships/attachments` with base64 encoding
 3. Returns document metadata including attachment size and upload date
 
+**Note**: This uploads files as attachments. For native ITGlue searchable content, use Flexible Assets (see below).
+
+### Create Flexible Assets (Native ITGlue Documentation)
+
+**Flexible Assets** are ITGlue's native format for structured, searchable documentation.
+
+```python
+# Step 1: Create flexible asset type (one-time setup)
+asset_type = client.create_flexible_asset_type(
+    name='MSP Documentation',
+    description='General MSP documentation with rich text content'
+)
+# Default fields: 'title' (Text) and 'content' (Textbox)
+
+# Step 2: Create flexible asset from markdown file
+asset = client.create_flexible_asset_from_markdown(
+    organization_id='4489414129010794',
+    flexible_asset_type_id=asset_type['id'],
+    file_path='/path/to/network_diagram.md'
+)
+print(f"Created: {asset.name} (ID: {asset.id})")
+# Markdown is automatically converted to HTML and stored as native ITGlue content
+```
+
+**Why Flexible Assets?**
+- ✅ **Searchable** in ITGlue (not just file attachments)
+- ✅ **Native format** - rendered directly in ITGlue UI
+- ✅ **Structured** - custom fields for different doc types
+- ✅ **Programmable** - full CRUD via API
+
+**Comparison**:
+| Feature | Document Upload | Flexible Assets |
+|---------|----------------|-----------------|
+| Stores files | ✅ Binary attachments | ❌ Content only |
+| Searchable in ITGlue | ❌ No | ✅ Yes |
+| Native ITGlue format | ❌ No | ✅ Yes |
+| Requires download | ✅ Yes | ❌ No (view inline) |
+| **Use case** | Reference files, PDFs | Operational docs, SOPs |
+
 ### Create Password
 ```python
 password = client.create_password(
