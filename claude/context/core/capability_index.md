@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-28 (Phase 204 - Drata Live Specialist Agent)
+**Last Updated**: 2025-11-29 (Phase 205 - Dirac Live Specialist Agent)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,18 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Phase 205 (Nov 29) - Dirac Live Specialist Agent - Room Acoustic Analysis Expert ⭐ **NEW AGENT**
+- **Dirac Live Specialist Agent** (`claude/agents/dirac_live_specialist_agent.md`) - Production-ready v2.3 agent for room acoustic analysis and speaker calibration using Dirac Live platform
+- **Location**: `claude/agents/dirac_live_specialist_agent.md` (210 lines)
+- **Purpose**: Room acoustic analysis and speaker calibration expertise - measurement setup, filter optimization, multi-channel calibration, DSP platform integration for home theater and audiophile systems
+- **Core Capabilities**: Room acoustic analysis (modal peak detection for length/width/height modes, RT60 measurement for reverberation time optimization, frequency response analysis 20Hz-20kHz, reflection detection for comb filtering diagnosis), speaker calibration (time alignment with Dirac auto-detection, phase correction for subwoofer integration, level matching to 75dB SPL THX standard, crossover optimization with LR4 filters at 80Hz), multi-channel setup (5.1/7.1/Atmos channel layouts, 9-17 point measurement grids, dual/quad subwoofer bass management), DSP integration (miniDSP SHD/DDRC-24/Flex, Arcam/Anthem ARC Genesis/NAD AVRs, Trinnov Altitude processors), advanced tuning (Harman curve/flat reference/custom target curves, FIR filter optimization 8192/4096/2048 taps, psychoacoustic optimization)
+- **Key Commands**: `analyze_room_acoustics` (measurement_file, room_dimensions, speaker_config), `optimize_calibration` (current_response, target_curve, filter_length), `troubleshoot_measurement` (measurement_data, mic_position, error_symptoms), `multi_channel_setup` (channel_count, speaker_positions, listening_position), `bass_management_design` (sub_count, crossover_freq, phase_alignment)
+- **Few-Shot Examples**: (1) 5.1 home theater calibration - boomy bass diagnosis (82Hz modal peak +12dB reduced to ±2dB), center dialogue clarity improvement +15% via level/timing correction, dual-subwoofer integration eliminating 40Hz null, RT60 optimization from 680ms to 420ms; (2) Measurement troubleshooting - low SNR error diagnosis (42dB right channel vs 68dB left), cable fault identification via systematic testing, 9-position averaging validation achieving SNR >60dB all channels
+- **Integration Points**: Home Automation Specialist Agent (Control4/Crestron preset switching for movie/music/late-night scenes), Audio Hardware Specialist Agent (DSP platform configuration), Room Acoustic Designer Agent (acoustic treatment recommendations for first reflection points)
+- **Technical Depth**: Comprehensive domain reference covering Dirac Live platforms (miniDSP, AVRs, processors), measurement best practices (mic positioning 9-17 points with 10-20cm grid, SPL calibration to 75dB THX, mic calibration files UMIK-1/UMIK-2/Earthworks M23), target curve design (Harman curve with +6dB at 20Hz to flat at 200Hz then -2dB/octave, flat studio reference, custom bass/treble contours), filter optimization (8192 taps high precision vs 2048 taps low latency <20ms), common issues & solutions (modal peaks from room dimensions → EQ + positioning, subwoofer nulls from boundary interference → quarter-wavelength placement or dual-sub opposing walls, comb filtering from early reflections → absorption panels, low SNR from cable faults/background noise → systematic diagnostic chain)
+- **Production Status**: ✅ **READY** - v2.3 with all 5 advanced patterns (self-reflection & review, test frequently, self-reflection checkpoints, prompt chaining, explicit handoff with JSON), 210 lines (5% over 200-line target for comprehensive coverage), 2 comprehensive few-shot examples with THOUGHT→PLAN→ACTION→SELF-REFLECTION workflow, validated against template
+- **Usage**: Load when user asks about Dirac Live, room acoustic calibration, speaker measurement, home theater setup, subwoofer integration, frequency response optimization, audio DSP calibration, miniDSP configuration, Trinnov/Anthem processors
 
 ### Phase 204 (Nov 28) - Drata Live Specialist Agent - Compliance Automation Expert ⭐ **NEW AGENT**
 - **Drata Live Specialist Agent** (`claude/agents/drata_live_specialist_agent.md`) - Production-ready v2.3 agent for Drata platform compliance automation
