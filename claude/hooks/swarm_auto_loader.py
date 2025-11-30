@@ -517,6 +517,7 @@ def close_session():
 
     Phase 134.7: User-controlled session lifecycle management.
     Phase 213: Enhanced pre-shutdown checklist (git, docs, processes, checkpoints, session)
+    Phase 214: Development file cleanup detection (versioned files, misplaced tests, artifacts)
 
     Usage:
         python3 swarm_auto_loader.py close_session
@@ -526,7 +527,8 @@ def close_session():
     2. Documentation currency (recent changes without docs updates?)
     3. Active background processes (running shells/tasks?)
     4. Checkpoint currency (work since last checkpoint?)
-    5. Session file cleanup
+    5. Development file cleanup (versioned files, test files, build artifacts)
+    6. Session file cleanup
 
     Returns:
         Prints status message and exits with code 0
@@ -641,6 +643,67 @@ def close_session():
                     print("   Consider creating checkpoint before closing")
                     print()
     except (OSError, ValueError):
+        pass  # Graceful degradation
+
+    # =========================================================================
+    # Check 6: Development File Cleanup
+    # =========================================================================
+    try:
+        cleanup_issues = []
+
+        # Find versioned files (*_v2.py, *_v3.py, etc.)
+        versioned_files = []
+        for py_file in (MAIA_ROOT / 'claude' / 'tools').rglob('*_v[0-9]*.py'):
+            versioned_files.append(str(py_file.relative_to(MAIA_ROOT)))
+
+        # Find misplaced test files (test_*.py not in tests/ directories)
+        misplaced_tests = []
+        for py_file in (MAIA_ROOT / 'claude' / 'tools').rglob('test_*.py'):
+            # Only flag if not already in a 'tests' directory
+            if 'tests' not in py_file.parts:
+                misplaced_tests.append(str(py_file.relative_to(MAIA_ROOT)))
+
+        # Find build artifacts
+        build_artifacts = []
+        for artifact in MAIA_ROOT.rglob('.DS_Store'):
+            build_artifacts.append(str(artifact.relative_to(MAIA_ROOT)))
+        for pycache in (MAIA_ROOT / 'claude').rglob('__pycache__'):
+            if pycache.is_dir():
+                build_artifacts.append(str(pycache.relative_to(MAIA_ROOT)))
+
+        # Report findings
+        if versioned_files or misplaced_tests or build_artifacts:
+            issues_found.append("cleanup")
+            print("⚠️  Development file cleanup needed:")
+
+            if versioned_files:
+                cleanup_issues.append(f"versioned: {len(versioned_files)}")
+                print(f"   📦 {len(versioned_files)} versioned files (e.g., _v2.py, _v3.py)")
+                for vf in versioned_files[:3]:
+                    print(f"      - {vf}")
+                if len(versioned_files) > 3:
+                    print(f"      ... and {len(versioned_files) - 3} more")
+
+            if misplaced_tests:
+                cleanup_issues.append(f"misplaced tests: {len(misplaced_tests)}")
+                print(f"   🧪 {len(misplaced_tests)} test files in production directories")
+                for mt in misplaced_tests[:3]:
+                    print(f"      - {mt}")
+                if len(misplaced_tests) > 3:
+                    print(f"      ... and {len(misplaced_tests) - 3} more")
+
+            if build_artifacts:
+                cleanup_issues.append(f"artifacts: {len(build_artifacts)}")
+                print(f"   🗑️  {len(build_artifacts)} build artifacts (.DS_Store, __pycache__)")
+                for ba in build_artifacts[:3]:
+                    print(f"      - {ba}")
+                if len(build_artifacts) > 3:
+                    print(f"      ... and {len(build_artifacts) - 3} more")
+
+            print(f"   💡 Tip: These accumulate during development and should be cleaned periodically")
+            print()
+
+    except Exception:
         pass  # Graceful degradation
 
     # =========================================================================
