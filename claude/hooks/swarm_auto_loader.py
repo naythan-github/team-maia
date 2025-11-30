@@ -513,16 +513,168 @@ def log_error(message: str):
 
 def close_session():
     """
-    Close active agent session - clears session file to restore natural routing.
+    Pre-shutdown workflow: Comprehensive checks before closing Claude Code window.
 
     Phase 134.7: User-controlled session lifecycle management.
+    Phase 213: Enhanced pre-shutdown checklist (git, docs, processes, checkpoints, session)
 
     Usage:
         python3 swarm_auto_loader.py close_session
 
+    Checks:
+    1. Git status (uncommitted changes?) → offer to run save_state
+    2. Documentation currency (recent changes without docs updates?)
+    3. Active background processes (running shells/tasks?)
+    4. Checkpoint currency (work since last checkpoint?)
+    5. Session file cleanup
+
     Returns:
         Prints status message and exits with code 0
     """
+    print("🔍 Pre-shutdown check...\n")
+
+    issues_found = []
+    response = ""  # Initialize for later reference
+
+    # =========================================================================
+    # Check 1: Git Status
+    # =========================================================================
+    try:
+        result = subprocess.run(
+            ['git', '-C', str(MAIA_ROOT), 'status', '--short'],
+            capture_output=True,
+            text=True,
+            timeout=2
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
+            issues_found.append("git")
+            print("⚠️  Uncommitted changes detected:")
+            # Show first 10 files
+            all_files = result.stdout.strip().split('\n')
+            files = all_files[:10]
+            for file in files:
+                print(f"   {file}")
+            if len(all_files) > 10:
+                remaining = len(all_files) - 10
+                print(f"   ... and {remaining} more")
+            print()
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass  # Git not available or timeout - graceful degradation
+
+    # =========================================================================
+    # Check 2: Documentation Currency
+    # =========================================================================
+    try:
+        # Check if SYSTEM_STATE.md is older than recent code changes
+        system_state = MAIA_ROOT / "SYSTEM_STATE.md"
+        if system_state.exists():
+            system_state_mtime = system_state.stat().st_mtime
+
+            # Check for recent python/md file changes in last hour
+            result = subprocess.run(
+                ['find', str(MAIA_ROOT / 'claude'), '-name', '*.py', '-o', '-name', '*.md',
+                 '-mtime', '-1h'],
+                capture_output=True,
+                text=True,
+                timeout=2
+            )
+
+            # If there are recent file changes but SYSTEM_STATE.md is older
+            if result.stdout.strip():
+                recent_files = result.stdout.strip().split('\n')
+                recent_file_mtimes = []
+                for f in recent_files[:5]:  # Check first 5
+                    try:
+                        recent_file_mtimes.append(Path(f).stat().st_mtime)
+                    except:
+                        pass
+
+                if recent_file_mtimes and max(recent_file_mtimes) > system_state_mtime:
+                    issues_found.append("docs")
+                    print("⚠️  Recent code changes detected without SYSTEM_STATE.md update")
+                    print(f"   Last SYSTEM_STATE.md update: {datetime.fromtimestamp(system_state_mtime).strftime('%Y-%m-%d %H:%M')}")
+                    print()
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        pass  # Graceful degradation
+
+    # =========================================================================
+    # Check 3: Active Background Processes
+    # =========================================================================
+    try:
+        # Check for background bash shells (Claude Code background tasks)
+        result = subprocess.run(
+            ['pgrep', '-f', 'claude.*bash.*run_in_background'],
+            capture_output=True,
+            text=True,
+            timeout=1
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
+            issues_found.append("processes")
+            bg_pids = result.stdout.strip().split('\n')
+            print(f"⚠️  {len(bg_pids)} background process(es) still running")
+            print("   These may be interrupted when window closes")
+            print()
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        pass  # Graceful degradation
+
+    # =========================================================================
+    # Check 4: Checkpoint Currency
+    # =========================================================================
+    try:
+        checkpoints_dir = MAIA_ROOT / "claude" / "data" / "checkpoints"
+        if checkpoints_dir.exists():
+            # Find most recent checkpoint
+            checkpoints = sorted(checkpoints_dir.glob("checkpoint_*.json"),
+                               key=lambda p: p.stat().st_mtime,
+                               reverse=True)
+
+            if checkpoints:
+                latest_checkpoint = checkpoints[0]
+                checkpoint_age_hours = (time.time() - latest_checkpoint.stat().st_mtime) / 3600
+
+                # Warn if checkpoint is >2 hours old and we have git changes
+                if checkpoint_age_hours > 2 and "git" in issues_found:
+                    issues_found.append("checkpoint")
+                    print(f"⚠️  Last checkpoint is {checkpoint_age_hours:.1f} hours old")
+                    print("   Consider creating checkpoint before closing")
+                    print()
+    except (OSError, ValueError):
+        pass  # Graceful degradation
+
+    # =========================================================================
+    # Offer to run save_state if issues found
+    # =========================================================================
+    if issues_found:
+        print("=" * 60)
+        response = input("\n📝 Run /save_state to commit changes and update docs? (y/n): ")
+
+        if response.lower() in ['y', 'yes']:
+            print("\n🔄 Running save_state workflow...\n")
+            try:
+                # Run save_state command
+                save_state_cmd = MAIA_ROOT / "claude" / "commands" / "save_state.md"
+                if save_state_cmd.exists():
+                    # Note: This would need to be integrated with actual save_state execution
+                    # For now, just inform user to run it in the main context
+                    print("⚠️  Please run 'save state' in the main Claude conversation")
+                    print("   Then run /close-session again")
+                    print()
+                    sys.exit(0)
+            except Exception as e:
+                print(f"⚠️  Could not run save_state automatically: {e}")
+                print("   Please run 'save state' manually, then /close-session")
+                sys.exit(0)
+        else:
+            print("\n⏭️  Skipping save_state (you can run it manually later)")
+            print()
+    else:
+        print("✅ All checks passed - clean state\n")
+
+    # =========================================================================
+    # Check 5: Session File Cleanup
+    # =========================================================================
     session_file = get_session_file_path()
 
     if session_file.exists():
@@ -539,7 +691,6 @@ def close_session():
             print(f"✅ Agent session closed")
             print(f"   Agent: {agent}")
             print(f"   Domain: {domain}")
-            print(f"   Next conversation will route naturally based on query content")
 
         except (json.JSONDecodeError, IOError, OSError) as e:
             # File corrupt or permission error - try to delete anyway
@@ -551,7 +702,17 @@ def close_session():
                 sys.exit(1)
     else:
         print(f"ℹ️  No active agent session")
-        print(f"   Already using natural routing")
+
+    # =========================================================================
+    # Final Confirmation
+    # =========================================================================
+    print("\n" + "=" * 60)
+    print("✅ Pre-shutdown complete")
+    print("   Safe to close Claude Code window")
+    if issues_found and response.lower() not in ['y', 'yes']:
+        print("\n⚠️  Reminder: Uncommitted changes will be preserved in git")
+        print("   but session context will be lost")
+    print("=" * 60)
 
     sys.exit(0)
 
