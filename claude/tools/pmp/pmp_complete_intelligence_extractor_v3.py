@@ -429,7 +429,7 @@ class PMPCompleteIntelligenceExtractor:
                 break
 
             page += 1
-            time.sleep(0.25)  # Rate limiting
+            time.sleep(1.0)  # Rate limiting between pages (1000ms - prevents cumulative throttling)
 
         print(f"      ✅ Fetched {len(all_records):,} records from {page} pages")
         return all_records
@@ -524,7 +524,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 3. All Patches (5,217) - PAGINATED
             count = self.extract_endpoint_paginated(
@@ -536,7 +536,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 5. Supported Patches (364,673 - this will take time!) - PAGINATED
             print("\n⚠️  Supported Patches: 364,673 records - this will take ~30 minutes...")
@@ -549,7 +549,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 7. All Systems (3,364) - PAGINATED
             count = self.extract_endpoint_paginated(
@@ -561,7 +561,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 9. Deployment Policies (92) - PAGINATED
             count = self.extract_endpoint_paginated(
@@ -573,7 +573,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 10. Health Policy (non-paginated)
             count = self.extract_endpoint_simple(
@@ -584,7 +584,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 11. View Configurations (225) - PAGINATED
             count = self.extract_endpoint_paginated(
@@ -596,7 +596,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 12. Approval Settings (non-paginated)
             count = self.extract_endpoint_simple(
@@ -607,7 +607,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 13. Scan Details (3,364) - PAGINATED
             count = self.extract_endpoint_paginated(
@@ -619,7 +619,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 14. Installed Patches (3,505) - PAGINATED
             count = self.extract_endpoint_paginated(
@@ -631,7 +631,7 @@ class PMPCompleteIntelligenceExtractor:
             )
             total_records += count
             endpoints_extracted += 1
-            time.sleep(0.5)
+            time.sleep(2.0)  # Rate limiting between endpoints (2000ms - matches systemreport pattern)
 
             # 15. Missing Patches (1,712) - PAGINATED
             count = self.extract_endpoint_paginated(

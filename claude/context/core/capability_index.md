@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-29 (Nessus/Tenable Agent - MSP Vulnerability Management)
+**Last Updated**: 2025-11-29 (Healthcare Provider Search Agent - Medical Professional Finder)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,22 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Healthcare Provider Search Agent v1.0 (Nov 29) - Medical Professional Finder ⭐ **NEW AGENT**
+- **Healthcare Provider Search Agent** (`claude/agents/healthcare_provider_search_agent.md`) - Production-ready v1.0 agent for multi-source healthcare provider search and verification across Australia
+- **Location**: `claude/agents/healthcare_provider_search_agent.md` (350+ lines)
+- **Purpose**: Find qualified medical professionals with cross-verified credentials, reviews, and availability - supports any specialty (ENT, dermatology, cardiology, GP, dentist, etc.) and location
+- **Core Capabilities**: Credential verification (AHPRA registration check for active status/qualifications/conditions, specialty qualifications FRACS/FRACP/FRACGP, subspecialty certifications), multi-source search (AHPRA register for official credentials, healthdirect.gov.au for government-verified directory with bulk billing/services, Google Maps for reviews/location/hours, RateMDs for detailed patient reviews, clinic websites for subspecialties/new patient status), quality assessment (patient reviews 4.5+ stars with 50+ reviews = reliable, hospital affiliations teaching hospitals = higher standards, red flags for AHPRA conditions/negative review themes), availability intelligence (clinic locations/contact info, accepting new patients status, bulk billing vs private, wait times 1-2wk private/4-10wk public), healthcare navigation (public vs private Medicare system, GP referral requirements valid 12 months, insurance compatibility)
+- **Key Commands**: `find_specialist` (specialty, location, preferences), `verify_credentials` (provider_name, specialty), `compare_providers` (provider_list, criteria), `check_availability` (provider_name, location)
+- **Few-Shot Examples**: (1) ENT surgeon Sydney search - 127 AHPRA-registered filtered to 43 accepting new patients, top 5 verified: Dr. Niranjan Sritharan 4.9/5 Kingswood/Concord 3-6mo wait, A/Prof Narinder Singh Bella Vista rhinology specialist 4-6wk wait, Dr. Ronald Chin Penrith head/neck cancer/robotic surgery, recommendations by specialty need; (2) Dermatologist comparison Melbourne - side-by-side of 3 providers with AHPRA verification/review aggregation/subspecialty differentiation: Dr. Smith cosmetic 4.3/5 1-2wk, Dr. Jones medical 4.7/5 6-8wk bulk billing, Dr. Lee skin cancer 4.9/5 4-5wk Mohs fellowship
+- **Search Sources**: AHPRA (https://www.ahpra.gov.au credential verification), healthdirect (government directory), Google Maps (reviews/location), RateMDs (patient reviews), clinic websites (practice info)
+- **Problem-Solving Approach**: Phase 1 Credential Verification (<10min AHPRA search/registration/qualifications), Phase 2 Multi-Source Search (<15min healthdirect/Google/reviews with cross-verification), Phase 3 Quality Assessment (<10min reviews/ratings/subspecialties with self-reflection), Phase 4 Availability & Contact (<10min clinic info/new patient status/contact)
+- **Integration Points**: Personal Assistant Agent (appointment scheduling after provider selection), Financial Planner Agent (insurance coverage analysis, private health optimization)
+- **Medical Disclaimer**: Provides provider search and credential verification only, does NOT provide medical advice/diagnosis/treatment recommendations, does NOT guarantee provider quality, always verify credentials via AHPRA and consult GP for referrals
+- **Business Impact**: Multi-source verification (cross-checking AHPRA/healthdirect/reviews for high confidence), quality filtering (ratings/reviews/credentials for informed decisions), time savings (aggregated search vs manual research), reusable for any medical specialty/location
+- **Real-World Use Cases**: ENT surgeon search Sydney (sinus/rhinology), dermatologist comparison Melbourne (cosmetic vs medical vs cancer), GP search with bulk billing (affordability), specialist referrals (cardiology/orthopedic/oncology), multi-specialty care coordination (>3 specialists for complex conditions)
+- **Production Status**: ✅ **READY** - v1.0 with all 5 v2.3 advanced patterns (self-reflection on quality indicators, test frequently with cross-verification, checkpoint on credential validation, prompt chaining for complex multi-specialty searches, explicit handoff for appointment scheduling), 350+ lines, comprehensive few-shot examples (ENT Sydney + dermatologist Melbourne), medical disclaimer for ethical boundaries
+- **Usage**: Load when user asks about finding doctors, specialists, medical professionals, healthcare providers, AHPRA verification, provider reviews, bulk billing doctors, specialist referrals, ENT/dermatology/cardiology/GP searches in Australia
 
 ### Phase 206 (Nov 29) - Denon AVR-X3800H Specialist Agent - Home Theater Receiver Expert ⭐ **NEW AGENT**
 - **Denon AVR-X3800H Specialist Agent** (`claude/agents/denon_x3800h_specialist_agent.md`) - Production-ready v2.3 agent for Denon X3800H/AVC-X3800H receiver setup, calibration, and optimization
