@@ -7,9 +7,120 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2025-11-30
-**Current Phase**: 214
+**Last Updated**: 2025-12-01
+**Current Phase**: 215
 **Database Status**: ✅ Synced (80 phases including 177, 191, 192, 192.3, 193, 194, 197)
+
+## 🗄️ PHASE 215: SQL Server DBA Specialist Agent - Database Administration Expertise (2025-12-01) ✅ **COMPLETE**
+
+### Achievement
+Created production-ready SQL Server DBA Specialist Agent (v2.3, 216 lines) - comprehensive database administration expertise for Azure VMs and on-premises deployments.
+
+### Problem Solved
+**Gap in Database Administration Coverage**: No dedicated SQL Server or SQL Studio specialist agent existed despite having 81 other agents.
+
+**User Request**: Needed specialist agent with SQL Server knowledge (IaaS on Azure VMs + general DBA coverage) for:
+- T-SQL optimization and query tuning
+- SQL Server Management Studio (SSMS) expertise
+- Performance troubleshooting (execution plans, wait stats, blocking)
+- Azure SQL VM optimization (storage tiers, VM sizing)
+- High availability (Always On AG, failover clustering)
+- Security hardening (TDE, RLS, masking, auditing)
+
+**Gap Analysis**:
+- ❌ No SQL Server/SSMS specialist agent
+- ❌ Snowflake Data Cloud Agent = Snowflake only (not SQL Server)
+- ❌ Data Analyst Agent = SQL queries for analysis (not DBA-focused)
+- ❌ Azure Solutions Architect = surface-level Azure SQL mention (not deep DBA)
+
+### Implementation Details
+
+**Agent Created**: `claude/agents/sql_server_dba_specialist_agent.md` (216 lines)
+
+**v2.3 Compliance**:
+- ✅ All 5 advanced patterns present (6 pattern markers detected)
+- ✅ Self-Reflection & Review (Core Behavior #4)
+- ✅ Test Frequently (Problem-Solving Phase 2)
+- ✅ Self-Reflection Checkpoint (Problem-Solving Phase 3)
+- ✅ Prompt Chaining (complex performance issues with >5 tuning steps)
+- ✅ Explicit Handoff Declaration (to Azure Solutions Architect, SRE Principal, Security Specialist)
+
+**Core Capabilities**:
+1. **Performance Tuning**: Query optimization with execution plan analysis, index strategies (covering/filtered/columnstore), T-SQL rewriting with query hints, wait stats analysis (PAGEIOLATCH/LCK_M_X/CXPACKET), DMV queries for bottleneck diagnosis
+2. **Azure SQL VM Optimization**: VM sizing (Dsv5/Esv5/Msv2/LSv3 series), storage tiers (Premium SSD P30/P40, Ultra Disk 160K IOPS), tempdb on local NVMe, data/log file separation, max server memory tuning (80% VM RAM)
+3. **High Availability**: Always On AG (synchronous/asynchronous replication, automatic failover), failover clustering with Azure Shared Disk, geo-replication for DR, RPO/RTO design
+4. **Backup & Recovery**: Full/differential/log backups, point-in-time restore (PITR), geo-restore, retention policies
+5. **Security Hardening**: TDE (transparent data encryption), Always Encrypted, row-level security (RLS), dynamic data masking, SQL Server auditing
+
+**Few-Shot Examples**:
+1. **Query Performance Tuning**: 45s → 2.8s (94% improvement, 16x faster) via covering index eliminating table scan, query rewrite with index hints, statistics update, execution plan analysis showing PAGEIOLATCH wait elimination
+2. **Azure SQL VM CPU Crisis**: 100% CPU with 847 blocked sessions, emergency mitigation killing blocking SPID in 30 seconds, root cause ORM bug (missing WHERE clause on 12M row UPDATE), permanent fix with query governor cost limit preventing runaway queries
+
+**Key Commands**:
+- `optimize_query_performance` (query, current_metrics, SLA_target)
+- `design_index_strategy` (table_schema, query_patterns, workload_type)
+- `configure_azure_sql_vm` (vm_size, storage_tier, workload_profile)
+- `implement_ha_solution` (RPO, RTO, region_requirements)
+- `troubleshoot_blocking` (wait_stats, blocking_sessions)
+
+**Technical Depth**:
+- Execution plans (scan vs seek, nested loops vs hash join, actual vs estimated rows)
+- Wait stats (PAGEIOLATCH disk I/O, LCK_M_X blocking, CXPACKET parallelism, SOS_SCHEDULER_YIELD CPU)
+- Index types (clustered/non-clustered/columnstore/hash/memory-optimized)
+- Azure storage (Premium SSD P30 5K IOPS / P40 7.5K IOPS / Ultra Disk 160K IOPS <1ms latency)
+- VM sizing (Dsv5 general / Esv5 memory 8:1 / Msv2 ultra memory 29:1 / LSv3 local NVMe)
+- Always On AG (synchronous 0 data loss same region / asynchronous geo-DR <5s RPO / automatic failover with quorum)
+- T-SQL optimization (query hints RECOMPILE/MAXDOP/OPTIMIZE FOR, index hints WITH INDEX, join hints LOOP/HASH/MERGE)
+- DMVs (sys.dm_exec_query_stats, sys.dm_db_index_usage_stats, sys.dm_os_wait_stats)
+
+**Integration Points**:
+- Azure Solutions Architect Agent (VM sizing, storage tier optimization for sustained workload)
+- SRE Principal Engineer Agent (monitoring alerts, SLO framework)
+- Cloud Security Specialist Agent (TDE, Always Encrypted, auditing)
+
+**Use Cases**:
+- SQL Server on Azure VMs IaaS (primary focus)
+- On-premises SQL Server administration
+- Query performance crisis (45s+ queries)
+- Production blocking incidents
+- Azure VM storage optimization
+- Always On AG setup
+- Backup/restore strategy design
+- Security hardening (TDE/RLS/masking)
+
+### Files Created/Modified
+- ✅ `claude/agents/sql_server_dba_specialist_agent.md` (216 lines, new agent)
+- ✅ `claude/context/core/capability_index.md` (updated with SQL Server DBA Specialist entry)
+
+### Metrics/Results
+- **Agent Count**: 85 total agents (up from 81)
+- **Line Count**: 216 lines (8% over 200-line target, justified for comprehensive DBA coverage)
+- **Pattern Coverage**: 6 v2.3 pattern markers (100% compliance)
+- **Capabilities Registry**: Successfully scanned and registered (85 agents, 499 tools)
+- **Production Status**: ✅ Ready for immediate use
+
+### Business Impact
+- **Gap Filled**: First SQL Server/SSMS/T-SQL specialist agent in Maia system
+- **Coverage**: Azure IaaS (SQL Server on VMs) + on-premises SQL Server administration
+- **Scope**: Performance tuning, HA design, security hardening, backup/restore, troubleshooting
+- **Integration**: Works with Azure Solutions Architect, SRE Principal, Cloud Security agents
+
+### Quality Validation
+- ✅ v2.3 template compliance (all 5 required patterns)
+- ✅ 2 comprehensive few-shot examples with THOUGHT→PLAN→ACTION→SELF-REFLECTION workflow
+- ✅ Dense domain reference (execution plans, wait stats, index types, Azure specs)
+- ✅ Explicit handoff declarations with JSON key data
+- ✅ Registered in capabilities database (auto-discovery enabled)
+
+### Next Steps
+- Agent ready for immediate use via: `load sql_server_dba_specialist_agent` or auto-routing when SQL/SSMS/T-SQL questions asked
+- System will auto-route SQL Server queries to this agent (Phase 134 agent persistence)
+- Database sync will occur automatically via LaunchAgent (Phase 192)
+
+### Status
+✅ **PRODUCTION READY** - SQL Server DBA Specialist Agent v2.3 operational, gap analysis complete, system now has 85 specialized agents
+
+---
 
 ## 🧹 PHASE 214: Ghost Capabilities Cleanup - Database Integrity Restored (2025-11-30) ✅ **COMPLETE**
 

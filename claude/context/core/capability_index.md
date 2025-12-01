@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-11-29 (Healthcare Provider Search Agent - Medical Professional Finder)
+**Last Updated**: 2025-12-01 (SQL Server DBA Specialist Agent - Database Administration Expert)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,20 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### SQL Server DBA Specialist Agent v2.3 (Dec 01) - Database Administration Expert ⭐ **NEW AGENT**
+- **SQL Server DBA Specialist Agent** (`claude/agents/sql_server_dba_specialist_agent.md`) - Production-ready v2.3 agent for SQL Server database administration on Azure VMs and on-premises
+- **Location**: `claude/agents/sql_server_dba_specialist_agent.md` (216 lines)
+- **Purpose**: Comprehensive SQL Server DBA expertise - performance tuning, high availability, Azure IaaS optimization, backup/recovery, and security hardening for mission-critical databases
+- **Core Capabilities**: Performance tuning (query optimization with execution plan analysis, index strategies covering/filtered/columnstore, T-SQL rewriting with query hints, wait stats analysis PAGEIOLATCH/LCK_M_X/CXPACKET, DMV queries for bottleneck diagnosis), Azure SQL VM optimization (VM sizing Dsv5/Esv5/Msv2/LSv3 series, storage tiers Premium SSD P30/P40/Ultra Disk 160K IOPS, tempdb on local NVMe, data/log file separation, max server memory 80% RAM), high availability (Always On AG with synchronous/asynchronous replication, failover clustering with Azure Shared Disk, geo-replication for DR, RPO/RTO design), backup & recovery (full/differential/log backups, point-in-time restore PITR, geo-restore, retention policies), security hardening (TDE transparent data encryption, Always Encrypted, row-level security RLS, dynamic data masking, SQL Server auditing)
+- **Key Commands**: `optimize_query_performance` (query, current_metrics, SLA_target), `design_index_strategy` (table_schema, query_patterns, workload_type), `configure_azure_sql_vm` (vm_size, storage_tier, workload_profile), `implement_ha_solution` (RPO, RTO, region_requirements), `troubleshoot_blocking` (wait_stats, blocking_sessions)
+- **Few-Shot Examples**: (1) Query performance tuning - 45s → 2.8s (94% improvement, 16x faster) via covering index on Orders table eliminating table scan, query rewrite with index hints, statistics update, execution plan analysis showing PAGEIOLATCH wait elimination; (2) Azure SQL VM CPU crisis - 100% CPU with 847 blocked sessions, emergency mitigation killing blocking SPID, root cause ORM bug (missing WHERE clause on 12M row UPDATE), permanent fix with query governor cost limit preventing runaway queries
+- **Technical Depth**: Execution plans (scan vs seek, nested loops vs hash join, actual vs estimated rows), wait stats (PAGEIOLATCH disk I/O, LCK_M_X blocking, CXPACKET parallelism, SOS_SCHEDULER_YIELD CPU), index types (clustered/non-clustered/columnstore/hash/memory-optimized), Azure storage (Premium SSD P30 5K IOPS / P40 7.5K IOPS / Ultra Disk 160K IOPS <1ms latency), VM sizing (Dsv5 general / Esv5 memory 8:1 / Msv2 ultra memory 29:1 / LSv3 local NVMe), Always On AG (synchronous 0 data loss same region / asynchronous geo-DR <5s RPO / automatic failover with quorum), T-SQL optimization (query hints RECOMPILE/MAXDOP/OPTIMIZE FOR, index hints WITH INDEX, join hints LOOP/HASH/MERGE), DMVs (sys.dm_exec_query_stats query perf / sys.dm_db_index_usage_stats index usage / sys.dm_os_wait_stats waits)
+- **Problem-Solving Approach**: Phase 1 Diagnose (<5min DMV queries, execution plans, wait stats, recent changes), Phase 2 Analyze & Optimize (<30min index tuning, query rewrite, statistics update, test frequently), Phase 3 Validate & Monitor (<15min performance testing, self-reflection checkpoint, alerts configured)
+- **Integration Points**: Azure Solutions Architect Agent (VM sizing, storage tier optimization for sustained workload), SRE Principal Engineer Agent (monitoring alerts, SLO framework), Cloud Security Specialist Agent (TDE, Always Encrypted, auditing)
+- **Use Cases**: SQL Server on Azure VMs IaaS (primary focus), on-premises SQL Server administration, query performance crisis (45s+ queries), production blocking incidents, Azure VM storage optimization, Always On AG setup, backup/restore strategy design, security hardening TDE/RLS/masking
+- **Production Status**: ✅ **READY** - v2.3 with all 5 advanced patterns (self-reflection & review, test frequently, self-reflection checkpoints, prompt chaining for complex performance issues, explicit handoff with JSON), 216 lines (8% over 200-line target for comprehensive DBA coverage), 2 detailed few-shot examples with THOUGHT→PLAN→ACTION→SELF-REFLECTION workflow
+- **Usage**: Load when user asks about SQL Server, SSMS, T-SQL optimization, query tuning, execution plans, Azure SQL VM, database performance, blocking/deadlocks, Always On, SQL Server backup, TDE, database administration, index strategies, wait stats
 
 ### Healthcare Provider Search Agent v1.0 (Nov 29) - Medical Professional Finder ⭐ **NEW AGENT**
 - **Healthcare Provider Search Agent** (`claude/agents/healthcare_provider_search_agent.md`) - Production-ready v1.0 agent for multi-source healthcare provider search and verification across Australia
