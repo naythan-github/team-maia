@@ -93,6 +93,9 @@ Trigger: "save state" | Action: (1) Update SYSTEM_STATE.md, README.md, agents.md
 ### AUTOMATED ENFORCEMENT ✅
 Pre-commit hooks prevent violations | Real-time compliance (80% min) | Auto-detect changes requiring docs
 
+### 🧪 TDD ENFORCEMENT (Phase 217) ✅ **ACTIVE**
+Pre-commit hook blocks TDD violations | Validates test files exist for new tools | Checks agent v2.3 compliance | Escape: `git commit --no-verify` (requires justification) | Exemptions logged in `claude/data/TDD_EXEMPTIONS.md`
+
 ### 🚨 OPUS COST PROTECTION (Lazy-Loaded)
 Loads only when Opus-risk detected (saves ~13K tokens/$0.039 per context) | `from claude.hooks.lazy_opus_protection import get_lazy_opus_protection` | Prevents auto Opus (80% savings on security) while saving $0.039/load
 

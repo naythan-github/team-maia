@@ -2,8 +2,10 @@
 
 ## 🚨 **MANDATORY ENFORCEMENT** 🚨
 **STATUS**: REQUIRED for ALL development work (tools, agents, features, bug fixes, schema changes)
+**ENFORCEMENT**: ✅ **ACTIVE** - Pre-commit hook blocks violations (Phase 217)
 **EXEMPTIONS**: Documentation-only changes, configuration-only changes (no code logic)
 **AGENT PAIRING**: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)
+**BYPASS**: `git commit --no-verify` (requires justification, logged in `claude/data/TDD_EXEMPTIONS.md`)
 
 ## Overview
 MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift and ensure production-ready, SRE-hardened implementations before deployment.
