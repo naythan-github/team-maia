@@ -51,6 +51,7 @@
     "/Users/naythandawe/Downloads/Taylor Barkle - Talent Pack for Endpoint Engineer at Orro Group.pdf",
     "/Users/naythandawe/Downloads/August 2025 - Month End Report Fyna -  Invoicing.eml",
     "/Users/naythandawe/Downloads/.com.microsoft.edgemac.txSC2E",
+    "/Users/naythandawe/Downloads/Fw- NDCC - CRM Project - Environments Discussion.eml",
     "/Users/naythandawe/Downloads/August 2025 - Playgroup Invoicing.eml",
     "/Users/naythandawe/Downloads/Wayne Ash Minimal Talent Pack for Identity Engineer at Orro Group.pdf"
   ],
@@ -384,6 +385,12 @@
       "action": "keep",
       "destination": "/Users/naythandawe/Downloads/Export-PatchManagerPlusPatches.ps1",
       "timestamp": "2025-11-28T07:28:10.398872"
+    },
+    {
+      "file": "/Users/naythandawe/Downloads/Fw- NDCC - CRM Project - Environments Discussion.eml",
+      "action": "keep",
+      "destination": "/Users/naythandawe/Downloads/Fw- NDCC - CRM Project - Environments Discussion.eml",
+      "timestamp": "2025-12-01T15:28:58.798920"
     }
   ]
 }

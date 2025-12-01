@@ -2,7 +2,7 @@
 
 **Purpose**: Quick reference of ALL tools and agents to prevent duplicate builds
 **Status**: ✅ Production Active - Always loaded regardless of context domain
-**Last Updated**: 2025-12-01 (SQL Server DBA Specialist Agent - Database Administration Expert)
+**Last Updated**: 2025-12-01 (Canonical DateTime System - Date/Time Reliability Protection)
 
 **Usage**: Search this file (Cmd/Ctrl+F) before building anything new
 
@@ -13,6 +13,19 @@
 ---
 
 ## 🔥 Recent Capabilities (Last 30 Days)
+
+### Canonical DateTime System v1.0 (Dec 01) - Date/Time Reliability Protection ⭐ **NEW TOOL**
+- **Canonical DateTime** (`claude/tools/sre/canonical_datetime.py`) - Production-ready date/time system preventing wild date/time variations
+- **Location**: `claude/tools/sre/canonical_datetime.py` (400+ lines, 31/31 tests passing)
+- **Purpose**: Single source of truth for all date/time operations - prevents timezone confusion (AWST vs UTC = 8hr error), manual date entry mistakes, relative time calculation errors, and invalid timestamps (month 13, hour 25)
+- **Core Capabilities**: Date generation (`today_iso()` returns YYYY-MM-DD), timestamp generation (`now_iso()` returns full ISO with timezone +08:00), UTC timestamps (`now_iso_utc()` for database storage), relative time (`hours_ago(3)`, `days_ago(7)`, `minutes_ago(30)` preventing manual arithmetic errors), validation (`validate_timestamp()` catches invalid month/day/hour/minute), cross-verification (`verify()` compares Python vs system time with 1-minute tolerance)
+- **Key Methods**: `CanonicalDateTime.today_iso()` (date YYYY-MM-DD), `now_iso()` (timestamp with timezone), `now_iso_utc()` (UTC for DB), `hours_ago(n)` (relative time), `days_ago(n)` (relative date), `validate_timestamp(str)` (sanity checks), `verify()` (cross-check system time)
+- **Protection Against**: Timezone confusion (UTC vs AWST ±8hr), manual date typos (2025-13-01, 2050-01-01), relative calc errors ("3 days ago" wrong arithmetic), format ambiguity (MM/DD vs DD/MM), invalid times (hour 25, minute 70), stale context dates
+- **Performance**: Date generation 2.8µs (negligible), full timestamp 2.2µs (negligible), validation 0.2µs (negligible), verification 1.81ms (use sparingly - startup only)
+- **Usage**: `from claude.tools.sre.canonical_datetime import CanonicalDateTime; date = CanonicalDateTime.today_iso()` - **ALWAYS use this instead of manual date strings**
+- **Test Coverage**: 31/31 tests passing (date generation, timestamps, relative time, validation rejects month 13/day 32/hour 25, verification, consistency, edge cases)
+- **Production Status**: ✅ **READY** - v1.0 with comprehensive tests, pytz graceful fallback if unavailable, self-test demo on import
+- **Critical Rule**: **NEVER manually type dates** - always use `CanonicalDateTime.today_iso()` or `now_iso()` to prevent errors
 
 ### SQL Server DBA Specialist Agent v2.3 (Dec 01) - Database Administration Expert ⭐ **NEW AGENT**
 - **SQL Server DBA Specialist Agent** (`claude/agents/sql_server_dba_specialist_agent.md`) - Production-ready v2.3 agent for SQL Server database administration on Azure VMs and on-premises

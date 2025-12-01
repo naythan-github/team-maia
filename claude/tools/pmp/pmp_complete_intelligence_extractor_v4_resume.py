@@ -94,10 +94,12 @@ class PMPCompleteIntelligenceExtractor:
         """)
 
         # 5. Supported Patches (364,673 patches - master catalog)
+        # FIXED: Use patch_id (unique) as PRIMARY KEY, not update_id (0-9 sequential)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS supported_patches (
-                update_id INTEGER PRIMARY KEY,
+                patch_id INTEGER PRIMARY KEY,
                 extraction_id INTEGER,
+                update_id INTEGER,
                 bulletin_id TEXT,
                 patch_lang TEXT,
                 patch_updated_time INTEGER,
@@ -397,23 +399,29 @@ class PMPCompleteIntelligenceExtractor:
 
         return None
 
-    def fetch_all_pages(self, endpoint: str, data_key: str, start_page: int = 1, existing_count: int = 0) -> List[Dict]:
+    def fetch_all_pages(self, endpoint: str, data_key: str, extract_fn, table: str,
+                       start_page: int = 1, existing_count: int = 0) -> int:
         """
-        Fetch all pages from a paginated API endpoint with resume capability.
+        Fetch all pages from a paginated API endpoint with INCREMENTAL WRITES.
+
+        RESILIENCE: Writes to database after EACH PAGE to survive network failures.
 
         API pagination: Fixed 25 records per page, uses only 'page' parameter (no pageLimit!)
 
         Args:
             endpoint: API endpoint path
             data_key: Key in response containing the records array
+            extract_fn: Function to extract and insert data (called per page)
+            table: Database table name
             start_page: Page number to start from (for resume capability)
             existing_count: Number of existing records (for progress tracking)
 
         Returns:
-            List of all records across all pages (only new records if resuming)
+            Total number of NEW records written (not including existing)
         """
-        all_records = []
+        new_records_written = 0
         page = start_page
+        total_count = 0
 
         while True:
             data = self.fetch_json(endpoint, page)
@@ -461,34 +469,39 @@ class PMPCompleteIntelligenceExtractor:
             if not records:
                 break
 
-            all_records.extend(records)
+            # CRITICAL: Write to database IMMEDIATELY after each page
+            # This ensures network failures only lose 1 page (25 records max)
+            records_written = extract_fn(records, table)
+            new_records_written += records_written
 
             # Progress update every 50 pages
             if page % 50 == 0:
-                total_fetched = existing_count + len(all_records)
-                print(f"      Progress: {total_fetched:,}/{total_count:,} records ({page} pages)")
+                total_fetched = existing_count + new_records_written
+                print(f"      Progress: {total_fetched:,}/{total_count:,} records ({page} pages) ✅ Saved to DB")
 
             # Check if we've got all records
-            if existing_count + len(all_records) >= total_count:
+            if existing_count + new_records_written >= total_count:
                 break
 
             page += 1
             time.sleep(1.0)  # Rate limiting between pages (1000ms - prevents cumulative throttling)
 
-        total_fetched = existing_count + len(all_records)
-        print(f"      ✅ Fetched {len(all_records):,} new records from {page - start_page + 1} pages (Total: {total_fetched:,})")
-        return all_records
+        total_fetched = existing_count + new_records_written
+        print(f"      ✅ Fetched & SAVED {new_records_written:,} new records from {page - start_page + 1} pages (Total: {total_fetched:,})")
+        return new_records_written
 
     def extract_endpoint_paginated(self, name: str, endpoint: str, table: str,
                                    extract_fn, data_key: str) -> int:
         """
-        Extract endpoint with pagination and resume support.
+        Extract endpoint with pagination, resume support, and INCREMENTAL WRITES.
+
+        RESILIENCE: Writes to DB after each page - survives network failures.
 
         Args:
             name: Display name
             endpoint: API endpoint
             table: Database table name
-            extract_fn: Function to extract and insert data
+            extract_fn: Function to extract and insert data (called per page)
             data_key: Key containing records array in response
 
         Returns:
@@ -502,25 +515,18 @@ class PMPCompleteIntelligenceExtractor:
         # Calculate resume point
         start_page, existing_count = self.calculate_resume_point(table, name)
 
-        # Fetch all pages (resume from where we left off)
-        new_records = self.fetch_all_pages(endpoint, data_key, start_page, existing_count)
+        # Fetch pages with INCREMENTAL WRITES (writes after each page)
+        new_count = self.fetch_all_pages(endpoint, data_key, extract_fn, table, start_page, existing_count)
 
-        if not new_records and existing_count == 0:
+        if new_count == 0 and existing_count == 0:
             print(f"   ❌ No records found")
             return 0
 
-        # Insert new records into database
-        if new_records:
-            new_count = extract_fn(new_records, table)
-            total_count = existing_count + new_count
-        else:
-            # No new records, but we have existing ones
-            total_count = existing_count
-
+        total_count = existing_count + new_count
         elapsed = time.time() - start_time
 
         if existing_count > 0:
-            print(f"   ✅ Extracted {len(new_records):,} new records in {elapsed:.2f}s (Total: {total_count:,})")
+            print(f"   ✅ Extracted {new_count:,} new records in {elapsed:.2f}s (Total: {total_count:,})")
         else:
             print(f"   ✅ Extracted {total_count:,} records in {elapsed:.2f}s")
 
@@ -787,34 +793,35 @@ class PMPCompleteIntelligenceExtractor:
         return len(patches)
 
     def extract_supported_patches(self, patches: List[Dict], table: str) -> int:
-        """Extract supported patches (master catalog) from records list"""
+        """
+        Extract supported patches (master catalog) from records list.
+
+        INCREMENTAL: Called per page (25 records), commits immediately.
+        """
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
 
-        batch_size = 1000
-        for i in range(0, len(patches), batch_size):
-            batch = patches[i:i+batch_size]
+        for patch in patches:
+            # FIXED: Use patch_id (unique) as PRIMARY KEY, not update_id
+            cursor.execute("""
+                INSERT OR REPLACE INTO supported_patches
+                (patch_id, extraction_id, update_id, bulletin_id, patch_lang,
+                 patch_updated_time, is_superceded, raw_data, extracted_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                patch.get('patch_id'),  # FIXED: Use unique identifier
+                self.extraction_id,
+                patch.get('update_id'),  # Still capture, but not PRIMARY KEY
+                patch.get('bulletin_id'),
+                patch.get('patch_lang'),
+                patch.get('patch_updated_time'),
+                patch.get('is_superceded'),
+                json.dumps(patch),
+                datetime.now().isoformat()
+            ))
 
-            for patch in batch:
-                cursor.execute("""
-                    INSERT OR REPLACE INTO supported_patches
-                    (update_id, extraction_id, bulletin_id, patch_lang,
-                     patch_updated_time, is_superceded, raw_data, extracted_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                """, (
-                    patch.get('update_id'),
-                    self.extraction_id,
-                    patch.get('bulletin_id'),
-                    patch.get('patch_lang'),
-                    patch.get('patch_updated_time'),
-                    patch.get('is_superceded'),
-                    json.dumps(patch),
-                    datetime.now().isoformat()
-                ))
-
-            conn.commit()
-            print(f"      DB Write: {min(i+batch_size, len(patches)):,}/{len(patches):,} patches...")
-
+        # CRITICAL: Commit after each page to survive network failures
+        conn.commit()
         conn.close()
         return len(patches)
 

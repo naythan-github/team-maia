@@ -1,0 +1,94 @@
+{
+  "supported_patches_page1": {
+    "supportedpatches": [
+      {
+        "patch_id": 1,
+        "update_id": 0,
+        "bulletin_id": "KB5000001",
+        "patch_lang": "en",
+        "patch_updated_time": 1701388800,
+        "is_superceded": 0,
+        "vendor_name": "Microsoft",
+        "severity": "Critical",
+        "patch_description": "Security update for Windows"
+      },
+      {
+        "patch_id": 2,
+        "update_id": 1,
+        "bulletin_id": "KB5000002",
+        "patch_lang": "en",
+        "patch_updated_time": 1701475200,
+        "is_superceded": 0,
+        "vendor_name": "Microsoft",
+        "severity": "Important",
+        "patch_description": "Cumulative update"
+      }
+    ],
+    "total_count": 365487
+  },
+
+  "all_patches_single": {
+    "allpatches": [
+      {
+        "patch_id": 100,
+        "bulletin_id": "KB4000100",
+        "update_name": "Windows Security Update",
+        "platform": "Windows",
+        "patch_released_time": 1701388800,
+        "patch_size": 102400,
+        "patch_noreboot": 0,
+        "installed": 1
+      }
+    ]
+  },
+
+  "all_systems_multi_field": {
+    "computers": [
+      {
+        "resource_id": 1,
+        "resource_health_status": 1,
+        "os_platform_name": "Windows 11",
+        "branch_office_id": 0,
+        "last_patched_time": 1701388800,
+        "total_driver_patches": 5,
+        "missing_bios_patches": 0
+      }
+    ]
+  },
+
+  "all_systems_alternative_field": {
+    "allsystems": [
+      {
+        "resource_id": 2,
+        "resource_health_status": 2,
+        "os_platform_name": "Windows Server 2022",
+        "branch_office_id": 1,
+        "last_patched_time": 1701475200,
+        "total_driver_patches": 8,
+        "missing_bios_patches": 1
+      }
+    ]
+  },
+
+  "rate_limit_error": {
+    "error": "Rate limit exceeded",
+    "status": 429
+  },
+
+  "html_throttle_response": "<!DOCTYPE html>\n<html>\n<head><title>Please Wait</title></head>\n<body>Your request is being processed...</body>\n</html>",
+
+  "oauth_token_response": {
+    "access_token": "1000.abcdef1234567890.xyz9876543210",
+    "token_type": "Bearer",
+    "expires_in": 3600,
+    "api_domain": "https://patchmgmtplus-au.manageengine.com",
+    "scope": "PatchManagerPlusCloud.Common.READ PatchManagerPlusCloud.PatchMgmt.READ"
+  },
+
+  "pagination_metadata": {
+    "page_size": 25,
+    "total_pages": 14620,
+    "total_records": 365487,
+    "current_page": 1
+  }
+}

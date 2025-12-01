@@ -1,0 +1,64 @@
+{
+  "description": "Sample patch data demonstrating the PRIMARY KEY bug",
+  "bug_demonstration": "update_id repeats 0-9 while patch_id is unique",
+
+  "patches_demonstrating_bug": [
+    {
+      "patch_id": 1,
+      "update_id": 0,
+      "bulletin_id": "KB5000001",
+      "patch_lang": "en",
+      "comment": "First patch with update_id=0"
+    },
+    {
+      "patch_id": 2,
+      "update_id": 1,
+      "bulletin_id": "KB5000002",
+      "patch_lang": "en",
+      "comment": "Second patch with update_id=1"
+    },
+    {
+      "patch_id": 11,
+      "update_id": 0,
+      "bulletin_id": "KB5000011",
+      "patch_lang": "en",
+      "comment": "11th patch - update_id REPEATS 0 (overwrites patch_id=1 if PRIMARY KEY is update_id)"
+    },
+    {
+      "patch_id": 12,
+      "update_id": 1,
+      "bulletin_id": "KB5000012",
+      "patch_lang": "en",
+      "comment": "12th patch - update_id REPEATS 1 (overwrites patch_id=2 if PRIMARY KEY is update_id)"
+    }
+  ],
+
+  "expected_behavior_correct_schema": {
+    "total_records_inserted": 4,
+    "primary_key": "patch_id",
+    "records_in_db": [
+      {"patch_id": 1, "update_id": 0, "bulletin_id": "KB5000001"},
+      {"patch_id": 2, "update_id": 1, "bulletin_id": "KB5000002"},
+      {"patch_id": 11, "update_id": 0, "bulletin_id": "KB5000011"},
+      {"patch_id": 12, "update_id": 1, "bulletin_id": "KB5000012"}
+    ]
+  },
+
+  "actual_behavior_buggy_schema": {
+    "total_records_inserted": 4,
+    "primary_key": "update_id",
+    "records_in_db": [
+      {"patch_id": 11, "update_id": 0, "bulletin_id": "KB5000011"},
+      {"patch_id": 12, "update_id": 1, "bulletin_id": "KB5000012"}
+    ],
+    "data_loss": "50% - patches 1 and 2 overwritten by patches 11 and 12"
+  },
+
+  "real_world_impact": {
+    "api_total_records": 58600,
+    "records_saved_buggy_schema": 10,
+    "data_loss_percentage": 99.98,
+    "extraction_time_wasted": "10.6 hours",
+    "rate_limit_delay": "24 hours"
+  }
+}
