@@ -138,6 +138,29 @@ def temp_db():
         )
     """)
 
+    # SOM Computers
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS som_computers (
+            resource_id INTEGER PRIMARY KEY,
+            extraction_id INTEGER,
+            os_platform_name TEXT,
+            agent_installed_on INTEGER,
+            raw_data TEXT,
+            extracted_at TEXT NOT NULL,
+            FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+        )
+    """)
+
+    # SOM Summary
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS som_summary (
+            extraction_id INTEGER PRIMARY KEY,
+            summary_data TEXT,
+            extracted_at TEXT NOT NULL,
+            FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+        )
+    """)
+
     conn.commit()
     conn.close()
 

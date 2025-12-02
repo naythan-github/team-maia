@@ -230,6 +230,29 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
+        # 16. SOM Computers (3,448 records)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS som_computers (
+                resource_id INTEGER PRIMARY KEY,
+                extraction_id INTEGER,
+                os_platform_name TEXT,
+                agent_installed_on INTEGER,
+                raw_data TEXT,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
+        # 17. SOM Summary (single record)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS som_summary (
+                extraction_id INTEGER PRIMARY KEY,
+                summary_data TEXT,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
         conn.commit()
         conn.close()
 
@@ -757,6 +780,11 @@ class PMPCompleteIntelligenceExtractor:
                 INSERT OR REPLACE INTO approval_settings (extraction_id, settings_data, extracted_at)
                 VALUES (?, ?, ?)
             """, (self.extraction_id, json.dumps(data), datetime.now().isoformat()))
+        elif table == "som_summary":
+            cursor.execute("""
+                INSERT OR REPLACE INTO som_summary (extraction_id, summary_data, extracted_at)
+                VALUES (?, ?, ?)
+            """, (self.extraction_id, json.dumps(data), datetime.now().isoformat()))
 
         conn.commit()
         conn.close()
@@ -988,6 +1016,35 @@ class PMPCompleteIntelligenceExtractor:
         conn.commit()
         conn.close()
         return len(patches)
+
+    def extract_som_computers(self, computers: List[Dict], table: str) -> int:
+        """
+        Extract SOM (Scope of Management) computers from records list.
+
+        INCREMENTAL: Called per page (25 records), commits immediately.
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        for computer in computers:
+            cursor.execute("""
+                INSERT OR REPLACE INTO som_computers
+                (resource_id, extraction_id, os_platform_name, agent_installed_on,
+                 raw_data, extracted_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                computer.get('resource_id'),
+                self.extraction_id,
+                computer.get('os_platform_name'),
+                computer.get('agent_installed_on'),
+                json.dumps(computer),
+                datetime.now().isoformat()
+            ))
+
+        # CRITICAL: Commit after each page to survive network failures
+        conn.commit()
+        conn.close()
+        return len(computers)
 
 
 def main():
