@@ -1,0 +1,87 @@
+# Maia Requirements
+# Python 3.11+ required
+
+# ═══════════════════════════════════════════════════════════════
+# CORE DEPENDENCIES (Required)
+# ═══════════════════════════════════════════════════════════════
+
+# HTTP & API
+requests>=2.31.0
+httpx>=0.25.0
+aiohttp>=3.9.0
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+openpyxl>=3.1.0  # Excel support
+
+# Configuration
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Utilities
+python-dateutil>=2.8.0
+pytz>=2023.3
+schedule>=1.2.0
+
+# ═══════════════════════════════════════════════════════════════
+# RAG & EMBEDDINGS (Optional - for local LLM features)
+# ═══════════════════════════════════════════════════════════════
+
+# Vector database
+chromadb>=0.4.0
+
+# Ollama client (local LLM)
+ollama>=0.1.0
+
+# ═══════════════════════════════════════════════════════════════
+# VISUALIZATION (Optional - for dashboards)
+# ═══════════════════════════════════════════════════════════════
+
+dash>=2.14.0
+dash-bootstrap-components>=1.5.0
+plotly>=5.18.0
+
+# ═══════════════════════════════════════════════════════════════
+# INTEGRATIONS (Optional - as needed)
+# ═══════════════════════════════════════════════════════════════
+
+# DNS tools
+dnspython>=2.4.0
+
+# RSS/Feed parsing
+feedparser>=6.0.0
+
+# Markdown processing
+markdown>=3.5.0
+
+# macOS Keychain
+keyring>=24.0.0
+
+# ═══════════════════════════════════════════════════════════════
+# DATABASE (Optional - for ServiceDesk dashboard)
+# ═══════════════════════════════════════════════════════════════
+
+psycopg2-binary>=2.9.0  # PostgreSQL
+
+# ═══════════════════════════════════════════════════════════════
+# TESTING
+# ═══════════════════════════════════════════════════════════════
+
+pytest>=7.4.0
+pytest-cov>=4.1.0
+pytest-asyncio>=0.21.0
+
+# ═══════════════════════════════════════════════════════════════
+# NOTES
+# ═══════════════════════════════════════════════════════════════
+#
+# Ollama Setup (for local LLM features):
+#   brew install ollama
+#   ollama pull nomic-embed-text
+#   ollama serve
+#
+# For full feature support, also install:
+#   pip install python-docx  # Document generation
+#   pip install beautifulsoup4 lxml  # HTML parsing
+#   pip install sentence-transformers  # Alternative embeddings

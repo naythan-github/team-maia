@@ -39,9 +39,9 @@ EXCLUDE_DIRS: Set[str] = {
     # Root-level duplicates (empty or should be consolidated)
     "data",  # Empty at root
 
-    # Personal databases
-    "claude/data/databases",
-    "claude/data/rag_databases",
+    # Personal databases (EXCEPT whitelisted core architecture DBs)
+    # Note: claude/data/databases is NOT excluded - we use file-level filtering instead
+    "claude/data/rag_databases",  # All RAG DBs excluded (personal embeddings)
 
     # Personal context
     "claude/context/personal",
@@ -59,6 +59,62 @@ EXCLUDE_DIRS: Set[str] = {
     "venv",
     ".eggs",
     "*.egg-info",
+}
+
+# ============================================================================
+# CORE ARCHITECTURE DATABASES TO INCLUDE
+# ============================================================================
+# These databases are part of Maia's core architecture and provide value to team:
+# - system_state.db: 108 phases of development history (searchable context)
+# - capabilities.db: 567 tools/agents indexed (enables discovery)
+
+INCLUDE_DATABASE_FILES: Set[str] = {
+    "claude/data/databases/system/system_state.db",
+    "claude/data/databases/system/capabilities.db",
+}
+
+# Database files to EXCLUDE (personal/project data)
+EXCLUDE_DATABASE_FILES: Set[str] = {
+    # User databases (all personal)
+    "autonomous_alerts_naythan.db",
+    "background_learning_naythan.db",
+    "calendar_optimizer_naythan.db",
+    "context_preparation_naythan.db",
+    "contextual_memory_naythan.db",
+    "continuous_monitoring_naythan.db",
+    "personal_knowledge_graph.db",
+    "production_deployment_naythan.db",
+    "teams_meetings.db",
+
+    # Intelligence databases (personal data)
+    "adaptive_routing.db",
+    "eia_intelligence.db",
+    "email_actions.db",
+    "outcome_tracker.db",
+    "predictive_models.db",
+    "security_metrics.db",
+
+    # System databases (personal/project specific)
+    "conversations.db",
+    "tool_discovery.db",
+    "verification_hook.db",
+    "orro_application_inventory.db",
+    "orro_application_inventory_v2.db",
+    "implementations.db",
+    "research_cache.db",
+    "anti_sprawl_progress.db",
+    "dora_metrics.db",
+    "self_improvement.db",
+    "deduplication.db",
+    "performance_metrics.db",
+    "system_health.db",
+    "dashboard_registry.db",
+
+    # Root level databases
+    "decision_intelligence.db",
+    "executive_information.db",
+    "servicedesk.db",
+    "stakeholder_intelligence.db",
 }
 
 # Files to completely exclude
@@ -561,6 +617,16 @@ echo "  1. Edit claude/context/personal/profile.md with your info"
 echo "  2. Edit claude/data/user_preferences.json if needed"
 echo "  3. Run: pytest tests/ to verify everything works"
 echo ""
+echo "📊 Included databases (ready to use):"
+echo "  • system_state.db - 108 phases of development history"
+echo "  • capabilities.db - 567 tools/agents indexed"
+echo ""
+echo "📝 Note: Other databases will auto-create when first used."
+echo "   Tools use 'CREATE TABLE IF NOT EXISTS' pattern."
+echo ""
+echo "🔍 Optional: Set up local LLM for RAG features:"
+echo "   brew install ollama && ollama pull nomic-embed-text"
+echo ""
 echo "For help: see CONTRIBUTING.md"
 echo "═══════════════════════════════════════════════════════════"
 """
@@ -683,6 +749,17 @@ class CleanRepoCreator:
 
     def should_exclude_file(self, filename: str, rel_path: str) -> bool:
         """Check if file should be excluded."""
+        # Normalize path separators
+        rel_path_normalized = rel_path.replace("\\", "/")
+
+        # WHITELIST CHECK: Core architecture databases are always included
+        if rel_path_normalized in INCLUDE_DATABASE_FILES:
+            return False  # Explicitly include
+
+        # BLACKLIST CHECK: Excluded database files
+        if filename in EXCLUDE_DATABASE_FILES:
+            return True
+
         # Check exact filename
         if filename in EXCLUDE_FILES:
             return True
