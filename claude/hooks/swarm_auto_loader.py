@@ -711,7 +711,22 @@ def close_session():
     # =========================================================================
     if issues_found:
         print("=" * 60)
-        response = input("\n📝 Run /save_state to commit changes and update docs? (y/n): ")
+
+        # Check for command-line flags or non-interactive mode
+        auto_save = "--auto-save" in sys.argv or "-y" in sys.argv
+        skip_save = "--skip-save" in sys.argv or "-n" in sys.argv
+        is_interactive = sys.stdin.isatty()
+
+        if skip_save:
+            response = "n"
+        elif auto_save or not is_interactive:
+            # Non-interactive mode (called from Claude Code) - recommend save_state
+            print("\n📝 Uncommitted changes detected!")
+            print("   Run 'save state' in Claude to commit changes before closing.")
+            print("   Or use: python3 swarm_auto_loader.py close_session --skip-save")
+            response = "n"  # Don't block, just inform
+        else:
+            response = input("\n📝 Run /save_state to commit changes and update docs? (y/n): ")
 
         if response.lower() in ['y', 'yes']:
             print("\n🔄 Running save_state workflow...\n")

@@ -14,7 +14,7 @@ def test_focused_scan():
     scanner = LLMEnhancedDependencyScanner()
     
     # Focus on ServiceDesk directory only
-    servicedesk_path = Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "tools" / "servicedesk")
+    servicedesk_path = Path(str(Path(__file__).resolve().parents[4 if "claude/tools" in str(__file__) else 0] / "claude" / "tools" / "servicedesk"))
     
     if not servicedesk_path.exists():
         print("❌ ServiceDesk directory not found")
