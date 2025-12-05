@@ -18,8 +18,28 @@ from pathlib import Path
 
 # Configuration
 MAIA_ROOT = Path(__file__).parent.parent.parent
-ALLOWED_ROOT_FILES = ['CLAUDE.md', 'README.md', 'SYSTEM_STATE.md', 'SYSTEM_STATE_ARCHIVE.md', '.gitignore']
-ALLOWED_ROOT_DIRS = ['${MAIA_ROOT}', "get_path_manager().get_path('backup') "]  # Path manager directories
+
+# Standard project root files (PEP conventions + GitHub standards)
+ALLOWED_ROOT_FILES = [
+    # Core Maia files
+    'CLAUDE.md', 'README.md', 'SYSTEM_STATE.md', 'SYSTEM_STATE_ARCHIVE.md',
+    # Standard Python project files
+    'requirements.txt', 'setup.py', 'setup.cfg', 'pyproject.toml',
+    # GitHub/Git standard files
+    '.gitignore', 'LICENSE', 'CONTRIBUTING.md', 'CODE_OF_CONDUCT.md',
+    # IDE/tool configs (hidden files handled separately)
+]
+
+# Allowed root directories
+ALLOWED_ROOT_DIRS = [
+    'claude',      # Core Maia structure
+    'scripts',     # Utility scripts
+    'tests',       # Test suite
+    '.github',     # GitHub workflows, CODEOWNERS
+    # Legacy path manager dirs (cleanup pending)
+    '${MAIA_ROOT}', "get_path_manager().get_path('backup') ",
+]
+
 WORK_OUTPUT_PATTERNS = ['ServiceDesk', 'Infrastructure', 'Lance_Letran', 'L2_']
 MAX_FILE_SIZE_MB = 10
 
@@ -74,9 +94,16 @@ def check_violations():
 
         # Check 3: Root directory pollution
         if '/' not in file:  # File is in root
-            if filename not in ALLOWED_ROOT_FILES and filename not in ALLOWED_ROOT_DIRS:
+            if filename not in ALLOWED_ROOT_FILES:
                 violations.append(
                     f"❌ {file} - Not allowed in root (move to appropriate subdirectory)"
+                )
+        else:
+            # Check if file is in allowed root directory
+            root_dir = file.split('/')[0]
+            if root_dir not in ALLOWED_ROOT_DIRS and not root_dir.startswith('.'):
+                violations.append(
+                    f"❌ {file} - Not in allowed directory (allowed: {', '.join(ALLOWED_ROOT_DIRS[:4])})"
                 )
 
         # Check 4: Databases not in databases/

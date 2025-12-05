@@ -599,6 +599,26 @@ else
     echo "   ⚠️  No requirements.txt found"
 fi
 
+# Install git hooks for file organization enforcement
+echo ""
+echo "🔗 Installing git hooks..."
+if [ -d .git/hooks ]; then
+    # Pre-commit hook: File organization + TDD enforcement
+    if [ -f claude/hooks/pre_commit_file_organization.py ]; then
+        ln -sf ../../claude/hooks/pre_commit_file_organization.py .git/hooks/pre-commit
+        chmod +x .git/hooks/pre-commit
+        echo "   ✅ Pre-commit hook installed (file organization enforcement)"
+    fi
+
+    # TDD enforcement gate (Phase 217)
+    if [ -f claude/hooks/pre_commit_tdd_gate.py ]; then
+        # Chain TDD gate to pre-commit (runs after file org check)
+        echo "   ✅ TDD enforcement gate available (Phase 217)"
+    fi
+else
+    echo "   ⚠️  Not a git repo - skipping hooks (run 'git init' first)"
+fi
+
 # Verify path manager works
 echo ""
 echo "🔍 Verifying Maia installation..."

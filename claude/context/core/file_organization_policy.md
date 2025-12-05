@@ -38,10 +38,22 @@
 
 ## FORBIDDEN LOCATIONS
 
-**Repository Root** (only 4 core files + 3 operational dirs):
+**Repository Root** (standard project files + core directories):
+
+*Allowed Files:*
 - ✅ `CLAUDE.md`, `README.md`, `SYSTEM_STATE.md`, `SYSTEM_STATE_ARCHIVE.md`
-- ✅ `${MAIA_ROOT}/`, `backup/`, `scripts/`
-- ❌ All other files
+- ✅ `requirements.txt`, `setup.py`, `setup.cfg`, `pyproject.toml` (Python standards)
+- ✅ `LICENSE`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (GitHub standards)
+- ✅ `.gitignore` (Git standard)
+
+*Allowed Directories:*
+- ✅ `claude/` - Core Maia structure
+- ✅ `scripts/` - Utility scripts
+- ✅ `tests/` - Test suite
+- ✅ `.github/` - GitHub workflows, CODEOWNERS
+
+*Forbidden:*
+- ❌ All other files and directories
 
 **claude/data/ root**: Use subdirectories (databases/, project_status/, rag_databases/)
 
