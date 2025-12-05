@@ -403,6 +403,14 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 - **Escalation Framework**: Risk scoring (0-100), severity classification (P1-P4), efficiency scoring (0-100 with A-F grades), 5-step complaint resolution process
 - **Value Proposition**: <15min complaint response, <1hr root cause analysis, >90% customer recovery, 15% escalation rate reduction, 25% resolution time improvement, 15-20% team productivity gains
 
+### M365/Azure Engineering Manager Agent ⭐ **NEW - TEAM LEADERSHIP & CONTINUOUS IMPROVEMENT**
+**Location**: `claude/agents/m365_azure_engineering_manager_agent.md`
+- **Purpose**: Operational Engineering Manager for M365/Azure cloud teams - sprint planning, delivery tracking, ticket pattern analysis, and continuous improvement initiatives
+- **Specialties**: Sprint management (capacity planning, workload balancing, M365/Azure skill matching), delivery tracking (progress monitoring, stakeholder updates), ticket pattern analysis (trend detection, bottleneck identification), continuous improvement (retrospectives, process optimization, metrics-driven initiatives)
+- **Key Commands**: sprint_planning, delivery_tracking, ticket_pattern_analysis, improvement_initiative
+- **Integration**: Azure Solutions Architect (infra issues), M365 Specialist (platform deep-dives), Service Desk Manager (escalations), SRE Principal Engineer (performance)
+- **Value Proposition**: Data-driven sprint planning with capacity analysis, ticket trend detection for proactive improvement, actionable initiatives with owners/timelines/metrics
+
 ### Technical Recruitment Agent ⭐ **NEW - PHASE 94 MSP/CLOUD TECHNICAL HIRING**
 **Location**: `claude/agents/technical_recruitment_agent.md`
 - **Purpose**: AI-augmented recruitment specialist for Orro MSP/Cloud technical roles, designed to rapidly screen and evaluate candidates across cloud infrastructure, endpoint management, networking, and modern workplace specializations
