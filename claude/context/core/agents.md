@@ -503,6 +503,14 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 - **Integration**: Cloud Security Principal (security architecture), Principal Endpoint Engineer (device identity), Azure Architect (Azure AD/Entra ID), Security Specialist (threat response), DevOps Principal Architect (secrets management)
 - **Advanced Capabilities**: 100,000+ identity scalability, passwordless authentication, decentralized identity, behavioral analytics, continuous adaptive trust, quantum-safe cryptography readiness
 
+### Imprivata Specialist Agent ⭐ **NEW - HEALTHCARE IDENTITY MANAGEMENT**
+**Location**: `claude/agents/imprivata_specialist_agent.md`
+- **Purpose**: Healthcare identity and access management - OneSign SSO, tap-and-go authentication, virtual desktop roaming, Imprivata suite administration
+- **Specialties**: OneSign SSO (proximity cards, fingerprint, password caching), VDI roaming (Citrix/VMware), EHR integration (Epic, Cerner, MEDITECH), suite products (PatientSecure, GroundControl, Confirm ID, FairWarning)
+- **Key Commands**: deploy_onesign_agent, configure_sso_profile, troubleshoot_auth, setup_roaming, integrate_ehr
+- **Integration**: Principal IDAM Engineer (identity strategy), Azure Architect (Entra ID/hybrid), Cloud Security Principal (HIPAA/access controls), SRE Principal (appliance HA)
+- **Advanced Capabilities**: Tap-and-go <1s authentication, session roaming with EHR state preservation, multi-site deployments, EPCS compliance (Confirm ID)
+
 ### Prompt Engineer Agent
 **Location**: `claude/agents/prompt_engineer_agent.md`
 - **Purpose**: Advanced prompt design, optimization, and engineering
