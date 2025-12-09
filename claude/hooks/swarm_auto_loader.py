@@ -511,6 +511,70 @@ def log_error(message: str):
     print(f"[swarm_auto_loader ERROR] {message}", file=sys.stderr)
 
 
+def _capture_session_memory(session_data: dict) -> bool:
+    """
+    Capture session memory before closing (Phase 220).
+
+    Logs session to ConversationLogger for cross-session learning.
+    Graceful degradation - never blocks session close.
+
+    Args:
+        session_data: Session dict with agent, context, etc.
+
+    Returns:
+        True if captured, False otherwise (non-blocking)
+    """
+    try:
+        # Import conversation logger
+        from claude.tools.conversation_logger import ConversationLogger
+
+        agent = session_data.get("current_agent", "unknown")
+        context = session_data.get("context", "")
+        started_at = session_data.get("session_start", session_data.get("started_at", ""))
+
+        # Skip if no meaningful context
+        if not context or context == "unknown":
+            return False
+
+        logger_instance = ConversationLogger()
+
+        # Create journey from session
+        journey_id = logger_instance.start_journey(
+            problem_description=f"Session with {agent}",
+            initial_question=context[:500] if context else "Agent session"
+        )
+
+        if journey_id:
+            # Add agent used
+            logger_instance.add_agent(
+                journey_id=journey_id,
+                agent_name=agent,
+                rationale=f"User-loaded agent session"
+            )
+
+            # Complete journey with context as meta-learning
+            logger_instance.complete_journey(
+                journey_id=journey_id,
+                business_impact="Session completed",
+                meta_learning=context[:1000] if context else "Session context not captured",
+                iteration_count=1,
+                embed=True  # Generate embedding for semantic search
+            )
+
+            print(f"   📝 Session memory captured")
+            return True
+
+        return False
+
+    except ImportError:
+        # ConversationLogger not available - graceful degradation
+        return False
+    except Exception as e:
+        # Non-blocking: log but don't fail session close
+        print(f"   ⚠️  Memory capture skipped: {str(e)[:50]}")
+        return False
+
+
 def close_session():
     """
     Pre-shutdown workflow: Comprehensive checks before closing Claude Code window.
@@ -751,7 +815,7 @@ def close_session():
         print("✅ All checks passed - clean state\n")
 
     # =========================================================================
-    # Check 5: Session File Cleanup
+    # Check 5: Session Memory Capture + File Cleanup
     # =========================================================================
     session_file = get_session_file_path()
 
@@ -762,6 +826,10 @@ def close_session():
                 session_data = json.load(f)
                 agent = session_data.get("current_agent", "unknown")
                 domain = session_data.get("domain", "unknown")
+                context = session_data.get("context", "")
+
+            # Phase 220: Capture session memory before deletion
+            _capture_session_memory(session_data)
 
             # Delete session file
             session_file.unlink()

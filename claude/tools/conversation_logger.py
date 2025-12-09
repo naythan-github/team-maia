@@ -344,16 +344,18 @@ class ConversationLogger:
         journey_id: str,
         business_impact: str,
         meta_learning: str,
-        iteration_count: int
+        iteration_count: int,
+        embed: bool = True
     ) -> bool:
         """
-        Finalize journey with metadata.
+        Finalize journey with metadata and optionally generate embedding.
 
         Args:
             journey_id: Journey UUID
             business_impact: Quantified impact statement
             meta_learning: System/workflow insights discovered
             iteration_count: Number of refinement iterations
+            embed: Generate embedding for semantic search (default: True)
 
         Returns:
             True if successful, False otherwise
@@ -371,6 +373,17 @@ class ConversationLogger:
             """, (business_impact, meta_learning, iteration_count, journey_id))
 
             conn.commit()
+
+            # Get full journey for embedding
+            if embed:
+                cursor.execute("SELECT * FROM conversations WHERE journey_id = ?", (journey_id,))
+                row = cursor.fetchone()
+                if row:
+                    # Build journey dict from row
+                    columns = [desc[0] for desc in cursor.description]
+                    journey_data = dict(zip(columns, row))
+                    self._embed_journey(journey_data)
+
             conn.close()
 
             logger.info(f"Completed journey {journey_id}")
@@ -378,6 +391,27 @@ class ConversationLogger:
 
         except Exception as e:
             logger.error(f"Failed to complete journey: {e}")
+            return False
+
+    def _embed_journey(self, journey_data: dict) -> bool:
+        """
+        Generate embedding for journey (for semantic search).
+
+        Args:
+            journey_data: Full journey dict from SQLite
+
+        Returns:
+            True if embedded, False otherwise (graceful degradation)
+        """
+        try:
+            from claude.tools.memory.conversation_memory_rag import ConversationMemoryRAG
+            rag = ConversationMemoryRAG()
+            return rag.embed_journey(journey_data)
+        except ImportError:
+            logger.debug("ConversationMemoryRAG not available - skipping embedding")
+            return False
+        except Exception as e:
+            logger.warning(f"Embedding failed (non-blocking): {e}")
             return False
 
     def mark_shareable(self, journey_id: str) -> bool:

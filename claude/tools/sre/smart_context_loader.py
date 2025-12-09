@@ -80,6 +80,7 @@ class ContextLoadResult:
     token_count: int
     loading_strategy: str
     intent_classification: Optional[Dict[str, Any]]
+    memory_context: Optional[str] = None  # Phase 220: Cross-session memory
 
 
 class SmartContextLoader:
@@ -140,15 +141,16 @@ class SmartContextLoader:
             elif not self.capabilities_db_path.exists():
                 logger.debug(f"Capabilities database not found: {self.capabilities_db_path}")
 
-    def load_for_intent(self, user_query: str) -> ContextLoadResult:
+    def load_for_intent(self, user_query: str, include_memory: bool = True) -> ContextLoadResult:
         """
         Load context optimized for user query intent.
 
         Args:
             user_query: Natural language query from user
+            include_memory: Include relevant past work from conversation memory (Phase 220)
 
         Returns:
-            ContextLoadResult with content, phases loaded, token count, strategy
+            ContextLoadResult with content, phases loaded, token count, strategy, memory
         """
         # Step 1: Classify intent (if classifier available)
         intent = None
@@ -164,16 +166,47 @@ class SmartContextLoader:
         # Step 4: Load selected phases
         content = self._load_phases(phases, budget)
 
-        # Step 5: Estimate token count (rough: 4 chars per token)
+        # Step 5: Load conversation memory (Phase 220)
+        memory_context = None
+        if include_memory:
+            memory_context = self._load_conversation_memory(user_query)
+
+        # Step 6: Estimate token count (rough: 4 chars per token)
         token_count = len(content) // 4
+        if memory_context:
+            token_count += len(memory_context) // 4
 
         return ContextLoadResult(
             content=content,
             phases_loaded=phases,
             token_count=token_count,
             loading_strategy=strategy,
-            intent_classification=self._intent_to_dict(intent) if intent else None
+            intent_classification=self._intent_to_dict(intent) if intent else None,
+            memory_context=memory_context
         )
+
+    def _load_conversation_memory(self, query: str) -> Optional[str]:
+        """
+        Load relevant past work from conversation memory (Phase 220).
+
+        Graceful degradation - returns None on any failure.
+
+        Args:
+            query: User query to find relevant past work
+
+        Returns:
+            Formatted memory context or None
+        """
+        try:
+            from claude.tools.memory import get_session_memory
+            memory = get_session_memory(query, max_results=3, min_relevance=0.3)
+            return memory if memory else None
+        except ImportError:
+            logger.debug("Conversation memory not available")
+            return None
+        except Exception as e:
+            logger.warning(f"Memory retrieval failed: {e}")
+            return None
 
     def _determine_strategy(
         self,
