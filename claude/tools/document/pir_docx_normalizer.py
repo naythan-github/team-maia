@@ -25,7 +25,14 @@ except ImportError:
 
 
 def set_table_full_width(table):
-    """Set table to 100% page width."""
+    """
+    Set table to 100% page width.
+
+    IMPORTANT: OOXML element ordering is critical. Elements must appear in this order:
+    tblStyle → tblpPr → tblW → jc → ... → tblLayout → tblCellMar → tblLook
+
+    Word ignores tblW if it appears before tblStyle.
+    """
     tbl = table._tbl
     tblPr = tbl.tblPr
 
@@ -42,7 +49,13 @@ def set_table_full_width(table):
     tblW = OxmlElement('w:tblW')
     tblW.set(qn('w:type'), 'pct')
     tblW.set(qn('w:w'), '5000')  # 5000 = 100% in Word's percentage units
-    tblPr.insert(0, tblW)
+
+    # Insert tblW AFTER tblStyle (if present) - OOXML ordering requirement
+    tblStyle = tblPr.find(qn('w:tblStyle'))
+    if tblStyle is not None:
+        tblStyle.addnext(tblW)
+    else:
+        tblPr.insert(0, tblW)
 
     # Disable autofit to respect our width setting
     tblLayout = tblPr.find(qn('w:tblLayout'))
@@ -231,6 +244,258 @@ def set_cell_widths_content_aware(table):
             tcPr.insert(0, tcW)
 
 
+def apply_table_style(table, doc, style_name):
+    """
+    Apply a named table style to a table.
+
+    Args:
+        table: The table to style
+        doc: The Document object (needed to access styles)
+        style_name: Name of the style to apply (e.g., "_Orro Table 1")
+
+    Returns True if style applied, False if style not found.
+    """
+    try:
+        # Check if style exists in document
+        style = doc.styles[style_name]
+        if style.type != 3:  # 3 = TABLE style
+            return False
+        table.style = style_name
+        return True
+    except KeyError:
+        return False
+
+
+def enable_first_row_header(table):
+    """Enable first row as header (for table styles that format headers differently)."""
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+
+    if tblPr is None:
+        tblPr = OxmlElement('w:tblPr')
+        tbl.insert(0, tblPr)
+
+    # Set tblLook to enable first row formatting
+    tblLook = tblPr.find(qn('w:tblLook'))
+    if tblLook is None:
+        tblLook = OxmlElement('w:tblLook')
+        tblPr.append(tblLook)
+
+    tblLook.set(qn('w:firstRow'), '1')
+    tblLook.set(qn('w:lastRow'), '0')
+    tblLook.set(qn('w:firstColumn'), '0')
+    tblLook.set(qn('w:lastColumn'), '0')
+    tblLook.set(qn('w:noHBand'), '1')
+    tblLook.set(qn('w:noVBand'), '1')
+
+
+def update_table_grid(table, pct_widths, page_width_twips=9360):
+    """
+    Update tblGrid column widths to match page width.
+
+    The tblGrid stores absolute column widths in twips (dxa).
+    These must be updated to reflect the actual page width for
+    Word to render the table correctly at 100% width.
+
+    Args:
+        table: The table to update
+        pct_widths: List of percentage widths (sum = 5000 = 100%)
+        page_width_twips: Page text width in twips (default: 9360 = 6.5" for letter)
+    """
+    tbl = table._tbl
+
+    # Find or create tblGrid
+    tblGrid = tbl.find(qn('w:tblGrid'))
+    if tblGrid is None:
+        tblGrid = OxmlElement('w:tblGrid')
+        # Insert after tblPr
+        tblPr = tbl.tblPr
+        if tblPr is not None:
+            tblPr.addnext(tblGrid)
+        else:
+            tbl.insert(0, tblGrid)
+    else:
+        # Clear existing gridCol elements
+        for gridCol in list(tblGrid.findall(qn('w:gridCol'))):
+            tblGrid.remove(gridCol)
+
+    # Calculate absolute widths from percentages
+    for pct in pct_widths:
+        gridCol = OxmlElement('w:gridCol')
+        # Convert percentage (5000 = 100%) to twips
+        width_twips = int((pct / 5000) * page_width_twips)
+        gridCol.set(qn('w:w'), str(width_twips))
+        tblGrid.append(gridCol)
+
+
+def apply_orro_borders(table):
+    """
+    Apply Orro corporate border styling with explicit RGB colors.
+
+    Orro style borders:
+    - Bottom: Purple #7030A0, 8pt (1pt = 8 eighths)
+    - Inside horizontal: Light purple #CBC6F3, 4pt
+    - No vertical borders (clean Orro look)
+
+    Uses explicit RGB colors instead of theme colors to ensure
+    consistent rendering regardless of document theme.
+
+    Also applies explicit borders to first row cells to override
+    the style's theme-dependent firstRow borders.
+    """
+    ORRO_PURPLE = "7030A0"
+    ORRO_LIGHT_PURPLE = "CBC6F3"
+
+    tbl = table._tbl
+    tblPr = tbl.tblPr
+
+    if tblPr is None:
+        tblPr = OxmlElement('w:tblPr')
+        tbl.insert(0, tblPr)
+
+    # Remove existing borders
+    existing_borders = tblPr.find(qn('w:tblBorders'))
+    if existing_borders is not None:
+        tblPr.remove(existing_borders)
+
+    # Create new borders element
+    tblBorders = OxmlElement('w:tblBorders')
+
+    # Bottom border - Orro purple, 8pt (64 eighths)
+    bottom = OxmlElement('w:bottom')
+    bottom.set(qn('w:val'), 'single')
+    bottom.set(qn('w:sz'), '8')  # 1pt in eighths
+    bottom.set(qn('w:space'), '0')
+    bottom.set(qn('w:color'), ORRO_PURPLE)
+    tblBorders.append(bottom)
+
+    # Inside horizontal - light purple, 4pt
+    insideH = OxmlElement('w:insideH')
+    insideH.set(qn('w:val'), 'single')
+    insideH.set(qn('w:sz'), '4')
+    insideH.set(qn('w:space'), '0')
+    insideH.set(qn('w:color'), ORRO_LIGHT_PURPLE)
+    tblBorders.append(insideH)
+
+    # Explicitly set no vertical borders
+    for border_name in ['left', 'right', 'insideV']:
+        border = OxmlElement(f'w:{border_name}')
+        border.set(qn('w:val'), 'nil')
+        tblBorders.append(border)
+
+    # Top border - nil (no top border)
+    top_border = OxmlElement('w:top')
+    top_border.set(qn('w:val'), 'nil')
+    tblBorders.append(top_border)
+
+    # Insert borders after tblW (maintain OOXML order)
+    tblW = tblPr.find(qn('w:tblW'))
+    if tblW is not None:
+        tblW.addnext(tblBorders)
+    else:
+        tblPr.insert(0, tblBorders)
+
+    # Apply explicit borders to first row cells to override style's theme-dependent borders
+    if table.rows:
+        for cell in table.rows[0].cells:
+            tc = cell._tc
+            tcPr = tc.tcPr
+            if tcPr is None:
+                tcPr = OxmlElement('w:tcPr')
+                tc.insert(0, tcPr)
+
+            # Remove existing cell borders
+            existing_tc_borders = tcPr.find(qn('w:tcBorders'))
+            if existing_tc_borders is not None:
+                tcPr.remove(existing_tc_borders)
+
+            # Create cell borders with explicit Orro purple (no themeColor)
+            tcBorders = OxmlElement('w:tcBorders')
+
+            # Bottom border for header row - Orro purple
+            tc_bottom = OxmlElement('w:bottom')
+            tc_bottom.set(qn('w:val'), 'single')
+            tc_bottom.set(qn('w:sz'), '8')
+            tc_bottom.set(qn('w:space'), '0')
+            tc_bottom.set(qn('w:color'), ORRO_PURPLE)
+            tcBorders.append(tc_bottom)
+
+            # No other borders for cells
+            for border_name in ['top', 'left', 'right']:
+                border = OxmlElement(f'w:{border_name}')
+                border.set(qn('w:val'), 'nil')
+                tcBorders.append(border)
+
+            tcPr.append(tcBorders)
+
+
+def apply_table_font(table, font_name="Aptos", font_size_pt=10):
+    """
+    Apply consistent font styling to all text in a table.
+
+    Args:
+        table: The table to style
+        font_name: Font family name (default: Aptos - Orro corporate font)
+        font_size_pt: Font size in points (default: 10)
+    """
+    from docx.shared import Pt
+
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                for run in paragraph.runs:
+                    run.font.name = font_name
+                    run.font.size = Pt(font_size_pt)
+
+
+def normalize_paragraph_spacing(doc):
+    """
+    Normalize paragraph spacing throughout the document.
+
+    Applies consistent spacing based on paragraph style:
+    - Body text (Normal): 6pt after
+    - Headings: 12pt before, 6pt after
+    - List items: 2pt before/after (tight)
+
+    Table cell spacing is handled separately in normalize_table_cell_spacing().
+    """
+    BODY_SPACE_AFTER = Pt(6)
+    HEADING_SPACE_BEFORE = Pt(12)
+    HEADING_SPACE_AFTER = Pt(6)
+    LIST_SPACE = Pt(2)
+
+    for para in doc.paragraphs:
+        style_name = para.style.name if para.style else ""
+
+        if 'Heading' in style_name:
+            # Headings: 12pt before, 6pt after
+            para.paragraph_format.space_before = HEADING_SPACE_BEFORE
+            para.paragraph_format.space_after = HEADING_SPACE_AFTER
+        elif 'List' in style_name:
+            # List items: tight 2pt spacing
+            para.paragraph_format.space_before = LIST_SPACE
+            para.paragraph_format.space_after = LIST_SPACE
+        elif style_name == 'Normal' or style_name == '':
+            # Body text: 6pt after (no explicit before)
+            para.paragraph_format.space_after = BODY_SPACE_AFTER
+
+
+def normalize_table_cell_spacing(table):
+    """
+    Apply minimal spacing to table cell paragraphs.
+
+    Table cells should have tight 2pt before/after spacing
+    to keep rows compact.
+    """
+    TABLE_CELL_SPACE = Pt(2)
+
+    for row in table.rows:
+        for cell in row.cells:
+            for para in cell.paragraphs:
+                para.paragraph_format.space_before = TABLE_CELL_SPACE
+                para.paragraph_format.space_after = TABLE_CELL_SPACE
+
+
 def set_cell_margins(table, top=50, bottom=50, left=100, right=100):
     """Set consistent cell margins (in twips: 1440 twips = 1 inch)."""
     tbl = table._tbl
@@ -258,7 +523,7 @@ def set_cell_margins(table, top=50, bottom=50, left=100, right=100):
 
 
 def normalize_document(doc_path: Path, output_path: Path = None, verbose: bool = True,
-                       content_aware: bool = True) -> dict:
+                       content_aware: bool = True, table_style: str = None) -> dict:
     """
     Normalize a Word document's formatting.
 
@@ -268,6 +533,7 @@ def normalize_document(doc_path: Path, output_path: Path = None, verbose: bool =
         verbose: Print progress
         content_aware: Use content-aware column sizing (default: True)
                       If False, preserves existing width ratios
+        table_style: Name of table style to apply (e.g., "_Orro Table 1")
 
     Returns dict with statistics about changes made.
     """
@@ -275,29 +541,76 @@ def normalize_document(doc_path: Path, output_path: Path = None, verbose: bool =
 
     stats = {
         "tables_fixed": 0,
+        "tables_styled": 0,
         "total_tables": len(doc.tables),
         "input": str(doc_path),
         "output": str(output_path or doc_path),
-        "mode": "content-aware" if content_aware else "preserve-ratios"
+        "mode": "content-aware" if content_aware else "preserve-ratios",
+        "table_style": table_style
     }
 
     for i, table in enumerate(doc.tables):
+        # Apply table style if specified
+        if table_style:
+            if apply_table_style(table, doc, table_style):
+                enable_first_row_header(table)
+                stats["tables_styled"] += 1
+
         # Fix table width to 100%
         set_table_full_width(table)
 
-        # Set column widths
+        # Calculate and set column widths
         if content_aware:
-            set_cell_widths_content_aware(table)
+            pct_widths = calculate_content_aware_widths(table)
         else:
-            set_cell_widths_preserve_ratios(table)
+            original_widths = get_original_cell_widths(table)
+            pct_widths = convert_widths_to_percentages(original_widths)
 
-        # Set consistent cell margins
-        set_cell_margins(table)
+        # Apply percentage widths to cells
+        for row in table.rows:
+            for j, cell in enumerate(row.cells):
+                if j >= len(pct_widths):
+                    continue
+                tc = cell._tc
+                tcPr = tc.tcPr
+                if tcPr is None:
+                    tcPr = OxmlElement('w:tcPr')
+                    tc.insert(0, tcPr)
+                existing_width = tcPr.find(qn('w:tcW'))
+                if existing_width is not None:
+                    tcPr.remove(existing_width)
+                tcW = OxmlElement('w:tcW')
+                tcW.set(qn('w:type'), 'pct')
+                tcW.set(qn('w:w'), str(pct_widths[j]))
+                tcPr.insert(0, tcW)
+
+        # Update tblGrid to match page width (CRITICAL for Word rendering)
+        update_table_grid(table, pct_widths)
+
+        # Apply Orro borders with explicit RGB colors (overrides theme-dependent style borders)
+        apply_orro_borders(table)
+
+        # Apply Aptos 8pt font to all table text
+        apply_table_font(table, font_name="Aptos", font_size_pt=8)
+
+        # Apply minimal spacing to table cell paragraphs
+        normalize_table_cell_spacing(table)
+
+        # Set consistent cell margins (skip if style applied - style has its own margins)
+        if not table_style:
+            set_cell_margins(table)
 
         stats["tables_fixed"] += 1
 
         if verbose:
-            print(f"  Fixed table {i + 1}/{stats['total_tables']}: {len(table.rows)}x{len(table.columns)}")
+            style_info = f" [styled]" if table_style and stats["tables_styled"] > i else ""
+            print(f"  Fixed table {i + 1}/{stats['total_tables']}: {len(table.rows)}x{len(table.columns)}{style_info}")
+
+    # Normalize paragraph spacing for all document paragraphs
+    normalize_paragraph_spacing(doc)
+
+    if verbose:
+        print(f"  Normalized paragraph spacing")
 
     # Save to output path (or overwrite input if not specified)
     save_path = output_path or doc_path
@@ -319,6 +632,8 @@ def main():
                         help="Fix a template file in-place")
     parser.add_argument("--preserve-ratios", action="store_true",
                         help="Preserve existing column width ratios instead of content-aware sizing")
+    parser.add_argument("--table-style", type=str, default=None,
+                        help="Table style to apply (e.g., '_Orro Table 1')")
     parser.add_argument("-q", "--quiet", action="store_true",
                         help="Suppress verbose output")
 
@@ -340,7 +655,8 @@ def main():
         output_path = input_path  # Overwrite template
 
     stats = normalize_document(input_path, output_path, verbose=not args.quiet,
-                               content_aware=not args.preserve_ratios)
+                               content_aware=not args.preserve_ratios,
+                               table_style=args.table_style)
 
     return 0 if stats["tables_fixed"] > 0 else 1
 

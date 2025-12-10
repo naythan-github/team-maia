@@ -268,6 +268,83 @@ class TestRealTemplate:
         output_path.unlink()
 
 
+class TestOrroBorders:
+    """Tests for Orro corporate border styling."""
+
+    ORRO_PURPLE = "7030A0"  # Main border color
+    ORRO_LIGHT_PURPLE = "CBC6F3"  # Inside horizontal lines
+
+    @pytest.fixture
+    def styled_table_doc(self):
+        """Create a doc with a table that has Orro style applied."""
+        doc = Document()
+        table = doc.add_table(rows=3, cols=2)
+        table.rows[0].cells[0].text = "Header 1"
+        table.rows[0].cells[1].text = "Header 2"
+        table.rows[1].cells[0].text = "Data 1"
+        table.rows[1].cells[1].text = "Data 2"
+
+        with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as f:
+            doc.save(f.name)
+            return Path(f.name)
+
+    def test_orro_borders_applied(self, styled_table_doc):
+        """Tables should have Orro purple borders after normalization."""
+        from pir_docx_normalizer import normalize_document, apply_orro_borders
+
+        output_path = styled_table_doc.with_name("output.docx")
+        normalize_document(styled_table_doc, output_path, verbose=False)
+
+        doc = Document(str(output_path))
+        table = doc.tables[0]
+
+        # Check table has borders
+        tbl = table._tbl
+        tblPr = tbl.tblPr
+        assert tblPr is not None, "Table should have properties"
+
+        tblBorders = tblPr.find(qn('w:tblBorders'))
+        assert tblBorders is not None, "Table should have borders defined"
+
+        # Check bottom border is Orro purple
+        bottom = tblBorders.find(qn('w:bottom'))
+        assert bottom is not None, "Table should have bottom border"
+        assert bottom.get(qn('w:color')) == self.ORRO_PURPLE, \
+            f"Bottom border should be Orro purple, got {bottom.get(qn('w:color'))}"
+
+        # Check inside horizontal is light purple
+        insideH = tblBorders.find(qn('w:insideH'))
+        assert insideH is not None, "Table should have inside horizontal border"
+        assert insideH.get(qn('w:color')) == self.ORRO_LIGHT_PURPLE, \
+            f"Inside H should be light purple, got {insideH.get(qn('w:color'))}"
+
+        # Cleanup
+        output_path.unlink()
+        styled_table_doc.unlink()
+
+    def test_no_vertical_borders(self, styled_table_doc):
+        """Orro style should have no vertical borders (clean look)."""
+        from pir_docx_normalizer import normalize_document
+
+        output_path = styled_table_doc.with_name("output.docx")
+        normalize_document(styled_table_doc, output_path, verbose=False)
+
+        doc = Document(str(output_path))
+        table = doc.tables[0]
+        tblBorders = table._tbl.tblPr.find(qn('w:tblBorders'))
+
+        # Left, right, insideV should be nil or not present
+        for border_name in ['left', 'right', 'insideV']:
+            border = tblBorders.find(qn(f'w:{border_name}'))
+            if border is not None:
+                assert border.get(qn('w:val')) == 'nil', \
+                    f"{border_name} border should be nil"
+
+        # Cleanup
+        output_path.unlink()
+        styled_table_doc.unlink()
+
+
 class TestContentAwareSizing:
     """Tests for content-aware column width calculation."""
 
@@ -404,6 +481,164 @@ class TestContentAwareSizing:
 
         # Cleanup
         key_value_table_doc.unlink()
+
+
+class TestParagraphSpacing:
+    """Tests for paragraph spacing normalization."""
+
+    # Spacing specs (in points)
+    BODY_SPACE_AFTER = 6
+    HEADING_SPACE_BEFORE = 12
+    HEADING_SPACE_AFTER = 6
+    LIST_SPACE = 2
+    TABLE_CELL_SPACE = 2
+
+    @pytest.fixture
+    def doc_with_paragraphs(self):
+        """Create a doc with various paragraph styles."""
+        from docx.shared import Pt
+        doc = Document()
+
+        # Add heading
+        doc.add_heading('Test Heading 1', level=1)
+        doc.add_heading('Test Heading 2', level=2)
+
+        # Add body paragraphs
+        doc.add_paragraph('This is body text paragraph one.')
+        doc.add_paragraph('This is body text paragraph two.')
+
+        # Add list items
+        doc.add_paragraph('List item one', style='List Bullet')
+        doc.add_paragraph('List item two', style='List Bullet')
+
+        # Add table with text
+        table = doc.add_table(rows=2, cols=2)
+        table.rows[0].cells[0].text = "Header 1"
+        table.rows[0].cells[1].text = "Header 2"
+        table.rows[1].cells[0].text = "Data 1"
+        table.rows[1].cells[1].text = "Data 2"
+
+        with tempfile.NamedTemporaryFile(suffix='.docx', delete=False) as f:
+            doc.save(f.name)
+            return Path(f.name)
+
+    def test_body_text_spacing(self, doc_with_paragraphs):
+        """Body text should have 6pt after spacing."""
+        from pir_docx_normalizer import normalize_document
+        from docx.shared import Pt
+
+        output_path = doc_with_paragraphs.with_name("output.docx")
+        normalize_document(doc_with_paragraphs, output_path, verbose=False)
+
+        doc = Document(str(output_path))
+
+        # Find Normal paragraphs with text
+        normal_paras = [p for p in doc.paragraphs
+                       if p.style and p.style.name == 'Normal' and p.text.strip()]
+        assert len(normal_paras) > 0, "Should have Normal paragraphs to test"
+
+        for para in normal_paras:
+            space_after = para.paragraph_format.space_after
+            assert space_after is not None, "Body text space_after should be set"
+            assert space_after.pt == self.BODY_SPACE_AFTER, \
+                f"Body text space_after should be {self.BODY_SPACE_AFTER}pt, got {space_after.pt}pt"
+
+        # Cleanup
+        output_path.unlink()
+        doc_with_paragraphs.unlink()
+
+    def test_heading_spacing(self, doc_with_paragraphs):
+        """Headings should have 12pt before, 6pt after."""
+        from pir_docx_normalizer import normalize_document
+        from docx.shared import Pt
+
+        output_path = doc_with_paragraphs.with_name("output.docx")
+        normalize_document(doc_with_paragraphs, output_path, verbose=False)
+
+        doc = Document(str(output_path))
+
+        heading_paras = [p for p in doc.paragraphs
+                        if p.style and 'Heading' in p.style.name and p.text.strip()]
+        assert len(heading_paras) > 0, "Should have Heading paragraphs to test"
+
+        for para in heading_paras:
+            space_before = para.paragraph_format.space_before
+            space_after = para.paragraph_format.space_after
+
+            assert space_before is not None, f"Heading '{para.text[:20]}' space_before should be set"
+            assert space_before.pt == self.HEADING_SPACE_BEFORE, \
+                f"Heading space_before should be {self.HEADING_SPACE_BEFORE}pt, got {space_before.pt}pt"
+            assert space_after is not None, f"Heading '{para.text[:20]}' space_after should be set"
+            assert space_after.pt == self.HEADING_SPACE_AFTER, \
+                f"Heading space_after should be {self.HEADING_SPACE_AFTER}pt, got {space_after.pt}pt"
+
+        # Cleanup
+        output_path.unlink()
+        doc_with_paragraphs.unlink()
+
+    def test_list_item_spacing(self, doc_with_paragraphs):
+        """List items should have tight 2pt spacing."""
+        from pir_docx_normalizer import normalize_document
+        from docx.shared import Pt
+
+        output_path = doc_with_paragraphs.with_name("output.docx")
+        normalize_document(doc_with_paragraphs, output_path, verbose=False)
+
+        doc = Document(str(output_path))
+
+        list_paras = [p for p in doc.paragraphs
+                     if p.style and 'List' in p.style.name and p.text.strip()]
+        assert len(list_paras) > 0, "Should have List paragraphs to test"
+
+        for para in list_paras:
+            space_before = para.paragraph_format.space_before
+            space_after = para.paragraph_format.space_after
+
+            assert space_before is not None, "List space_before should be set"
+            assert space_before.pt == self.LIST_SPACE, \
+                f"List space_before should be {self.LIST_SPACE}pt, got {space_before.pt}pt"
+            assert space_after is not None, "List space_after should be set"
+            assert space_after.pt == self.LIST_SPACE, \
+                f"List space_after should be {self.LIST_SPACE}pt, got {space_after.pt}pt"
+
+        # Cleanup
+        output_path.unlink()
+        doc_with_paragraphs.unlink()
+
+    def test_table_cell_spacing(self, doc_with_paragraphs):
+        """Table cell paragraphs should have minimal 2pt spacing."""
+        from pir_docx_normalizer import normalize_document
+        from docx.shared import Pt
+
+        output_path = doc_with_paragraphs.with_name("output.docx")
+        normalize_document(doc_with_paragraphs, output_path, verbose=False)
+
+        doc = Document(str(output_path))
+
+        assert len(doc.tables) > 0, "Should have tables to test"
+
+        cells_checked = 0
+        for table in doc.tables:
+            for row in table.rows:
+                for cell in row.cells:
+                    for para in cell.paragraphs:
+                        if para.text.strip():
+                            space_before = para.paragraph_format.space_before
+                            space_after = para.paragraph_format.space_after
+
+                            assert space_before is not None, "Table cell space_before should be set"
+                            assert space_before.pt == self.TABLE_CELL_SPACE, \
+                                f"Table cell space_before should be {self.TABLE_CELL_SPACE}pt, got {space_before.pt}pt"
+                            assert space_after is not None, "Table cell space_after should be set"
+                            assert space_after.pt == self.TABLE_CELL_SPACE, \
+                                f"Table cell space_after should be {self.TABLE_CELL_SPACE}pt, got {space_after.pt}pt"
+                            cells_checked += 1
+
+        assert cells_checked > 0, "Should have checked at least one table cell"
+
+        # Cleanup
+        output_path.unlink()
+        doc_with_paragraphs.unlink()
 
 
 if __name__ == "__main__":
