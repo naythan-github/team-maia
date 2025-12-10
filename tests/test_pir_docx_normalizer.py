@@ -20,7 +20,7 @@ from docx.oxml.ns import qn
 from docx.oxml import OxmlElement
 
 import sys
-sys.path.insert(0, str(Path(__file__).parent.parent / "claude" / "tools" / "document"))
+sys.path.insert(0, str(Path(__file__).parent.parent / "claude" / "tools" / "document" / "pir"))
 from pir_docx_normalizer import normalize_document, calculate_content_aware_widths
 
 
@@ -223,7 +223,7 @@ class TestRealTemplate:
 
     def test_template_tables_not_corrupted(self):
         """PIR template cell ratios should be preserved."""
-        template_path = Path("/Users/naythandawe/git/maia/claude/tools/security/pir_templates/pir_credential_stuffing_template.docx")
+        template_path = Path(__file__).parent.parent / "claude" / "tools" / "document" / "pir" / "templates" / "pir_credential_stuffing_template.docx"
 
         if not template_path.exists():
             pytest.skip("Template not found")

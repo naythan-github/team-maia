@@ -1,0 +1,412 @@
+{
+  "template_name": "pir_standard_structure",
+  "description": "Standard PIR structure based on NQLC incident 4184007 - the gold standard for Orro PIRs",
+  "version": "1.0",
+  "source": "Post-Incident Review - 4184007 - NQLC.docx",
+  "placeholders": [
+    "{{TICKET_NUMBER}}",
+    "{{CUSTOMER_NAME}}",
+    "{{INCIDENT_TYPE}}",
+    "{{SEVERITY}}",
+    "{{INCIDENT_DATE}}",
+    "{{REPORT_DATE}}",
+    "{{ANALYST_NAME}}"
+  ],
+  "sections": [
+    {
+      "id": "title",
+      "level": 1,
+      "heading": "Post-Incident Review - [{{TICKET_NUMBER}}] {{INCIDENT_TYPE}} - {{CUSTOMER_NAME}}",
+      "content_type": "metadata_table",
+      "required": true
+    },
+    {
+      "id": "executive_summary",
+      "level": 2,
+      "heading": "Executive Summary",
+      "content_type": "paragraph",
+      "required": true,
+      "subsections": [
+        {
+          "id": "key_findings",
+          "level": 3,
+          "heading": "Key Findings",
+          "content_type": "bullet_list",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "incident_classification",
+      "level": 2,
+      "heading": "Incident Classification",
+      "content_type": "table",
+      "table_schema": ["Field", "Value"],
+      "required": true
+    },
+    {
+      "id": "compromised_accounts",
+      "level": 2,
+      "heading": "Compromised Accounts (Complete List)",
+      "content_type": "table",
+      "table_schema": ["Account", "Attacker IP", "Location", "First Visible", "Last Activity", "Login Count", "Exposure Duration", "Status"],
+      "required": true,
+      "subsections": [
+        {
+          "id": "delegated_mailbox_exposure",
+          "level": 3,
+          "heading": "Delegated Mailbox Exposure",
+          "content_type": "paragraph",
+          "required": false,
+          "note": "Include if shared/delegated mailboxes were affected"
+        },
+        {
+          "id": "attack_pattern_analysis",
+          "level": 3,
+          "heading": "Attack Pattern Analysis",
+          "content_type": "bullet_list",
+          "required": true
+        },
+        {
+          "id": "accounts_defended",
+          "level": 3,
+          "heading": "Accounts Targeted But Successfully Defended",
+          "content_type": "table",
+          "table_schema": ["Account", "Attack Period", "Failed Attempts", "Unique Attacker IPs", "Outcome", "Key Defense Factor"],
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "incident_timeline",
+      "level": 2,
+      "heading": "Incident Timeline (Complete)",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "phase_1",
+          "level": 3,
+          "heading": "Phase 1: Initial Compromise",
+          "content_type": "table",
+          "table_schema": ["Date", "Time (AEST)", "Event", "Details"],
+          "required": true
+        },
+        {
+          "id": "phase_2",
+          "level": 3,
+          "heading": "Phase 2: Detection & Initial Response",
+          "content_type": "table",
+          "table_schema": ["Date", "Time (AEST)", "Event", "Details"],
+          "required": true
+        },
+        {
+          "id": "phase_3",
+          "level": 3,
+          "heading": "Phase 3: Escalation & Containment",
+          "content_type": "table",
+          "table_schema": ["Date", "Time (AEST)", "Event", "Details"],
+          "required": true
+        },
+        {
+          "id": "phase_4",
+          "level": 3,
+          "heading": "Phase 4: Recovery & Remediation",
+          "content_type": "table",
+          "table_schema": ["Date", "Time (AEST)", "Event", "Details"],
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "root_cause_analysis",
+      "level": 2,
+      "heading": "Root Cause Analysis",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "five_whys",
+          "level": 3,
+          "heading": "5 Whys Analysis",
+          "content_type": "numbered_list",
+          "required": true
+        },
+        {
+          "id": "true_root_cause",
+          "level": 3,
+          "heading": "True Root Cause",
+          "content_type": "paragraph",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "impact_assessment",
+      "level": 2,
+      "heading": "Impact Assessment",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "data_exposure",
+          "level": 3,
+          "heading": "Data Exposure Analysis",
+          "content_type": "bullet_list",
+          "required": true
+        },
+        {
+          "id": "user_impact",
+          "level": 3,
+          "heading": "User Impact",
+          "content_type": "bullet_list",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "what_went_wrong",
+      "level": 2,
+      "heading": "What Went Wrong",
+      "content_type": "section_container",
+      "required": true,
+      "note": "List 3-5 items with emoji prefix (❌ for Critical/High, ⚠️ for Medium)",
+      "subsections_template": {
+        "level": 3,
+        "heading_format": "{number}. {emoji} {title} ({severity})",
+        "content_fields": ["Issue", "Evidence", "Impact"],
+        "content_type": "labeled_list"
+      }
+    },
+    {
+      "id": "what_went_right",
+      "level": 2,
+      "heading": "What Went Right",
+      "content_type": "section_container",
+      "required": true,
+      "note": "List 3-5 items with ✅ prefix",
+      "subsections_template": {
+        "level": 3,
+        "heading_format": "{number}. ✅ {title}",
+        "content_fields": ["Action", "Outcome", "Impact"],
+        "content_type": "labeled_list"
+      }
+    },
+    {
+      "id": "action_items",
+      "level": 2,
+      "heading": "Action Items (SMART Framework)",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "critical_actions",
+          "level": 3,
+          "heading": "🔴 CRITICAL - Immediate (This Week)",
+          "content_type": "table",
+          "table_schema": ["Action", "Owner", "Target Date", "Success Criteria", "Status"],
+          "required": true
+        },
+        {
+          "id": "high_actions",
+          "level": 3,
+          "heading": "🟡 HIGH - Prevention (Next 7 Days)",
+          "content_type": "table",
+          "table_schema": ["Action", "Owner", "Target Date", "Success Criteria", "Status"],
+          "required": true
+        },
+        {
+          "id": "medium_actions",
+          "level": 3,
+          "heading": "🟢 MEDIUM - Detection (Next 14 Days)",
+          "content_type": "table",
+          "table_schema": ["Action", "Owner", "Target Date", "Success Criteria", "Status"],
+          "required": true
+        },
+        {
+          "id": "low_actions",
+          "level": 3,
+          "heading": "🔵 LOW - Response Improvement (Next 30 Days)",
+          "content_type": "table",
+          "table_schema": ["Action", "Owner", "Target Date", "Success Criteria", "Status"],
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "validation_testing",
+      "level": 2,
+      "heading": "Validation & Testing Plan",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "mfa_validation",
+          "level": 3,
+          "heading": "MFA Enforcement Validation",
+          "content_type": "numbered_list",
+          "required": true
+        },
+        {
+          "id": "detection_validation",
+          "level": 3,
+          "heading": "Detection Capability Validation",
+          "content_type": "numbered_list",
+          "required": true
+        },
+        {
+          "id": "ir_validation",
+          "level": 3,
+          "heading": "Incident Response Validation",
+          "content_type": "paragraph",
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "lessons_learned",
+      "level": 2,
+      "heading": "Lessons Learned",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "lessons_customer",
+          "level": 3,
+          "heading": "For {{CUSTOMER_NAME}}",
+          "content_type": "bullet_list",
+          "required": true
+        },
+        {
+          "id": "lessons_orro",
+          "level": 3,
+          "heading": "For Orro",
+          "content_type": "bullet_list",
+          "required": true
+        },
+        {
+          "id": "industry_benchmarks",
+          "level": 3,
+          "heading": "Industry Benchmarks (For Context)",
+          "content_type": "table",
+          "table_schema": ["Metric", "This Incident", "Industry Average", "Best Practice"],
+          "required": false
+        }
+      ]
+    },
+    {
+      "id": "post_incident_followup",
+      "level": 2,
+      "heading": "Post-Incident Follow-Up",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "lockdown_assessment",
+          "level": 3,
+          "heading": "Lockdown Effectiveness Assessment",
+          "content_type": "table",
+          "table_schema": ["Metric", "Result", "Assessment"],
+          "required": true
+        },
+        {
+          "id": "ongoing_activity",
+          "level": 3,
+          "heading": "⚠️ Ongoing Attack Activity",
+          "content_type": "paragraph",
+          "required": false,
+          "note": "Include if attacks continue post-remediation"
+        },
+        {
+          "id": "critical_findings",
+          "level": 3,
+          "heading": "Critical Findings",
+          "content_type": "bullet_list",
+          "required": true
+        },
+        {
+          "id": "immediate_actions",
+          "level": 3,
+          "heading": "Immediate Actions Required",
+          "content_type": "bullet_list",
+          "required": true
+        },
+        {
+          "id": "monitoring_recommendations",
+          "level": 3,
+          "heading": "Monitoring Recommendations",
+          "content_type": "bullet_list",
+          "required": true
+        },
+        {
+          "id": "conclusion",
+          "level": 3,
+          "heading": "Conclusion",
+          "content_type": "bullet_list",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "signoff",
+      "level": 2,
+      "heading": "Sign-Off & Review Schedule",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "document_approval",
+          "level": 3,
+          "heading": "Document Approval",
+          "content_type": "table",
+          "table_schema": ["Role", "Name", "Signature", "Date"],
+          "required": true
+        },
+        {
+          "id": "review_schedule",
+          "level": 3,
+          "heading": "Review Schedule",
+          "content_type": "bullet_list",
+          "required": true,
+          "note": "30-day, 90-day, 6-month reviews"
+        }
+      ]
+    },
+    {
+      "id": "appendices",
+      "level": 2,
+      "heading": "Appendices",
+      "content_type": "section_container",
+      "required": true,
+      "subsections": [
+        {
+          "id": "appendix_iocs",
+          "level": 3,
+          "heading": "Appendix A: Attacker IP Addresses (IOCs)",
+          "content_type": "table",
+          "table_schema": ["IP Address", "Location", "Users Compromised", "Login Count", "First Seen", "Last Seen"],
+          "required": true
+        },
+        {
+          "id": "appendix_glossary",
+          "level": 3,
+          "heading": "Appendix B: Glossary",
+          "content_type": "table",
+          "table_schema": ["Term", "Meaning"],
+          "required": true
+        }
+      ]
+    }
+  ],
+  "metadata_table_schema": [
+    {"field": "Incident", "placeholder": "{{INCIDENT_TYPE}}"},
+    {"field": "Ticket Number", "placeholder": "{{TICKET_NUMBER}}"},
+    {"field": "Customer", "placeholder": "{{CUSTOMER_NAME}}"},
+    {"field": "Severity", "placeholder": "{{SEVERITY}}"},
+    {"field": "Date Range", "placeholder": "{{DATE_RANGE}}"},
+    {"field": "Report Date", "placeholder": "{{REPORT_DATE}}"},
+    {"field": "Prepared By", "placeholder": "{{ANALYST_NAME}}"},
+    {"field": "Classification", "value": "CONFIDENTIAL"},
+    {"field": "Status", "placeholder": "{{STATUS}}"}
+  ]
+}

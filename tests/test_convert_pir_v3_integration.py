@@ -17,11 +17,12 @@ from pathlib import Path
 from docx import Document
 from docx.oxml.ns import qn
 
-# Paths
-CONVERTER_PATH = Path("/Users/naythandawe/work_projects/pir_converter/convert_pir_v3.py")
-REFERENCE_TEMPLATE = Path("/Users/naythandawe/work_projects/pir_converter/pir_orro_reference.docx")
+# Paths - consolidated under claude/tools/document/pir/
+PIR_DIR = Path(__file__).parent.parent / "claude" / "tools" / "document" / "pir"
+CONVERTER_PATH = PIR_DIR / "convert_pir.py"
+REFERENCE_TEMPLATE = PIR_DIR / "templates" / "pir_orro_reference.docx"
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "claude" / "tools" / "document"))
+sys.path.insert(0, str(PIR_DIR))
 from pir_docx_normalizer import normalize_document
 
 
