@@ -12,7 +12,7 @@
 ```bash
 cd ~/git/maia
 
-python3 claude/tools/security/pir_template_manager.py create \
+python3 claude/tools/document/pir/pir_template_manager.py create \
   pir_credential_stuffing_template \
   ~/work_projects/CUSTOMER_incident_review/PIR_TICKET_CUSTOMER.docx \
   --ticket TICKET_NUMBER \
@@ -23,7 +23,7 @@ python3 claude/tools/security/pir_template_manager.py create \
 
 **Example** (Next credential stuffing incident):
 ```bash
-python3 claude/tools/security/pir_template_manager.py create \
+python3 claude/tools/document/pir/pir_template_manager.py create \
   pir_credential_stuffing_template \
   ~/work_projects/acme_incident_review/PIR_4200456_ACME.docx \
   --ticket 4200456 \
@@ -119,14 +119,14 @@ Agent will create:
 
 **Template Files** (Don't modify directly):
 ```
-~/git/maia/claude/tools/security/pir_templates/
+~/git/maia/claude/tools/document/pir/templates/
 ├── pir_credential_stuffing_template.docx     # Your template
 └── pir_credential_stuffing_template.json     # Metadata
 ```
 
 **Tools**:
 ```
-~/git/maia/claude/tools/security/
+~/git/maia/claude/tools/document/pir/
 ├── pir_template_manager.py          # Template manager
 ├── PIR_TEMPLATE_SYSTEM.md           # Full documentation
 └── PIR_QUICK_START.md               # This file
@@ -154,12 +154,12 @@ Your template supports automatic replacement:
 
 **List available templates**:
 ```bash
-python3 claude/tools/security/pir_template_manager.py list
+python3 claude/tools/document/pir/pir_template_manager.py list
 ```
 
 **Save new template** (when you customize another PIR):
 ```bash
-python3 claude/tools/security/pir_template_manager.py save \
+python3 claude/tools/document/pir/pir_template_manager.py save \
   /path/to/completed/PIR.docx \
   template_name \
   --description "When to use this template" \
@@ -168,7 +168,7 @@ python3 claude/tools/security/pir_template_manager.py save \
 
 **Create from template**:
 ```bash
-python3 claude/tools/security/pir_template_manager.py create \
+python3 claude/tools/document/pir/pir_template_manager.py create \
   template_name \
   /path/to/output.docx \
   --ticket TICKET \
@@ -208,7 +208,7 @@ The `forensic_analysis.py` script works for ANY M365/Azure AD credential stuffin
 ```bash
 # Template files are in Maia repo
 cd ~/git/maia
-git add claude/tools/security/pir_templates/
+git add claude/tools/document/pir/templates/
 git commit -m "Updated credential stuffing PIR template"
 git push
 ```

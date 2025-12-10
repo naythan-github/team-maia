@@ -27,10 +27,10 @@ python3 ~/git/maia/claude/tools/document_conversion/convert_md_to_docx.py JD.md
 
 ```bash
 # Convert PIR markdown to DOCX
-python3 ~/work_projects/pir_converter/convert_pir_v3.py PIR_FILE.md
+python3 ~/git/maia/claude/tools/document/pir/convert_pir.py PIR_FILE.md
 
 # Create new PIR from template
-python3 ~/git/maia/claude/tools/security/pir_template_manager.py create \
+python3 ~/git/maia/claude/tools/document/pir/pir_template_manager.py create \
   pir_credential_stuffing_template OUTPUT.docx \
   --ticket 4200123 --customer "Company" --severity SEV1
 ```
@@ -66,8 +66,8 @@ What are you doing?
 | **job_description_template_lean.md** ⭐ | `~/git/maia/claude/templates/` | New JDs (Orro standard) |
 | **job_description_template.md** | `~/git/maia/claude/templates/` | New JDs (comprehensive) |
 | **orro_corporate_reference.docx** | `~/git/maia/claude/tools/document_conversion/templates/` | ANY markdown conversion ⭐ |
-| **pir_orro_reference.docx** | `~/work_projects/pir_converter/` | PIR markdown conversion |
-| **pir_credential_stuffing_template.docx** | `~/git/maia/claude/tools/security/pir_templates/` | New PIR creation (Jinja2) |
+| **pir_orro_reference.docx** | `~/git/maia/claude/tools/document/pir/templates/` | PIR markdown conversion |
+| **pir_credential_stuffing_template.docx** | `~/git/maia/claude/tools/document/pir/templates/` | New PIR creation (Jinja2) |
 
 ---
 
@@ -90,13 +90,12 @@ python3 ~/git/maia/claude/tools/document_conversion/convert_md_to_docx.py projec
 
 ### **4. PIR Conversion**
 ```bash
-cd ~/work_projects/pir_converter
-python3 convert_pir_v3.py nqlc_pir_4184007.md
+python3 ~/git/maia/claude/tools/document/pir/convert_pir.py nqlc_pir_4184007.md
 ```
 
 ### **5. New PIR Creation**
 ```bash
-python3 ~/git/maia/claude/tools/security/pir_template_manager.py create \
+python3 ~/git/maia/claude/tools/document/pir/pir_template_manager.py create \
   pir_credential_stuffing_template \
   ~/work_projects/acme_incident/PIR_4200456_ACME.docx \
   --ticket 4200456 --customer "ACME Corp" --severity SEV1
@@ -113,10 +112,10 @@ Add to `~/.zshrc` or `~/.bashrc`:
 alias md2docx='python3 ~/git/maia/claude/tools/document_conversion/convert_md_to_docx.py'
 
 # PIR conversion
-alias pir2docx='python3 ~/work_projects/pir_converter/convert_pir_v3.py'
+alias pir2docx='python3 ~/git/maia/claude/tools/document/pir/convert_pir.py'
 
 # PIR template
-alias pir-new='python3 ~/git/maia/claude/tools/security/pir_template_manager.py create pir_credential_stuffing_template'
+alias pir-new='python3 ~/git/maia/claude/tools/document/pir/pir_template_manager.py create pir_credential_stuffing_template'
 ```
 
 **Usage after aliases**:
@@ -142,7 +141,7 @@ pir-new OUTPUT.docx --ticket 123      # New PIR
 ## 📚 Full Documentation
 
 - **Generic Conversion**: `~/git/maia/claude/tools/document_conversion/README.md`
-- **PIR System**: `~/git/maia/claude/tools/security/PIR_QUICK_START.md`
+- **PIR System**: `~/git/maia/claude/tools/document/pir/PIR_QUICK_START.md`
 - **Reorganization Details**: `~/git/maia/claude/tools/document_conversion/REORGANIZATION_SUMMARY.md`
 
 ---

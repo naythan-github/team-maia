@@ -117,17 +117,17 @@ python3 convert_md_to_docx.py input.md
 | Template | Location | Purpose | Versatility |
 |----------|----------|---------|-------------|
 | **orro_corporate_reference.docx** | `document_conversion/templates/` | Generic MD→DOCX style reference | ✅ Any document |
-| **pir_orro_reference.docx** | `~/work_projects/pir_converter/` | PIR MD→DOCX with structure examples | ⚠️ PIR-specific content |
-| **pir_credential_stuffing_template.docx** | `security/pir_templates/` | Jinja2 template with placeholders | ❌ PIR-only (security incidents) |
+| **pir_orro_reference.docx** | `document/pir/templates/` | PIR MD→DOCX with structure examples | ⚠️ PIR-specific content |
+| **pir_credential_stuffing_template.docx** | `document/pir/templates/` | Jinja2 template with placeholders | ❌ PIR-only (security incidents) |
 
 **Decision Tree**:
 ```
 Need to convert markdown to DOCX?
 ├─ Is it a PIR?
-│  ├─ YES → Use convert_pir_v3.py + pir_orro_reference.docx
+│  ├─ YES → Use document/pir/convert_pir.py + pir_orro_reference.docx
 │  └─ NO → Use convert_md_to_docx.py + orro_corporate_reference.docx ⭐
 └─ Creating new PIR from scratch?
-   └─ Use pir_template_manager.py + pir_credential_stuffing_template.docx
+   └─ Use document/pir/pir_template_manager.py + pir_credential_stuffing_template.docx
 ```
 
 ---
@@ -258,8 +258,8 @@ python3 convert_md_to_docx.py Q4_project_status.md
 ## 🔗 Related Tools
 
 **PIR-Specific Tools**:
-- `~/work_projects/pir_converter/convert_pir_v3.py` - PIR markdown conversion
-- `claude/tools/security/pir_template_manager.py` - PIR Jinja2 template system
+- `claude/tools/document/pir/convert_pir.py` - PIR markdown conversion
+- `claude/tools/document/pir/pir_template_manager.py` - PIR Jinja2 template system
 
 **Document Generation**:
 - `cv_converter.py` - CV-specific MD→DOCX (3 modes: styled/ATS/readable)

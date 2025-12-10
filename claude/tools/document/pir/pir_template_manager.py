@@ -29,7 +29,7 @@ class PIRTemplateManager:
             maia_root = os.path.expanduser("~/git/maia")
 
         self.maia_root = Path(maia_root)
-        self.template_dir = self.maia_root / "claude" / "tools" / "security" / "pir_templates"
+        self.template_dir = self.maia_root / "claude" / "tools" / "document" / "pir" / "templates"
         self.template_dir.mkdir(parents=True, exist_ok=True)
 
     def save_as_template(self, source_docx: str, template_name: str,

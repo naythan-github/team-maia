@@ -42,13 +42,13 @@
 #### **PIR Converter Reference**
 - **Old**: `pir_reference_template.docx`
 - **New**: `pir_orro_reference.docx`
-- **Location**: `~/work_projects/pir_converter/`
+- **Location**: `~/git/maia/claude/tools/document/pir/templates/`
 - **Purpose**: PIR-specific MD→DOCX with structure examples
 
 #### **PIR Jinja2 Template**
 - **Old**: `credential_stuffing_pir.docx`
 - **New**: `pir_credential_stuffing_template.docx`
-- **Location**: `~/git/maia/claude/tools/security/pir_templates/`
+- **Location**: `~/git/maia/claude/tools/document/pir/templates/`
 - **Purpose**: Jinja2 template with placeholders for new PIR creation
 
 ---
@@ -74,14 +74,14 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py document.md
 
 ### **4. Updated Existing Tools**
 
-#### **convert_pir_v3.py**
+#### **convert_pir.py**
 - Updated reference template path: `pir_reference_template.docx` → `pir_orro_reference.docx`
-- **Location**: `~/work_projects/pir_converter/convert_pir_v3.py`
+- **Location**: `~/git/maia/claude/tools/document/pir/convert_pir.py`
 
 #### **pir_template_manager.py**
 - Updated example template name: `credential_stuffing_pir` → `pir_credential_stuffing_template`
 - Metadata updated: `pir_credential_stuffing_template.json`
-- **Location**: `~/git/maia/claude/tools/security/pir_template_manager.py`
+- **Location**: `~/git/maia/claude/tools/document/pir/pir_template_manager.py`
 
 #### **PIR Documentation**
 - Updated: `PIR_QUICK_START.md`
@@ -96,24 +96,24 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py document.md
 ~/git/maia/
 ├── claude/
 │   └── tools/
-│       ├── document_conversion/ ⭐ NEW
+│       ├── document_conversion/
 │       │   ├── convert_md_to_docx.py          # Generic converter
 │       │   ├── create_clean_orro_template.py  # Template generator
 │       │   ├── templates/
 │       │   │   └── orro_corporate_reference.docx  # Clean style reference
 │       │   └── README.md                       # Documentation
-│       └── security/
-│           ├── pir_template_manager.py         # PIR Jinja2 system
-│           ├── PIR_QUICK_START.md              # Updated docs
-│           ├── PIR_TEMPLATE_SYSTEM.md          # Updated docs
-│           └── pir_templates/
-│               ├── pir_credential_stuffing_template.docx  # Renamed
-│               └── pir_credential_stuffing_template.json  # Renamed
-
-~/work_projects/pir_converter/
-├── convert_pir_v3.py                           # PIR-specific converter
-├── pir_orro_reference.docx                     # PIR reference (renamed)
-└── [other PIR conversion files]
+│       └── document/
+│           └── pir/                            # PIR document pipeline ⭐ CONSOLIDATED
+│               ├── convert_pir.py              # PIR MD → DOCX converter
+│               ├── pir_docx_normalizer.py      # DOCX formatting normalizer
+│               ├── pir_template_manager.py     # PIR Jinja2 template system
+│               ├── PIR_QUICK_START.md          # Quick start guide
+│               ├── PIR_TEMPLATE_SYSTEM.md      # Full documentation
+│               ├── README.md                   # Usage documentation
+│               └── templates/
+│                   ├── pir_orro_reference.docx                 # Pandoc reference
+│                   ├── pir_credential_stuffing_template.docx   # Credential stuffing template
+│                   └── pir_credential_stuffing_template.json   # Template metadata
 ```
 
 ---
@@ -125,9 +125,9 @@ Need to convert a document?
 │
 ├─ Is it a PIR (security incident)?
 │  ├─ Converting PIR markdown to DOCX?
-│  │  └─ Use: convert_pir_v3.py + pir_orro_reference.docx
+│  │  └─ Use: document/pir/convert_pir.py + pir_orro_reference.docx
 │  └─ Creating new PIR from scratch?
-│     └─ Use: pir_template_manager.py + pir_credential_stuffing_template
+│     └─ Use: document/pir/pir_template_manager.py + pir_credential_stuffing_template
 │
 └─ Is it any other document? ⭐ MOST COMMON
    └─ Use: convert_md_to_docx.py + orro_corporate_reference.docx
@@ -214,9 +214,9 @@ python3 pir_template_manager.py list
 - `claude/tools/document_conversion/REORGANIZATION_SUMMARY.md` - This file
 
 ### **Updated**
-- `claude/tools/security/PIR_QUICK_START.md` - Template name references
-- `claude/tools/security/PIR_TEMPLATE_SYSTEM.md` - Template name references
-- `claude/tools/security/pir_templates/pir_credential_stuffing_template.json` - Metadata
+- `claude/tools/document/pir/PIR_QUICK_START.md` - Template name references
+- `claude/tools/document/pir/PIR_TEMPLATE_SYSTEM.md` - Template name references
+- `claude/tools/document/pir/templates/pir_credential_stuffing_template.json` - Metadata
 
 ### **Renamed**
 - `pir_reference_template.docx` → `pir_orro_reference.docx`

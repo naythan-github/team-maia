@@ -513,7 +513,7 @@
 
 ### Phase 158 (Nov 20) - Post-Incident Review Template System ⭐ **NEW SECURITY DOCUMENTATION TOOL**
 - **pir_template_manager.py** - Template management system for Post-Incident Reviews (370 lines, production-ready)
-- **Location**: `claude/tools/security/pir_template_manager.py`
+- **Location**: `claude/tools/document/pir/pir_template_manager.py`
 - **Purpose**: Standardized PIR creation for security incidents with template extraction, reuse, and automation
 - **Core Capabilities**: Save completed PIRs as reusable templates, create new PIRs from templates with placeholder replacement, template library management, section structure preservation
 - **Template Features**: Automatic placeholder replacement (ticket, customer, date, severity), 61-section structure (NQLC credential stuffing template), forensic analysis integration, executive summary generation

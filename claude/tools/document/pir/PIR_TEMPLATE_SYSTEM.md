@@ -23,13 +23,19 @@ The PIR Template System enables rapid creation of professional Post-Incident Rev
 ~/git/maia/
 └── claude/
     └── tools/
-        └── security/
-            ├── pir_template_manager.py          # Template management tool
-            ├── PIR_TEMPLATE_SYSTEM.md           # This documentation
-            └── pir_templates/                   # Template storage
-                ├── credential_stuffing_pir.docx # NQLC template (Phase 158)
-                ├── credential_stuffing_pir.json # Template metadata
-                └── [future templates...]
+        └── document/
+            └── pir/                             # PIR document pipeline
+                ├── convert_pir.py               # MD → DOCX converter (Pandoc)
+                ├── pir_docx_normalizer.py       # DOCX formatting normalizer
+                ├── pir_template_manager.py      # Template management tool
+                ├── PIR_TEMPLATE_SYSTEM.md       # This documentation
+                ├── PIR_QUICK_START.md           # Quick reference guide
+                ├── README.md                    # Usage documentation
+                └── templates/                   # Template storage
+                    ├── pir_orro_reference.docx  # Pandoc reference template
+                    ├── pir_credential_stuffing_template.docx  # Credential stuffing template
+                    ├── pir_credential_stuffing_template.json  # Template metadata
+                    └── [future templates...]
 ```
 
 ---
@@ -41,7 +47,7 @@ The PIR Template System enables rapid creation of professional Post-Incident Rev
 ```bash
 cd ~/git/maia
 
-python3 claude/tools/security/pir_template_manager.py save \
+python3 claude/tools/document/pir/pir_template_manager.py save \
   ~/work_projects/nqlc_incident_review/Post-Incident+Review+-+[4184007]+Account+Compromise+-+NQLC.docx \
   credential_stuffing_pir \
   --description "Template for credential stuffing/password spray incidents with M365 focus" \
@@ -50,8 +56,8 @@ python3 claude/tools/security/pir_template_manager.py save \
 
 **Output**:
 ```
-✅ Template saved: ~/git/maia/claude/tools/security/pir_templates/credential_stuffing_pir.docx
-✅ Metadata saved: ~/git/maia/claude/tools/security/pir_templates/credential_stuffing_pir.json
+✅ Template saved: ~/git/maia/claude/tools/document/pir/templates/credential_stuffing_pir.docx
+✅ Metadata saved: ~/git/maia/claude/tools/document/pir/templates/credential_stuffing_pir.json
 ```
 
 ---
@@ -59,7 +65,7 @@ python3 claude/tools/security/pir_template_manager.py save \
 ### **Step 2: List Available Templates**
 
 ```bash
-python3 claude/tools/security/pir_template_manager.py list
+python3 claude/tools/document/pir/pir_template_manager.py list
 ```
 
 **Output**:
@@ -80,7 +86,7 @@ Sections: 15
 ### **Step 3: Create New PIR from Template**
 
 ```bash
-python3 claude/tools/security/pir_template_manager.py create \
+python3 claude/tools/document/pir/pir_template_manager.py create \
   credential_stuffing_pir \
   ~/work_projects/acme_incident_review/PIR_4200123_ACME.docx \
   --ticket 4200123 \
@@ -186,7 +192,7 @@ Based on NQLC PIR (your modified version):
 ### **Python Script Integration**
 
 ```python
-from claude.tools.security.pir_template_manager import PIRTemplateManager
+from claude.tools.document.pir.pir_template_manager import PIRTemplateManager
 
 # Initialize manager
 manager = PIRTemplateManager()
@@ -479,7 +485,7 @@ with open('incidents.csv', 'r') as f:
 
 **Questions?**
 - Check this documentation first
-- Review example templates in `pir_templates/`
+- Review example templates in `templates/`
 - Consult Security Specialist Agent
 
 **Improvements?**
