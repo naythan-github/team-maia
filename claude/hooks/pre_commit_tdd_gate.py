@@ -86,11 +86,19 @@ class TDDEnforcementGate:
         """Find the test file corresponding to a tool file."""
         path = Path(tool_file)
 
+        # Get repo root (walk up to find .git)
+        repo_root = path
+        while repo_root.parent != repo_root:
+            if (repo_root / '.git').exists():
+                break
+            repo_root = repo_root.parent
+
         # Try multiple test file naming conventions
         test_patterns = [
             path.parent / f"test_{path.stem}.py",                    # Same directory
             path.parent / "tests" / f"test_{path.stem}.py",          # tests/ subdirectory
             path.parent.parent / "tests" / f"test_{path.stem}.py",   # ../tests/ directory
+            repo_root / "tests" / f"test_{path.stem}.py",            # Repo root tests/
         ]
 
         for test_path in test_patterns:
