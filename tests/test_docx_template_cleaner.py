@@ -10,6 +10,7 @@ import unittest
 import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
+from xml.etree.ElementTree import Element
 
 try:
     from docx import Document
@@ -27,6 +28,7 @@ from docx_template_cleaner import (
     clean_latent_styles,
     filter_styles_xml,
     clean_template,
+    fix_style_pane_filter,
     NAMESPACES,
 )
 
@@ -125,21 +127,73 @@ class TestLatentStylesCleaning(unittest.TestCase):
 
         self.assertIn("Normal", exception_names)
 
-    def test_clean_latent_styles_includes_default_visible(self):
-        """Should include default visible styles (Heading 1, 2, 3, etc)."""
+    def test_clean_latent_styles_includes_only_used_and_normal(self):
+        """Should include only used styles plus Normal (essential)."""
         w = '{' + NAMESPACES['w'] + '}'
 
         latent = ET.Element(f'{w}latentStyles')
 
+        # With empty keep set, should only have Normal
         cleaned = clean_latent_styles(latent, set())
-
         exceptions = cleaned.findall(f'{w}lsdException')
         exception_names = {e.get(f'{w}name') for e in exceptions}
 
-        # Should have standard visible styles
-        self.assertIn("Heading 1", exception_names)
-        self.assertIn("Heading 2", exception_names)
         self.assertIn("Normal", exception_names)
+        self.assertEqual(len(exception_names), 1)  # Only Normal
+
+    def test_clean_latent_styles_filters_char_styles(self):
+        """Should filter out Char styles from exceptions."""
+        w = '{' + NAMESPACES['w'] + '}'
+
+        latent = ET.Element(f'{w}latentStyles')
+        keep_styles = {"Heading 1", "Heading 1 Char", "Body Text", "Body Text Char"}
+
+        cleaned = clean_latent_styles(latent, keep_styles)
+        exceptions = cleaned.findall(f'{w}lsdException')
+        exception_names = {e.get(f'{w}name') for e in exceptions}
+
+        # Should have paragraph styles but not Char styles
+        self.assertIn("Heading 1", exception_names)
+        self.assertIn("Body Text", exception_names)
+        self.assertNotIn("Heading 1 Char", exception_names)
+        self.assertNotIn("Body Text Char", exception_names)
+
+
+class TestStylePaneFilter(unittest.TestCase):
+    """Test settings.xml stylePaneFormatFilter fixing."""
+
+    def test_fix_style_pane_filter_sets_styles_in_use(self):
+        """Should set stylesInUse=1 and latentStyles=0."""
+        w = '{' + NAMESPACES['w'] + '}'
+
+        # Create minimal settings.xml
+        settings_xml = f'''<?xml version="1.0" encoding="UTF-8"?>
+        <w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+            <w:stylePaneFormatFilter w:val="0004" w:latentStyles="1" w:stylesInUse="0"/>
+        </w:settings>'''
+
+        fixed = fix_style_pane_filter(settings_xml.encode('utf-8'))
+        root = ET.fromstring(fixed)
+
+        filter_el = root.find(f'.//{w}stylePaneFormatFilter')
+        self.assertIsNotNone(filter_el)
+        self.assertEqual(filter_el.get(f'{w}latentStyles'), '0')
+        self.assertEqual(filter_el.get(f'{w}stylesInUse'), '1')
+
+    def test_fix_style_pane_filter_creates_element_if_missing(self):
+        """Should create stylePaneFormatFilter if not present."""
+        w = '{' + NAMESPACES['w'] + '}'
+
+        settings_xml = f'''<?xml version="1.0" encoding="UTF-8"?>
+        <w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+        </w:settings>'''
+
+        fixed = fix_style_pane_filter(settings_xml.encode('utf-8'))
+        root = ET.fromstring(fixed)
+
+        filter_el = root.find(f'.//{w}stylePaneFormatFilter')
+        self.assertIsNotNone(filter_el)
+        self.assertEqual(filter_el.get(f'{w}stylesInUse'), '1')
 
 
 @unittest.skipUnless(DOCX_AVAILABLE, "python-docx not installed")

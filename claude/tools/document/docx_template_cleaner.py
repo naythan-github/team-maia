@@ -210,14 +210,15 @@ def clean_latent_styles(latent_styles: ET.Element, keep_style_names: Set[str]) -
     """
     Clean latentStyles to hide all built-in styles except those in use.
 
-    Sets defaults to hide everything, then adds exceptions only for used styles.
+    Sets defaults to hide everything, adds exceptions only for actually used styles.
+    Filters out Char styles (they inherit visibility from parent paragraph style).
     """
     w = '{' + NAMESPACES['w'] + '}'
 
     # Create new latentStyles with restrictive defaults
     new_latent = ET.Element(f'{w}latentStyles')
 
-    # Set defaults: hide everything, only show when used
+    # Restrictive defaults: hide all by default, show only when used
     new_latent.set(f'{w}defLockedState', '0')
     new_latent.set(f'{w}defUIPriority', '99')
     new_latent.set(f'{w}defSemiHidden', '1')  # Hidden by default
@@ -225,18 +226,22 @@ def clean_latent_styles(latent_styles: ET.Element, keep_style_names: Set[str]) -
     new_latent.set(f'{w}defQFormat', '0')
     new_latent.set(f'{w}count', '376')
 
-    # Add exceptions only for styles we want visible
-    # These are the styles that should appear in the Quick Styles gallery
-    visible_styles = keep_style_names | {
-        'Normal', 'Heading 1', 'Heading 2', 'Heading 3',
-        'Title', 'Subtitle', 'No Spacing', 'Quote',
+    # Filter visible styles:
+    # 1. Remove Char styles (they inherit from parent, don't need exceptions)
+    # 2. Only include styles actually used in document
+    visible_styles = {
+        name for name in keep_style_names
+        if not name.endswith(' Char')
     }
+
+    # Always include Normal (essential for Word)
+    visible_styles.add('Normal')
 
     for name in sorted(visible_styles):
         exc = ET.Element(f'{w}lsdException')
         exc.set(f'{w}name', name)
         exc.set(f'{w}semiHidden', '0')
-        exc.set(f'{w}uiPriority', '0')
+        exc.set(f'{w}uiPriority', '1')  # Low priority = appears at top
         exc.set(f'{w}unhideWhenUsed', '0')
         exc.set(f'{w}qFormat', '1')
         new_latent.append(exc)
@@ -292,6 +297,58 @@ def filter_styles_xml(styles_root: ET.Element, keep_style_ids: Set[str]) -> ET.E
     return new_root, kept_count, removed_count
 
 
+def fix_style_pane_filter(settings_xml: bytes) -> bytes:
+    """
+    Fix the stylePaneFormatFilter in settings.xml to show only styles in use.
+
+    By default, Word may show latent (built-in) styles even when hidden.
+    This fixes the filter to show only:
+    - stylesInUse: 1 (styles actually used in document)
+    - latentStyles: 0 (don't show built-in styles not in use)
+
+    Returns modified settings.xml as bytes.
+    """
+    w = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+
+    root = ET.fromstring(settings_xml)
+
+    # Find or create stylePaneFormatFilter
+    filter_el = root.find(f'.//{w}stylePaneFormatFilter')
+
+    if filter_el is None:
+        # Create the element if it doesn't exist
+        filter_el = ET.Element(f'{w}stylePaneFormatFilter')
+        root.append(filter_el)
+
+    # Set the filter to show only styles in use
+    # Key attributes:
+    # - stylesInUse="1" - show styles used in document
+    # - latentStyles="0" - don't show built-in latent styles
+    # - customStyles="0" - we'll show them via stylesInUse
+    # - allStyles="0" - don't show all styles
+    filter_el.set(f'{w}val', '3F01')  # Hex value for stylesInUse=1
+    filter_el.set(f'{w}allStyles', '0')
+    filter_el.set(f'{w}customStyles', '0')
+    filter_el.set(f'{w}latentStyles', '0')  # KEY: Don't show latent styles
+    filter_el.set(f'{w}stylesInUse', '1')   # KEY: Show only styles in use
+    filter_el.set(f'{w}headingStyles', '0')
+    filter_el.set(f'{w}numberingStyles', '0')
+    filter_el.set(f'{w}tableStyles', '0')
+    filter_el.set(f'{w}directFormattingOnRuns', '0')
+    filter_el.set(f'{w}directFormattingOnParagraphs', '0')
+    filter_el.set(f'{w}directFormattingOnNumbering', '0')
+    filter_el.set(f'{w}directFormattingOnTables', '0')
+    filter_el.set(f'{w}clearFormatting', '1')
+    filter_el.set(f'{w}top3HeadingStyles', '0')
+    filter_el.set(f'{w}visibleStyles', '1')  # Show visible styles
+    filter_el.set(f'{w}alternateStyleNames', '0')
+
+    # Return as XML bytes
+    xml_str = ET.tostring(root, encoding='unicode')
+    xml_str = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + xml_str
+    return xml_str.encode('utf-8')
+
+
 def clean_template(input_path: Path, output_path: Path, dry_run: bool = False) -> dict:
     """
     Create a clean template with only used styles.
@@ -344,7 +401,7 @@ def clean_template(input_path: Path, output_path: Path, dry_run: bool = False) -
         tmp_path = Path(tmpdir) / 'temp.docx'
         shutil.copy2(input_path, tmp_path)
 
-        # Rewrite the docx with new styles.xml
+        # Rewrite the docx with new styles.xml and fixed settings.xml
         with zipfile.ZipFile(tmp_path, 'r') as zf_in:
             with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zf_out:
                 for item in zf_in.namelist():
@@ -354,6 +411,11 @@ def clean_template(input_path: Path, output_path: Path, dry_run: bool = False) -
                         # Add XML declaration
                         new_xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' + new_xml
                         zf_out.writestr(item, new_xml.encode('utf-8'))
+                    elif item == 'word/settings.xml':
+                        # Fix the style pane filter to show only styles in use
+                        original_settings = zf_in.read(item)
+                        fixed_settings = fix_style_pane_filter(original_settings)
+                        zf_out.writestr(item, fixed_settings)
                     else:
                         # Copy unchanged
                         zf_out.writestr(item, zf_in.read(item))
