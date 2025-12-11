@@ -8,10 +8,44 @@
 Maia is a personal AI infrastructure system featuring sophisticated workflow orchestrations that leverage a multi-agent system and advanced automation capabilities. Commands follow enterprise-grade design principles:
 
 - **Single Responsibility**: Focused domain expertise
-- **Composable Architecture**: Seamless multi-agent orchestration  
+- **Composable Architecture**: Seamless multi-agent orchestration
 - **Production Ready**: Comprehensive error handling and monitoring
 - **Evidence-Based**: Performance tracking and continuous learning
 - **Security First**: Sandboxed execution and validation
+
+## Quick Start (Team Members)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/naythan-orro/maia.git
+cd maia
+
+# 2. Run setup script
+./setup.sh
+
+# 3. Source your shell to get MAIA_ROOT
+source ~/.zshrc  # or ~/.bashrc
+
+# 4. Use with Claude Code
+claude  # Start Claude Code in the maia directory
+```
+
+### Requirements
+- **Python 3.11+** (required)
+- **pip** (Python package manager)
+- **Ollama** (optional, for local LLM features)
+- **Docker** (optional, for ServiceDesk dashboard)
+
+### Verification
+After setup, verify installation:
+```bash
+python3 -c "from claude.tools.core.paths import MAIA_ROOT; print(f'MAIA_ROOT: {MAIA_ROOT}')"
+```
+
+### Documentation
+- **System Overview**: [CLAUDE.md](CLAUDE.md) - Main system instructions
+- **Capabilities**: [claude/context/core/capability_index.md](claude/context/core/capability_index.md)
+- **Recent Changes**: [SYSTEM_STATE.md](SYSTEM_STATE.md)
 
 ## Command Architecture
 
