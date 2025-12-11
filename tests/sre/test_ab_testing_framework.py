@@ -11,12 +11,23 @@ import shutil
 from pathlib import Path
 from datetime import datetime
 
+import pytest
+
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from claude.tools.sre.ab_testing_framework import (
     ABTestingFramework, Experiment, StatisticalAnalyzer
 )
+
+
+@pytest.fixture
+def runner():
+    """Pytest fixture for TestRunner"""
+    r = TestRunner()
+    r.setup()
+    yield r
+    r.teardown()
 
 
 class TestRunner:

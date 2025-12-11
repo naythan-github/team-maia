@@ -10,12 +10,23 @@ import tempfile
 import shutil
 from pathlib import Path
 
+import pytest
+
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent.parent.parent))
 
 from claude.tools.sre.experiment_queue import (
     ExperimentQueue, Priority, QueueStatus
 )
+
+
+@pytest.fixture
+def runner():
+    """Pytest fixture for TestRunner"""
+    r = TestRunner()
+    r.setup()
+    yield r
+    r.teardown()
 
 
 class TestRunner:

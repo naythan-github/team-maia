@@ -23,8 +23,8 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 from datetime import datetime
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent.parent))
+# Add project root to path
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 
 # =============================================================================
@@ -51,7 +51,7 @@ def mock_oauth_manager():
 @pytest.fixture
 def action_handler(mock_oauth_manager):
     """Create action handler with mocked OAuth"""
-    from pmp_action_handler import PMPActionHandler
+    from claude.tools.pmp.pmp_action_handler import PMPActionHandler
     handler = PMPActionHandler.__new__(PMPActionHandler)
     handler.oauth_manager = mock_oauth_manager
     handler.environment = 'TEST'
@@ -76,7 +76,7 @@ class TestActionHandlerInit:
         with patch.dict(os.environ, {}, clear=True):
             # Remove PMP_ENV if present
             os.environ.pop('PMP_ENV', None)
-            from pmp_action_handler import PMPActionHandler
+            from claude.tools.pmp.pmp_action_handler import PMPActionHandler
             with pytest.raises(ValueError, match="Environment must be specified"):
                 PMPActionHandler()
 
@@ -87,7 +87,7 @@ class TestActionHandlerInit:
         Expected: Successful initialization with TEST
         """
         with patch.dict(os.environ, {'PMP_ENV': 'TEST'}):
-            from pmp_action_handler import PMPActionHandler
+            from claude.tools.pmp.pmp_action_handler import PMPActionHandler
             # Will fail on keychain lookup, but env check passes
             try:
                 handler = PMPActionHandler()
@@ -102,7 +102,7 @@ class TestActionHandlerInit:
         Expected: ValueError for invalid environment
         """
         with patch.dict(os.environ, {'PMP_ENV': 'INVALID'}):
-            from pmp_action_handler import PMPActionHandler
+            from claude.tools.pmp.pmp_action_handler import PMPActionHandler
             with pytest.raises(ValueError, match="Invalid environment"):
                 PMPActionHandler()
 
@@ -609,7 +609,7 @@ class TestLiveAPIIntegration:
         if os.environ.get('PMP_ENV') != 'TEST':
             pytest.skip("Integration tests require PMP_ENV=TEST")
 
-        from pmp_action_handler import PMPActionHandler
+        from claude.tools.pmp.pmp_action_handler import PMPActionHandler
         return PMPActionHandler()
 
     def test_live_approve_and_unapprove_patch(self, live_handler):
