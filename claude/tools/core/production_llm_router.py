@@ -21,23 +21,13 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# SECURITY FIX: Import path manager for portable path resolution
+# Portable path resolution
 try:
-    from ...core.path_manager import MaiaPathManager
-except (ImportError, ValueError):
+    from claude.tools.core.paths import MAIA_ROOT, DATA_DIR, get_maia_root
+except ImportError:
     # Fallback for direct script execution
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "core"))
-    from path_manager import MaiaPathManager
-
-# Initialize path manager singleton
-_path_manager = None
-
-def get_path_manager() -> MaiaPathManager:
-    """Get or create path manager singleton"""
-    global _path_manager
-    if _path_manager is None:
-        _path_manager = MaiaPathManager()
-    return _path_manager
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+    from claude.tools.core.paths import MAIA_ROOT, DATA_DIR, get_maia_root
 
 class LLMProvider(Enum):
     # Claude models
@@ -247,28 +237,26 @@ class ProductionLLMRouter:
     """Enhanced production LLM router with local model support"""
 
     def __init__(self, config_file: str = None):
-        # SECURITY FIX: Use path manager for portable, secure path resolution
+        # SECURITY FIX: Use portable paths for secure path resolution
         if config_file:
             # Validate provided path
             config_path = Path(config_file).resolve()
 
             # SECURITY: Prevent path traversal
             try:
-                path_manager = get_path_manager()
-                git_root = path_manager.get_path('git_root')
+                maia_root = Path(MAIA_ROOT)
 
                 # Ensure config_file is within allowed directories
-                if not str(config_path).startswith(str(git_root)):
-                    raise ValueError(f"Config file must be within Maia directory: {git_root}")
+                if not str(config_path).startswith(str(maia_root)):
+                    raise ValueError(f"Config file must be within Maia directory: {maia_root}")
 
                 self.config_file = config_path
             except Exception as e:
                 logger.error(f"Config path validation failed: {e}")
                 raise ValueError("Invalid config file path")
         else:
-            # Use path manager for default location
-            path_manager = get_path_manager()
-            config_dir = path_manager.get_path('git_root') / 'claude' / 'data'
+            # Use portable paths for default location
+            config_dir = Path(DATA_DIR)
             self.config_file = config_dir / 'llm_router_config.json'
 
         self.local_interface = LocalLLMInterface()
@@ -590,8 +578,7 @@ class ProductionLLMRouter:
     def _load_usage_stats(self) -> Dict:
         """Load usage statistics WITH SECURE PATH HANDLING"""
         try:
-            path_manager = get_path_manager()
-            stats_file = path_manager.get_path('git_root') / 'claude' / 'data' / 'llm_usage_stats.json'
+            stats_file = Path(DATA_DIR) / 'llm_usage_stats.json'
 
             if stats_file.exists():
                 with open(stats_file, 'r') as f:
@@ -607,8 +594,7 @@ class ProductionLLMRouter:
         import tempfile
 
         try:
-            path_manager = get_path_manager()
-            stats_file = path_manager.get_path('git_root') / 'claude' / 'data' / 'llm_usage_stats.json'
+            stats_file = Path(DATA_DIR) / 'llm_usage_stats.json'
 
             # Ensure directory exists
             stats_file.parent.mkdir(parents=True, exist_ok=True)

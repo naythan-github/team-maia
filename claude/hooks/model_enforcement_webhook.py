@@ -13,24 +13,19 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, Any, Optional
 
-# SECURITY FIX: Import path manager for portable path resolution
+# Portable path resolution
 try:
-    from ..core.path_manager import MaiaPathManager
-except (ImportError, ValueError):
-    sys.path.insert(0, str(Path(__file__).parent.parent / "core"))
-    from path_manager import MaiaPathManager
+    from claude.tools.core.paths import DATA_DIR
+except ImportError:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+    from claude.tools.core.paths import DATA_DIR
 
 class ModelEnforcementWebhook:
     """Technical enforcement of model selection policies"""
 
     def __init__(self):
-        # SECURITY FIX: Use path manager
-        try:
-            path_manager = MaiaPathManager()
-            self.log_file = path_manager.get_path('git_root') / 'claude' / 'data' / 'model_enforcement_log.jsonl'
-        except Exception as e:
-            # Fallback for compatibility
-            self.log_file = Path.home() / 'git' / 'maia' / 'claude' / 'data' / 'model_enforcement_log.jsonl'
+        # Use portable paths
+        self.log_file = Path(DATA_DIR) / 'model_enforcement_log.jsonl'
 
         self.permission_cache = {}
         self.session_start = datetime.now().isoformat()
