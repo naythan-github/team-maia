@@ -241,7 +241,8 @@ def main():
     print(f"\n🎯 FINAL RECOMMENDATION: {rec}")
 
     # Save detailed results
-    output_file = f"/Users/naythandawe/git/maia/claude/data/model_comparison_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    from claude.tools.core.paths import DATA_DIR
+    output_file = str(DATA_DIR / f"model_comparison_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json")
     with open(output_file, 'w') as f:
         json.dump(all_results, f, indent=2)
 

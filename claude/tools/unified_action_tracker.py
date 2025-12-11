@@ -23,7 +23,8 @@ from typing import List, Dict, Optional
 import logging
 import glob
 
-sys.path.insert(0, os.path.expanduser('~/git/maia'))
+from claude.tools.core.paths import MAIA_ROOT
+sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.macos_mail_bridge import MacOSMailBridge
 from claude.tools.trello_fast import TrelloFast
@@ -133,7 +134,7 @@ class UnifiedActionTracker:
         """
         logger.info("Extracting action items from VTT summaries...")
 
-        summaries_path = os.path.expanduser('~/git/maia/claude/data/transcript_summaries/*.json')
+        summaries_path = str(MAIA_ROOT / "claude/data/transcript_summaries/*.json")
         summary_files = glob.glob(summaries_path)
 
         action_items = []
@@ -417,7 +418,7 @@ def main():
     print(tracker.format_action_report(waiting, "Waiting On Me"))
 
     # Save to file
-    output_file = '/Users/naythandawe/git/maia/claude/data/action_items_report.json'
+    output_file = str(MAIA_ROOT / "claude/data/action_items_report.json")
     with open(output_file, 'w') as f:
         json.dump({
             'pending': pending,

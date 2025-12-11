@@ -136,7 +136,8 @@ def create_clean_orro_reference():
     clean_doc.add_paragraph('pandoc input.md --reference-doc=orro_corporate_reference.docx -o output.docx')
 
     # Step 6: Save clean template
-    output_path = Path("~/git/maia/claude/tools/document_conversion/templates/orro_corporate_reference.docx").expanduser()
+    from claude.tools.core.paths import TOOLS_DIR
+    output_path = TOOLS_DIR / "document_conversion/templates/orro_corporate_reference.docx"
 
     print(f"💾 Saving clean template: {output_path}")
     clean_doc.save(output_path)

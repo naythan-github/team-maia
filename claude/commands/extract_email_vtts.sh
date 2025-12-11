@@ -1,4 +1,8 @@
 #!/bin/bash
 # Manually extract VTT files from email attachments
 
-python3 /Users/naythandawe/git/maia/claude/tools/email_vtt_extractor.py "$@"
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+
+python3 "$MAIA_ROOT/claude/tools/email_vtt_extractor.py" "$@"

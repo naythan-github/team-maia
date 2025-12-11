@@ -4,6 +4,10 @@
 
 set -e
 
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -27,7 +31,7 @@ GRAFANA_URL="http://localhost:3000"
 GRAFANA_USER="admin"
 GRAFANA_PASS="Grafana2025!SecureAdmin"
 DASHBOARD_UID="servicedesk-sentiment-team-performance"
-DASHBOARD_FILE="/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json"
+DASHBOARD_FILE="$MAIA_ROOT/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json"
 
 # Helper function to run SQL
 run_sql() {
@@ -289,9 +293,9 @@ test_datasource_uid_correct() {
         return 1
     fi
 
-    local datasource_uid=$(python3 << 'PYEOF'
+    local datasource_uid=$(python3 << PYEOF
 import json
-data = json.load(open('/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json'))
+data = json.load(open('$DASHBOARD_FILE'))
 panels = [p for p in data['dashboard']['panels'] if p.get('type') != 'row']
 if panels and 'targets' in panels[0] and panels[0]['targets']:
     print(panels[0]['targets'][0].get('datasource', {}).get('uid', 'NONE'))

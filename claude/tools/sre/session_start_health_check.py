@@ -109,10 +109,14 @@ def main():
         action="store_true",
         help="Silent mode - exit code only, no output"
     )
+    # Import MAIA_ROOT for default
+    import os
+    from claude.tools.core.paths import MAIA_ROOT
+
     parser.add_argument(
         "--maia-root",
         type=str,
-        default="/Users/naythandawe/git/maia",
+        default=os.environ.get("MAIA_ROOT", str(MAIA_ROOT)),
         help="Path to Maia root directory"
     )
 

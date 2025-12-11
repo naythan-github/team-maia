@@ -1,7 +1,9 @@
 #!/bin/bash
 # Start VTT Watcher as background service
 
-MAIA_ROOT="/Users/naythandawe/git/maia"
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 PID_FILE="$MAIA_ROOT/claude/data/vtt_watcher.pid"
 LOG_FILE="$MAIA_ROOT/claude/data/logs/vtt_watcher.log"
 
@@ -27,6 +29,6 @@ PID=$!
 echo $PID > "$PID_FILE"
 
 echo "✅ VTT Watcher started (PID: $PID)"
-echo "📁 Monitoring: /Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT"
+echo "📁 Monitoring: ~/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT"
 echo "📊 Summaries: $MAIA_ROOT/claude/data/transcript_summaries"
 echo "📝 Logs: $LOG_FILE"

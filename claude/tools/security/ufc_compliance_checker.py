@@ -332,7 +332,7 @@ def main():
     parser.add_argument(
         "--maia-root",
         type=str,
-        default=os.environ.get("MAIA_ROOT", "/Users/naythandawe/git/maia"),
+        default=os.environ.get("MAIA_ROOT", str(Path(__file__).parent.parent.parent.parent.resolve())),
         help="Path to Maia root directory (default: $MAIA_ROOT)"
     )
 

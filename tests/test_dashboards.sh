@@ -7,11 +7,15 @@
 
 set -e  # Exit on first error in tests
 
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
 # Configuration
 GRAFANA_URL="${GRAFANA_URL:-http://localhost:3000}"
 GRAFANA_USER="${GRAFANA_USER:-admin}"
 GRAFANA_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-Grafana2025!SecureAdmin}"
-DASHBOARD_DIR="/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards"
+DASHBOARD_DIR="$MAIA_ROOT/claude/infrastructure/servicedesk-dashboard/grafana/dashboards"
 POSTGRES_CONTAINER="servicedesk-postgres"
 POSTGRES_USER="servicedesk_user"
 POSTGRES_DB="servicedesk"
@@ -233,7 +237,7 @@ test_panels_have_data() {
 test_import_script_auth() {
   log_test_start "Import script loads password from .env file"
 
-  local import_script="/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh"
+  local import_script="$MAIA_ROOT/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh"
 
   # Check if script loads .env file
   if grep -q 'ENV_FILE=.*/.env' "$import_script" && grep -q 'GRAFANA_ADMIN_PASSWORD' "$import_script"; then

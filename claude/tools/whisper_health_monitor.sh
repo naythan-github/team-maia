@@ -2,8 +2,12 @@
 # Whisper Server Health Monitor - SRE-grade service monitoring
 # Checks whisper-server health every 30s, restarts if unhealthy
 
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+
 HEALTH_URL="http://127.0.0.1:8090/"
-LOG_FILE="/Users/naythandawe/git/maia/claude/data/logs/whisper-health-monitor.log"
+LOG_FILE="$MAIA_ROOT/claude/data/logs/whisper-health-monitor.log"
 FAILURE_COUNT=0
 MAX_FAILURES=3
 

@@ -251,7 +251,8 @@ def process_dashboard(filepath, metadata):
     print(f"  ✅ Added help panel and {len(metadata['panel_descriptions'])} panel descriptions")
 
 def main():
-    dashboard_dir = Path("/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards")
+    from claude.tools.core.paths import MAIA_ROOT
+    dashboard_dir = MAIA_ROOT / "claude/infrastructure/servicedesk-dashboard/grafana/dashboards"
 
     if not dashboard_dir.exists():
         print(f"❌ Dashboard directory not found: {dashboard_dir}")

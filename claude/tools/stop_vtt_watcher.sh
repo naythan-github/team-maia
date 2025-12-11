@@ -1,7 +1,9 @@
 #!/bin/bash
 # Stop VTT Watcher background service
 
-MAIA_ROOT="/Users/naythandawe/git/maia"
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 PID_FILE="$MAIA_ROOT/claude/data/vtt_watcher.pid"
 
 if [ ! -f "$PID_FILE" ]; then

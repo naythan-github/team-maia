@@ -1,6 +1,10 @@
 #!/bin/bash
 # VTT Watcher Status Check
 
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+
 echo "📊 VTT Watcher Status"
 echo "===================="
 echo ""
@@ -24,19 +28,19 @@ else
 fi
 
 echo ""
-echo "📁 Monitoring: /Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT"
-echo "📊 Output: ~/git/maia/claude/data/transcript_summaries/"
+echo "📁 Monitoring: ~/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT"
+echo "📊 Output: $MAIA_ROOT/claude/data/transcript_summaries/"
 echo ""
 
 # Recent log entries
-if [ -f ~/git/maia/claude/data/logs/vtt_watcher.log ]; then
+if [ -f "$MAIA_ROOT/claude/data/logs/vtt_watcher.log" ]; then
     echo "📝 Recent Activity:"
-    tail -5 ~/git/maia/claude/data/logs/vtt_watcher.log | sed 's/^/   /'
+    tail -5 "$MAIA_ROOT/claude/data/logs/vtt_watcher.log" | sed 's/^/   /'
 fi
 
 echo ""
 echo "🔧 Management Commands:"
-echo "   Status:  bash ~/git/maia/claude/tools/vtt_watcher_status.sh"
+echo "   Status:  bash $MAIA_ROOT/claude/tools/vtt_watcher_status.sh"
 echo "   Disable: launchctl unload ~/Library/LaunchAgents/com.maia.vtt-watcher.plist"
 echo "   Enable:  launchctl load ~/Library/LaunchAgents/com.maia.vtt-watcher.plist"
-echo "   Logs:    tail -f ~/git/maia/claude/data/logs/vtt_watcher.log"
+echo "   Logs:    tail -f $MAIA_ROOT/claude/data/logs/vtt_watcher.log"

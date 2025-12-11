@@ -475,10 +475,14 @@ def main():
         metavar="FILE",
         help="Export results to JSON file"
     )
+    # Import MAIA_ROOT for default
+    import os
+    from claude.tools.core.paths import MAIA_ROOT as DEFAULT_MAIA_ROOT
+
     parser.add_argument(
         "--maia-root",
         type=str,
-        default="/Users/naythandawe/git/maia",
+        default=os.environ.get("MAIA_ROOT", str(DEFAULT_MAIA_ROOT)),
         help="Path to Maia root directory"
     )
 

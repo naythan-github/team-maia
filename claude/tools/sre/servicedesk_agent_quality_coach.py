@@ -27,7 +27,8 @@ class AgentQualityCoach:
     """Generate coaching reports with RAG-sourced examples"""
 
     def __init__(self, db_path: str = None):
-        self.db_path = db_path or '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
+        from claude.tools.core.paths import DATA_DIR
+        self.db_path = db_path or str(DATA_DIR / 'servicedesk_tickets.db')
         self.rag_indexer = GPURAGIndexer(db_path=self.db_path)
         self.llm_model = 'llama3.2:3b'
 

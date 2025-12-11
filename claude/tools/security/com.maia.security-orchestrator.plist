@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    PORTABILITY NOTE: This plist requires absolute paths for macOS launchd.
+    To use on a different machine, update all paths containing /Users/naythandawe
+    to reflect your username and MAIA installation location.
+
+    Example: Replace /Users/naythandawe/git/maia with your MAIA_ROOT path.
+-->
 <plist version="1.0">
 <dict>
     <!-- Service Identity -->

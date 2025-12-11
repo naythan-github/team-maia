@@ -19,8 +19,10 @@ import os
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 import logging
+from pathlib import Path
 
-sys.path.insert(0, os.path.expanduser('~/git/maia'))
+from claude.tools.core.paths import MAIA_ROOT
+sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.macos_mail_bridge import MacOSMailBridge
 from claude.tools.macos_contacts_bridge import MacOSContactsBridge
@@ -322,7 +324,7 @@ def main():
         print("✅ No forgotten follow-ups detected")
 
     # Save results
-    output_file = '/Users/naythandawe/git/maia/claude/data/email_triage_report.json'
+    output_file = str(MAIA_ROOT / "claude/data/email_triage_report.json")
     with open(output_file, 'w') as f:
         json.dump({
             'triage_results': results,

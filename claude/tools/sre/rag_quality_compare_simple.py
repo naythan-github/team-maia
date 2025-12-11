@@ -72,8 +72,10 @@ def main():
     print("="*70)
 
     # Connect to ChromaDB
+    from pathlib import Path
+    rag_path = str(Path.home() / '.maia/servicedesk_rag')
     client = chromadb.PersistentClient(
-        path="/Users/naythandawe/.maia/servicedesk_rag",
+        path=rag_path,
         settings=Settings(anonymized_telemetry=False)
     )
 

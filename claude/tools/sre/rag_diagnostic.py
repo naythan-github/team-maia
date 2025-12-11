@@ -17,8 +17,10 @@ def test_collection_access():
     try:
         print("\n1. Connecting to ChromaDB...")
         start = time.time()
+        from pathlib import Path
+        rag_path = str(Path.home() / '.maia/servicedesk_rag')
         client = chromadb.PersistentClient(
-            path='/Users/naythandawe/.maia/servicedesk_rag',
+            path=rag_path,
             settings=Settings(anonymized_telemetry=False)
         )
         print(f"   ✅ Connected in {time.time()-start:.2f}s")

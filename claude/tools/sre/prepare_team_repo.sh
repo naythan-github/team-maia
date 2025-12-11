@@ -11,9 +11,13 @@ echo "Maia Team Repository Preparation"
 echo "========================================"
 echo ""
 
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DEFAULT_MAIA_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
+
 # Configuration
-ORIGINAL_REPO="${1:-/Users/naythandawe/git/maia}"
-CLEAN_REPO="${2:-/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/maia-team-share}"
+ORIGINAL_REPO="${1:-${MAIA_ROOT:-$DEFAULT_MAIA_ROOT}}"
+CLEAN_REPO="${2:-$HOME/maia-team-share}"
 YOUR_NAME="${3:-naythandawe}"
 YOUR_ORG="${4:-ORROPTYLTD}"
 

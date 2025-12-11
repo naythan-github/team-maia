@@ -24,7 +24,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-sys.path.insert(0, os.path.expanduser('~/git/maia'))
+from claude.tools.core.paths import MAIA_ROOT
+sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.unified_morning_briefing import UnifiedMorningBriefing
 from claude.tools.enhanced_email_triage import EnhancedEmailTriage
@@ -233,7 +234,7 @@ class AutomatedDailyBriefing:
             html_content = self.format_html_briefing(briefing)
 
             # Save to file for backup
-            email_file = '/Users/naythandawe/git/maia/claude/data/daily_briefing_email.html'
+            email_file = str(MAIA_ROOT / "claude/data/daily_briefing_email.html")
             with open(email_file, 'w') as f:
                 f.write(html_content)
 
@@ -277,13 +278,13 @@ class AutomatedDailyBriefing:
             briefing: Complete briefing dictionary
         """
         # JSON file
-        json_file = '/Users/naythandawe/git/maia/claude/data/daily_briefing_complete.json'
+        json_file = str(MAIA_ROOT / "claude/data/daily_briefing_complete.json")
         with open(json_file, 'w') as f:
             json.dump(briefing, f, indent=2, default=str)
         logger.info(f"JSON briefing saved to {json_file}")
 
         # HTML file
-        html_file = '/Users/naythandawe/git/maia/claude/data/daily_briefing_email.html'
+        html_file = str(MAIA_ROOT / "claude/data/daily_briefing_email.html")
         html_content = self.format_html_briefing(briefing)
         with open(html_file, 'w') as f:
             f.write(html_content)

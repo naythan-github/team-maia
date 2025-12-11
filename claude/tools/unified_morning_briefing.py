@@ -18,11 +18,13 @@ import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import logging
+from pathlib import Path
 
 # Import all bridges
 import sys
 import os
-sys.path.insert(0, os.path.expanduser('~/git/maia'))
+from claude.tools.core.paths import MAIA_ROOT
+sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.macos_mail_bridge import MacOSMailBridge
 from claude.tools.macos_calendar_bridge import MacOSCalendarBridge
@@ -269,14 +271,14 @@ def main():
     print("\n" + briefing_system.format_briefing_text(briefing))
 
     # Save to file
-    output_file = '/Users/naythandawe/git/maia/claude/data/morning_briefing.json'
+    output_file = str(MAIA_ROOT / "claude/data/morning_briefing.json")
     with open(output_file, 'w') as f:
         json.dump(briefing, f, indent=2, default=str)
 
     print(f"\n💾 Briefing saved to {output_file}")
 
     # Save formatted text
-    text_file = '/Users/naythandawe/git/maia/claude/data/morning_briefing.txt'
+    text_file = str(MAIA_ROOT / "claude/data/morning_briefing.txt")
     with open(text_file, 'w') as f:
         f.write(briefing_system.format_briefing_text(briefing))
 

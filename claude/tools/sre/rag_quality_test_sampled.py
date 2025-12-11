@@ -84,7 +84,7 @@ class RAGQualityTester:
     """Compare Ollama vs GPU embeddings on identical dataset"""
 
     def __init__(self):
-        self.rag_path = "/Users/naythandawe/.maia/servicedesk_rag"
+        self.rag_path = str(Path.home() / '.maia/servicedesk_rag')
         self.client = chromadb.PersistentClient(
             path=self.rag_path,
             settings=Settings(anonymized_telemetry=False)

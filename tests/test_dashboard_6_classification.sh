@@ -4,6 +4,10 @@
 
 set -e
 
+# Auto-detect MAIA_ROOT from script location if not set
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MAIA_ROOT="${MAIA_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
 # Color codes for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -16,7 +20,7 @@ TESTS_PASSED=0
 TESTS_FAILED=0
 
 # Dashboard path
-DASHBOARD_DIR="/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard"
+DASHBOARD_DIR="$MAIA_ROOT/claude/infrastructure/servicedesk-dashboard"
 DASHBOARD_FILE="$DASHBOARD_DIR/grafana/dashboards/6_incident_classification_breakdown.json"
 
 # Database connection

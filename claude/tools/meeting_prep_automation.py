@@ -21,8 +21,10 @@ from datetime import datetime, timedelta
 from typing import List, Dict, Optional
 import logging
 import re
+from pathlib import Path
 
-sys.path.insert(0, os.path.expanduser('~/git/maia'))
+from claude.tools.core.paths import MAIA_ROOT
+sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.macos_calendar_bridge import MacOSCalendarBridge
 from claude.tools.macos_contacts_bridge import MacOSContactsBridge
@@ -372,7 +374,7 @@ def main():
     print(report)
 
     # Save results
-    output_file = '/Users/naythandawe/git/maia/claude/data/meeting_prep_briefings.json'
+    output_file = str(MAIA_ROOT / "claude/data/meeting_prep_briefings.json")
     with open(output_file, 'w') as f:
         json.dump({
             'briefings': briefings,

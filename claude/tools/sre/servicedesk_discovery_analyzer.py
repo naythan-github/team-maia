@@ -32,8 +32,10 @@ import json
 class ServiceDeskDiscoveryAnalyzer:
     def __init__(self, db_path: str = None, chroma_path: str = None, model_name: str = "intfloat/e5-base-v2"):
         """Initialize discovery analyzer with E5-base-v2 model"""
-        self.db_path = db_path or "/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db"
-        self.chroma_path = chroma_path or "/Users/naythandawe/.maia/servicedesk_rag"
+        from claude.tools.core.paths import DATA_DIR
+        from pathlib import Path
+        self.db_path = db_path or str(DATA_DIR / 'servicedesk_tickets.db')
+        self.chroma_path = chroma_path or str(Path.home() / '.maia/servicedesk_rag')
         self.model_name = model_name
 
         print(f"🔍 ServiceDesk Discovery Analyzer")

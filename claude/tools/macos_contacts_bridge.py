@@ -399,7 +399,8 @@ def main():
     print("\n💾 Exporting recent contacts to JSON...")
     recent = bridge.get_recent_contacts(limit=50)
 
-    output_file = '/Users/naythandawe/git/maia/claude/data/contacts_export.json'
+    from claude.tools.core.paths import MAIA_ROOT
+    output_file = str(MAIA_ROOT / "claude/data/contacts_export.json")
     with open(output_file, 'w') as f:
         json.dump(recent, f, indent=2, default=str)
 

@@ -16,6 +16,9 @@ import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Tuple
 import logging
+from pathlib import Path
+
+from claude.tools.core.paths import MAIA_ROOT
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -385,7 +388,7 @@ def main():
     print("\n💾 Exporting full week to JSON...")
     week_events = bridge.get_events(days_ahead=7)
 
-    output_file = '/Users/naythandawe/git/maia/claude/data/calendar_export.json'
+    output_file = str(MAIA_ROOT / "claude/data/calendar_export.json")
     with open(output_file, 'w') as f:
         json.dump(week_events, f, indent=2, default=str)
 

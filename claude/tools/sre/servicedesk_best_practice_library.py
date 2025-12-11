@@ -44,8 +44,9 @@ class BestPracticeLibrary:
     """
 
     def __init__(self, db_path: str = None, library_path: str = None):
-        self.db_path = db_path or '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
-        self.library_path = library_path or '/Users/naythandawe/git/maia/claude/data/best_practice_library.json'
+        from claude.tools.core.paths import DATA_DIR
+        self.db_path = db_path or str(DATA_DIR / 'servicedesk_tickets.db')
+        self.library_path = library_path or str(DATA_DIR / 'best_practice_library.json')
         self.rag_indexer = GPURAGIndexer(db_path=self.db_path)
 
         # Quality dimensions
@@ -273,7 +274,8 @@ class BestPracticeLibrary:
     def export_to_markdown(self, output_path: str = None):
         """Export library to markdown format"""
 
-        output_path = output_path or '/Users/naythandawe/git/maia/claude/data/best_practice_library.md'
+        from claude.tools.core.paths import DATA_DIR
+        output_path = output_path or str(DATA_DIR / 'best_practice_library.md')
 
         markdown = []
         markdown.append("# ServiceDesk Best Practice Library\n")

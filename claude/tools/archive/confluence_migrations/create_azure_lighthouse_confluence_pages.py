@@ -30,7 +30,8 @@ warnings.warn(
     stacklevel=2
 )
 
-sys.path.insert(0, '/Users/naythandawe/git/maia/claude/tools')
+from claude.tools.core.paths import TOOLS_DIR
+sys.path.insert(0, str(TOOLS_DIR))
 from reliable_confluence_client import ReliableConfluenceClient
 import time
 

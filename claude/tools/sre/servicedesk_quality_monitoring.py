@@ -46,7 +46,8 @@ class QualityMonitoringService:
         tickets_db_path: str = None,
         ops_intel_db_path: str = None
     ):
-        self.tickets_db_path = tickets_db_path or '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
+        from claude.tools.core.paths import DATA_DIR
+        self.tickets_db_path = tickets_db_path or str(DATA_DIR / 'servicedesk_tickets.db')
         self.ops_intel = ServiceDeskOpsIntelligence(ops_intel_db_path) if ops_intel_db_path else ServiceDeskOpsIntelligence()
         self.quality_assistant = RealtimeQualityAssistant()
 

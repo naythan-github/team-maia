@@ -17,7 +17,8 @@ from datetime import datetime
 from typing import List, Dict
 
 # Import the existing analyzer for LLM logic
-sys.path.insert(0, '/Users/naythandawe/git/maia')
+from claude.tools.core.paths import MAIA_ROOT
+sys.path.insert(0, str(MAIA_ROOT))
 from claude.tools.sre.servicedesk_comment_quality_analyzer import ServiceDeskCommentAnalyzer
 
 # PostgreSQL connection details

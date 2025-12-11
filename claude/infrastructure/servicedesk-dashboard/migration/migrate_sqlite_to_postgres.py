@@ -12,7 +12,8 @@ import sys
 from datetime import datetime
 
 # Configuration
-SQLITE_DB = "/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db"
+from claude.tools.core.paths import DATA_DIR
+SQLITE_DB = str(DATA_DIR / "servicedesk_tickets.db")
 POSTGRES_CONFIG = {
     "host": "localhost",
     "port": 5432,
