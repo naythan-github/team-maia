@@ -63,7 +63,18 @@ def validate_file_location(filepath: str, file_purpose: str) -> Dict:
                 "policy_violated": "Size Limit Policy"
             }
 
-    # Check 3: UFC structure compliance
+    # Check 3: Root directory restriction (before UFC check - root files are special case)
+    if filepath.parent == MAIA_ROOT and filepath.name not in ALLOWED_ROOT_FILES:
+        # Get smart recommendation based on file type
+        recommended = get_ufc_compliant_path(filepath)
+        return {
+            "valid": False,
+            "recommended_path": str(recommended),
+            "reason": "Only 4 core files allowed in repository root",
+            "policy_violated": "Root Directory Policy"
+        }
+
+    # Check 4: UFC structure compliance
     if not matches_ufc_structure(filepath):
         recommended = get_ufc_compliant_path(filepath)
         return {
@@ -71,15 +82,6 @@ def validate_file_location(filepath: str, file_purpose: str) -> Dict:
             "recommended_path": str(recommended),
             "reason": "File location violates UFC structure",
             "policy_violated": "UFC Directory Structure"
-        }
-
-    # Check 4: Root directory restriction
-    if filepath.parent == MAIA_ROOT and filepath.name not in ALLOWED_ROOT_FILES:
-        return {
-            "valid": False,
-            "recommended_path": "claude/data/project_status/active/",
-            "reason": "Only 4 core files allowed in repository root",
-            "policy_violated": "Root Directory Policy"
         }
 
     return {
