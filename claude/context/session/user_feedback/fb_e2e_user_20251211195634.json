@@ -1,0 +1,11 @@
+{
+  "feedback_id": "fb_e2e_user_20251211195634",
+  "user_id": "e2e_user",
+  "agent_name": "cloud_architect",
+  "interaction_id": "e2e_int_001",
+  "timestamp": "2025-12-11T19:56:34.613623",
+  "feedback_type": "correction",
+  "content": "More detail needed",
+  "rating": 3.5,
+  "metadata": null
+}

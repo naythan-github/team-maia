@@ -7,7 +7,7 @@
   "efficiency_score": 60.0,
   "agent_name": "test_agent",
   "response_id": "adapted_response_001",
-  "timestamp": "2025-10-12T17:29:45.711489",
+  "timestamp": "2025-12-11T20:41:28.702913",
   "criteria_evaluations": [
     {
       "name": "task_completion",

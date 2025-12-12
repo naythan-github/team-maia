@@ -1,0 +1,37 @@
+{
+  "chain_id": "tmpa_fkqhs6_20251211_214430_584239_bf517b78",
+  "workflow_name": "tmpa_fkqhs6",
+  "start_time": "2025-12-11T21:44:30.584244",
+  "end_time": "2025-12-11T21:44:30.584254",
+  "status": "completed",
+  "initial_input": {
+    "test": "convenience"
+  },
+  "subtask_executions": [
+    {
+      "subtask_id": 1,
+      "name": "Single",
+      "status": "completed",
+      "start_time": "2025-12-11T21:44:30.584246",
+      "end_time": "2025-12-11T21:44:30.584253",
+      "input_data": {
+        "test": "convenience"
+      },
+      "output_data": {
+        "output": "[Mock output for output]"
+      },
+      "error_message": null,
+      "agent_used": "default",
+      "handoffs_triggered": 0,
+      "tokens_used": 7,
+      "execution_time_ms": 0.007
+    }
+  ],
+  "final_output": {
+    "output": "[Mock output for output]"
+  },
+  "total_tokens": 7,
+  "total_time_ms": 0.007,
+  "success_count": 1,
+  "failure_count": 0
+}

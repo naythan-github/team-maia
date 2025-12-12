@@ -1,0 +1,32 @@
+{
+  "experiment_id": "exp_20251211_204128_6b66583c",
+  "name": "Integration Test Experiment",
+  "hypothesis": "Quality scores integrated correctly",
+  "agent_name": "test_agent",
+  "control": {
+    "name": "control",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpn48g5k97/control.md",
+    "description": "Current production prompt",
+    "interactions": 7,
+    "successes": 7,
+    "total_quality_score": 371.0,
+    "total_tokens": 3500,
+    "total_latency_ms": 14000.0
+  },
+  "treatment": {
+    "name": "treatment",
+    "prompt_file": "/var/folders/lc/ww8zql512y5g_9v7_d5j2t940000gn/T/tmpn48g5k97/treatment.md",
+    "description": "Testing: Integration Test Experiment",
+    "interactions": 3,
+    "successes": 3,
+    "total_quality_score": 159.0,
+    "total_tokens": 1500,
+    "total_latency_ms": 6000.0
+  },
+  "start_date": "2025-12-11T20:41:28.696212",
+  "end_date": null,
+  "status": "active",
+  "minimum_sample_size": 100,
+  "success_criteria": ">15% improvement with p<0.05",
+  "winner": null
+}
