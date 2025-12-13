@@ -592,6 +592,15 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 - **Design Philosophy**: Following UFC "do one thing well" - integrated Trello capabilities rather than creating dedicated agent (validate demand first)
 - **New Capabilities**: Intelligent request routing, agent performance monitoring, workflow optimization, Trello board management
 
+### Meeting Intelligence Agent ⭐ **NEW - TRANSCRIPT PROCESSING SPECIALIST**
+**Location**: `claude/agents/meeting_intelligence_agent.md`
+- **Purpose**: Extract actionable intelligence from meeting transcripts - notes, decisions, action items with owners/deadlines, and key topics
+- **Specialties**: Executive summarization (5-7 bullets), action item extraction (owner/deadline/priority), decision capture (rationale/stakeholders), keyword/topic analysis, multi-format export
+- **Key Commands**: process_meeting, extract_actions, extract_decisions, generate_summary, export_intelligence
+- **Integration**: Executive Assistant Agent (calendar/follow-up), Personal Assistant Agent (Trello export), Knowledge Management (Confluence), whisper_meeting_transcriber.py, meeting_intelligence_processor.py
+- **Tool Pipeline**: whisper_meeting_transcriber.py → meeting_intelligence_processor.py → meeting_intelligence_exporter.py
+- **Performance**: 52-76s full processing, >95% action capture rate, >80% owner assignment, supports VTT/MD/TXT formats
+
 ### Financial Advisor Agent ⭐ **NEW**
 **Location**: `claude/agents/financial_advisor_agent.md`
 - **Purpose**: Comprehensive financial advisory services for Australian high-income earners with real-time market integration
