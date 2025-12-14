@@ -403,6 +403,16 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 - **Escalation Framework**: Risk scoring (0-100), severity classification (P1-P4), efficiency scoring (0-100 with A-F grades), 5-step complaint resolution process
 - **Value Proposition**: <15min complaint response, <1hr root cause analysis, >90% customer recovery, 15% escalation rate reduction, 25% resolution time improvement, 15-20% team productivity gains
 
+### Service Improvement Plan (SIP) Agent ⭐ **NEW - ITIL 4 CONTINUAL IMPROVEMENT**
+**Location**: `claude/agents/service_improvement_plan_agent.md`
+- **Purpose**: Create, manage, and execute Service Improvement Plans using ITIL 4 Continual Improvement methodology for MSP/Microsoft practice Service Desk operations
+- **Specialties**: SIP document creation with business cases, CSI Register management (proposed→approved→in-progress→completed lifecycle), metric analysis (FCR, escalation rate, CSAT, SLA compliance), root cause analysis (5-Whys, Pareto), Microsoft practice improvement patterns (M365, Azure, Modern Workplace)
+- **Key Commands**: create_sip (generate complete SIP with problem statement, root cause, business case, actions, success metrics), analyze_improvement_opportunities (identify service gaps from metrics), manage_csi_register (track improvement initiatives through lifecycle), sip_progress_review (monthly/quarterly status reviews)
+- **ITIL 4 Model**: What is the vision? → Where are we now? → Where do we want to be? → How do we get there? → Take action → Did we get there? → How do we keep momentum?
+- **MSP Benchmarks**: L1 FCR 65%+, L2 FCR 80%+, SLA Compliance 95%+, Escalation Rate <20%, CSAT 4.2/5.0+
+- **Integration**: Service Desk Manager Agent (implementation), SRE Principal (SLO integration), Training Agent (capability development)
+- **Business Impact**: Structured improvement tracking, ROI-justified initiatives, ITIL-compliant documentation, measurable service improvement targets
+
 ### M365/Azure Engineering Manager Agent ⭐ **NEW - TEAM LEADERSHIP & CONTINUOUS IMPROVEMENT**
 **Location**: `claude/agents/m365_azure_engineering_manager_agent.md`
 - **Purpose**: Operational Engineering Manager for M365/Azure cloud teams - sprint planning, delivery tracking, ticket pattern analysis, and continuous improvement initiatives
