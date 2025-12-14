@@ -7,9 +7,95 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2025-12-01
-**Current Phase**: 216
-**Database Status**: ✅ Synced (80 phases including 177, 191, 192, 192.3, 193, 194, 197)
+**Last Updated**: 2025-12-14
+**Current Phase**: 221
+**Database Status**: ✅ Synced (80 phases including 177, 191, 192, 192.3, 193, 194, 197, 221)
+
+## 🧪 PHASE 221: TDD Feature Tracker - Structural Enforcement System (2025-12-14) ✅ **PRODUCTION READY**
+
+### Achievement
+Created complete TDD enforcement system implementing Anthropic's JSON feature list pattern - structural enforcement that persists through context compaction, with pre-commit hook blocking commits when features fail.
+
+### Problem Solved
+**User Report**: "We have had problems where Maia forgets to follow TDD."
+
+**Root Cause**: Documentation-based TDD enforcement easily ignored. No objective tracking of progress. TDD state lost after context compaction. No guardrails preventing infinite retry loops.
+
+**Solution**: Structural enforcement via persistent JSON feature lists + session context injection + pre-commit hook validation.
+
+### Implementation Details
+
+**Phase 221.1: Feature Tracker Tool** (`claude/tools/sre/feature_tracker.py`)
+- **Project Initialization**: `init` creates `{project}_features.json` with schema
+- **Feature Management**: `add` with priority, verification steps, test file links
+- **Status Updates**: `update --passes/--fails` with timestamp recording
+- **Circuit Breaker**: Blocks features after 5 failed attempts (prevents infinite loops)
+- **Progress Queries**: `next` (highest-priority failing), `summary`, `status`
+- **Context Recovery**: JSON persists through compaction, agent-injectable format
+- **Reliability**: Atomic writes (tmp + rename), backups, schema validation
+- **Performance**: All operations <50ms
+- **Test Coverage**: 31/31 tests passing
+
+**Phase 221.1: Hook Integration** (`claude/hooks/swarm_auto_loader.py`)
+- `load_tdd_context()` - Loads active TDD project from most recent `*_features.json`
+- `format_tdd_context_for_session()` - Formats TDD status for agent context
+- `is_development_task()` - Detects development work requiring TDD
+- `check_tdd_enforcement()` - Warns if dev task but no TDD project exists
+- Session state includes `tdd_context` and `tdd_status` fields
+- **Test Coverage**: 13/13 integration tests passing
+
+**Phase 221.2: Pre-Commit Hook** (`claude/hooks/tdd_precommit_hook.py`)
+- Validates active features.json status before commits
+- Blocks when features are failing or blocked
+- Shows actionable error messages with fix commands
+- Bypass available via `git commit --no-verify` (requires TDD_EXEMPTIONS.md justification)
+- **Performance**: <100ms
+- **Test Coverage**: 13/13 tests passing
+
+### Files Created/Modified
+- `claude/tools/sre/feature_tracker.py` (500+ lines, v1.0)
+- `claude/tools/sre/tests/test_feature_tracker.py` (31 tests)
+- `claude/tools/sre/tests/test_tdd_hook_integration.py` (13 tests)
+- `claude/tools/sre/tests/test_tdd_precommit.py` (13 tests)
+- `claude/hooks/swarm_auto_loader.py` (+185 lines, Phase 221 TDD integration)
+- `claude/hooks/tdd_precommit_hook.py` (150 lines)
+- `claude/context/core/tdd_development_protocol.md` (Feature Tracker section)
+- `claude/context/core/capability_index.md` (Feature Tracker entry)
+- `CLAUDE.md` (TDD enforcement with feature_tracker reference)
+- `.git/hooks/pre-commit` (symlink to tdd_precommit_hook.py)
+
+### Metrics/Results
+- **Test Coverage**: 57/57 tests passing (31 + 13 + 13)
+- **Performance**: All operations <50ms, hook <100ms
+- **Context Recovery**: TDD state persists through compaction
+- **Enforcement Loop**: feature_tracker → swarm_auto_loader → pre-commit hook
+
+### Business Impact
+- ✅ TDD compliance: Structural enforcement vs documentation (can't be ignored)
+- ✅ Progress tracking: Objective X/Y passing (not subjective estimates)
+- ✅ Context recovery: TDD state survives compaction (JSON persistence)
+- ✅ Infinite loop prevention: Circuit breaker blocks after 5 failures
+- ✅ Commit quality: Pre-commit blocks until features pass
+
+### Usage Protocol
+```bash
+# Initialize TDD project
+python3 claude/tools/sre/feature_tracker.py init my_project
+
+# Add features (requirements phase)
+python3 claude/tools/sre/feature_tracker.py add my_project "Feature X" --priority 1
+
+# Record test results
+python3 claude/tools/sre/feature_tracker.py update my_project F001 --passes
+
+# Check status
+python3 claude/tools/sre/feature_tracker.py status my_project
+```
+
+### Inspiration
+Based on Anthropic's "Effective Harnesses for Long-Running Agents" (Nov 2025) - specifically the JSON feature list pattern for corruption-resistant progress tracking.
+
+---
 
 ## 🛡️ PHASE 216: Canonical DateTime System - Date/Time Reliability Protection (2025-12-01) ✅ **PRODUCTION READY**
 
