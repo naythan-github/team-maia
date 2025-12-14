@@ -393,7 +393,7 @@ Before deploying multi-agent workflows:
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| **AgentLoader** | ✅ Production Ready | Loads 66 agents, injects context |
+| **AgentLoader** | ✅ Production Ready | Loads 87 agents, injects context |
 | **SwarmConversationBridge** | ✅ Production Ready | Two modes (conversation + simulated) |
 | **HandoffParser** | ✅ Production Ready | Fixed regex, multiline support |
 | **Integration Tests** | ✅ All Passing | 5/5 tests complete |

@@ -331,7 +331,7 @@ Advanced multi-agent command chaining system inspired by KAI's orchestration cap
 - **Purpose**: Lightweight multi-agent coordination with explicit handoffs
 - **Features**: Context enrichment, handoff chain tracking, circular prevention, failure recovery
 - **Usage**: `SwarmOrchestrator()` for orchestration, `AgentHandoff` for handoffs
-- **Status**: ✅ **PRODUCTION ACTIVE** - 49 agents registered
+- **Status**: ✅ **PRODUCTION ACTIVE** - 87 agents registered
 
 ### Context Management System
 - **Location**: `${MAIA_ROOT}/claude/tools/orchestration/context_management.py`
@@ -350,7 +350,7 @@ Advanced multi-agent command chaining system inspired by KAI's orchestration cap
 ### Agent Loader
 - **Location**: `${MAIA_ROOT}/claude/tools/orchestration/agent_loader.py`
 - **Purpose**: Load and prepare agent prompts for Swarm execution
-- **Features**: Agent registry (49 agents), context injection, handoff support detection
+- **Features**: Agent registry (87 agents), context injection, handoff support detection
 - **Usage**: `AgentLoader()` for loading agents
 - **Status**: ✅ **PRODUCTION ACTIVE**
 

@@ -58,7 +58,7 @@
    - **Primary Path** ⭐ **NEW**: Capabilities DB query (replaces 3K token capability_index.md)
      - **Tool**: `python3 claude/tools/sre/capabilities_registry.py [command]`
      - **Commands**: `find QUERY`, `list --category sre`, `summary`
-     - **Coverage**: 208 capabilities (66 agents, 142 tools)
+     - **Coverage**: 589 capabilities (87 agents, 502 tools)
      - **Smart Loader Integration**: `loader.load_capability_context(query="security")`
    - **Token Savings**:
      - Summary only: 98% savings (3,758 → 60 tokens)

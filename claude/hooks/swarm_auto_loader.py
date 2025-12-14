@@ -351,6 +351,183 @@ def get_agent_for_domain(domain: str) -> Optional[str]:
     return domain_agent_map.get(domain)
 
 
+# =============================================================================
+# Phase 221: TDD Feature Tracker Integration
+# =============================================================================
+
+def load_tdd_context() -> Optional[Dict[str, Any]]:
+    """
+    Load active TDD project context from feature_tracker.
+
+    Phase 221: Integrates with feature_tracker.py for TDD enforcement.
+    Loads most recently modified features.json and returns status.
+
+    Returns:
+        Dict with TDD context or None if no active project:
+        {
+            "project": "my_project",
+            "status": "0/4 passing (0.0%)",
+            "next_feature": {"id": "F001", "name": "...", ...},
+            "tdd_active": True
+        }
+
+    Performance: <10ms
+    Graceful: Never raises, returns None on any error
+    """
+    try:
+        # TDD projects stored in project_status/active/
+        tdd_data_dir = MAIA_ROOT / "claude" / "data" / "project_status" / "active"
+
+        if not tdd_data_dir.exists():
+            return None
+
+        # Find most recently modified features.json
+        features_files = list(tdd_data_dir.glob("*_features.json"))
+
+        if not features_files:
+            return None
+
+        # Sort by modification time, most recent first
+        features_files.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+
+        # Load most recent project
+        most_recent = features_files[0]
+        project_name = most_recent.stem.replace("_features", "")
+
+        with open(most_recent, 'r') as f:
+            data = json.load(f)
+
+        # Validate schema
+        if "features" not in data or "summary" not in data:
+            return None
+
+        summary = data["summary"]
+
+        # Find next failing feature
+        next_feature = None
+        for f in data["features"]:
+            if not f.get("passes", False) and not f.get("blocked", False):
+                next_feature = f
+                break
+
+        return {
+            "project": project_name,
+            "tdd_active": True,
+            "total": summary.get("total", 0),
+            "passing": summary.get("passing", 0),
+            "failing": summary.get("failing", 0),
+            "blocked": summary.get("blocked", 0),
+            "completion_percentage": summary.get("completion_percentage", 0.0),
+            "next_feature": next_feature,
+            "status": f"{summary.get('passing', 0)}/{summary.get('total', 0)} passing ({summary.get('completion_percentage', 0.0)}%)"
+        }
+
+    except Exception:
+        # Graceful degradation - TDD context loading is non-critical
+        return None
+
+
+def is_development_task(query: str) -> bool:
+    """
+    Detect if a query is a development task that should use TDD.
+
+    Phase 221: Helps enforce TDD by identifying development work.
+
+    Args:
+        query: User's input query
+
+    Returns:
+        True if query appears to be development work
+
+    Examples:
+        "create a tool for X" → True
+        "build a new feature" → True
+        "what time is it" → False
+        "explain this code" → False
+    """
+    dev_indicators = [
+        "create", "build", "implement", "add", "write", "develop",
+        "tool", "agent", "feature", "script", "function", "class",
+        "fix bug", "refactor", "enhance", "modify", "update code"
+    ]
+
+    query_lower = query.lower()
+
+    # Count development indicators
+    dev_score = sum(1 for indicator in dev_indicators if indicator in query_lower)
+
+    # Non-development patterns (questions, exploration)
+    non_dev_patterns = [
+        "what", "how does", "explain", "search", "find", "list",
+        "show me", "where is", "when", "why", "can you"
+    ]
+
+    non_dev_score = sum(1 for pattern in non_dev_patterns if query_lower.startswith(pattern))
+
+    # Requires at least 2 dev indicators and no non-dev pattern start
+    return dev_score >= 2 and non_dev_score == 0
+
+
+def check_tdd_enforcement(query: str) -> Optional[str]:
+    """
+    Check if TDD enforcement should warn about missing features.json.
+
+    Phase 221: Returns warning message if development task detected
+    but no active TDD project exists.
+
+    Args:
+        query: User's input query
+
+    Returns:
+        Warning message if TDD not initialized, None otherwise
+    """
+    if not is_development_task(query):
+        return None
+
+    tdd_context = load_tdd_context()
+
+    if tdd_context and tdd_context.get("tdd_active"):
+        # TDD project active - no warning needed
+        return None
+
+    # Development task but no TDD project
+    return (
+        "⚠️ TDD ENFORCEMENT: Development task detected but no features.json found.\n"
+        "Consider initializing TDD tracking:\n"
+        "  python3 claude/tools/sre/feature_tracker.py init <project_name>\n"
+        "  python3 claude/tools/sre/feature_tracker.py add <project> \"Feature X\""
+    )
+
+
+def format_tdd_context_for_session(tdd_context: Dict[str, Any]) -> str:
+    """
+    Format TDD context for session state injection.
+
+    Returns human-readable TDD status for agent context.
+    """
+    if not tdd_context:
+        return ""
+
+    lines = [
+        f"TDD PROJECT: {tdd_context['project']}",
+        f"Status: {tdd_context['status']}"
+    ]
+
+    if tdd_context.get("blocked", 0) > 0:
+        lines.append(f"Blocked: {tdd_context['blocked']} features")
+
+    if tdd_context.get("next_feature"):
+        nf = tdd_context["next_feature"]
+        lines.append(f"Next: {nf.get('name', 'Unknown')} [{nf.get('id', '?')}]")
+
+        if nf.get("verification"):
+            lines.append("Verification:")
+            for step in nf["verification"][:3]:  # Max 3 steps
+                lines.append(f"  - {step}")
+
+    return "\n".join(lines)
+
+
 def create_session_state(
     agent: str,
     domain: str,
@@ -405,6 +582,9 @@ def create_session_state(
             except (json.JSONDecodeError, IOError):
                 pass  # Use defaults
 
+        # Phase 221: Load TDD context if active project exists
+        tdd_context = load_tdd_context()
+
         session_data = {
             "current_agent": agent,
             "session_start": session_start,
@@ -416,7 +596,10 @@ def create_session_state(
             "query": query[:200],  # Truncate for file size
             "handoff_reason": classification.get("handoff_reason"),  # Phase 5: Track why handoff occurred
             "created_by": "swarm_auto_loader.py",
-            "version": "1.1"  # Phase 5 version
+            "version": "1.2",  # Phase 221: TDD integration
+            # Phase 221: TDD Feature Tracker Integration
+            "tdd_context": tdd_context,
+            "tdd_status": format_tdd_context_for_session(tdd_context) if tdd_context else None
         }
 
         # Atomic write (tmp file + rename for consistency)

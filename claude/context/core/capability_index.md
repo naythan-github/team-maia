@@ -14,6 +14,21 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### Feature Tracker v1.0 (Dec 14) - TDD Enforcement Tool ⭐ **NEW TOOL**
+- **Feature Tracker** (`claude/tools/sre/feature_tracker.py`) - Production-ready TDD enforcement tool implementing Anthropic's JSON feature list pattern
+- **Location**: `claude/tools/sre/feature_tracker.py` (500+ lines, 31/31 tests passing)
+- **Purpose**: Structural enforcement of TDD workflow - prevents Maia from skipping requirements phase, tracks progress objectively, recovers TDD state after context compaction, prevents infinite retry loops with circuit breaker
+- **Core Capabilities**: Project initialization (`init` creates features.json), feature management (`add` with priority/verification/test linking), status updates (`update --passes/--fails` with timestamp recording), circuit breaker (blocks after 5 failed attempts), progress queries (`next` returns highest-priority failing feature, `summary` shows completion %), session integration (`status` returns agent-injectable context)
+- **Key Commands**: `init <project>` (create tracker), `add <project> "name" --category --priority` (add feature), `update <project> F001 --passes/--fails` (record result), `next <project>` (get next feature), `summary <project>` (show counts), `status <project>` (agent context), `reset <project> F001` (clear attempts)
+- **TDD Enforcement**: Forces requirements phase (must `init` before coding), guides incremental work (`next` command), requires test results (`update` command), prevents random coding (structural gates), recovers context after compaction (JSON state persists)
+- **Circuit Breaker**: Feature blocked when attempts >= max_attempts (default 5), blocked features excluded from `next`, `reset` clears attempts and unblocks, block reason recorded in JSON
+- **Reliability**: Atomic writes (tmp + rename), backup before write, schema validation on load, graceful error handling (never crashes)
+- **Performance**: All operations <50ms, JSON files <1MB supported
+- **Test Coverage**: 31/31 tests passing (initialization, feature management, status updates, circuit breaker, progress queries, session integration, reliability, performance, CLI)
+- **Production Status**: ✅ **READY** - v1.0 with comprehensive tests, stdlib-only (no external dependencies), CLI and library usage
+- **Integration Points**: swarm_auto_loader.py (TDD context injection into agent sessions), tdd_development_protocol.md (Phase 221 structural enforcement), pre-commit hooks (TDD validation)
+- **Usage**: `python3 feature_tracker.py init my_project` then `python3 feature_tracker.py add my_project "Feature X" --priority 1` - use for ALL TDD projects to enforce workflow
+
 ### Canonical DateTime System v1.0 (Dec 01) - Date/Time Reliability Protection ⭐ **NEW TOOL**
 - **Canonical DateTime** (`claude/tools/sre/canonical_datetime.py`) - Production-ready date/time system preventing wild date/time variations
 - **Location**: `claude/tools/sre/canonical_datetime.py` (400+ lines, 31/31 tests passing)
@@ -936,7 +951,7 @@
 - save_state.md Phase 0 integration - Multi-phase project setup workflow
 
 ### Phase 119 (Oct 15) - Capability Amnesia Fix (ALL 5 PHASES COMPLETE)
-- capability_index.md - Always-loaded capability registry (200+ tools, 49 agents)
+- capability_index.md - Always-loaded capability registry (500+ tools, 87 agents)
 - capability_check_enforcer.py - Automated Phase 0 duplicate detection (keyword + deep search)
 - save_state_tier1_quick.md - Quick checkpoint template (2-3 min)
 - save_state_tier2_standard.md - Standard save state template (10-15 min)
@@ -1095,7 +1110,7 @@
 
 ### Orchestration Infrastructure (10 tools)
 - agent_swarm.py - Swarm orchestration (explicit handoffs)
-- agent_loader.py - Agent registry (49 agents)
+- agent_loader.py - Agent registry (87 agents)
 - context_management.py - Context preservation across handoffs
 - error_recovery.py - Intelligent error handling
 - performance_monitoring.py - Orchestration performance tracking

@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0",
+  "project": "tdd_hook_integration",
+  "created": "2025-12-14T03:15:46.080583Z",
+  "last_updated": "2025-12-14T03:22:08.073655Z",
+  "features": [
+    {
+      "id": "F001",
+      "name": "Load feature tracker state on session startup",
+      "category": "hook",
+      "priority": 1,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "swarm_auto_loader.py checks for active features.json",
+        "Returns TDD context if project active"
+      ],
+      "test_file": "claude/tools/sre/tests/test_tdd_hook_integration.py",
+      "last_tested": "2025-12-14T03:17:51.499520Z",
+      "attempts": 0,
+      "max_attempts": 5
+    },
+    {
+      "id": "F002",
+      "name": "Inject TDD status into agent context",
+      "category": "hook",
+      "priority": 2,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "Session state includes TDD project name",
+        "Session state includes feature status X/Y passing",
+        "Session state includes next feature details"
+      ],
+      "test_file": null,
+      "last_tested": "2025-12-14T03:18:13.619209Z",
+      "attempts": 0,
+      "max_attempts": 5
+    },
+    {
+      "id": "F003",
+      "name": "Detect development tasks needing TDD",
+      "category": "hook",
+      "priority": 3,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "Identifies tool/agent/feature development requests",
+        "Checks if features.json exists for project",
+        "Returns warning if development without tracker"
+      ],
+      "test_file": null,
+      "last_tested": "2025-12-14T03:19:58.030389Z",
+      "attempts": 0,
+      "max_attempts": 5
+    },
+    {
+      "id": "F004",
+      "name": "Update TDD protocol documentation",
+      "category": "docs",
+      "priority": 4,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "tdd_development_protocol.md references feature_tracker",
+        "CLAUDE.md mentions feature_tracker for TDD",
+        "capability_index.md integration section updated"
+      ],
+      "test_file": null,
+      "last_tested": "2025-12-14T03:22:08.073199Z",
+      "attempts": 0,
+      "max_attempts": 5
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passing": 4,
+    "failing": 0,
+    "blocked": 0,
+    "completion_percentage": 100.0
+  }
+}

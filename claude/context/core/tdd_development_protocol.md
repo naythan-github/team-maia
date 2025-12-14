@@ -440,6 +440,57 @@ claude/data/project_status/active/
 - **Continuous Learning**: Update protocol based on project outcomes
 - **Documentation-First**: Always update requirements when decisions change
 
+## 🔧 Feature Tracker - Structural TDD Enforcement ⭐ **PHASE 221**
+
+### Purpose
+The **Feature Tracker** (`claude/tools/sre/feature_tracker.py`) provides structural enforcement of TDD workflow - replacing documentation-based enforcement (easily ignored) with objective, persistent state.
+
+### Key Benefits
+1. **Forces requirements phase** - Must `init` project before coding
+2. **Tracks progress objectively** - X/Y passing (not subjective estimates)
+3. **Recovers TDD state** - JSON persists through context compaction
+4. **Prevents infinite loops** - Circuit breaker blocks after 5 failed attempts
+
+### Workflow Integration
+```bash
+# 1. Initialize TDD project
+python3 claude/tools/sre/feature_tracker.py init my_project
+
+# 2. Add features (requirements phase)
+python3 claude/tools/sre/feature_tracker.py add my_project "User auth" --priority 1 --verification "POST returns 200" "Token in response"
+
+# 3. Get next feature to work on
+python3 claude/tools/sre/feature_tracker.py next my_project
+
+# 4. Record test results
+python3 claude/tools/sre/feature_tracker.py update my_project F001 --passes
+python3 claude/tools/sre/feature_tracker.py update my_project F002 --fails
+
+# 5. Check progress
+python3 claude/tools/sre/feature_tracker.py status my_project  # Agent-injectable format
+python3 claude/tools/sre/feature_tracker.py summary my_project  # Counts
+
+# 6. Reset blocked features (after fixing root cause)
+python3 claude/tools/sre/feature_tracker.py reset my_project F002
+```
+
+### Session Integration
+TDD state is automatically injected into agent sessions via `swarm_auto_loader.py`:
+- **On session start**: Loads most recent `*_features.json` project
+- **Context injection**: Status injected into session state for agent awareness
+- **Development detection**: Warns if development task detected but no TDD project exists
+
+### Circuit Breaker
+Features are blocked when `attempts >= max_attempts` (default 5):
+- Blocked features excluded from `next` command
+- Forces human intervention to diagnose root cause
+- `reset` clears attempts and unblocks after fix
+
+### File Location
+- **Tool**: `claude/tools/sre/feature_tracker.py`
+- **Tests**: `claude/tools/sre/tests/test_feature_tracker.py` (31 tests)
+- **Data**: `claude/data/project_status/active/{project}_features.json`
+
 ## TDD Scope & Exemptions
 
 ### REQUIRES TDD (Mandatory)

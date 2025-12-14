@@ -131,7 +131,7 @@ print(markdown)
 ```
 maia/
 ├── claude/
-│   ├── agents/                    # 66 agent files (14 v2 with handoffs)
+│   ├── agents/                    # 87 agent files
 │   ├── workflows/prompt_chains/   # 7 workflow definitions
 │   ├── tools/
 │   │   ├── agent_swarm.py        # Swarm orchestration
@@ -873,7 +873,7 @@ Phase 111 is complete with:
 - **System State**: `SYSTEM_STATE.md` (current status, metrics)
 - **Project Plan**: `claude/data/AGENT_EVOLUTION_PROJECT_PLAN.md` (full specification)
 - **Research Foundation**: `claude/data/PROMPT_ENGINEER_AGENT_ANALYSIS.md` (patterns, best practices)
-- **Agent Prompts**: `claude/agents/` (66 agents, 14 v2 with handoffs)
+- **Agent Prompts**: `claude/agents/` (87 agents)
 - **Workflow Examples**: `claude/workflows/prompt_chains/` (7 production workflows)
 - **Test Suites**: `claude/tools/*/test_*.py` (152+ tests for validation)
 
