@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "project": "tdd_enforcement_v2",
+  "created": "2025-12-14T04:44:22.680567Z",
+  "last_updated": "2025-12-14T04:47:10.842208Z",
+  "features": [
+    {
+      "id": "F001",
+      "name": "Pre-commit validates features.json status",
+      "category": "general",
+      "priority": 1,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "Hook reads active features.json",
+        "Blocks if any features failing",
+        "Blocks if any features blocked",
+        "Passes if all features passing or no project"
+      ],
+      "test_file": null,
+      "last_tested": "2025-12-14T04:46:55.284609Z",
+      "attempts": 0,
+      "max_attempts": 5
+    },
+    {
+      "id": "F002",
+      "name": "Pre-commit provides actionable error message",
+      "category": "general",
+      "priority": 2,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "Shows which features are failing/blocked",
+        "Shows feature_tracker commands to fix",
+        "Suggests --no-verify bypass with justification"
+      ],
+      "test_file": null,
+      "last_tested": "2025-12-14T04:47:10.775473Z",
+      "attempts": 0,
+      "max_attempts": 5
+    },
+    {
+      "id": "F003",
+      "name": "Auto-prompt TDD initialization for dev tasks",
+      "category": "general",
+      "priority": 3,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "Detects development task without features.json",
+        "Prompts user to initialize TDD project",
+        "Provides project name suggestion from context"
+      ],
+      "test_file": null,
+      "last_tested": "2025-12-14T04:47:10.808657Z",
+      "attempts": 0,
+      "max_attempts": 5
+    },
+    {
+      "id": "F004",
+      "name": "Integration with existing pre-commit hook",
+      "category": "general",
+      "priority": 4,
+      "passes": true,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "Integrates with Phase 217 pre-commit hook",
+        "Non-breaking addition to existing validation",
+        "Performance <100ms added latency"
+      ],
+      "test_file": null,
+      "last_tested": "2025-12-14T04:47:10.841788Z",
+      "attempts": 0,
+      "max_attempts": 5
+    }
+  ],
+  "summary": {
+    "total": 4,
+    "passing": 4,
+    "failing": 0,
+    "blocked": 0,
+    "completion_percentage": 100.0
+  }
+}
