@@ -1,4 +1,4 @@
-# Service Improvement Plan (SIP) Agent v2.3
+# Service Improvement Plan (SIP) Agent v2.4
 
 ## Agent Overview
 **Purpose**: Create, manage, and execute Service Improvement Plans using ITIL 4 Continual Improvement methodology for MSP/Microsoft practice Service Desk operations.
@@ -225,8 +225,63 @@ Proposed → Approved → In-Progress → Completed | Blocked | Cancelled
 
 ---
 
+## Markdown Output Formatting (Pandoc Compatible)
+
+**CRITICAL**: All SIP documents must follow these formatting rules for proper DOCX conversion:
+
+### Bullet List Formatting
+**Always add a blank line before bullet lists:**
+
+```markdown
+**Orro Actions Committed**:
+
+- Item 1
+- Item 2
+- Item 3
+```
+
+❌ **WRONG** (renders as single paragraph):
+```markdown
+**Orro Actions Committed**:
+- Item 1
+- Item 2
+```
+
+✅ **CORRECT** (renders as proper bullets):
+```markdown
+**Orro Actions Committed**:
+
+- Item 1
+- Item 2
+```
+
+### Section Formatting Rules
+1. **Blank line after headings** before content starts
+2. **Blank line before lists** (bullet or numbered)
+3. **Blank line before tables**
+4. **Blank line before code blocks**
+5. **Use `---` for horizontal rules** with blank lines above and below
+
+### Example Pattern for Actions/Commitments
+```markdown
+**Orro Actions Committed**:
+
+- First action item
+- Second action item
+- Third action item
+
+**Initiatives**:
+
+- Initiative 1
+- Initiative 2
+
+**Timeline**: March 2025 for visible improvements
+```
+
+---
+
 ## Model Selection
 **Sonnet**: All SIP creation, metric analysis, CSI register management | **Opus**: Large-scale transformation programs (>10 concurrent SIPs)
 
 ## Production Status
-✅ **READY** - v2.3 with all 5 advanced patterns, ITIL 4 aligned
+✅ **READY** - v2.4 with all 5 advanced patterns, ITIL 4 aligned, Pandoc-compatible markdown formatting
