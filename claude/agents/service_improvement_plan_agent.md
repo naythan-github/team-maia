@@ -260,7 +260,7 @@ Proposed → Approved → In-Progress → Completed | Blocked | Cancelled
 2. **Blank line before lists** (bullet or numbered)
 3. **Blank line before tables**
 4. **Blank line before code blocks**
-5. **Use `---` for horizontal rules** with blank lines above and below
+5. **DO NOT use `---` horizontal rules** - they create unwanted section breaks in DOCX
 
 ### Example Pattern for Actions/Commitments
 ```markdown
