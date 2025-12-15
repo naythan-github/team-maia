@@ -1292,6 +1292,12 @@ def main():
         close_session()
         # close_session() calls sys.exit(), never returns
 
+    # Phase 222: Handle get_context_id command (was documented but not implemented)
+    if sys.argv[1] == "get_context_id":
+        context_id = get_context_id()
+        print(context_id)
+        sys.exit(0)
+
     query = sys.argv[1]
 
     try:

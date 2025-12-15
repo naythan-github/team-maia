@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "project": "demo_project",
+  "created": "2025-12-14T03:11:40.341837Z",
+  "last_updated": "2025-12-14T03:11:46.319471Z",
+  "features": [
+    {
+      "id": "F001",
+      "name": "User authentication",
+      "category": "api",
+      "priority": 1,
+      "passes": false,
+      "blocked": false,
+      "block_reason": null,
+      "verification": [
+        "POST /login returns 200",
+        "Token in response"
+      ],
+      "test_file": null,
+      "last_tested": null,
+      "attempts": 0,
+      "max_attempts": 5
+    }
+  ],
+  "summary": {
+    "total": 1,
+    "passing": 0,
+    "failing": 1,
+    "blocked": 0,
+    "completion_percentage": 0.0
+  }
+}
