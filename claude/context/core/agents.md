@@ -132,6 +132,18 @@ The IT Glue Specialist Agent provides comprehensive expertise in IT documentatio
 - **Integration**: Works with Autotask PSA Specialist Agent (PSA workflow optimization/API integration), Datto RMM Specialist Agent (RMM asset sync/monitoring integration), SonicWall Specialist Agent (network device documentation/firewall config backups), M365 Integration Agent (Azure AD sync/M365 license tracking/Entra ID password rotation), SRE Principal Engineer Agent (API reliability/monitoring/error handling review)
 - **v2.2 Enhanced Template**: 650 lines, 2 comprehensive few-shot examples (multi-tenant architecture design with ReACT pattern + self-review, REST API automation for PSA sync with rate limiting + error handling), self-reflection checkpoint validation (scalability to 100+ clients, completeness of integration points, security multi-tenant isolation, testability actual API endpoints, reliability rate limiting + error scenarios), explicit handoff declaration pattern for agent collaboration, prompt chaining guidance for enterprise-scale migrations
 
+### **TIMS Support Agent** ⭐ **NEW - TRAPEZE TIMS IT INFRASTRUCTURE**
+The TIMS Support Agent provides IT infrastructure troubleshooting for Trapeze TIMS TouchScreen deployments, RDP automation chains, and Keolis Downer transit environments:
+- **TouchScreen Deployment**: Driver/Workshop touch installation, state-specific server configuration (NSW/SA/QLD/WA), wstouch.exe and drivertouch.exe automation
+- **Automation Chain Diagnostics**: smartstart.bat → smartstart.ps1 → wstouch/drivertouch chain verification, auto-login registry configuration, RDP to RDS server (ATEWARDS01)
+- **Configuration Management**: wstouch.ini [Bacchus] section, drivertouch.ini PCSCReader settings, depot codes, state-specific database connections (hunter/south/horni/path)
+- **State Server Reference**: NSW KDBNSWTIMS01 (10.200.10.56), SA KDBSATIMS01 (10.200.10.125), QLD KDBQLDTIMS01 (10.200.10.88), WA KDBWATIMS01 (10.200.10.153)
+- **Common Issues**: Empty depot dropdown (backend connection/INI config), card reader not scanning (PCSCReader commented), AD password resets breaking automation, RDS startup folder missing TIMS
+- **Few-Shot Examples**: (1) Depot dropdown empty troubleshooting (verify wstouch.ini [Bacchus] → test server connectivity → check RDS → fix config), (2) Card reader fix (enable PCSCReader in drivertouch.ini by removing semicolon)
+- **Integration**: SRE Principal Engineer Agent (server-side issues), Network Specialist (connectivity), IT Glue Specialist (documentation)
+- **Location**: `claude/agents/tims_support_agent.md`
+- **v2.3 Production**: 208 lines, 2 few-shot examples, all 5 advanced patterns, state configuration tables, common issues quick reference
+
 ### **Phase 157 Snowflake Data Cloud Specialist Agent** ⭐ **NEW - DATA PLATFORM EXPERT**
 The Snowflake Data Cloud Specialist Agent provides comprehensive expertise in cloud-native data architecture, AI/ML enablement, real-time analytics, and cost optimization:
 - **Platform Architecture & Design**: Multi-cloud architecture (AWS/Azure/GCP deployment strategies, region selection, account structure), storage vs compute separation (elastic scaling patterns, warehouse-per-workload design), data sharing ecosystems (secure cross-organization collaboration, provider-consumer patterns), disaster recovery (data replication, failover automation, time travel 90 days, zero-copy cloning), multi-tenant patterns (MTT for 50-500 tenants with RLS, OPT for <50 or >1000, hybrid regional)
