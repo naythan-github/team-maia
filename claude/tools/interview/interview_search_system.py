@@ -549,31 +549,27 @@ class InterviewSearchSystem:
         # Generate query embedding
         query_embedding = self._get_embedding(query)
 
-        # Build where filter
-        where_filter = None
-        if candidate_filter or role_filter:
-            conditions = []
-            if candidate_filter:
-                conditions.append({"candidate_name": {"$contains": candidate_filter}})
-            if role_filter:
-                conditions.append({"role_title": {"$contains": role_filter}})
-
-            if len(conditions) == 1:
-                where_filter = conditions[0]
-            else:
-                where_filter = {"$and": conditions}
-
-        # Query ChromaDB
+        # Query ChromaDB (filter in Python for partial matching support)
+        # Fetch extra results if filtering to ensure enough matches after filtering
+        fetch_limit = limit * 3 if (candidate_filter or role_filter) else limit
         results = self.collection.query(
             query_embeddings=[query_embedding],
-            n_results=limit,
-            where=where_filter if where_filter else None
+            n_results=fetch_limit
         )
 
         search_results = []
         if results['ids'] and results['ids'][0]:
             for i in range(len(results['ids'][0])):
                 metadata = results['metadatas'][0][i]
+
+                # Python-side filtering for partial matching
+                if candidate_filter:
+                    if candidate_filter.lower() not in metadata['candidate_name'].lower():
+                        continue
+                if role_filter:
+                    if role_filter.lower() not in metadata['role_title'].lower():
+                        continue
+
                 distance = results['distances'][0][i] if results['distances'] else 0
                 relevance = 1 - distance  # Convert distance to similarity
 
@@ -587,6 +583,10 @@ class InterviewSearchSystem:
                     score=relevance,
                     search_type="semantic"
                 ))
+
+                # Stop once we have enough results
+                if len(search_results) >= limit:
+                    break
 
         return search_results
 
