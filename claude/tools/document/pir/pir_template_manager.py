@@ -10,7 +10,6 @@ Manages PIR document templates for security incidents, enabling:
 - Forensic analysis integration
 """
 
-import os
 import shutil
 from pathlib import Path
 from datetime import datetime
@@ -23,10 +22,11 @@ class PIRTemplateManager:
         """Initialize PIR Template Manager
 
         Args:
-            maia_root: Path to Maia root directory (defaults to ~/git/maia)
+            maia_root: Path to Maia root directory (auto-detected from script location if not provided)
         """
         if maia_root is None:
-            maia_root = os.path.expanduser("~/git/maia")
+            # Derive from script location: claude/tools/document/pir/pir_template_manager.py
+            maia_root = Path(__file__).resolve().parent.parent.parent.parent.parent
 
         self.maia_root = Path(maia_root)
         self.template_dir = self.maia_root / "claude" / "tools" / "document" / "pir" / "templates"
