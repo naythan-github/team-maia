@@ -14,10 +14,25 @@ from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Set
 import importlib.util
 import sys
-from claude.tools.core.path_manager import get_maia_root
+
+# Add MAIA root to path for imports
+_maia_root = Path(__file__).resolve().parents[3]
+if str(_maia_root) not in sys.path:
+    sys.path.insert(0, str(_maia_root))
+
+try:
+    from claude.tools.core.path_manager import get_maia_root
+except ImportError:
+    # Fallback if path_manager not available
+    def get_maia_root():
+        return str(_maia_root)
 
 class DependencyScanner:
-    def __init__(self, repo_path: str = str(Path(__file__).resolve().parents[4] if "claude/tools" in str(__file__) else Path.cwd())):
+    def __init__(self, repo_path: str = None):
+        # Calculate repo path: this file is at claude/tools/governance/dependency_scanner.py
+        # So parents[3] = maia root
+        if repo_path is None:
+            repo_path = str(Path(__file__).resolve().parents[3])
         self.repo_path = Path(repo_path)
         self.scan_results = {}
         

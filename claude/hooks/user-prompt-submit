@@ -15,6 +15,17 @@ if [[ "$CLAUDE_USER_MESSAGE" =~ ^/ ]]; then
     exit 0  # Skip all validation for slash commands
 fi
 
+# Stage 0.0: Prompt Injection Defense (Phase 224 - Security Integration)
+# Screens incoming messages for injection attempts before any processing
+HOOK_INTEGRATION="$MAIA_ROOT/claude/tools/security/hook_integration.py"
+if [[ -f "$HOOK_INTEGRATION" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    INJECTION_RESULT=$(python3 "$HOOK_INTEGRATION" --check-message "$CLAUDE_USER_MESSAGE" 2>&1)
+    if [[ $? -ne 0 ]]; then
+        echo "🛡️ SECURITY: $INJECTION_RESULT"
+        exit 1
+    fi
+fi
+
 # Stage 0: Context Loading Enforcement - Silent unless violations
 CONTEXT_ENFORCER="$(dirname "$0")/context_loading_enforcer.py"
 if [[ -f "$CONTEXT_ENFORCER" ]]; then

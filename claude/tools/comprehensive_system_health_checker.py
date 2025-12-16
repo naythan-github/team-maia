@@ -17,7 +17,11 @@ import importlib.util
 import re
 
 class ComprehensiveSystemHealthChecker:
-    def __init__(self, base_path=str(Path(__file__).resolve().parents[4] if "claude/tools" in str(__file__) else Path.cwd())):
+    def __init__(self, base_path=None):
+        # Calculate MAIA root: this file is at claude/tools/comprehensive_system_health_checker.py
+        # So parents[2] = maia root
+        if base_path is None:
+            base_path = str(Path(__file__).resolve().parents[2])
         self.base_path = Path(base_path)
         self.results = {
             'timestamp': datetime.now().isoformat(),

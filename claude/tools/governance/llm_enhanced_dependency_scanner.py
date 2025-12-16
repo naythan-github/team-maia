@@ -10,22 +10,37 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 import ast
 
-# Import base scanner
-sys.path.append(str(Path(__file__).parent))
+# Add MAIA root to path for imports
+_maia_root = Path(__file__).resolve().parents[3]
+if str(_maia_root) not in sys.path:
+    sys.path.insert(0, str(_maia_root))
+
+# Import base scanner (relative import from same directory)
 from claude.tools.governance.dependency_scanner import DependencyScanner
 
-# Import local LLM infrastructure
-sys.path.append(str(Path(__file__).parent.parent / 'core'))
-from claude.tools.core.optimal_local_llm_interface import OptimalLocalLLMInterface, ModelType
-from claude.tools.core.production_llm_router import ProductionLLMRouter, TaskType, LLMProvider
+# Import local LLM infrastructure with fallback
+try:
+    from claude.tools.optimal_local_llm_interface import OptimalLocalLLMInterface, ModelType
+    from claude.tools.production_llm_router import ProductionLLMRouter, TaskType, LLMProvider
+    _llm_available = True
+except ImportError:
+    _llm_available = False
+    OptimalLocalLLMInterface = None
+    ProductionLLMRouter = None
 
 class LLMEnhancedDependencyScanner(DependencyScanner):
-    def __init__(self, repo_path: str = str(Path(__file__).resolve().parents[4] if "claude/tools" in str(__file__) else Path.cwd())):
+    def __init__(self, repo_path: str = None):
+        # Pass repo_path to parent (parent handles default calculation)
         super().__init__(repo_path)
-        
-        # Initialize local LLM interface
-        self.llm_interface = OptimalLocalLLMInterface()
-        self.router = ProductionLLMRouter()
+
+        # Initialize local LLM interface (with fallback if unavailable)
+        self.llm_available = _llm_available
+        if _llm_available:
+            self.llm_interface = OptimalLocalLLMInterface()
+            self.router = ProductionLLMRouter()
+        else:
+            self.llm_interface = None
+            self.router = None
         
         # LLM analysis settings
         self.use_llm_analysis = True

@@ -1012,7 +1012,14 @@
 
 ## 📊 All Tools by Category (200+ Tools)
 
-### Security & Compliance (15 tools)
+### Security & Compliance (18 tools)
+- **hook_integration.py** ⭐ NEW - Security hook bridge (prompt injection + secret scanning, Phase 224)
+- **alert_delivery.py** ⭐ NEW - Slack webhook alerting (severity colors, rate limiting, Phase 224)
+- **emergency_kill_switch.py** ⭐ NEW - Emergency shutdown (LaunchAgents + processes, Phase 224)
+- **pre_commit_secret_scan.py** ⭐ NEW - Pre-commit secret detection hook (Phase 224)
+- **prompt_injection_defense.py** ⭐ FIXED - Pattern-based injection detection (jailbreak, instruction override, Phase 224)
+- **secret_detector.py** ⭐ FIXED - API key/password/token detection with severity classification (Phase 224)
+- **web_content_sandbox.py** ⭐ FIXED - Web content sandboxing (resource limits, timeout, Phase 224)
 - save_state_security_checker.py - Pre-commit security validation (secrets, CVEs, code security)
 - security_orchestration_service.py - Automated security scans (hourly/daily/weekly)
 - security_intelligence_dashboard.py - Real-time security monitoring (8 widgets)
