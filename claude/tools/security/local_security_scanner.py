@@ -45,6 +45,21 @@ class SecurityScanner:
 
     def _find_tool(self, tool_name: str) -> Optional[str]:
         """Find tool in PATH or common locations"""
+        # For bandit, prefer python -m bandit for reliability
+        if tool_name == "bandit":
+            # Check if bandit module is available
+            try:
+                result = subprocess.run(
+                    [sys.executable, "-m", "bandit", "--version"],
+                    capture_output=True,
+                    text=True,
+                    check=False
+                )
+                if result.returncode == 0:
+                    return f"{sys.executable} -m bandit"
+            except Exception:
+                pass
+
         # Try which command
         try:
             result = subprocess.run(
@@ -146,13 +161,24 @@ class SecurityScanner:
             }
 
         try:
-            # Run Bandit in JSON format
-            cmd = [
-                self.bandit_path,
-                "-r", str(self.scan_path),
-                "-f", "json",
-                "-ll"  # Only report medium and high severity
-            ]
+            # Build command - handle "python -m bandit" format
+            if " -m " in self.bandit_path:
+                # Python module invocation
+                parts = self.bandit_path.split()
+                cmd = parts + [
+                    "-r", str(self.scan_path),
+                    "-f", "json",
+                    "-q",  # Quiet mode - suppress progress bar
+                    "-ll"  # Only report medium and high severity
+                ]
+            else:
+                cmd = [
+                    self.bandit_path,
+                    "-r", str(self.scan_path),
+                    "-f", "json",
+                    "-q",  # Quiet mode - suppress progress bar
+                    "-ll"  # Only report medium and high severity
+                ]
 
             result = subprocess.run(
                 cmd,
@@ -162,8 +188,14 @@ class SecurityScanner:
             )
 
             if result.stdout:
+                # Try to extract JSON from output (handle mixed output with progress bar)
+                output = result.stdout
+                json_start = output.find('{')
+                if json_start > 0:
+                    output = output[json_start:]
+
                 try:
-                    bandit_results = json.loads(result.stdout)
+                    bandit_results = json.loads(output)
 
                     # Count issues by severity
                     issues = bandit_results.get("results", [])
@@ -179,10 +211,10 @@ class SecurityScanner:
                         "exit_code": result.returncode,
                         "details": bandit_results
                     }
-                except json.JSONDecodeError:
+                except json.JSONDecodeError as e:
                     return {
                         "status": "error",
-                        "message": f"Failed to parse Bandit output: {result.stdout[:200]}"
+                        "message": f"Failed to parse Bandit JSON: {str(e)}"
                     }
             else:
                 return {
