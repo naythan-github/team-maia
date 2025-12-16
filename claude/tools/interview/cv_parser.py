@@ -135,12 +135,83 @@ BEGIN
     INSERT INTO candidate_docs_fts(document_id, candidate_name, document_type, content_text)
     VALUES (NEW.document_id, NEW.candidate_name, NEW.document_type, NEW.content_text);
 END;
+
+-- Job Descriptions table
+CREATE TABLE IF NOT EXISTS job_descriptions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    jd_id TEXT UNIQUE NOT NULL,
+    role_title TEXT NOT NULL,
+    department TEXT,
+    level TEXT,  -- associate, mid, senior, lead, etc.
+    file_path TEXT NOT NULL,
+    file_hash TEXT NOT NULL,
+    content_text TEXT,
+    parsed_data TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(role_title, file_hash)
+);
+
+-- JD Requirements (Essential/Desirable)
+CREATE TABLE IF NOT EXISTS jd_requirements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    jd_id TEXT NOT NULL,
+    requirement_text TEXT NOT NULL,
+    requirement_type TEXT NOT NULL,  -- essential, desirable, nice_to_have
+    category TEXT,  -- skill, certification, experience, education
+    skill_keywords TEXT,  -- comma-separated keywords for matching
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (jd_id) REFERENCES job_descriptions(jd_id) ON DELETE CASCADE
+);
+
+-- FTS5 for JD search
+CREATE VIRTUAL TABLE IF NOT EXISTS jd_fts USING fts5(
+    jd_id,
+    role_title,
+    content_text,
+    tokenize='porter unicode61'
+);
+
+-- Indexes for JD tables
+CREATE INDEX IF NOT EXISTS idx_jd_role ON job_descriptions(role_title);
+CREATE INDEX IF NOT EXISTS idx_jd_level ON job_descriptions(level);
+CREATE INDEX IF NOT EXISTS idx_req_jd ON jd_requirements(jd_id);
+CREATE INDEX IF NOT EXISTS idx_req_type ON jd_requirements(requirement_type);
+
+-- Trigger: Sync FTS on JD insert
+CREATE TRIGGER IF NOT EXISTS jd_fts_insert
+AFTER INSERT ON job_descriptions
+BEGIN
+    INSERT INTO jd_fts(jd_id, role_title, content_text)
+    VALUES (NEW.jd_id, NEW.role_title, NEW.content_text);
+END;
 """
 
 
 # =============================================================================
 # DATA CLASSES
 # =============================================================================
+
+@dataclass
+class JDRequirement:
+    """Extracted requirement from JD"""
+    text: str
+    requirement_type: str  # essential, desirable, nice_to_have
+    category: str = ""     # skill, certification, experience, education
+    skill_keywords: List[str] = field(default_factory=list)
+
+
+@dataclass
+class ParsedJD:
+    """Parsed job description"""
+    role_title: str
+    department: str = ""
+    level: str = ""  # associate, mid, senior, lead
+    essential_requirements: List[JDRequirement] = field(default_factory=list)
+    desirable_requirements: List[JDRequirement] = field(default_factory=list)
+    raw_text: str = ""
+    parse_confidence: float = 0.0
+
 
 @dataclass
 class SkillEntry:
@@ -737,15 +808,364 @@ class CVParser:
             conn.close()
 
     # =========================================================================
+    # JD PARSING
+    # =========================================================================
+
+    def parse_jd(self, file_path: str, role_title: Optional[str] = None) -> ParsedJD:
+        """
+        Parse a Job Description file into structured data.
+
+        Args:
+            file_path: Path to JD file
+            role_title: Optional role title (extracted from filename if not provided)
+
+        Returns:
+            ParsedJD object with extracted requirements
+        """
+        # Extract text
+        raw_text = self.extract_text(file_path)
+
+        # Extract role title from filename if not provided
+        if not role_title:
+            filename = Path(file_path).stem
+            # Remove common suffixes
+            role_title = filename.replace(" - Orro Cloud", "").strip()
+
+        # Determine level from role title
+        level = self._determine_level(role_title)
+
+        # Extract requirements
+        essential = self._extract_requirements(raw_text, "essential")
+        desirable = self._extract_requirements(raw_text, "desirable")
+
+        # Calculate confidence
+        confidence = 0.5
+        if essential:
+            confidence += 0.25
+        if desirable:
+            confidence += 0.15
+        if len(raw_text) > 200:
+            confidence += 0.1
+
+        return ParsedJD(
+            role_title=role_title,
+            level=level,
+            essential_requirements=essential,
+            desirable_requirements=desirable,
+            raw_text=raw_text,
+            parse_confidence=min(confidence, 1.0)
+        )
+
+    def _determine_level(self, role_title: str) -> str:
+        """Determine job level from role title"""
+        title_lower = role_title.lower()
+        if "associate" in title_lower or "junior" in title_lower:
+            return "associate"
+        elif "senior" in title_lower:
+            return "senior"
+        elif "lead" in title_lower or "principal" in title_lower:
+            return "lead"
+        elif "manager" in title_lower or "director" in title_lower:
+            return "management"
+        else:
+            return "mid"
+
+    def _extract_requirements(self, text: str, req_type: str) -> List[JDRequirement]:
+        """
+        Extract requirements from JD text.
+
+        Args:
+            text: JD text content
+            req_type: 'essential' or 'desirable'
+
+        Returns:
+            List of JDRequirement objects
+        """
+        requirements = []
+
+        # Define section markers based on requirement type
+        if req_type == "essential":
+            markers = ["skills, knowledge & experience", "essential", "required", "must have", "requirements:", "experience"]
+            end_markers = ["desirable", "nice to have", "preferred", "qualifications", "about the"]
+        else:
+            markers = ["desirable", "nice to have", "preferred", "bonus", "highly regarded"]
+            end_markers = ["about the", "benefits", "what we offer", "how to apply", "qualifications"]
+
+        text_lower = text.lower()
+
+        # Find section start
+        start_idx = -1
+        for marker in markers:
+            idx = text_lower.find(marker)
+            if idx != -1:
+                start_idx = idx
+                break
+
+        if start_idx == -1:
+            # Fallback: extract all bullet points from the document
+            start_idx = 0
+
+        # Find section end
+        end_idx = len(text)
+        for marker in end_markers:
+            idx = text_lower.find(marker, start_idx + 50)  # Look after start
+            if idx != -1 and idx < end_idx:
+                end_idx = idx
+
+        # Extract section
+        section = text[start_idx:end_idx]
+
+        # Handle inline bullets (e.g., "• Point one. • Point two.")
+        # Split on bullet characters
+        bullet_pattern = r'[•\-\*·](?:\s)'
+        parts = re.split(bullet_pattern, section)
+
+        for part in parts:
+            part = part.strip()
+            # Clean up the part
+            clean_line = re.sub(r'^[•\-*·\d.]+\s*', '', part).strip()
+
+            # Handle sentences that end with periods
+            if clean_line and len(clean_line) > 15:  # Skip very short parts
+                # Extract skill keywords
+                keywords = self._extract_skill_keywords(clean_line)
+
+                requirements.append(JDRequirement(
+                    text=clean_line,
+                    requirement_type=req_type,
+                    category=self._categorize_requirement(clean_line),
+                    skill_keywords=keywords
+                ))
+
+        # Also check for newline-separated bullet points
+        lines = section.split('\n')
+        for line in lines:
+            line = line.strip()
+            # Check for bullet point markers at start of line
+            if line.startswith(('•', '-', '*', '·')) or re.match(r'^\d+\.', line):
+                clean_line = re.sub(r'^[•\-*·\d.]+\s*', '', line).strip()
+                if len(clean_line) > 15 and clean_line not in [r.text for r in requirements]:
+                    keywords = self._extract_skill_keywords(clean_line)
+                    requirements.append(JDRequirement(
+                        text=clean_line,
+                        requirement_type=req_type,
+                        category=self._categorize_requirement(clean_line),
+                        skill_keywords=keywords
+                    ))
+
+        return requirements
+
+    def _extract_skill_keywords(self, text: str) -> List[str]:
+        """Extract skill keywords from requirement text"""
+        keywords = []
+        text_lower = text.lower()
+
+        for skill_name in SKILL_PATTERNS.keys():
+            if skill_name in text_lower:
+                keywords.append(skill_name)
+
+        return keywords
+
+    def _categorize_requirement(self, text: str) -> str:
+        """Categorize a requirement (skill, certification, experience, education)"""
+        text_lower = text.lower()
+
+        if any(word in text_lower for word in ["certified", "certification", "az-", "aws-", "gcp-"]):
+            return "certification"
+        elif any(word in text_lower for word in ["degree", "bachelor", "master", "phd", "education"]):
+            return "education"
+        elif any(word in text_lower for word in ["years", "experience", "worked"]):
+            return "experience"
+        else:
+            return "skill"
+
+    def ingest_jd(
+        self,
+        jd_path: str,
+        role_title: Optional[str] = None,
+        department: str = ""
+    ) -> Dict[str, Any]:
+        """
+        Ingest a JD into the database.
+
+        Args:
+            jd_path: Path to JD file
+            role_title: Role title (extracted from filename if not provided)
+            department: Department name
+
+        Returns:
+            Dict with ingestion result
+        """
+        print(f"\nIngesting JD: {jd_path}")
+
+        # Compute hash for deduplication
+        file_hash = self.compute_file_hash(jd_path)
+
+        # Parse JD first to get role_title if not provided
+        parsed = self.parse_jd(jd_path, role_title)
+        role_title = parsed.role_title
+
+        print(f"  Role: {role_title}")
+
+        conn = self._get_connection()
+        try:
+            # Check for existing JD
+            cursor = conn.execute(
+                """SELECT jd_id FROM job_descriptions
+                   WHERE role_title = ? AND file_hash = ?""",
+                (role_title, file_hash)
+            )
+            existing = cursor.fetchone()
+
+            if existing:
+                print(f"  JD already exists: {existing['jd_id']}")
+                return {
+                    "status": "exists",
+                    "jd_id": existing['jd_id'],
+                    "role_title": role_title
+                }
+
+            print(f"  Parsed: {len(parsed.essential_requirements)} essential, {len(parsed.desirable_requirements)} desirable")
+
+            # Generate JD ID
+            jd_id = str(uuid.uuid4())
+
+            # Insert JD record
+            conn.execute(
+                """INSERT INTO job_descriptions
+                   (jd_id, role_title, department, level, file_path, file_hash,
+                    content_text, parsed_data)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (jd_id, role_title, department, parsed.level, jd_path, file_hash,
+                 parsed.raw_text, json.dumps(asdict(parsed)))
+            )
+
+            # Insert requirements
+            all_requirements = (
+                parsed.essential_requirements +
+                parsed.desirable_requirements
+            )
+            for req in all_requirements:
+                conn.execute(
+                    """INSERT INTO jd_requirements
+                       (jd_id, requirement_text, requirement_type, category, skill_keywords)
+                       VALUES (?, ?, ?, ?, ?)""",
+                    (jd_id, req.text, req.requirement_type, req.category,
+                     ','.join(req.skill_keywords))
+                )
+
+            conn.commit()
+            print(f"  Stored: jd_id={jd_id}")
+
+            return {
+                "status": "success",
+                "jd_id": jd_id,
+                "role_title": role_title,
+                "level": parsed.level,
+                "essential_count": len(parsed.essential_requirements),
+                "desirable_count": len(parsed.desirable_requirements),
+                "parse_confidence": parsed.parse_confidence
+            }
+
+        finally:
+            conn.close()
+
+    def search_jd(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Search JDs using FTS5.
+
+        Args:
+            query: Search query
+            limit: Max results
+
+        Returns:
+            List of matching JDs
+        """
+        conn = self._get_connection()
+        try:
+            safe_query = ' '.join(re.findall(r'\w+', query))
+            if not safe_query:
+                return []
+
+            cursor = conn.execute(
+                """SELECT
+                       jd.jd_id,
+                       jd.role_title,
+                       jd.level,
+                       jd.created_at,
+                       bm25(jd_fts) as score
+                   FROM jd_fts fts
+                   JOIN job_descriptions jd ON fts.jd_id = jd.jd_id
+                   WHERE jd_fts MATCH ?
+                   ORDER BY score
+                   LIMIT ?""",
+                (safe_query, limit)
+            )
+
+            return [dict(row) for row in cursor.fetchall()]
+
+        finally:
+            conn.close()
+
+    def get_jd(self, role_title: str) -> Optional[Dict[str, Any]]:
+        """Get a JD by role title"""
+        conn = self._get_connection()
+        try:
+            cursor = conn.execute(
+                """SELECT * FROM job_descriptions WHERE role_title = ?""",
+                (role_title,)
+            )
+            row = cursor.fetchone()
+            if row:
+                return dict(row)
+            return None
+        finally:
+            conn.close()
+
+    def get_jd_requirements(self, jd_id: str, req_type: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Get requirements for a JD"""
+        conn = self._get_connection()
+        try:
+            if req_type:
+                cursor = conn.execute(
+                    """SELECT * FROM jd_requirements WHERE jd_id = ? AND requirement_type = ?""",
+                    (jd_id, req_type)
+                )
+            else:
+                cursor = conn.execute(
+                    """SELECT * FROM jd_requirements WHERE jd_id = ?""",
+                    (jd_id,)
+                )
+            return [dict(row) for row in cursor.fetchall()]
+        finally:
+            conn.close()
+
+    def list_jds(self) -> List[Dict[str, Any]]:
+        """List all JDs"""
+        conn = self._get_connection()
+        try:
+            cursor = conn.execute(
+                """SELECT jd_id, role_title, level, created_at,
+                          (SELECT COUNT(*) FROM jd_requirements r WHERE r.jd_id = j.jd_id AND r.requirement_type = 'essential') as essential_count,
+                          (SELECT COUNT(*) FROM jd_requirements r WHERE r.jd_id = j.jd_id AND r.requirement_type = 'desirable') as desirable_count
+                   FROM job_descriptions j
+                   ORDER BY created_at DESC"""
+            )
+            return [dict(row) for row in cursor.fetchall()]
+        finally:
+            conn.close()
+
+    # =========================================================================
     # STATS
     # =========================================================================
 
     def get_stats(self) -> Dict[str, Any]:
-        """Get CV system statistics"""
+        """Get CV and JD system statistics"""
         conn = self._get_connection()
         try:
             stats = {}
 
+            # CV stats
             cursor = conn.execute("SELECT COUNT(*) as count FROM candidate_documents")
             stats['total_documents'] = cursor.fetchone()['count']
 
@@ -758,6 +1178,19 @@ class CVParser:
             cursor = conn.execute("SELECT COUNT(*) as count FROM candidate_certifications")
             stats['total_certifications'] = cursor.fetchone()['count']
 
+            # JD stats
+            cursor = conn.execute("SELECT COUNT(*) as count FROM job_descriptions")
+            stats['total_jds'] = cursor.fetchone()['count']
+
+            cursor = conn.execute("SELECT COUNT(*) as count FROM jd_requirements")
+            stats['total_jd_requirements'] = cursor.fetchone()['count']
+
+            cursor = conn.execute("SELECT COUNT(*) as count FROM jd_requirements WHERE requirement_type = 'essential'")
+            stats['essential_requirements'] = cursor.fetchone()['count']
+
+            cursor = conn.execute("SELECT COUNT(*) as count FROM jd_requirements WHERE requirement_type = 'desirable'")
+            stats['desirable_requirements'] = cursor.fetchone()['count']
+
             return stats
 
         finally:
@@ -769,22 +1202,36 @@ class CVParser:
 # =============================================================================
 
 def main():
-    """CLI for CV Parser"""
+    """CLI for CV and JD Parser"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="CV Parser for Recruitment Pipeline")
+    parser = argparse.ArgumentParser(description="CV and JD Parser for Recruitment Pipeline")
     subparsers = parser.add_subparsers(dest='command', help='Commands')
 
-    # Ingest command
+    # CV Ingest command
     ingest_parser = subparsers.add_parser('ingest', help='Ingest a CV')
     ingest_parser.add_argument('cv_path', help='Path to CV file')
     ingest_parser.add_argument('--name', required=True, help='Candidate name')
     ingest_parser.add_argument('--role', default='', help='Target role')
 
-    # Search command
+    # CV Search command
     search_parser = subparsers.add_parser('search', help='Search CVs')
     search_parser.add_argument('query', help='Search query')
     search_parser.add_argument('--limit', type=int, default=10, help='Max results')
+
+    # JD Ingest command
+    jd_ingest_parser = subparsers.add_parser('ingest-jd', help='Ingest a Job Description')
+    jd_ingest_parser.add_argument('jd_path', help='Path to JD file')
+    jd_ingest_parser.add_argument('--role', help='Role title (extracted from filename if not provided)')
+    jd_ingest_parser.add_argument('--department', default='', help='Department name')
+
+    # JD Search command
+    jd_search_parser = subparsers.add_parser('search-jd', help='Search JDs')
+    jd_search_parser.add_argument('query', help='Search query')
+    jd_search_parser.add_argument('--limit', type=int, default=10, help='Max results')
+
+    # List JDs command
+    subparsers.add_parser('list-jds', help='List all JDs')
 
     # Stats command
     subparsers.add_parser('stats', help='Show statistics')
@@ -806,11 +1253,39 @@ def main():
         for r in results:
             print(f"  - {r['candidate_name']} ({r['document_type']})")
 
+    elif args.command == 'ingest-jd':
+        result = cv_parser.ingest_jd(args.jd_path, args.role, args.department)
+        print(f"\nResult: {result['status']}")
+        if result['status'] == 'success':
+            print(f"  Level: {result['level']}")
+            print(f"  Essential: {result['essential_count']}")
+            print(f"  Desirable: {result['desirable_count']}")
+
+    elif args.command == 'search-jd':
+        results = cv_parser.search_jd(args.query, args.limit)
+        print(f"\nFound {len(results)} JDs:")
+        for r in results:
+            print(f"  - {r['role_title']} ({r['level']})")
+
+    elif args.command == 'list-jds':
+        jds = cv_parser.list_jds()
+        print(f"\nJob Descriptions ({len(jds)} total):")
+        for jd in jds:
+            print(f"  - {jd['role_title']} ({jd['level']}) - {jd['essential_count']} essential, {jd['desirable_count']} desirable")
+
     elif args.command == 'stats':
         stats = cv_parser.get_stats()
-        print("\nCV Parser Statistics:")
-        for k, v in stats.items():
-            print(f"  {k}: {v}")
+        print("\nRecruitment Pipeline Statistics:")
+        print("\n  CVs:")
+        print(f"    Documents: {stats['total_documents']}")
+        print(f"    Candidates: {stats['unique_candidates']}")
+        print(f"    Skills: {stats['total_skills']}")
+        print(f"    Certifications: {stats['total_certifications']}")
+        print("\n  JDs:")
+        print(f"    Total JDs: {stats['total_jds']}")
+        print(f"    Requirements: {stats['total_jd_requirements']}")
+        print(f"    Essential: {stats['essential_requirements']}")
+        print(f"    Desirable: {stats['desirable_requirements']}")
 
     else:
         parser.print_help()
