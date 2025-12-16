@@ -10,6 +10,7 @@ Author: Maia SDM Agent
 
 import sys
 import subprocess
+import tempfile
 from pathlib import Path
 
 MAIA_ROOT = Path(__file__).resolve().parents[3]
@@ -265,8 +266,8 @@ TIER_ANALYSIS_CONTENT = """
 def create_confluence_page(space_key: str, title: str, content: str, parent_id: str = None):
     """Create Confluence page using reliable_confluence_client.py"""
 
-    # Save content to temp file
-    content_file = Path("/tmp/confluence_tier_analysis_content.html")
+    # Save content to temp file (B108: use tempfile.gettempdir() for portability)
+    content_file = Path(tempfile.gettempdir()) / "confluence_tier_analysis_content.html"
     with open(content_file, 'w') as f:
         f.write(content)
 

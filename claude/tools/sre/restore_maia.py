@@ -24,6 +24,10 @@ import requests
 from pathlib import Path
 from urllib.parse import urlparse
 
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from claude.tools.security.safe_archive import safe_extract_tar
+
 class MaiaRestorer:
     def __init__(self):
         self.system = platform.system()
@@ -116,7 +120,7 @@ class MaiaRestorer:
         """Download backup from URL"""
         print(f"📥 Downloading backup from {url}")
         try:
-            response = requests.get(url, stream=True)
+            response = requests.get(url, stream=True, timeout=(10, 120))  # 10s connect, 120s read
             response.raise_for_status()
             
             filename = urlparse(url).path.split('/')[-1]
@@ -143,11 +147,10 @@ class MaiaRestorer:
             return False
             
         print(f"📦 Extracting backup: {backup_path}")
-        
+
         try:
-            with tarfile.open(backup_path, 'r:gz') as tar:
-                # Extract to current directory
-                tar.extractall(path=self.maia_root)
+            # Use safe extraction to prevent path traversal attacks
+            safe_extract_tar(backup_path, self.maia_root)
                 
             # Find extracted directory
             extracted_dirs = [d for d in self.maia_root.iterdir() 

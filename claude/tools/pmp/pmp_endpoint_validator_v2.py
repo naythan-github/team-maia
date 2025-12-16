@@ -13,6 +13,7 @@ import os
 import sys
 import json
 import time
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
@@ -248,7 +249,7 @@ class PMPEndpointValidatorV2:
                 print(f"   - {r['name']}: {r['error']}")
 
         # Save results with environment in filename
-        output_file = Path(f'/tmp/pmp_endpoint_validation_{self.environment}.json')
+        output_file = Path(tempfile.gettempdir()) / f'pmp_endpoint_validation_{self.environment}.json'
         with open(output_file, 'w') as f:
             json.dump(self.results, f, indent=2, default=str)
 

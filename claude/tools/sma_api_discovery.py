@@ -2,8 +2,13 @@
 """
 SonicWall SMA 500 API Discovery Tool
 Tests all known/potential endpoints to map the exact API structure
+
+Environment Variables:
+    SMA_VERIFY_SSL: Set to 'false' to disable SSL verification (default: true)
+    SMA_CA_BUNDLE: Path to custom CA bundle for self-signed certs
 """
 
+import os
 import requests
 import json
 import sys
@@ -12,7 +17,9 @@ from urllib3.exceptions import InsecureRequestWarning
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
 
-requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
+# Only disable warnings if SSL verification is explicitly disabled
+if os.environ.get('SMA_VERIFY_SSL', 'true').lower() == 'false':
+    requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 class SMAAPIDiscovery:
     def __init__(self, hostname, username, password, timeout=10):
@@ -20,6 +27,13 @@ class SMAAPIDiscovery:
         self.username = username
         self.auth = HTTPBasicAuth(f"local\\{username}", password)
         self.timeout = timeout
+
+        # SSL verification configuration (B501 fix)
+        self.verify_ssl = os.environ.get('SMA_VERIFY_SSL', 'true').lower() == 'true'
+        self.ca_bundle = os.environ.get('SMA_CA_BUNDLE', None)
+        # Use CA bundle if provided, otherwise use verify_ssl boolean
+        self.ssl_verify = self.ca_bundle if self.ca_bundle else self.verify_ssl
+
         self.results = {
             "discovery_date": datetime.now().isoformat(),
             "appliance": hostname,
@@ -33,9 +47,9 @@ class SMAAPIDiscovery:
         """Test a single endpoint and categorize result"""
         try:
             if method == "GET":
-                response = requests.get(url, auth=self.auth, verify=False, timeout=self.timeout)
+                response = requests.get(url, auth=self.auth, verify=self.ssl_verify, timeout=self.timeout)
             elif method == "POST":
-                response = requests.post(url, auth=self.auth, verify=False, timeout=self.timeout)
+                response = requests.post(url, auth=self.auth, verify=self.ssl_verify, timeout=self.timeout)
 
             result = {
                 "url": url,

@@ -79,7 +79,7 @@ class GitHubDataSource(DORADataSource):
         }
         
         try:
-            response = requests.get(f"{self.base_url}{endpoint}", headers=headers)
+            response = requests.get(f"{self.base_url}{endpoint}", headers=headers, timeout=30)  # B113: Add timeout
             if response.status_code == 200:
                 return response.json()
             else:

@@ -273,7 +273,8 @@ class RAGABTestSampler:
             # Get embedding from Ollama
             response = requests.post(
                 f"{self.ollama_url}/api/embeddings",
-                json={"model": self.ollama_model, "prompt": sample['text']}
+                json={"model": self.ollama_model, "prompt": sample['text']},
+                timeout=30  # B113: Add timeout
             )
 
             if response.status_code == 200:

@@ -72,7 +72,7 @@ class SentimentModelTester:
 
         # Check if model is available
         try:
-            response = requests.get(f"{self.ollama_url}/api/tags")
+            response = requests.get(f"{self.ollama_url}/api/tags", timeout=30)  # B113: Add timeout
             available_models = [m['name'] for m in response.json().get('models', [])]
             if model_name not in available_models:
                 print(f"❌ Model {model_name} not found. Available: {available_models}")

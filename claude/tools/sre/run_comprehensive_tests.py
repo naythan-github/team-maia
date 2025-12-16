@@ -13,6 +13,7 @@ Usage:
 import argparse
 import json
 import os
+import shlex
 import subprocess
 import sys
 import time
@@ -45,12 +46,14 @@ class TestRunner:
             f.write(log_entry + "\n")
 
     def run_command(self, command: str, description: str, timeout: int = 30) -> Tuple[bool, str]:
-        """Execute shell command and capture output"""
+        """Execute command safely without shell=True (B602 fix)"""
         self.log(f"Running: {description}", "TEST")
         try:
+            # Parse command string into list to avoid shell=True
+            cmd_parts = shlex.split(command) if isinstance(command, str) else command
             result = subprocess.run(
-                command,
-                shell=True,
+                cmd_parts,
+                shell=False,  # Security: Never use shell=True
                 capture_output=True,
                 text=True,
                 timeout=timeout,

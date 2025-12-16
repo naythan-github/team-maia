@@ -9,6 +9,10 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional
 
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+from claude.tools.security.safe_archive import safe_extract_tar
+
 class SystemBackupManager:
     def __init__(self):
         self.backup_dir = Path("claude/data/backups")
@@ -284,16 +288,12 @@ class SystemBackupManager:
             print(f"🔄 Restoring checkpoint: {checkpoint_name}")
             print(f"   Backup file: {backup_file}")
             print(f"   Target: {restore_info['restoration_target']}")
-            
-            # Extract backup
-            with tarfile.open(backup_file, 'r:gz') as tar:
-                if target_dir:
-                    tar.extractall(path=target_dir)
-                else:
-                    tar.extractall()
-                
-                restore_info['files_restored'] = [member.name for member in tar.getmembers() if member.isfile()]
-            
+
+            # Extract backup using safe extraction to prevent path traversal
+            extract_path = Path(target_dir) if target_dir else Path.cwd()
+            extracted_files = safe_extract_tar(backup_file, extract_path)
+            restore_info['files_restored'] = extracted_files
+
             restore_info['status'] = 'completed'
             
             print(f"✅ Restoration completed")

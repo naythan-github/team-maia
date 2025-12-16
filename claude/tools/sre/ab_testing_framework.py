@@ -308,7 +308,7 @@ class ABTestingFramework:
         """
         # Hash user_id + experiment_id for consistent assignment
         hash_input = f"{user_id}_{experiment_id}"
-        hash_value = int(hashlib.md5(hash_input.encode()).hexdigest(), 16)
+        hash_value = int(hashlib.md5(hash_input.encode(), usedforsecurity=False).hexdigest(), 16)
 
         # 50/50 split
         return "control" if hash_value % 2 == 0 else "treatment"
@@ -438,7 +438,7 @@ class ABTestingFramework:
     def _generate_experiment_id(self, name: str) -> str:
         """Generate unique experiment ID"""
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        name_hash = hashlib.md5(name.encode()).hexdigest()[:8]
+        name_hash = hashlib.md5(name.encode(), usedforsecurity=False).hexdigest()[:8]
         return f"exp_{timestamp}_{name_hash}"
 
     def _save_experiment(self, experiment: Experiment):

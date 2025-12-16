@@ -11,6 +11,7 @@ Usage:
 
 import sys
 import json
+import tempfile
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
@@ -250,8 +251,8 @@ class PMPEndpointValidator:
             for r in empty:
                 print(f"   - {r['name']}: {r['error']}")
 
-        # Save detailed results
-        output_file = Path('/tmp/pmp_endpoint_validation_results.json')
+        # Save detailed results (B108: Use tempfile instead of hardcoded /tmp)
+        output_file = Path(tempfile.gettempdir()) / 'pmp_endpoint_validation_results.json'
         with open(output_file, 'w') as f:
             json.dump(self.results, f, indent=2, default=str)
 

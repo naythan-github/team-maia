@@ -23,12 +23,17 @@ import sqlite3
 import subprocess
 import logging
 import platform
+import tempfile
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, asdict
 import hashlib
-import tempfile
+
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+from claude.tools.security.safe_archive import safe_extract_tar
+
 import urllib.request
 import time
 
@@ -305,9 +310,9 @@ class MaiaEnterpriseRestoration:
         try:
             # Extract backup to temporary directory
             self.temp_dir = Path(tempfile.mkdtemp(prefix='maia_restore_'))
-            
-            with tarfile.open(self.backup_path, 'r:gz') as tar:
-                tar.extractall(self.temp_dir)
+
+            # Use safe extraction to prevent path traversal attacks
+            safe_extract_tar(self.backup_path, self.temp_dir)
             
             # Find extracted directory
             extracted_dirs = [d for d in self.temp_dir.iterdir() if d.is_dir()]

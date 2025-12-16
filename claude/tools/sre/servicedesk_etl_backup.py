@@ -163,7 +163,7 @@ def calculate_checksum(file_path: str) -> str:
     Returns:
         MD5 checksum hex string
     """
-    md5 = hashlib.md5()
+    md5 = hashlib.md5(usedforsecurity=False)  # B324: Non-cryptographic checksum
     with open(file_path, 'rb') as f:
         for chunk in iter(lambda: f.read(8192), b''):
             md5.update(chunk)
