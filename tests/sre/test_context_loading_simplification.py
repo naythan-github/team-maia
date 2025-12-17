@@ -179,7 +179,7 @@ class TestContextLoadingSimplification(unittest.TestCase):
         TEST-5: load_default_agent() → Creates session, NO recovery check
 
         When load_default_agent() is called, it should create a session
-        for maia_core_agent WITHOUT checking or prompting for recovery.
+        for sre_principal_engineer_agent WITHOUT checking or prompting for recovery.
         """
         from swarm_auto_loader import (
             load_default_agent,
@@ -215,7 +215,7 @@ class TestContextLoadingSimplification(unittest.TestCase):
                 with open(session_path) as f:
                     session = json.load(f)
 
-                self.assertEqual(session["current_agent"], "maia_core_agent")
+                self.assertEqual(session["current_agent"], "sre_principal_engineer_agent")
         finally:
             # Clean up
             if session_path.exists():

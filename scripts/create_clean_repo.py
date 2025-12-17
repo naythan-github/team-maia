@@ -209,8 +209,8 @@ EMAIL_PATTERNS: List[Tuple[str, str]] = [
 
 TEMPLATES = {
     "claude/data/user_preferences.json.template": """{
-  "default_agent": "maia_core_agent",
-  "fallback_agent": "maia_core_agent",
+  "default_agent": "sre_principal_engineer_agent",
+  "fallback_agent": "sre_principal_engineer_agent",
   "version": "1.0",
   "description": "User-specific preferences for Maia system behavior",
   "updated": "YYYY-MM-DDTHH:MM:SSZ"

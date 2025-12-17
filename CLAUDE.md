@@ -23,7 +23,7 @@
    - **If missing/corrupted**: Load user's preferred default agent from preferences (Phase 176/178/207)
    - **⭐ Phase 176/178/207 - Default Agent with User Preferences**:
      - **No session exists**: Read `claude/data/user_preferences.json` → load agent specified in `default_agent` field (e.g., `sre_principal_engineer_agent.md`)
-     - **Fallback chain**: If preferences file missing/invalid → load `maia_core_agent.md` as system default
+     - **Fallback chain**: If preferences file missing/invalid → load `sre_principal_engineer_agent.md` as system default
      - **Session exists (same context)**: Load agent from session file (intra-session continuity)
      - **Checkpoints**: For intra-session recovery ONLY (after context compaction within SAME window)
      - **Default behaviors**: SRE-grade operational discipline (if SRE default), state preservation, MSP context awareness

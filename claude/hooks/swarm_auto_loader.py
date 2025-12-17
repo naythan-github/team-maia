@@ -9,7 +9,7 @@ Purpose:
 - Invoke SwarmOrchestrator when routing confidence >70% and complexity >3
 - Create session state file for Maia agent context loading
 - Per-context isolation (each Claude Code window has independent session)
-- Default agent loading (maia_core_agent when no session exists)
+- Default agent loading (sre_principal_engineer_agent when no session exists)
 - Recovery protocol integration (checkpoint + git context)
 - Graceful degradation for all error scenarios
 - Background logging integration with Phase 125
@@ -1066,8 +1066,8 @@ def load_user_preferences() -> Dict[str, Any]:
     Graceful: Never raises, always returns valid dict
     """
     default_prefs = {
-        "default_agent": "maia_core_agent",
-        "fallback_agent": "maia_core_agent"
+        "default_agent": "sre_principal_engineer_agent",
+        "fallback_agent": "sre_principal_engineer_agent"
     }
 
     try:
@@ -1084,8 +1084,8 @@ def load_user_preferences() -> Dict[str, Any]:
             return default_prefs
 
         return {
-            "default_agent": user_prefs.get("default_agent", "maia_core_agent"),
-            "fallback_agent": user_prefs.get("fallback_agent", "maia_core_agent")
+            "default_agent": user_prefs.get("default_agent", "sre_principal_engineer_agent"),
+            "fallback_agent": user_prefs.get("fallback_agent", "sre_principal_engineer_agent")
         }
 
     except (json.JSONDecodeError, IOError) as e:
@@ -1104,7 +1104,7 @@ def load_default_agent() -> Optional[str]:
         Agent name if loaded, None if session already exists
 
     Performance: <50ms
-    Graceful fallback: user_prefs → fallback_agent → maia_core_agent
+    Graceful fallback: user_prefs → fallback_agent → sre_principal_engineer_agent
     """
     session_file = get_session_file_path()
 
@@ -1133,13 +1133,13 @@ def load_default_agent() -> Optional[str]:
         default_agent = fallback_agent
         agent_file = MAIA_ROOT / "claude" / "agents" / f"{fallback_agent}.md"
 
-        # Last resort: hardcoded maia_core_agent
+        # Last resort: hardcoded sre_principal_engineer_agent
         if not agent_file.exists():
-            agent_file = MAIA_ROOT / "claude" / "agents" / "maia_core_agent.md"
-            default_agent = "maia_core_agent"
+            agent_file = MAIA_ROOT / "claude" / "agents" / "sre_principal_engineer_agent.md"
+            default_agent = "sre_principal_engineer_agent"
 
         if not agent_file.exists():
-            log_error(f"No default agent available (tried {user_prefs['default_agent']}, {fallback_agent}, maia_core_agent)")
+            log_error(f"No default agent available (tried {user_prefs['default_agent']}, {fallback_agent}, sre_principal_engineer_agent)")
             return None
 
     # Determine domain from agent name
@@ -1147,7 +1147,6 @@ def load_default_agent() -> Optional[str]:
         "sre_principal_engineer_agent": "sre",
         "security_specialist_agent": "security",
         "devops_principal_architect_agent": "devops",
-        "maia_core_agent": "core",
     }
     domain = domain_map.get(default_agent, "core")
 

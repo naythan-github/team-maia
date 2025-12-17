@@ -11,8 +11,9 @@ import sys
 import tempfile
 from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent))
+# Add claude/hooks to path for imports
+_maia_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(_maia_root / "claude" / "hooks"))
 
 # Import functions to test
 from swarm_auto_loader import load_user_preferences, MAIA_ROOT
@@ -27,8 +28,8 @@ def test_load_user_preferences_valid():
     # Should load the actual user_preferences.json
     assert prefs["default_agent"] == "sre_principal_engineer_agent", \
         f"Expected SRE agent, got {prefs['default_agent']}"
-    assert prefs["fallback_agent"] == "maia_core_agent", \
-        f"Expected maia_core fallback, got {prefs['fallback_agent']}"
+    assert prefs["fallback_agent"] == "sre_principal_engineer_agent", \
+        f"Expected SRE fallback, got {prefs['fallback_agent']}"
 
     print("   ✅ Valid preferences loaded correctly")
 
@@ -50,10 +51,10 @@ def test_load_user_preferences_missing_file():
         prefs = load_user_preferences()
 
         # Should fall back to defaults
-        assert prefs["default_agent"] == "maia_core_agent", \
-            f"Expected maia_core fallback, got {prefs['default_agent']}"
-        assert prefs["fallback_agent"] == "maia_core_agent", \
-            f"Expected maia_core fallback, got {prefs['fallback_agent']}"
+        assert prefs["default_agent"] == "sre_principal_engineer_agent", \
+            f"Expected SRE fallback, got {prefs['default_agent']}"
+        assert prefs["fallback_agent"] == "sre_principal_engineer_agent", \
+            f"Expected SRE fallback, got {prefs['fallback_agent']}"
 
         print("   ✅ Graceful fallback to defaults works")
 
@@ -82,8 +83,8 @@ def test_load_user_preferences_malformed_json():
         prefs = load_user_preferences()
 
         # Should fall back to defaults
-        assert prefs["default_agent"] == "maia_core_agent", \
-            f"Expected maia_core fallback, got {prefs['default_agent']}"
+        assert prefs["default_agent"] == "sre_principal_engineer_agent", \
+            f"Expected SRE fallback, got {prefs['default_agent']}"
 
         print("   ✅ Graceful fallback with malformed JSON works")
 
@@ -113,8 +114,8 @@ def test_load_user_preferences_missing_field():
         prefs = load_user_preferences()
 
         # Should fall back to defaults
-        assert prefs["default_agent"] == "maia_core_agent", \
-            f"Expected maia_core fallback, got {prefs['default_agent']}"
+        assert prefs["default_agent"] == "sre_principal_engineer_agent", \
+            f"Expected SRE fallback, got {prefs['default_agent']}"
 
         print("   ✅ Graceful fallback with missing field works")
 

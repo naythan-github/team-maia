@@ -6,7 +6,7 @@ TDD Phase 3: Tests written BEFORE implementation
 Tests the integration between:
 - swarm_auto_loader.py (session management)
 - checkpoint_manager.py (state persistence)
-- maia_core_agent.md (default agent)
+- sre_principal_engineer_agent.md (default agent)
 
 Requirements Reference: claude/data/project_status/active/MAIA_CORE_AGENT_requirements.md
 Agent: SRE Principal Engineer Agent
@@ -77,9 +77,9 @@ class TestDefaultAgentLoading(unittest.TestCase):
         self.assertTrue(result is None or isinstance(result, str))
 
     @unittest.skipUnless(RECOVERY_IMPLEMENTED, "Recovery functions not yet implemented")
-    def test_maia_core_agent_file_accessible(self):
-        """Maia Core Agent file is accessible for loading"""
-        agent_path = MAIA_ROOT / "claude" / "agents" / "maia_core_agent.md"
+    def test_sre_agent_file_accessible(self):
+        """SRE Principal Engineer Agent file is accessible for loading"""
+        agent_path = MAIA_ROOT / "claude" / "agents" / "sre_principal_engineer_agent.md"
         self.assertTrue(agent_path.exists())
 
 
@@ -176,14 +176,14 @@ class TestMaiaCoreToCLAUDEIntegration(unittest.TestCase):
     correctly with the existing context loading protocol in CLAUDE.md.
     """
 
-    def test_maia_core_agent_file_exists(self):
-        """maia_core_agent.md exists in correct location"""
-        agent_path = MAIA_ROOT / "claude" / "agents" / "maia_core_agent.md"
+    def test_sre_agent_file_exists(self):
+        """sre_principal_engineer_agent.md exists in correct location"""
+        agent_path = MAIA_ROOT / "claude" / "agents" / "sre_principal_engineer_agent.md"
         self.assertTrue(agent_path.exists())
 
-    def test_maia_core_agent_readable(self):
-        """maia_core_agent.md is readable and has content"""
-        agent_path = MAIA_ROOT / "claude" / "agents" / "maia_core_agent.md"
+    def test_sre_agent_readable(self):
+        """sre_principal_engineer_agent.md is readable and has content"""
+        agent_path = MAIA_ROOT / "claude" / "agents" / "sre_principal_engineer_agent.md"
         content = agent_path.read_text()
         self.assertGreater(len(content), 100)
 
