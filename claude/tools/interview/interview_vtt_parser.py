@@ -54,7 +54,10 @@ class ParsedInterview:
 class InterviewVTTParser:
     """Parse VTT files - TDD stub"""
 
+    # Pattern for labeled speakers: <v Speaker Name>text</v>
     SPEAKER_PATTERN = re.compile(r'<v\s+([^>]+)>(.+?)</v>', re.DOTALL)
+    # Pattern for unlabeled speakers: <v >text</v> (common for external participants)
+    UNLABELED_PATTERN = re.compile(r'<v\s*>(.+?)</v>', re.DOTALL)
     DEFAULT_INTERVIEWERS = ['Naythan', 'Naythan Dawe', 'Orro']
 
     def __init__(self, interviewer_names: Optional[List[str]] = None):
@@ -109,14 +112,30 @@ class InterviewVTTParser:
                 current_start_ms = self._parse_timestamp(timestamp_match.group(1))
                 current_end_ms = self._parse_timestamp(timestamp_match.group(2))
 
+            # First, extract labeled speakers
             speaker_matches = self.SPEAKER_PATTERN.findall(block)
             for speaker, text in speaker_matches:
                 speaker = speaker.split('|')[0].strip()
                 text = text.strip()
-                if text:
+                if text and speaker:  # Skip if speaker is empty (handled below)
                     segment = VTTSegment(
                         index=segment_index,
                         speaker=speaker,
+                        text=text,
+                        start_time_ms=current_start_ms,
+                        end_time_ms=current_end_ms,
+                    )
+                    segments.append(segment)
+                    segment_index += 1
+
+            # Also extract unlabeled speakers (external participants like candidates)
+            unlabeled_matches = self.UNLABELED_PATTERN.findall(block)
+            for text in unlabeled_matches:
+                text = text.strip()
+                if text:
+                    segment = VTTSegment(
+                        index=segment_index,
+                        speaker="[Candidate]",  # Default label for unlabeled external participants
                         text=text,
                         start_time_ms=current_start_ms,
                         end_time_ms=current_end_ms,

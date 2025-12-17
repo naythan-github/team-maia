@@ -22,6 +22,13 @@ from typing import List, Dict, Optional, Any, Tuple
 from datetime import datetime
 from dataclasses import dataclass, field, asdict
 
+# PDF extraction support
+try:
+    from PyPDF2 import PdfReader
+    PDF_SUPPORT = True
+except ImportError:
+    PDF_SUPPORT = False
+
 # Add Maia root to path
 MAIA_ROOT = Path(__file__).parent.parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
@@ -467,6 +474,8 @@ class CVParser:
 
         if ext == ".docx":
             return self._extract_docx(file_path)
+        elif ext == ".pdf":
+            return self._extract_pdf(file_path)
         elif ext in [".txt", ".md"]:
             with open(file_path, 'r', encoding='utf-8') as f:
                 return f.read()
@@ -491,6 +500,27 @@ class CVParser:
         except FileNotFoundError:
             # textutil not available (not macOS)
             raise RuntimeError("textutil not available - install python-docx as fallback")
+
+    def _extract_pdf(self, file_path: str) -> str:
+        """Extract text from PDF using PyPDF2"""
+        if not PDF_SUPPORT:
+            raise RuntimeError("PDF support not available - install PyPDF2: pip3 install PyPDF2")
+
+        try:
+            reader = PdfReader(file_path)
+            text_parts = []
+            for page in reader.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text_parts.append(page_text)
+
+            full_text = "\n".join(text_parts)
+            if not full_text.strip():
+                raise RuntimeError("PDF appears to be image-based (no extractable text)")
+
+            return full_text
+        except Exception as e:
+            raise RuntimeError(f"PDF extraction failed: {e}")
 
     def compute_file_hash(self, file_path: str) -> str:
         """Compute SHA256 hash of file for deduplication"""

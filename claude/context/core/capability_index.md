@@ -427,7 +427,7 @@
 - **Files Modified**: PIR templates renamed (pir_* prefix), create_clean_orro_template.py (Orro purple RGB colors)
 - **Agent Team**: Document Conversion Specialist + SRE Principal Engineer
 - **Methodology**: Systematic diagnosis → Root cause analysis → Automated testing → Production validation
-- **Usage**: `python3 ~/git/maia/claude/tools/document_conversion/convert_md_to_docx.py document.md`
+- **Usage**: `python3 ~/maia/claude/tools/document_conversion/convert_md_to_docx.py document.md`
 
 ### Phase 161 (Nov 21) - Orro Application Inventory System ⭐ **NEW - APPLICATION DISCOVERY**
 - **orro_app_inventory_fast.py** - Production-grade application inventory system extracting software/SaaS from email history (280 lines, 95/100 quality)
@@ -1378,6 +1378,10 @@
 - "style preservation" → **Document Conversion Specialist Agent** (fonts, colors, spacing, margins)
 - "conversion tool development" → **Document Conversion Specialist Agent** (library selection, architecture, error handling)
 - "cv conversion" → cv_converter.py (MD → DOCX, 3 modes: styled/ATS/readable)
+- "orro docx" → `convert_md_to_docx.py` ⭐ **ALWAYS USE** (`~/maia/claude/tools/document_conversion/convert_md_to_docx.py`) - Orro purple headings RGB(112,48,160), Aptos font
+- "orro conversion" → `convert_md_to_docx.py` ⭐ **ALWAYS USE** - NEVER use raw pandoc (lacks Orro corporate styling)
+- "orro document" → `convert_md_to_docx.py` ⭐ **ALWAYS USE** - See `claude/context/core/orro_operational_procedures.md`
+- "pir conversion" → `convert_pir.py` (`~/maia/claude/tools/document/pir/convert_pir.py`) - PIR-specific styling
 
 **Productivity**:
 - "confluence" → **confluence_client.py** ⭐ **THE ONLY TOOL YOU NEED** (Phase 140, 95% confidence) **VivOEMC ONLY (vivoemc.atlassian.net)**
