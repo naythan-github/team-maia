@@ -1381,7 +1381,7 @@
 - "orro docx" → `convert_md_to_docx.py` ⭐ **ALWAYS USE** (`~/maia/claude/tools/document_conversion/convert_md_to_docx.py`) - Orro purple headings RGB(112,48,160), Aptos font
 - "orro conversion" → `convert_md_to_docx.py` ⭐ **ALWAYS USE** - NEVER use raw pandoc (lacks Orro corporate styling)
 - "orro document" → `convert_md_to_docx.py` ⭐ **ALWAYS USE** - See `claude/context/core/orro_operational_procedures.md`
-- "pir conversion" → `convert_pir.py` (`~/maia/claude/tools/document/pir/convert_pir.py`) - PIR-specific styling
+- "pir conversion" → `convert_md_to_docx.py` ⭐ **SAME TOOL** - Handles PIRs with automatic table normalization
 
 **Productivity**:
 - "confluence" → **confluence_client.py** ⭐ **THE ONLY TOOL YOU NEED** (Phase 140, 95% confidence) **VivOEMC ONLY (vivoemc.atlassian.net)**
