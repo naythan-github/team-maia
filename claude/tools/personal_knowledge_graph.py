@@ -32,9 +32,12 @@ import numpy as np
 from collections import defaultdict, deque
 import pickle
 
-# Import Phase 3 infrastructure
-from claude.tools.enhanced_context_manager import get_context_manager
+# Import path manager
 from claude.tools.core.path_manager import get_maia_root
+
+# NOTE: enhanced_context_manager import removed (2025-12-18)
+# It was imported but never used - dead code blocking KG from loading
+# Removed as part of PIOS project to enable Knowledge Graph functionality
 
 # ML pattern recognition import - conditional loading for testing
 try:
@@ -186,9 +189,6 @@ class PersonalKnowledgeGraph:
     def __init__(self, db_path: str = "get_path_manager().get_path('backup') / 'databases/personal_knowledge_graph.db'"):
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
-
-        # Infrastructure connections
-        self.context_manager = get_context_manager()
 
         # Initialize ML pattern recognition system (if available)
         if ML_AVAILABLE:
