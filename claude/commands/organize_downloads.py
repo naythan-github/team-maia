@@ -7,7 +7,7 @@ Run this command to organize files in your Downloads folder
 from pathlib import Path
 import shutil
 import sys
-sys.path.insert(0, str(Path.home() / 'git' / 'maia'))
+sys.path.insert(0, str(Path.home() / 'maia'))
 from claude.tools.intelligent_downloads_router import IntelligentDownloadsRouter
 
 def main():
