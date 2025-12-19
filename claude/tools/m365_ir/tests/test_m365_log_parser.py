@@ -388,5 +388,98 @@ class TestAutoDateFormatDetection:
         assert entries[0].created_datetime.day == 15
 
 
+class TestParseErrorHandling:
+    """Test logging and tracking of parse errors (Security Finding Fix - Phase 225.2)"""
+
+    @pytest.fixture
+    def parser(self):
+        return M365LogParser(date_format="AU")
+
+    @pytest.fixture
+    def malformed_signin_csv(self, tmp_path):
+        """Create CSV with some malformed rows"""
+        csv_content = '''"CreatedDateTime","UserPrincipalName","UserDisplayName","AppDisplayName","IPAddress","City","Country","Device","Browser","OS","Status","RiskState","RiskLevelDuringSignIn","RiskLevelAggregated","ConditionalAccessStatus"
+"3/12/2025 7:22:01 AM","good@test.com","Good User","App","1.1.1.1","City","AU","","Chrome","Windows","status","none","none","none","success"
+"INVALID_DATE","bad@test.com","Bad User","App","1.1.1.1","City","AU","","Chrome","Windows","status","none","none","none","success"
+"15/11/2025 10:00:00 AM","good2@test.com","Good User 2","App","2.2.2.2","City","AU","","Chrome","Windows","status","none","none","none","success"
+'''
+        csv_file = tmp_path / "malformed_signin.csv"
+        csv_file.write_text(csv_content)
+        return csv_file
+
+    def test_parse_continues_on_malformed_row(self, parser, malformed_signin_csv):
+        """Parser should continue processing after malformed row"""
+        entries = parser.parse_signin_logs(malformed_signin_csv)
+        # Should get 2 valid entries (skip the malformed one)
+        assert len(entries) == 2
+        assert entries[0].user_principal_name == "good@test.com"
+        assert entries[1].user_principal_name == "good2@test.com"
+
+    def test_parse_logs_malformed_rows(self, parser, malformed_signin_csv, caplog):
+        """Parser should log warning for malformed rows"""
+        import logging
+        with caplog.at_level(logging.DEBUG, logger="claude.tools.m365_ir.m365_log_parser"):
+            entries = parser.parse_signin_logs(malformed_signin_csv)
+
+        # Should have logged the parse error
+        assert any("malformed" in record.message.lower() or "skipped" in record.message.lower()
+                   or "failed" in record.message.lower() for record in caplog.records), \
+            f"Expected log about malformed row, got: {[r.message for r in caplog.records]}"
+
+    def test_parse_tracks_error_count(self, parser, malformed_signin_csv):
+        """Parser should track number of parse errors"""
+        entries = parser.parse_signin_logs(malformed_signin_csv)
+
+        # Parser should expose error count
+        assert hasattr(parser, 'last_parse_errors'), "Parser should have last_parse_errors attribute"
+        assert parser.last_parse_errors == 1, f"Expected 1 error, got {parser.last_parse_errors}"
+
+    def test_parse_error_count_resets_each_parse(self, parser, malformed_signin_csv, tmp_path):
+        """Error count should reset on each parse call"""
+        # First parse with errors
+        parser.parse_signin_logs(malformed_signin_csv)
+
+        # Create clean CSV
+        clean_csv = tmp_path / "clean.csv"
+        clean_csv.write_text('''"CreatedDateTime","UserPrincipalName","UserDisplayName","AppDisplayName","IPAddress","City","Country","Device","Browser","OS","Status","RiskState","RiskLevelDuringSignIn","RiskLevelAggregated","ConditionalAccessStatus"
+"3/12/2025 7:22:01 AM","user@test.com","User","App","1.1.1.1","City","AU","","Chrome","Windows","status","none","none","none","success"
+''')
+        # Second parse with no errors
+        parser.parse_signin_logs(clean_csv)
+
+        assert parser.last_parse_errors == 0, "Error count should reset to 0 for clean parse"
+
+
+class TestMailboxParseErrorHandling:
+    """Test error handling for mailbox audit parsing"""
+
+    @pytest.fixture
+    def parser(self):
+        return M365LogParser(date_format="AU")
+
+    @pytest.fixture
+    def malformed_mailbox_csv(self, tmp_path):
+        """Create mailbox CSV with malformed JSON"""
+        csv_content = '''"RecordType","CreationDate","UserIds","Operations","AuditData","ResultIndex","ResultCount","Identity","IsValid","ObjectState"
+"ExchangeItemAggregated","3/12/2025 7:31:34 AM","good@test.com","MailItemsAccessed","{""CreationTime"":""2025-12-03T07:31:34"",""ClientIPAddress"":""1.1.1.1""}","1","1","id1","True","Unchanged"
+"ExchangeItemAggregated","INVALID_DATE","bad@test.com","MailItemsAccessed","{""CreationTime"":""2025-12-03T07:31:34""}","1","1","id2","True","Unchanged"
+"ExchangeItemAggregated","15/11/2025 10:00:00 AM","good2@test.com","MailItemsAccessed","{""CreationTime"":""2025-11-15T10:00:00"",""ClientIPAddress"":""2.2.2.2""}","1","1","id3","True","Unchanged"
+'''
+        csv_file = tmp_path / "malformed_mailbox.csv"
+        csv_file.write_text(csv_content)
+        return csv_file
+
+    def test_mailbox_parse_continues_on_error(self, parser, malformed_mailbox_csv):
+        """Mailbox parser should continue after malformed row"""
+        entries = parser.parse_mailbox_audit(malformed_mailbox_csv)
+        assert len(entries) == 2
+
+    def test_mailbox_parse_tracks_errors(self, parser, malformed_mailbox_csv):
+        """Mailbox parser should track errors"""
+        entries = parser.parse_mailbox_audit(malformed_mailbox_csv)
+        assert hasattr(parser, 'last_parse_errors')
+        assert parser.last_parse_errors == 1
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

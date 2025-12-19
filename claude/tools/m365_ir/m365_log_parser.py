@@ -15,12 +15,16 @@ Created: 2025-12-18 (Phase 225)
 
 import csv
 import json
+import logging
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
 from typing import List, Dict, Optional, Union, Any
+
+# Configure module logger
+logger = logging.getLogger(__name__)
 
 
 class LogType(Enum):
@@ -338,6 +342,7 @@ class M365LogParser:
             date_format: Date format ("AU" or "US")
         """
         self.date_format = date_format
+        self.last_parse_errors = 0  # Track parse errors for observability
 
     @classmethod
     def from_export(cls, export_path: Union[str, Path]) -> "M365LogParser":
@@ -394,10 +399,11 @@ class M365LogParser:
         """
         entries = []
         csv_path = Path(csv_path)
+        self.last_parse_errors = 0  # Reset error counter
 
         with open(csv_path, 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
-            for row in reader:
+            for row_num, row in enumerate(reader, start=2):  # Start at 2 (header is row 1)
                 try:
                     entry = SignInLogEntry(
                         created_datetime=parse_m365_datetime(
@@ -422,7 +428,8 @@ class M365LogParser:
                     )
                     entries.append(entry)
                 except Exception as e:
-                    # Log and skip malformed rows
+                    self.last_parse_errors += 1
+                    logger.debug(f"Skipped malformed signin row {row_num}: {e}")
                     continue
 
         return entries
@@ -439,10 +446,11 @@ class M365LogParser:
         """
         entries = []
         csv_path = Path(csv_path)
+        self.last_parse_errors = 0  # Reset error counter
 
         with open(csv_path, 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
-            for row in reader:
+            for row_num, row in enumerate(reader, start=2):
                 try:
                     # Parse nested AuditData JSON
                     audit_data_raw = row.get('AuditData', '{}')
@@ -482,6 +490,8 @@ class M365LogParser:
                     )
                     entries.append(entry)
                 except Exception as e:
+                    self.last_parse_errors += 1
+                    logger.debug(f"Skipped malformed mailbox audit row {row_num}: {e}")
                     continue
 
         return entries
@@ -498,10 +508,11 @@ class M365LogParser:
         """
         entries = []
         csv_path = Path(csv_path)
+        self.last_parse_errors = 0  # Reset error counter
 
         with open(csv_path, 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
-            for row in reader:
+            for row_num, row in enumerate(reader, start=2):
                 try:
                     entry = LegacyAuthEntry(
                         created_datetime=parse_m365_datetime(
@@ -522,6 +533,8 @@ class M365LogParser:
                     )
                     entries.append(entry)
                 except Exception as e:
+                    self.last_parse_errors += 1
+                    logger.debug(f"Skipped malformed legacy auth row {row_num}: {e}")
                     continue
 
         return entries
@@ -538,10 +551,11 @@ class M365LogParser:
         """
         entries = []
         csv_path = Path(csv_path)
+        self.last_parse_errors = 0  # Reset error counter
 
         with open(csv_path, 'r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
-            for row in reader:
+            for row_num, row in enumerate(reader, start=2):
                 try:
                     entry = AuditLogEntry(
                         activity_datetime=parse_m365_datetime(
@@ -556,6 +570,8 @@ class M365LogParser:
                     )
                     entries.append(entry)
                 except Exception as e:
+                    self.last_parse_errors += 1
+                    logger.debug(f"Skipped malformed audit row {row_num}: {e}")
                     continue
 
         return entries

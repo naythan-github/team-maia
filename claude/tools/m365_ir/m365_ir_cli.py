@@ -35,6 +35,7 @@ from claude.tools.m365_ir.user_baseliner import UserBaseliner
 from claude.tools.m365_ir.anomaly_detector import AnomalyDetector
 from claude.tools.m365_ir.timeline_builder import TimelineBuilder
 from claude.tools.m365_ir.ioc_extractor import IOCExtractor, MitreMapper
+from claude.tools.m365_ir.remediation_detector import RemediationDetector, IncidentTimeline
 
 
 class M365IRAnalyzer:
@@ -55,6 +56,7 @@ class M365IRAnalyzer:
         self.timeline_builder = TimelineBuilder(home_country=home_country)
         self.ioc_extractor = IOCExtractor()
         self.mitre_mapper = MitreMapper()
+        self.remediation_detector = RemediationDetector()
 
         # Results storage
         self.signin_entries = []
@@ -66,6 +68,7 @@ class M365IRAnalyzer:
         self.timeline = []
         self.iocs = []
         self.mitre_techniques = []
+        self.incident_timeline: IncidentTimeline = None
 
     def ingest(self, export_paths: List[Path]) -> Dict[str, int]:
         """
@@ -83,7 +86,7 @@ class M365IRAnalyzer:
 
         # Initialize parser with auto-detected date format
         self.parser = M365LogParser.from_export(export_paths[0])
-        print(f"\n[1/6] Parsing logs...")
+        print(f"\n[1/7] Parsing logs...")
         print(f"  Date format detected: {self.parser.date_format}")
 
         # Merge sign-in logs
@@ -123,8 +126,27 @@ class M365IRAnalyzer:
         """
         results = {}
 
-        # Step 2: Calculate user baselines
-        print(f"\n[2/6] Calculating user baselines...")
+        # Step 2: Detect remediation events (NEW - Phase 225.1)
+        print(f"\n[2/7] Detecting remediation events...")
+        self.incident_timeline = self.remediation_detector.build_incident_timeline(
+            signin_entries=self.signin_entries,
+            audit_entries=self.audit_entries,
+            home_country=self.home_country,
+        )
+        if self.incident_timeline.attack_start_date:
+            print(f"  Attack start: {self.incident_timeline.attack_start_date} ({self.incident_timeline.attack_start_user} from {self.incident_timeline.attack_start_country})")
+        if self.incident_timeline.detection_date:
+            print(f"  Remediation date: {self.incident_timeline.detection_date}")
+        if self.incident_timeline.dwell_time_days is not None:
+            print(f"  Dwell time: {self.incident_timeline.dwell_time_days} days")
+        if self.incident_timeline.remediation_summary:
+            rs = self.incident_timeline.remediation_summary
+            print(f"  Users remediated: {rs.users_remediated}")
+            print(f"  Remediation events: {rs.total_events} ({rs.by_type})")
+        results["incident_timeline"] = self.remediation_detector.get_summary(self.incident_timeline)
+
+        # Step 3: Calculate user baselines
+        print(f"\n[3/7] Calculating user baselines...")
         self.baselines = self.baseliner.calculate_all_baselines(self.signin_entries)
         baseline_summary = self.baseliner.get_summary(self.baselines)
         print(f"  Total users: {baseline_summary['total_users']}")
@@ -133,8 +155,8 @@ class M365IRAnalyzer:
         print(f"  Suspicious: {baseline_summary['suspicious']}")
         results["baselines"] = baseline_summary
 
-        # Step 3: Detect anomalies
-        print(f"\n[3/6] Detecting anomalies...")
+        # Step 4: Detect anomalies
+        print(f"\n[4/7] Detecting anomalies...")
         self.anomalies = self.anomaly_detector.detect_all(
             signin_entries=self.signin_entries,
             legacy_auth_entries=self.legacy_entries,
@@ -145,8 +167,8 @@ class M365IRAnalyzer:
         print(f"  Users affected: {anomaly_summary['unique_users_affected']}")
         results["anomalies"] = anomaly_summary
 
-        # Step 4: Build timeline
-        print(f"\n[4/6] Building attack timeline...")
+        # Step 5: Build timeline
+        print(f"\n[5/7] Building attack timeline...")
         self.timeline = self.timeline_builder.build(
             signin_entries=self.signin_entries,
             audit_entries=self.audit_entries,
@@ -158,8 +180,8 @@ class M365IRAnalyzer:
         print(f"  Phases detected: {timeline_summary.get('phases_detected', [])}")
         results["timeline"] = timeline_summary
 
-        # Step 5: Extract IOCs
-        print(f"\n[5/6] Extracting IOCs...")
+        # Step 6: Extract IOCs
+        print(f"\n[6/7] Extracting IOCs...")
         self.iocs = self.ioc_extractor.extract(
             signin_entries=self.signin_entries,
             legacy_entries=self.legacy_entries,
@@ -171,8 +193,8 @@ class M365IRAnalyzer:
         print(f"  Top countries: {ioc_summary['top_countries'][:5]}")
         results["iocs"] = ioc_summary
 
-        # Step 6: Map to MITRE ATT&CK
-        print(f"\n[6/6] Mapping to MITRE ATT&CK...")
+        # Step 7: Map to MITRE ATT&CK
+        print(f"\n[7/7] Mapping to MITRE ATT&CK...")
         events_for_mitre = []
         for anomaly in self.anomalies:
             events_for_mitre.append((anomaly.description, "anomaly"))
@@ -222,6 +244,17 @@ class M365IRAnalyzer:
 
         print(f"\nCustomer: {self.customer}")
         print(f"Analysis Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+
+        # Incident Timeline (Phase 225.1)
+        if self.incident_timeline:
+            print(f"\nIncident Timeline:")
+            if self.incident_timeline.attack_start_date:
+                print(f"  Attack Start: {self.incident_timeline.attack_start_date} ({self.incident_timeline.attack_start_user} from {self.incident_timeline.attack_start_country})")
+            if self.incident_timeline.detection_date:
+                print(f"  Remediation Date: {self.incident_timeline.detection_date}")
+            if self.incident_timeline.dwell_time_days is not None:
+                print(f"  Dwell Time: {self.incident_timeline.dwell_time_days} days")
+
         print(f"\nFindings:")
         print(f"  Compromised accounts: {len(compromised)}")
         for user in compromised[:10]:
@@ -268,6 +301,7 @@ class M365IRAnalyzer:
         summary = {
             "customer": self.customer,
             "analysis_date": datetime.now().isoformat(),
+            "incident_timeline": self.remediation_detector.get_summary(self.incident_timeline) if self.incident_timeline else None,
             "compromised_users": self.get_compromised_users(),
             "false_positives": self.get_false_positives(),
             "mitre_techniques": [{"id": t.technique_id, "name": t.name, "tactic": t.tactic} for t in self.mitre_techniques],
