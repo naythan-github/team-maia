@@ -1,4 +1,4 @@
-# M365 Incident Response Agent v2.3
+# M365 Incident Response Agent v2.4
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
@@ -42,15 +42,50 @@ Before completing: Evidence preserved? Timeline complete? All IOCs extracted? Re
 
 ---
 
-## Key Commands
+## Implemented Tools ⭐ PRODUCTION READY
 
-| Command | Purpose | Key Inputs |
-|---------|---------|------------|
-| `analyze_breach_logs` | Parse M365 exports for IOCs | log_files, date_range, target_mailbox |
-| `build_attack_timeline` | Reconstruct breach sequence | iocs, logs, timezone |
-| `extract_iocs` | Pull indicators from logs | log_type, filter_criteria |
-| `generate_ir_report` | Create incident report | timeline, iocs, impact, remediation |
-| `assess_blast_radius` | Determine compromise scope | initial_iocs, tenant_logs |
+### Phase 225: M365 IR Pipeline (`claude/tools/m365_ir/`)
+```bash
+# Full analysis pipeline - auto-detects date format, identifies false positives
+python3 claude/tools/m365_ir/m365_ir_cli.py analyze /path/to/exports --customer "Name" --output ./results
+```
+
+```python
+# Individual components:
+from m365_log_parser import M365LogParser      # Parse all M365 export types
+from user_baseliner import UserBaseliner       # Calculate home country, identify false positives
+from anomaly_detector import AnomalyDetector   # Impossible travel, legacy auth, high-risk country
+from timeline_builder import TimelineBuilder   # Correlate events, detect attack phases
+from ioc_extractor import IOCExtractor         # Extract IOCs, map MITRE ATT&CK
+```
+
+### Phase 224: IR Knowledge Base (`claude/tools/ir/`)
+```bash
+# Query IOCs against cumulative knowledge base
+python3 claude/tools/ir/ir_knowledge_query.py ip 93.127.215.4
+python3 claude/tools/ir/ir_knowledge_query.py app <app-guid>
+python3 claude/tools/ir/ir_knowledge_query.py stats
+```
+
+```python
+# Automated triage with cross-reference to prior investigations
+from ir_knowledge import IRKnowledgeBase
+from ir_quick_triage import QuickTriage, RiskLevel
+
+kb = IRKnowledgeBase("~/maia/claude/data/databases/intelligence/ir_knowledge.db")
+triage = QuickTriage(knowledge_base=kb)
+result = triage.analyze_sign_in(log_entry)  # Returns HIGH/MEDIUM/LOW with rule IDs
+```
+
+### Automated Detection Rules
+| Rule | Detection | Confidence |
+|------|-----------|------------|
+| UA-001 | Safari on Windows (impossible) | 100% |
+| IP-001 | Known malicious IP from KB | 100% |
+| IP-002 | Budget VPS (Hostinger/BuyVM) | 70% |
+| TIME-001 | Off-hours consent (00:00-05:59) | 80% |
+| OAUTH-001 | Excessive permissions (>50) | 90% |
+| OAUTH-002 | Legacy protocol (IMAP/POP) | 80% |
 
 ---
 
@@ -278,4 +313,6 @@ Get-FileHash -Algorithm SHA256 -Path *.csv | Export-Csv -Path Evidence_Hashes.cs
 **Sonnet**: All IR operations, log analysis, timeline building | **Opus**: Major breach (>$100K impact), legal/regulatory implications
 
 ## Production Status
-**READY** - v2.3 Compressed with all advanced patterns, validated 22/22 tests
+**READY** - v2.4 with Phase 224/225 tool integration
+- Phase 224: IR Knowledge Base (46 tests) - cumulative learning across investigations
+- Phase 225: M365 IR Pipeline (88 tests) - automated log parsing, anomaly detection, MITRE mapping

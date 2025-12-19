@@ -36,6 +36,25 @@
 - **Production Status**: ✅ **READY** - v1.0 with comprehensive TDD, validated on real breach data
 - **Usage**: Load when user asks about M365 breach analysis, email compromise investigation, BEC forensics, sign-in log analysis, impossible travel detection, legacy auth attacks
 
+### IR Knowledge Base & Triage Tools v1.0 (Dec 18) - Cumulative Learning IR System ⭐ **NEW TOOL**
+- **IR Tools** (`claude/tools/ir/`) - Knowledge base and automated triage for incident response
+- **Location**: `claude/tools/ir/` (3 modules, 46 tests)
+- **Purpose**: Cumulative learning across investigations - stores IOCs, patterns, verified apps; automated risk assessment; cross-references new findings with prior investigations
+- **Core Components**:
+  - `ir_knowledge.py` - SQLite knowledge base for IOCs, patterns, verified OAuth apps, customer services
+  - `ir_quick_triage.py` - Automated risk assessment (Safari/Windows detection, VPS IP flagging, off-hours consent, excessive permissions)
+  - `ir_knowledge_query.py` - CLI for quick lookups (`ip`, `app`, `pattern`, `service`, `stats` commands)
+- **Detection Rules**: UA-001 (Safari on Windows - 100% spoofed), IP-001 (known malicious), IP-002 (budget VPS - Hostinger/BuyVM), TIME-001 (off-hours consent), OAUTH-001 (>50 permissions), OAUTH-002 (legacy protocol IMAP/POP)
+- **Key Commands**:
+  - `python3 ir_knowledge_query.py ip 93.127.215.4` - Query IP against knowledge base
+  - `python3 ir_knowledge_query.py stats` - Show investigation/IOC/pattern counts
+  - `QuickTriage(knowledge_base=kb).analyze_sign_in(entry)` - Automated triage with cross-reference
+- **Database Location**: `claude/data/databases/intelligence/ir_knowledge.db`
+- **Integration**: Phase 225 M365 IR Pipeline feeds IOCs into this knowledge base for cumulative learning
+- **Test Coverage**: 46/46 tests passing (17 knowledge, 15 triage, 14 query)
+- **Production Status**: ✅ **READY** - v1.0 with TDD, seeded with Fyna Foods investigation data
+- **Usage**: Load when user asks about IOC lookup, prior investigation cross-reference, IP reputation, OAuth app verification, triage automation
+
 ### Feature Tracker v1.0 (Dec 14) - TDD Enforcement Tool ⭐ **NEW TOOL**
 - **Feature Tracker** (`claude/tools/sre/feature_tracker.py`) - Production-ready TDD enforcement tool implementing Anthropic's JSON feature list pattern
 - **Location**: `claude/tools/sre/feature_tracker.py` (500+ lines, 31/31 tests passing)
