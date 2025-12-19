@@ -7,9 +7,97 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2025-12-16
-**Current Phase**: 224
-**Database Status**: ✅ Synced (82 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224)
+**Last Updated**: 2025-12-19
+**Current Phase**: 225
+**Database Status**: ✅ Synced (82 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225)
+
+## 🔍 PHASE 225: M365 Incident Response Analysis Pipeline (2025-12-19) ✅ **PRODUCTION READY**
+
+### Achievement
+Built complete M365 Incident Response Analysis Pipeline with TDD methodology - automated log parsing, user baseline calculation, anomaly detection, timeline building, IOC extraction, and MITRE ATT&CK mapping. Successfully validated on real Oculus breach data (36 compromised accounts, 5 false positives identified).
+
+### Problem Solved
+**Context**: Manual M365 IR analysis was error-prone and time-consuming. Previous Oculus PIR had incorrect dates (Nov 27 vs Nov 3) due to AU/US date format ambiguity in M365 exports.
+
+**Root Cause**: M365 exports use locale-specific date formats without clear indication. Manual analysis of 6,000+ log entries across multiple exports is prone to human error.
+
+**Solution**:
+1. Automated date format detection (finds unambiguous dates where day > 12)
+2. User baseline calculation to identify false positives (US-based employees)
+3. Multi-component analysis pipeline with 88 TDD tests
+4. End-to-end CLI orchestrator for repeatable analysis
+
+### Implementation Details
+
+**M365LogParser** (`m365_log_parser.py`):
+- Auto-detects AU vs US date format from log entries
+- Parses SignInLogs, AuditLogs, MailboxAudit, LegacyAuth
+- Multi-export merging with deduplication
+- Handles Microsoft PowerShell Status field bug
+
+**UserBaseliner** (`user_baseliner.py`):
+- Calculates user home country from login statistics
+- Identifies false positives (US-based employees logging in from US)
+- Confidence scoring and suspicious user flagging
+
+**AnomalyDetector** (`anomaly_detector.py`):
+- Impossible travel detection using haversine distance
+- Legacy auth abuse detection (SMTP/IMAP from foreign countries)
+- High-risk country flagging (RU, CN, KP, IR, BY, VE, CU, SY)
+
+**TimelineBuilder** (`timeline_builder.py`):
+- Correlates events across all log types
+- Attack phase detection (Initial Access, Persistence, Collection)
+- Chronological sorting and markdown export
+
+**IOCExtractor** (`ioc_extractor.py`):
+- Extracts IOCs: IP addresses, countries, user agents
+- MITRE ATT&CK technique mapping (T1078.004, T1114.002, etc.)
+- Export to CSV/JSON formats
+
+**M365IRAnalyzer CLI** (`m365_ir_cli.py`):
+- End-to-end pipeline orchestration
+- Usage: `python3 m365_ir_cli.py analyze /path/to/exports --customer "Name" --output ./results`
+
+### Files Created
+- **`claude/tools/m365_ir/__init__.py`** - Package initialization
+- **`claude/tools/m365_ir/m365_log_parser.py`** (~400 lines) - Log parsing with date detection
+- **`claude/tools/m365_ir/user_baseliner.py`** (~150 lines) - User baseline calculation
+- **`claude/tools/m365_ir/anomaly_detector.py`** (~300 lines) - Anomaly detection
+- **`claude/tools/m365_ir/timeline_builder.py`** (~250 lines) - Timeline building
+- **`claude/tools/m365_ir/ioc_extractor.py`** (~400 lines) - IOC extraction & MITRE mapping
+- **`claude/tools/m365_ir/m365_ir_cli.py`** (~330 lines) - CLI orchestrator
+- **`claude/tools/m365_ir/tests/test_m365_log_parser.py`** - 28 tests
+- **`claude/tools/m365_ir/tests/test_user_baseliner.py`** - 16 tests
+- **`claude/tools/m365_ir/tests/test_anomaly_detector.py`** - 18 tests
+- **`claude/tools/m365_ir/tests/test_timeline_builder.py`** - 14 tests
+- **`claude/tools/m365_ir/tests/test_ioc_extractor.py`** - 12 tests
+
+### Metrics
+- Tests: 88/88 passing across 5 test files
+- Log entries processed: 6,754 sign-in entries
+- Compromised accounts identified: 36
+- False positives correctly identified: 5 (US-based employees)
+- Anomalies detected: 1,596 (787 impossible travel, 590 legacy auth, 219 high-risk country)
+- IOCs extracted: 973 (827 IPs, 72 countries, 74 user agents)
+- MITRE techniques mapped: 5 (T1078.004, T1098, T1098.002, T1070.008, T1114.002)
+- TDD compliance: 100%
+
+### Business Impact
+- ✅ Eliminates manual date format errors (AU vs US detection)
+- ✅ Identifies false positives automatically (US-based employees)
+- ✅ Repeatable analysis pipeline for any M365 breach
+- ✅ MITRE ATT&CK mapping for threat intelligence
+- ✅ Export to CSV/JSON for further analysis or reporting
+
+### Validation
+Tested on Oculus breach data (3 exports):
+- Correctly detected AU date format
+- Identified 36 compromised accounts with anomalies
+- Correctly flagged 5 US-based employees as false positives
+- Generated complete IOC list and MITRE mapping
+
+---
 
 ## 🛡️ PHASE 224: Security Integration - Hook System & TDD Implementation (2025-12-16) ✅ **PRODUCTION READY**
 

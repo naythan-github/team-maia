@@ -14,6 +14,28 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### M365 Incident Response Analysis Pipeline v1.0 (Dec 19) - Email Breach Forensics ⭐ **NEW TOOL**
+- **M365 IR Pipeline** (`claude/tools/m365_ir/`) - Production-ready M365 incident response analysis pipeline with TDD
+- **Location**: `claude/tools/m365_ir/` (6 modules, 88 tests, ~1,800 lines)
+- **Purpose**: Automated M365 breach analysis - eliminates manual date format errors, identifies false positives, extracts IOCs, maps MITRE ATT&CK techniques
+- **Core Components**:
+  - `m365_log_parser.py` - Auto-detects AU/US date format, parses SignInLogs/AuditLogs/MailboxAudit/LegacyAuth, multi-export merging
+  - `user_baseliner.py` - Calculates user home country from login statistics, identifies false positives (US-based employees)
+  - `anomaly_detector.py` - Impossible travel (haversine), legacy auth abuse, high-risk country detection (RU/CN/KP/IR)
+  - `timeline_builder.py` - Correlates events across log types, attack phase detection
+  - `ioc_extractor.py` - Extracts IPs/countries/user agents, MITRE ATT&CK mapping (T1078.004, T1114.002, T1098, T1070.008)
+  - `m365_ir_cli.py` - End-to-end CLI orchestrator
+- **Key Commands**: `python3 m365_ir_cli.py analyze /path/to/exports --customer "Name" --output ./results`
+- **Date Format Detection**: Finds unambiguous dates (day > 12) to determine AU (DD/MM) vs US (MM/DD) format
+- **False Positive Identification**: Users with >50% logins from US flagged as US-based (not compromised)
+- **Anomaly Types**: `impossible_travel` (HIGH), `legacy_auth_abuse` (MEDIUM), `high_risk_country` (MEDIUM)
+- **MITRE Mappings**: T1078.004 (Valid Accounts: Cloud), T1098 (Account Manipulation), T1098.002 (Email Delegate), T1114.002 (Remote Email Collection), T1070.008 (Clear Mailbox Data)
+- **Output Formats**: JSON summary, IOC CSV/JSON, timeline markdown
+- **Validation**: Tested on Oculus breach (6,754 entries, 36 compromised, 5 false positives correctly identified)
+- **Test Coverage**: 88/88 tests passing (28 parser, 16 baseliner, 18 anomaly, 14 timeline, 12 IOC)
+- **Production Status**: ✅ **READY** - v1.0 with comprehensive TDD, validated on real breach data
+- **Usage**: Load when user asks about M365 breach analysis, email compromise investigation, BEC forensics, sign-in log analysis, impossible travel detection, legacy auth attacks
+
 ### Feature Tracker v1.0 (Dec 14) - TDD Enforcement Tool ⭐ **NEW TOOL**
 - **Feature Tracker** (`claude/tools/sre/feature_tracker.py`) - Production-ready TDD enforcement tool implementing Anthropic's JSON feature list pattern
 - **Location**: `claude/tools/sre/feature_tracker.py` (500+ lines, 31/31 tests passing)
