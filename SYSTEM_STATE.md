@@ -8,8 +8,8 @@
 - **This file**: Maintained for human readability and ETL source only
 
 **Last Updated**: 2025-12-19
-**Current Phase**: 225
-**Database Status**: ✅ Synced (82 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225)
+**Current Phase**: 225.1
+**Database Status**: ✅ Synced (83 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1)
 
 ## 🔍 PHASE 225: M365 Incident Response Analysis Pipeline (2025-12-19) ✅ **PRODUCTION READY**
 
@@ -96,6 +96,80 @@ Tested on Oculus breach data (3 exports):
 - Identified 36 compromised accounts with anomalies
 - Correctly flagged 5 US-based employees as false positives
 - Generated complete IOC list and MITRE mapping
+
+---
+
+## 🔬 PHASE 225.1: Remediation Detection & Forensic Confidence Enhancement (2025-12-19) ✅ **PRODUCTION READY**
+
+### Achievement
+Enhanced M365 IR Pipeline with remediation event detection and forensic confidence assessment. Implemented RemediationDetector module to identify containment actions (token revokes, password resets, MFA resets) and calculate accurate dwell time. Added per-export date range analysis to identify M365 log retention boundaries.
+
+### Problem Solved
+**Context**: Initial PIR reported "30-day dwell time" as fact, but this assumed November 3 was the true attack start date. User correctly identified this might be a retention limit boundary, not the actual initial compromise.
+
+**Root Cause**: M365 sign-in logs have 30-day default retention. Each of the 3 Oculus exports showed exactly 29-30 days of data, suggesting logs were truncated at retention limits, not capturing the full attack timeline.
+
+**Solution**:
+1. RemediationDetector module to identify containment start from audit logs
+2. Per-export date range analysis revealing retention boundaries
+3. Forensic confidence documentation distinguishing "confirmed" vs "uncertain" findings
+4. Updated PIR with proper caveats about log retention limitations
+
+### Implementation Details
+
+**RemediationDetector** (`remediation_detector.py`):
+- Detects remediation events: token revokes, password resets, MFA resets, account disables
+- Identifies remediation date (day with peak remediation activity)
+- Calculates dwell time from attack start to detection
+- Classifies attack phases: Initial Access, Active Attack, Containment
+
+**Remediation Signals Detected**:
+- `Update StsRefreshTokenValidFrom Timestamp` → token_revoke
+- `Reset user password` → password_reset
+- `Update PasswordProfile` → password_change
+- `Admin deleted security info` → mfa_reset
+- `Disable account` / `Enable account` → account management
+
+**Per-Export Date Range Analysis**:
+```
+Oculus-1: Nov 3 - Dec 3 (29 days) - exported ~Dec 3
+Oculus-2: Nov 10 - Dec 10 (29 days) - exported ~Dec 10
+Oculus-3: Nov 18 - Dec 18 (29 days) - exported ~Dec 18
+```
+Each export shows exactly 29-30 days = M365 default retention limit
+
+**Forensic Confidence Categories**:
+- **Confirmed**: 37 AU logins before first foreign access; first NL login at 18:01 AEST on Nov 3
+- **Uncertain**: Whether attack started before Nov 3 (beyond retention window)
+
+### Files Created/Modified
+- **`claude/tools/m365_ir/remediation_detector.py`** (~350 lines) - Remediation detection module
+- **`claude/tools/m365_ir/tests/test_remediation_detector.py`** - 21 tests
+- **`claude/tools/m365_ir/m365_ir_cli.py`** - Integration with remediation detector
+
+### Output Files Generated
+- **`~/work_projects/oculus_ir/PIR-OCULUS-2025-001-v2.md`** - Updated PIR with forensic caveats
+- **`~/work_projects/oculus_ir/PIR-OCULUS-2025-001-v2.docx`** - Orro-styled Word document (18 tables, 57 headings)
+- **`~/work_projects/oculus_ir/analysis_v3/`** - Complete analysis outputs
+
+### Metrics
+- Tests: 21/21 passing (remediation_detector)
+- Total M365 IR tests: 109/109 passing (88 + 21)
+- Remediation events detected: 1,902 (790 token revokes, 442 password changes, 214 MFA resets)
+- Users remediated: 49
+- Processing speed: ~8,600 entries/second (32,800 entries in 3.8s)
+
+### Business Impact
+- ✅ Accurate remediation timeline detection from audit logs
+- ✅ Proper forensic confidence assessment (what CAN vs CANNOT be confirmed)
+- ✅ Log retention boundary identification prevents false precision
+- ✅ PIR now includes appropriate caveats for legal/compliance use
+- ✅ Recommendation for Purview/extended retention review
+
+### Forensic Note Added to PIR
+> **November 3, 2025 represents the earliest VISIBLE compromise, not necessarily the initial access.**
+> Log retention analysis reveals each export contains exactly 29-30 days of data (default M365 retention).
+> True dwell time may be longer than 30 days if compromise predates November 3.
 
 ---
 
