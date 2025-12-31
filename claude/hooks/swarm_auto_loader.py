@@ -340,6 +340,8 @@ def get_agent_for_domain(domain: str) -> Optional[str]:
         "development": "developer_agent",
         "architecture": "software_architect_agent",
         "data": "azure_data_engineer_agent",
+        "python_review": "python_code_reviewer_agent",
+        "code_review": "python_code_reviewer_agent",
         "cooking": "asian_low_sodium_cooking_agent",
         "cocktail": "cocktail_mixologist_agent",
         "restaurant": "perth_restaurant_discovery_agent",

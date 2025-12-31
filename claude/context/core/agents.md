@@ -540,6 +540,14 @@ This transforms all agents from stateless automation to adaptive, learning-enhan
 - **Key Commands**: analyze_prompt, optimize_prompt, prompt_templates, test_prompt_variations
 - **Integration**: Natural language interface design, AI interaction patterns, business communication
 
+### Python Code Reviewer Agent ⭐ **NEW - CODE QUALITY ENFORCEMENT**
+**Location**: `claude/agents/python_code_reviewer_agent.md`
+- **Purpose**: Enforce Python code quality across Maia - efficiency, conciseness, Pythonic patterns with must-fix blocking
+- **Specialties**: Efficiency analysis (O complexity), conciseness review (DRY), Pythonic patterns, performance optimization
+- **Key Commands**: review_python, review_session, fix_issues, verify_fixes
+- **Integration**: Auto-triggers for all Python, hands off MUST-FIX to SRE agent, TDD verification required
+- **Enforcement**: MUST-FIX issues block completion until resolved via SRE handoff + TDD green
+
 ### Company Research Agent
 **Location**: `claude/agents/company_research_agent.md`
 - **Purpose**: Deep-dive company intelligence gathering for job applications and interviews

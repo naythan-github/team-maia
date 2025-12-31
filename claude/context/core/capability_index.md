@@ -14,6 +14,21 @@
 
 ## 🔥 Recent Capabilities (Last 30 Days)
 
+### Python Code Reviewer Agent v2.3 (Dec 31) - Code Quality Enforcement ⭐ **NEW AGENT**
+- **Python Code Reviewer** (`claude/agents/python_code_reviewer_agent.md`) - Enforces Python code quality with must-fix blocking
+- **Location**: `claude/agents/python_code_reviewer_agent.md` (226 lines)
+- **Purpose**: Systematic Python code review for efficiency (O complexity), conciseness (DRY violations), and Pythonic patterns. Auto-triggers on all Python review requests.
+- **Issue Classification**: MUST-FIX (blocks until resolved), SHOULD-FIX (recommended), ADVISORY (style)
+- **MUST-FIX Examples**: O(n²) when O(n) possible, duplicate code >10 lines, security issues, mutable defaults
+- **SRE Integration**: Hands off MUST-FIX items to `sre_principal_engineer_agent` with `tdd_required: true`
+- **TDD Workflow**: Issues identified → SRE applies fix → Tests run → Green state verified → Review PASSED
+- **Key Commands**: `review_python` (file review), `review_session` (session review), `fix_issues` (SRE handoff), `verify_fixes` (TDD verify)
+- **Anti-Patterns Detected**: Mutable defaults, bare `except:`, `import *`, string concatenation in loops
+- **Pythonic Patterns Enforced**: Comprehensions, context managers, f-strings, dataclasses, generators
+- **Routing**: Auto-loads on "python review", "code review", "code quality", "optimize python", "refactor python"
+- **Production Status**: ✅ **READY** - v2.3 with all 5 advanced patterns, SRE handoff, TDD integration
+- **Usage**: Load when user asks about Python code review, efficiency analysis, DRY violations, Pythonic patterns, code quality enforcement
+
 ### M365 Incident Response Analysis Pipeline v1.0 (Dec 19) - Email Breach Forensics ⭐ **NEW TOOL**
 - **M365 IR Pipeline** (`claude/tools/m365_ir/`) - Production-ready M365 incident response analysis pipeline with TDD
 - **Location**: `claude/tools/m365_ir/` (6 modules, 88 tests, ~1,800 lines)

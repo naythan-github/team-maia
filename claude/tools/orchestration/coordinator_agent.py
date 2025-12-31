@@ -72,6 +72,7 @@ class IntentClassifier:
         'data': ['analytics', 'dashboard', 'report', 'metrics', 'kpi', 'visualization', 'data'],
         'sre': ['monitoring', 'slo', 'sli', 'reliability', 'incident', 'postmortem', 'observability', 'testing', 'test', 'validation', 'health check', 'quality check', 'performance', 'deployment', 'production', 'regression'],
         'endpoint': ['laptop', 'macos', 'windows', 'endpoint', 'device', 'intune', 'jamf'],
+        'python_review': ['python review', 'code review', 'efficiency review', 'pythonic', 'code quality', 'python efficiency', 'review python', 'optimize python', 'refactor python', 'dry violation', 'code conciseness'],
     }
 
     # Intent category patterns
@@ -307,6 +308,7 @@ class AgentSelector:
         'data': 'data_analyst',
         'sre': 'sre_principal_engineer',
         'endpoint': 'principal_endpoint_engineer',
+        'python_review': 'python_code_reviewer',
     }
 
     def __init__(self, agent_loader: AgentLoader = None, use_capability_registry: bool = False, use_adaptive_routing: bool = True):
