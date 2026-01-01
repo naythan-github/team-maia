@@ -143,6 +143,47 @@ class IOCExtractor:
         extractor.export_csv(iocs, "iocs.csv")
     """
 
+    def _update_or_create_ioc(
+        self,
+        ioc_map: Dict[Tuple[IOCType, str], IOC],
+        ioc_type: IOCType,
+        value: str,
+        timestamp: datetime,
+        user: str,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> IOC:
+        """
+        Update existing IOC or create new one.
+
+        Args:
+            ioc_map: Map of existing IOCs
+            ioc_type: Type of IOC
+            value: IOC value
+            timestamp: Event timestamp
+            user: Affected user
+            context: Optional context dict
+
+        Returns:
+            Updated or created IOC
+        """
+        key = (ioc_type, value)
+        if key not in ioc_map:
+            ioc_map[key] = IOC(
+                ioc_type=ioc_type,
+                value=value,
+                first_seen=timestamp,
+                last_seen=timestamp,
+                count=0,
+                affected_users=set(),
+                context=context.copy() if context else {},
+            )
+        ioc = ioc_map[key]
+        ioc.count += 1
+        ioc.affected_users.add(user)
+        ioc.last_seen = max(ioc.last_seen, timestamp)
+        ioc.first_seen = min(ioc.first_seen, timestamp)
+        return ioc
+
     def extract(
         self,
         signin_entries: List[SignInLogEntry] = None,
@@ -167,78 +208,38 @@ class IOCExtractor:
             for entry in signin_entries:
                 # IP addresses
                 if entry.ip_address:
-                    key = (IOCType.IP_ADDRESS, entry.ip_address)
-                    if key not in ioc_map:
-                        ioc_map[key] = IOC(
-                            ioc_type=IOCType.IP_ADDRESS,
-                            value=entry.ip_address,
-                            first_seen=entry.created_datetime,
-                            last_seen=entry.created_datetime,
-                            count=0,
-                            affected_users=set(),
-                            context={"countries": set(), "cities": set()},
-                        )
-                    ioc = ioc_map[key]
-                    ioc.count += 1
-                    ioc.affected_users.add(entry.user_principal_name)
-                    ioc.last_seen = max(ioc.last_seen, entry.created_datetime)
-                    ioc.first_seen = min(ioc.first_seen, entry.created_datetime)
-                    ioc.context["countries"].add(entry.country)
-                    ioc.context["cities"].add(entry.city)
+                    ioc = self._update_or_create_ioc(
+                        ioc_map, IOCType.IP_ADDRESS, entry.ip_address,
+                        entry.created_datetime, entry.user_principal_name,
+                        context={"countries": set(), "cities": set()}
+                    )
+                    ioc.context.setdefault("countries", set()).add(entry.country)
+                    ioc.context.setdefault("cities", set()).add(entry.city)
 
                 # Countries
                 if entry.country:
-                    key = (IOCType.COUNTRY, entry.country)
-                    if key not in ioc_map:
-                        ioc_map[key] = IOC(
-                            ioc_type=IOCType.COUNTRY,
-                            value=entry.country,
-                            first_seen=entry.created_datetime,
-                            last_seen=entry.created_datetime,
-                            count=0,
-                            affected_users=set(),
-                        )
-                    ioc = ioc_map[key]
-                    ioc.count += 1
-                    ioc.affected_users.add(entry.user_principal_name)
-                    ioc.last_seen = max(ioc.last_seen, entry.created_datetime)
-                    ioc.first_seen = min(ioc.first_seen, entry.created_datetime)
+                    self._update_or_create_ioc(
+                        ioc_map, IOCType.COUNTRY, entry.country,
+                        entry.created_datetime, entry.user_principal_name
+                    )
 
                 # User agents (browser + OS)
                 if entry.browser or entry.os:
                     ua = f"{entry.browser} / {entry.os}"
-                    key = (IOCType.USER_AGENT, ua)
-                    if key not in ioc_map:
-                        ioc_map[key] = IOC(
-                            ioc_type=IOCType.USER_AGENT,
-                            value=ua,
-                            first_seen=entry.created_datetime,
-                            last_seen=entry.created_datetime,
-                            count=0,
-                            affected_users=set(),
-                        )
-                    ioc = ioc_map[key]
-                    ioc.count += 1
-                    ioc.affected_users.add(entry.user_principal_name)
+                    self._update_or_create_ioc(
+                        ioc_map, IOCType.USER_AGENT, ua,
+                        entry.created_datetime, entry.user_principal_name
+                    )
 
         # Extract from legacy auth
         if legacy_entries:
             for entry in legacy_entries:
                 if entry.ip_address:
-                    key = (IOCType.IP_ADDRESS, entry.ip_address)
-                    if key not in ioc_map:
-                        ioc_map[key] = IOC(
-                            ioc_type=IOCType.IP_ADDRESS,
-                            value=entry.ip_address,
-                            first_seen=entry.created_datetime,
-                            last_seen=entry.created_datetime,
-                            count=0,
-                            affected_users=set(),
-                            context={"legacy_auth": True},
-                        )
-                    ioc = ioc_map[key]
-                    ioc.count += 1
-                    ioc.affected_users.add(entry.user_principal_name)
+                    ioc = self._update_or_create_ioc(
+                        ioc_map, IOCType.IP_ADDRESS, entry.ip_address,
+                        entry.created_datetime, entry.user_principal_name,
+                        context={"legacy_auth": True}
+                    )
                     ioc.context["legacy_auth"] = True
 
         # Convert context sets to lists for JSON serialization

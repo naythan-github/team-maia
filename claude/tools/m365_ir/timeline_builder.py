@@ -13,6 +13,7 @@ Author: Maia System
 Created: 2025-12-18 (Phase 225)
 """
 
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import Enum
@@ -172,10 +173,8 @@ def correlate_events(events: List[TimelineEvent]) -> List[TimelineEvent]:
         Events with related_events populated
     """
     # Group by user
-    user_events: Dict[str, List[TimelineEvent]] = {}
+    user_events: Dict[str, List[TimelineEvent]] = defaultdict(list)
     for event in events:
-        if event.user not in user_events:
-            user_events[event.user] = []
         user_events[event.user].append(event)
 
     # Find correlations within each user's events
@@ -321,17 +320,11 @@ class TimelineBuilder:
 
     def _count_by_type(self, timeline: List[TimelineEvent]) -> Dict[str, int]:
         """Count events by source type."""
-        counts: Dict[str, int] = {}
-        for event in timeline:
-            counts[event.source_type] = counts.get(event.source_type, 0) + 1
-        return counts
+        return dict(Counter(e.source_type for e in timeline))
 
     def _count_by_severity(self, timeline: List[TimelineEvent]) -> Dict[str, int]:
         """Count events by severity."""
-        counts: Dict[str, int] = {}
-        for event in timeline:
-            counts[event.severity] = counts.get(event.severity, 0) + 1
-        return counts
+        return dict(Counter(e.severity for e in timeline))
 
     def filter_by_user(
         self,

@@ -211,15 +211,18 @@ class M365IRAnalyzer:
 
     def get_compromised_users(self) -> List[str]:
         """Get list of likely compromised users."""
-        # Users with anomalies who are not US-based
-        us_users = set(self.baselines[u].primary_country == "US" for u in self.baselines if u in self.baselines)
-        anomaly_users = set(a.user_principal_name for a in self.anomalies)
+        # Users with anomalies who are not US-based (US users are false positives)
+        us_users = {u for u, b in self.baselines.items() if b.primary_country == "US"}
+        anomaly_users = {a.user_principal_name for a in self.anomalies}
 
         compromised = []
         for user in anomaly_users:
+            # Skip US-based users (false positives)
+            if user in us_users:
+                continue
             if user in self.baselines:
                 baseline = self.baselines[user]
-                # Compromised if: AU-based with foreign anomalies OR suspicious baseline
+                # Compromised if: home country-based with foreign anomalies OR suspicious baseline
                 if baseline.primary_country == self.home_country or baseline.is_suspicious:
                     compromised.append(user)
 

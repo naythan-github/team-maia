@@ -11,7 +11,7 @@ Author: Maia System
 Created: 2025-12-18 (Phase 225)
 """
 
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 from typing import List, Dict, Optional
 from pathlib import Path
@@ -197,12 +197,9 @@ class UserBaseliner:
             Dict mapping user email to UserBaseline
         """
         # Group entries by user
-        users: Dict[str, List[SignInLogEntry]] = {}
+        users: Dict[str, List[SignInLogEntry]] = defaultdict(list)
         for entry in entries:
-            user = entry.user_principal_name
-            if user not in users:
-                users[user] = []
-            users[user].append(entry)
+            users[entry.user_principal_name].append(entry)
 
         # Calculate baseline for each user
         baselines = {}
