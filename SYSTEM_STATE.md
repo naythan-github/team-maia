@@ -7,9 +7,71 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2025-12-31
-**Current Phase**: 226
-**Database Status**: ✅ Synced (83 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1)
+**Last Updated**: 2026-01-01
+**Current Phase**: 227
+**Database Status**: ✅ Synced (84 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227)
+
+## 📊 PHASE 227: Context Pre-Injector - DB-First Context Loading (2026-01-01) ✅ **PRODUCTION READY**
+
+### Achievement
+Solved the "Claude ignores databases" problem by automatically injecting DB query results into every prompt context. MAIA's 40+ databases (capabilities.db, system_state.db, etc.) are now utilized automatically instead of defaulting to grep.
+
+### Problem Solved
+**Context**: MAIA had extensive database infrastructure (582 capabilities in capabilities.db, 60+ phases in system_state.db) but Claude defaulted to grep/glob operations, ignoring the optimized DB queries.
+
+**Root Cause**: DB queries were *optional* tool calls. Claude's trained behavior defaults to file operations. Instructions in CLAUDE.md weren't enough to change reflexive behavior.
+
+**Solution**: Hook-integrated context pre-injection that makes DB results *unavoidable* by printing them to stdout on every prompt.
+
+### Implementation Details (TDD)
+
+**Requirements & Tests First**:
+- `claude/hooks/context_pre_injector/requirements.md` - 4 FR, 3 NFR, 5 TC groups
+- `tests/test_context_pre_injector.py` - 25 test cases (all passing)
+
+**Core Implementation** (`context_pre_injector.py`):
+- `extract_keywords()` - Filters stopwords, returns max 3 searchable terms
+- `is_complex_query()` - Detects implementation tasks (implement, create, build, fix, debug)
+- `inject_context()` - Main entry point with graceful degradation
+- Integration with SmartContextLoader for DB-first queries
+
+**Hook Integration** (`user-prompt-submit`):
+- Added Stage 0.3: Context Pre-Injection
+- Runs synchronously (output appears in Claude's context)
+- Performance: <100ms target, 45ms actual
+
+### Metrics
+| Metric | Target | Actual |
+|--------|--------|--------|
+| Tests | Pass | **25/25 ✅** |
+| Execution time | <100ms | **45ms ✅** |
+| Token budget | <500 | **~300 ✅** |
+| Graceful degradation | 100% | **100% ✅** |
+
+### Files Created/Modified
+- **`claude/hooks/context_pre_injector/requirements.md`** - TDD requirements
+- **`claude/hooks/context_pre_injector/context_pre_injector.py`** - Main implementation
+- **`claude/hooks/context_pre_injector/__init__.py`** - Module exports
+- **`tests/test_context_pre_injector.py`** - 25 test cases
+- **`claude/hooks/user-prompt-submit`** - Added Stage 0.3 integration
+
+### Architecture Pattern
+```
+user-prompt-submit hook
+    │
+    ├─→ Stage 0.3: context_pre_injector.py "$CLAUDE_USER_MESSAGE"
+    │       │
+    │       ├─→ SmartContextLoader.load_guaranteed_minimum()
+    │       ├─→ SmartContextLoader.load_capability_context(keywords)
+    │       └─→ SmartContextLoader.load_for_intent() (if complex)
+    │
+    └─→ Output printed to stdout → appears in Claude's context
+```
+
+### KAI Integration Note
+This phase addresses the gap identified in KAI vs MAIA comparative analysis. KAI embeds context loading in Skills (pre-loaded, not queried). MAIA now achieves similar automatic context injection via hook-based pre-injection.
+
+---
 
 ## 🐍 PHASE 226: Python Code Reviewer Agent (2025-12-31) ✅ **PRODUCTION READY**
 

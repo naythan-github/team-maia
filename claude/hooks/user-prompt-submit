@@ -37,6 +37,16 @@ if [[ -f "$CONTEXT_ENFORCER" ]]; then
     fi
 fi
 
+# Stage 0.3: Context Pre-Injection (Phase 226 - DB-First Context Loading)
+# Automatically injects relevant DB query results into Claude's context
+# Solves "Claude ignores databases" problem by making DB results unavoidable
+# Performance SLA: <100ms, Token budget: 200-500 tokens
+CONTEXT_INJECTOR="$(dirname "$0")/context_pre_injector/context_pre_injector.py"
+if [[ -f "$CONTEXT_INJECTOR" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    # Run synchronously - output appears in Claude's context
+    python3 "$CONTEXT_INJECTOR" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true
+fi
+
 # Stage 0.5: LLM Router Cost Protection - Silent
 ROUTER_HEALTH_MONITOR="$MAIA_ROOT/claude/tools/🛠️_general/llm_router_health_monitor.py"
 if [[ -f "$ROUTER_HEALTH_MONITOR" ]]; then
