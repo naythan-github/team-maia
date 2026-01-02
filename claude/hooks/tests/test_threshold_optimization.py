@@ -335,5 +335,114 @@ class TestBackwardsCompatibility:
         assert result is False  # Should not crash, just return False
 
 
+class TestAgentLoadingMessage:
+    """Phase 228.3: Agent loading message output for Claude visibility"""
+
+    def test_get_agent_loading_message_returns_message_when_routing(self):
+        """When agent should load, get_agent_loading_message returns instruction"""
+        from swarm_auto_loader import get_agent_loading_message
+
+        classification = {
+            "confidence": 0.90,
+            "complexity": 4,
+            "primary_domain": "python_review"
+        }
+
+        message = get_agent_loading_message(classification, "python_code_reviewer")
+
+        assert message is not None, "Should return a message when agent loads"
+        assert "python_code_reviewer" in message, "Message should contain agent name"
+        assert "AGENT" in message.upper(), "Message should indicate agent loading"
+
+    def test_get_agent_loading_message_returns_none_when_no_routing(self):
+        """When agent should NOT load, get_agent_loading_message returns None"""
+        from swarm_auto_loader import get_agent_loading_message
+
+        classification = {
+            "confidence": 0.40,  # Below threshold
+            "complexity": 2,
+            "primary_domain": "general"
+        }
+
+        message = get_agent_loading_message(classification, None)
+
+        assert message is None, "Should return None when no agent loads"
+
+    def test_agent_loading_message_contains_context_path(self):
+        """Agent loading message should include path to agent context file"""
+        from swarm_auto_loader import get_agent_loading_message
+
+        classification = {
+            "confidence": 0.85,
+            "complexity": 3,
+            "primary_domain": "security"
+        }
+
+        message = get_agent_loading_message(classification, "security_analyst")
+
+        assert message is not None
+        assert "claude/agents/" in message, "Message should include agent context path"
+
+    def test_agent_loading_message_under_100_tokens(self):
+        """Agent loading message should be concise (<100 tokens ~400 chars)"""
+        from swarm_auto_loader import get_agent_loading_message
+
+        classification = {
+            "confidence": 0.90,
+            "complexity": 5,
+            "primary_domain": "sre"
+        }
+
+        message = get_agent_loading_message(classification, "sre_principal_engineer")
+
+        assert message is not None
+        assert len(message) < 500, f"Message too long: {len(message)} chars (should be <500)"
+
+    def test_process_query_outputs_message_when_routing(self):
+        """process_query should output agent loading message when routing matches"""
+        from swarm_auto_loader import process_query
+        import io
+        import sys
+
+        # Capture stdout
+        captured = io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured
+
+        try:
+            process_query("review the python code in the tools")
+        finally:
+            sys.stdout = old_stdout
+
+        output = captured.getvalue()
+
+        # Should contain agent loading message
+        assert "AGENT" in output.upper() or "python_code_reviewer" in output.lower(), \
+            f"Output should contain agent loading info. Got: {output[:200]}"
+
+    def test_process_query_silent_when_no_routing(self):
+        """process_query should be silent when routing doesn't match"""
+        from swarm_auto_loader import process_query
+        import io
+        import sys
+
+        # Capture stdout
+        captured = io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = captured
+
+        try:
+            # Simple query that shouldn't trigger agent loading
+            process_query("hello")
+        finally:
+            sys.stdout = old_stdout
+
+        output = captured.getvalue()
+
+        # Should NOT contain agent loading message (silent for simple queries)
+        assert "AGENT LOADED" not in output.upper(), \
+            f"Should not output agent loading for simple query. Got: {output[:200]}"
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

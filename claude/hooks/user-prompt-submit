@@ -64,14 +64,14 @@ if [[ -f "$CAPABILITY_ENFORCER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
 fi
 
 # Stage 0.8: Automatic Agent Persistence - Swarm Auto-Loader (Phase 134)
-# Invokes SwarmOrchestrator when routing confidence >70% and complexity >3
+# Invokes SwarmOrchestrator when routing confidence >=60% and complexity >=3
 # Creates session state file for Maia agent context loading
-# Performance SLA: <200ms, Reliability SLA: 100% graceful degradation
-# Phase 135.6: Disown background job to prevent blocking (198ms → <60ms)
+# Performance SLA: <500ms (synchronous for message visibility)
+# Phase 228.3: Run synchronously so agent loading message appears in Claude's context
 SWARM_AUTO_LOADER="$(dirname "$0")/swarm_auto_loader.py"
 if [[ -f "$SWARM_AUTO_LOADER" && -n "$CLAUDE_USER_MESSAGE" ]]; then
-    # Run in background with disown (truly non-blocking, graceful degradation)
-    (python3 "$SWARM_AUTO_LOADER" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true) & disown
+    # Run synchronously - output appears in Claude's context for agent routing
+    python3 "$SWARM_AUTO_LOADER" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true
 fi
 
 # Verbose mode output (only if explicitly enabled)

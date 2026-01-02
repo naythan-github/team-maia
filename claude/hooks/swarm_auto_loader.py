@@ -479,6 +479,50 @@ def check_for_agent_recommendation(domain: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def get_agent_loading_message(
+    classification: Dict[str, Any],
+    agent: Optional[str]
+) -> Optional[str]:
+    """
+    Generate agent loading message for Claude visibility.
+
+    Phase 228.3: Outputs a clear instruction that Claude will see and follow,
+    ensuring the specialist agent is actually loaded.
+
+    Args:
+        classification: Classification result with confidence/complexity
+        agent: Agent name to load (or None if no routing)
+
+    Returns:
+        Formatted message string if agent should load, None otherwise
+
+    Performance: <1ms (string formatting only)
+    Token budget: <100 tokens (~400 chars)
+    """
+    if not agent:
+        return None
+
+    if not classification:
+        return None
+
+    # Check if agent should load (reuse threshold logic)
+    if not should_invoke_swarm(classification):
+        return None
+
+    # Build concise message that Claude will see and follow
+    confidence = classification.get("confidence", 0)
+    domain = classification.get("primary_domain", "general")
+
+    message = (
+        f"🤖 AGENT LOADED: {agent}\n"
+        f"Domain: {domain} | Confidence: {confidence:.0%}\n"
+        f"Context: claude/agents/{agent}.md\n"
+        f"Respond as this specialist agent."
+    )
+
+    return message
+
+
 def get_agent_for_domain(domain: str) -> Optional[str]:
     """
     Map domain to agent filename.
@@ -1441,6 +1485,59 @@ def format_recovery_display() -> str:
     return "No recovery context available"
 
 
+def process_query(query: str) -> Optional[str]:
+    """
+    Process a user query and return agent loading message if routing matches.
+
+    Phase 228.3: Unified query processing that outputs agent loading message
+    for Claude visibility. Used by both main() and tests.
+
+    Args:
+        query: User's input query
+
+    Returns:
+        Agent loading message if routing matches, None otherwise.
+        Also prints message to stdout for hook integration.
+
+    Performance: <500ms (includes classification)
+    Graceful: Never raises, always returns valid result
+    """
+    try:
+        # Step 1: Classify query
+        classification = classify_query(query)
+        if not classification:
+            return None
+
+        # Step 2: Check if swarm invocation needed
+        if not should_invoke_swarm(classification):
+            return None
+
+        # Step 3: Get agent from coordinator suggestion
+        agent = classification.get("suggested_agent")
+        if not agent:
+            return None
+
+        # Step 4: Verify agent file exists
+        agent_file = MAIA_ROOT / f"claude/agents/{agent}_agent.md"
+        if not agent_file.exists():
+            agent_file = MAIA_ROOT / f"claude/agents/{agent}.md"
+        if not agent_file.exists():
+            return None
+
+        # Step 5: Generate and output agent loading message
+        message = get_agent_loading_message(classification, agent)
+        if message:
+            print(message)
+
+        # Step 6: Create session state (background work)
+        invoke_swarm_orchestrator(agent, query, classification)
+
+        return message
+
+    except Exception:
+        return None
+
+
 def main():
     """
     Main entry point for swarm auto-loader.
@@ -1477,82 +1574,11 @@ def main():
     query = sys.argv[1]
 
     try:
-        # Step 1: Classify query (10ms target)
-        classification = classify_query(query)
-        if not classification:
-            # Classification failed - graceful degradation (no agent loading)
-            sys.exit(0)
+        # Phase 228.3: Use process_query for unified agent loading with message output
+        process_query(query)
 
-        # Step 2: Check if swarm invocation needed
-        if not should_invoke_swarm(classification):
-            # Low confidence or simple query - no agent needed
-            sys.exit(0)
-
-        # Step 3: Get agent from coordinator suggestion (Phase 134 - use coordinator's choice directly)
-        agent = classification.get("suggested_agent")
-
-        if not agent:
-            # No agent suggested - graceful degradation
-            log_routing_decision(classification, None, False, (time.time() - start_time) * 1000)
-            sys.exit(0)
-
-        # Step 4: Check for existing session (Phase 5 - Domain change detection)
-        existing_session = None
-        if SESSION_STATE_FILE.exists():
-            try:
-                with open(SESSION_STATE_FILE, 'r') as f:
-                    existing_session = json.load(f)
-            except (json.JSONDecodeError, IOError):
-                # Corrupted session - will create new one
-                existing_session = None
-
-        # Detect domain change
-        domain_changed = False
-        if existing_session:
-            current_domain = classification.get("primary_domain", "general")
-            previous_domain = existing_session.get("domain", "general")
-            previous_agent = existing_session.get("current_agent")
-
-            # Domain changed if:
-            # 1. Different domain AND
-            # 2. New domain confidence >70% AND
-            # 3. Either: a) New confidence ≥9% higher than previous, OR
-            #            b) Both confidences are ≥70% (both high-confidence classifications)
-            if current_domain != previous_domain:
-                new_confidence = classification.get("confidence", 0)
-                prev_confidence = existing_session.get("last_classification_confidence", 0)
-
-                # Accept domain change if new domain is high confidence
-                # Allow if: new much higher than old, OR both are high confidence
-                confidence_delta_significant = (new_confidence - prev_confidence) >= 0.09
-                both_high_confidence = new_confidence >= 0.70 and prev_confidence >= 0.70
-
-                if new_confidence > 0.70 and (confidence_delta_significant or both_high_confidence):
-                    domain_changed = True
-                    # Update handoff chain
-                    existing_handoff_chain = existing_session.get("handoff_chain", [])
-                    classification["handoff_chain"] = existing_handoff_chain + [agent]
-                    classification["handoff_reason"] = f"Domain change: {previous_domain} → {current_domain}"
-
-        # Step 5: Verify agent file exists (try with _agent suffix)
-        agent_file = MAIA_ROOT / f"claude/agents/{agent}_agent.md"
-        if not agent_file.exists():
-            # Try without _agent suffix
-            agent_file = MAIA_ROOT / f"claude/agents/{agent}.md"
-        if not agent_file.exists():
-            # Agent file missing - graceful degradation
-            log_error(f"Agent file not found: {agent_file}")
-            log_routing_decision(classification, agent, False, (time.time() - start_time) * 1000)
-            sys.exit(0)
-
-        # Step 6: Invoke swarm orchestrator (Phase 2-5: session state with handoff tracking)
-        success = invoke_swarm_orchestrator(agent, query, classification)
-
-        # Step 6: Log routing decision (background)
+        # Log performance
         duration_ms = (time.time() - start_time) * 1000
-        log_routing_decision(classification, agent if success else None, success, duration_ms)
-
-        # Performance check (warn if >200ms)
         if duration_ms > 200:
             log_error(f"Performance SLA violation: {duration_ms:.1f}ms (target <200ms)")
 
