@@ -4,13 +4,17 @@ Swarm Auto-Loader - Stage 0.8 Enhancement for Automatic Agent Persistence
 Phase 134 - Implement Working Principle #15
 Phase 134.3 - Per-Context Isolation (Multi-Context Concurrency Fix)
 Phase 176 - Default Agent Loading + Recovery Protocol
+Phase 228 - Threshold Optimization (60% confidence, capability gap detection)
+Phase 229 - Agent Mandate Injection (mandatory agent loading)
 
 Purpose:
-- Invoke SwarmOrchestrator when routing confidence >70% and complexity >3
+- Invoke SwarmOrchestrator when routing confidence >=60% and complexity >=3
 - Create session state file for Maia agent context loading
 - Per-context isolation (each Claude Code window has independent session)
 - Default agent loading (sre_principal_engineer_agent when no session exists)
 - Recovery protocol integration (checkpoint + git context)
+- Agent mandate injection (injects actual agent .md content into Claude's context)
+- Capability gap detection and agent recommendation
 - Graceful degradation for all error scenarios
 - Background logging integration with Phase 125
 
@@ -484,20 +488,20 @@ def get_agent_loading_message(
     agent: Optional[str]
 ) -> Optional[str]:
     """
-    Generate agent loading message for Claude visibility.
+    Generate agent mandate for Claude visibility.
 
-    Phase 228.3: Outputs a clear instruction that Claude will see and follow,
-    ensuring the specialist agent is actually loaded.
+    Phase 228.3: Basic message output
+    Phase 229: Full mandate injection with actual agent instructions
 
     Args:
         classification: Classification result with confidence/complexity
         agent: Agent name to load (or None if no routing)
 
     Returns:
-        Formatted message string if agent should load, None otherwise
+        Formatted mandate string if agent should load, None otherwise
 
-    Performance: <1ms (string formatting only)
-    Token budget: <100 tokens (~400 chars)
+    Performance: <50ms (file read + formatting)
+    Token budget: 800-1500 tokens (~3000-6000 chars)
     """
     if not agent:
         return None
@@ -509,7 +513,19 @@ def get_agent_loading_message(
     if not should_invoke_swarm(classification):
         return None
 
-    # Build concise message that Claude will see and follow
+    # Phase 229: Use mandate injector for full agent instructions
+    try:
+        from agent_mandate_injector import generate_mandate, find_agent_file
+
+        agent_file = find_agent_file(agent)
+        if agent_file:
+            mandate = generate_mandate(agent, agent_file)
+            if mandate:
+                return mandate
+    except ImportError:
+        pass  # Fallback to simple message
+
+    # Fallback: simple message (Phase 228.3 behavior)
     confidence = classification.get("confidence", 0)
     domain = classification.get("primary_domain", "general")
 

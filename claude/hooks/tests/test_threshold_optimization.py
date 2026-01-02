@@ -383,8 +383,12 @@ class TestAgentLoadingMessage:
         assert message is not None
         assert "claude/agents/" in message, "Message should include agent context path"
 
-    def test_agent_loading_message_under_100_tokens(self):
-        """Agent loading message should be concise (<100 tokens ~400 chars)"""
+    def test_agent_loading_message_within_token_budget(self):
+        """Agent loading message should be within token budget (<1500 tokens ~6000 chars)
+
+        Phase 228.3: Was <500 chars (simple message)
+        Phase 229: Now <6000 chars (full mandate with agent instructions)
+        """
         from swarm_auto_loader import get_agent_loading_message
 
         classification = {
@@ -396,7 +400,10 @@ class TestAgentLoadingMessage:
         message = get_agent_loading_message(classification, "sre_principal_engineer")
 
         assert message is not None
-        assert len(message) < 500, f"Message too long: {len(message)} chars (should be <500)"
+        # Phase 229: Full mandate injection (800-1500 tokens)
+        assert len(message) < 6000, f"Message too long: {len(message)} chars (should be <6000)"
+        # Should be meaningful content (not just a stub)
+        assert len(message) > 500, f"Message too short: {len(message)} chars (mandate injection expected)"
 
     def test_process_query_outputs_message_when_routing(self):
         """process_query should output agent loading message when routing matches"""
