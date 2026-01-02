@@ -72,7 +72,21 @@ class IntentClassifier:
         'data': ['analytics', 'dashboard', 'report', 'metrics', 'kpi', 'visualization', 'data'],
         'sre': ['monitoring', 'slo', 'sli', 'reliability', 'incident', 'postmortem', 'observability', 'testing', 'test', 'validation', 'health check', 'quality check', 'performance', 'deployment', 'production', 'regression'],
         'endpoint': ['laptop', 'macos', 'windows', 'endpoint', 'device', 'intune', 'jamf'],
-        'python_review': ['python review', 'code review', 'efficiency review', 'pythonic', 'code quality', 'python efficiency', 'review python', 'optimize python', 'refactor python', 'dry violation', 'code conciseness'],
+        'python_review': [
+            # Phrase patterns (original)
+            'python review', 'code review', 'efficiency review', 'pythonic',
+            'code quality', 'python efficiency', 'review python', 'optimize python',
+            'refactor python', 'dry violation', 'code conciseness',
+            # Phase 228.1: Added flexible patterns for better detection
+            'python code',      # Matches "review the python code"
+            'review code',      # Matches "review code quality"
+            '.py',              # Matches ".py files"
+            'python script',    # Matches "review python scripts"
+            'analyze python',   # Matches "analyze python code"
+            'python file',      # Matches "python files"
+            'refactor code',    # Matches "refactor code"
+            'code efficiency',  # Matches "check code efficiency"
+        ],
     }
 
     # Intent category patterns

@@ -22,12 +22,22 @@ import sys
 import json
 import os
 from pathlib import Path
-from datetime import datetime
-from typing import Optional, Dict, Any
+from datetime import datetime, timedelta
+from typing import Optional, Dict, Any, List
 import subprocess
 
 # Maia root detection (claude/hooks/swarm_auto_loader.py -> go up 2 levels to repo root)
 MAIA_ROOT = Path(__file__).parent.parent.parent.absolute()
+
+# Phase 228: Capability gap detection file paths
+CAPABILITY_GAPS_FILE = MAIA_ROOT / "claude" / "data" / "capability_gaps.json"
+AGENT_RECOMMENDATIONS_FILE = MAIA_ROOT / "claude" / "data" / "agent_recommendations.json"
+
+# Phase 228: Threshold constants
+AGENT_LOADING_THRESHOLD = 0.60  # Lowered from 0.70 for specialist-first routing
+CAPABILITY_GAP_THRESHOLD = 0.40  # Below this = capability gap
+GAP_RECOMMENDATION_COUNT = 3    # Gaps needed to recommend new agent
+GAP_RECOMMENDATION_DAYS = 7     # Window for counting gaps
 
 # Performance tracking
 import time
@@ -285,23 +295,188 @@ def should_invoke_swarm(classification: Dict[str, Any]) -> bool:
     """
     Determine if swarm orchestrator should be invoked.
 
-    Criteria (from TDD requirements):
-    - Confidence >70%
-    - Complexity ≥3 (changed from >3 to match requirements)
-    - Domain is not "general"
+    Phase 228 Threshold Optimization:
+    - Confidence >=60% (lowered from >70% for 90-agent specialist-first routing)
+    - Complexity ≥3
+    - Domain check REMOVED (redundant - low confidence handles general queries)
+
+    UFC Philosophy: With 90 specialists, prefer routing to agents over fallback.
     """
     if not classification:
         return False
 
     confidence = classification.get("confidence", 0)
     complexity = classification.get("complexity", 0)
-    domain = classification.get("primary_domain", "general")
 
+    # Phase 228: Lowered to 60%, removed domain check
     return (
-        confidence > 0.70 and
-        complexity >= 3 and  # ≥3 not >3 (TDD requirement alignment)
-        domain != "general"
+        confidence >= 0.60 and  # Changed from >0.70 to >=0.60
+        complexity >= 3
     )
+
+
+# =============================================================================
+# Phase 228: Capability Gap Detection
+# =============================================================================
+
+def should_log_capability_gap(classification: Dict[str, Any]) -> bool:
+    """
+    Determine if query should be logged as a capability gap.
+
+    Phase 228: Queries with confidence < 40% indicate no suitable agent exists.
+    These gaps are tracked for future agent creation recommendations.
+
+    Args:
+        classification: Classification result with confidence score
+
+    Returns:
+        True if confidence < 0.40 (capability gap)
+    """
+    if not classification:
+        return False
+
+    confidence = classification.get("confidence", 0)
+    return confidence < CAPABILITY_GAP_THRESHOLD
+
+
+def log_capability_gap(classification: Dict[str, Any], query: str) -> bool:
+    """
+    Log a capability gap for future analysis.
+
+    Phase 228: Tracks queries that have no suitable agent match.
+    Used to identify patterns that warrant new agent creation.
+
+    Args:
+        classification: Classification result
+        query: Original user query
+
+    Returns:
+        True if logged successfully, False otherwise
+
+    Performance: <10ms
+    Graceful: Never raises, always returns bool
+    """
+    try:
+        gap_entry = {
+            "query": query[:200],  # Truncate long queries
+            "domains": classification.get("domains", [classification.get("primary_domain", "general")]),
+            "confidence": classification.get("confidence", 0),
+            "complexity": classification.get("complexity", 0),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        # Load existing gaps
+        gaps: List[Dict[str, Any]] = []
+        if CAPABILITY_GAPS_FILE.exists():
+            try:
+                with open(CAPABILITY_GAPS_FILE, 'r') as f:
+                    gaps = json.load(f)
+            except (json.JSONDecodeError, IOError):
+                gaps = []
+
+        # Append new gap
+        gaps.append(gap_entry)
+
+        # Keep only last 100 gaps (prevent file bloat)
+        gaps = gaps[-100:]
+
+        # Atomic write
+        tmp_file = CAPABILITY_GAPS_FILE.with_suffix(".tmp")
+        with open(tmp_file, 'w') as f:
+            json.dump(gaps, f, indent=2)
+        tmp_file.replace(CAPABILITY_GAPS_FILE)
+
+        return True
+
+    except Exception:
+        # Graceful degradation - gap logging failure is non-fatal
+        return False
+
+
+def check_for_agent_recommendation(domain: str) -> Optional[Dict[str, Any]]:
+    """
+    Check if a domain has enough gaps to recommend a new agent.
+
+    Phase 228: If 3+ gaps occur in the same domain within 7 days,
+    generate a recommendation for creating a new specialist agent.
+
+    Args:
+        domain: Domain to check for gap patterns
+
+    Returns:
+        Recommendation dict if threshold met, None otherwise
+        {
+            "domain": "cooking",
+            "count": 5,
+            "example_queries": ["query1", "query2", "query3"],
+            "recommendation": "Consider creating cooking_specialist_agent",
+            "timestamp": "2025-01-02T..."
+        }
+    """
+    try:
+        if not CAPABILITY_GAPS_FILE.exists():
+            return None
+
+        with open(CAPABILITY_GAPS_FILE, 'r') as f:
+            gaps = json.load(f)
+
+        # Filter gaps for this domain within the time window
+        cutoff = datetime.utcnow() - timedelta(days=GAP_RECOMMENDATION_DAYS)
+        domain_gaps = []
+
+        for gap in gaps:
+            # Check domain match
+            gap_domains = gap.get("domains", [])
+            if domain not in gap_domains and gap.get("primary_domain") != domain:
+                continue
+
+            # Check timestamp
+            try:
+                gap_time = datetime.fromisoformat(gap["timestamp"].replace("Z", "+00:00").replace("+00:00", ""))
+                if gap_time < cutoff:
+                    continue
+            except (ValueError, KeyError):
+                continue
+
+            domain_gaps.append(gap)
+
+        # Check if threshold met
+        if len(domain_gaps) < GAP_RECOMMENDATION_COUNT:
+            return None
+
+        # Generate recommendation
+        recommendation = {
+            "domain": domain,
+            "count": len(domain_gaps),
+            "example_queries": [g["query"] for g in domain_gaps[:5]],
+            "recommendation": f"Consider creating {domain}_specialist_agent",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+
+        # Save recommendation
+        try:
+            recommendations: List[Dict[str, Any]] = []
+            if AGENT_RECOMMENDATIONS_FILE.exists():
+                with open(AGENT_RECOMMENDATIONS_FILE, 'r') as f:
+                    recommendations = json.load(f)
+
+            # Check if already recommended
+            existing = [r for r in recommendations if r.get("domain") == domain]
+            if not existing:
+                recommendations.append(recommendation)
+
+                tmp_file = AGENT_RECOMMENDATIONS_FILE.with_suffix(".tmp")
+                with open(tmp_file, 'w') as f:
+                    json.dump(recommendations, f, indent=2)
+                tmp_file.replace(AGENT_RECOMMENDATIONS_FILE)
+
+        except Exception:
+            pass  # Saving recommendation is non-critical
+
+        return recommendation
+
+    except Exception:
+        return None
 
 
 def get_agent_for_domain(domain: str) -> Optional[str]:

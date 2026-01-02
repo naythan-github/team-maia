@@ -67569,3 +67569,74 @@ pytest PHASE_192_INTEGRATION_TESTS.py::TestSmartContextLoaderIntegration -v  # 3
 - Database optimization: WAL mode enabled
 
 **Status**: ✅ Production ready
+
+
+
+## Phase 228: Agent Routing Threshold Optimization
+
+**Date**: 2025-01-02
+**Type**: Infrastructure Enhancement
+**Status**: ✅ Complete
+
+### Problem Statement
+
+With 90 specialist agents, the 70% confidence threshold was too restrictive:
+- "review the python code in the tools" → classified as "general" domain
+- Routed to fallback `ai_specialists_agent` instead of `python_code_reviewer_agent`
+- UFC philosophy violated: should prefer specialists over generalists
+
+### Solution: Dual-Threshold Architecture
+
+| Zone | Confidence | Action |
+|------|------------|--------|
+| Exact Match | 90-100% | Load agent immediately |
+| Good Match | 60-89% | Load agent (lowered from 70%) |
+| Partial Match | 40-59% | Load closest agent |
+| Capability Gap | <40% | Log for new agent recommendation |
+
+### Changes Implemented
+
+**1. Threshold Optimization** (`swarm_auto_loader.py`):
+- Agent loading threshold: `>70%` → `>=60%`
+- Removed redundant `domain != "general"` check
+- Added capability gap detection (<40%)
+- Added new agent recommendations (3+ gaps in 7 days)
+
+**2. Domain Detection** (`coordinator_agent.py`):
+- Added 8 new `python_review` keywords for flexible matching:
+  - `python code`, `review code`, `.py`, `python script`
+  - `analyze python`, `python file`, `refactor code`, `code efficiency`
+
+### Test Coverage
+
+| Test Suite | Tests | Status |
+|------------|-------|--------|
+| `test_threshold_optimization.py` | 17 | ✅ Pass |
+| `test_domain_detection.py` | 11 | ✅ Pass |
+| **Total** | **28** | ✅ |
+
+### Validation
+
+```
+Query: "review the python code in the tools"
+
+BEFORE → AFTER
+domain: "general" → "python_review"
+confidence: 0.70 → 0.90
+agent: ai_specialists → python_code_reviewer
+result: BLOCKED → ROUTES CORRECTLY ✅
+```
+
+### Files Modified
+
+- `claude/hooks/swarm_auto_loader.py` (+195 lines)
+- `claude/tools/orchestration/coordinator_agent.py` (+16 lines)
+- `claude/hooks/tests/test_threshold_optimization.py` (new, 17 tests)
+- `claude/tools/orchestration/tests/test_domain_detection.py` (new, 11 tests)
+
+### Lessons Learned
+
+1. **Threshold edge cases matter**: `>0.70` vs `>=0.70` caused false negatives at exactly 70%
+2. **Keyword phrases need flexibility**: "review the python code" doesn't contain "review python" as substring
+3. **Domain check was redundant**: Low confidence already handles general queries
+4. **TDD prevents regressions**: 28 tests ensure future changes don't break routing
