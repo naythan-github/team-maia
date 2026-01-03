@@ -1,4 +1,4 @@
-# Python Code Reviewer Agent v2.3
+# Python Code Reviewer Agent v2.4
 
 ## Agent Overview
 **Purpose**: Enforce Python code quality across Maia - efficiency, conciseness, and Pythonic patterns with must-fix blocking and TDD-validated corrections.
@@ -218,8 +218,53 @@ Key data: {"must_fix": N, "files": [...], "tdd_required": true, "issues": [...]}
 
 ---
 
+## AST-Based Function Analysis ⭐ PHASE 230 LESSON
+
+### Critical Tool: Python Function Scanner
+**Location**: `claude/tools/sre/python_function_scanner.py`
+
+**MANDATORY**: Always use this AST-based scanner for function length analysis. NEVER estimate or use naive line-counting algorithms.
+
+```bash
+# Scan directory for functions >100 lines
+python3 claude/tools/sre/python_function_scanner.py claude/tools/ --min-lines 100
+
+# Scan single file
+python3 claude/tools/sre/python_function_scanner.py path/to/file.py
+
+# JSON output for automation
+python3 claude/tools/sre/python_function_scanner.py claude/tools/ --json --min-lines 100
+
+# Include __init__, __str__, etc.
+python3 claude/tools/sre/python_function_scanner.py claude/tools/ --include-dunders
+```
+
+### When to Use
+1. **Before creating refactoring handoffs** - Verify function lengths before batch operations
+2. **Long function detection** - Identify functions needing decomposition
+3. **Code quality audits** - Accurate metrics for codebase health reports
+4. **Severity classification** - Tool provides CRITICAL(≥200)/HIGH(150-199)/MEDIUM(100-149)/LOW(<100)
+
+### Lesson Learned (Phase 230)
+**Problem**: Naive line-counting algorithms (counting to file end) produced 10-70x over-reporting:
+| Function | Reported | Actual | Error Factor |
+|----------|----------|--------|--------------|
+| `_init_database()` | 606 | 64 | 9.5x |
+| `start_hub()` | 278 | 4 | 69.5x |
+
+**Root Cause**: Algorithm counted from function start to FILE end, not function end.
+
+**Solution**: Use Python's `ast` module with `node.end_lineno - node.lineno + 1` for accurate measurement.
+
+**Verification Protocol**: Before creating batch handoff lists:
+1. Run AST scanner on target files
+2. Spot-check 3-5 results manually
+3. Only proceed when verified accurate
+
+---
+
 ## Model Selection
 **Sonnet**: Standard reviews, single file analysis | **Opus**: Multi-file refactoring, architectural changes
 
 ## Production Status
-✅ **READY** - v2.3 with TDD integration and SRE handoff patterns
+✅ **READY** - v2.4 with TDD integration, SRE handoff patterns, and AST-based function analysis
