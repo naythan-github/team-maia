@@ -363,10 +363,99 @@ class OptimalLocalLLMInterface:
             print(f"❌ Error downloading {model_name}: {e}")
             return False
 
+    def _cmd_models(self) -> None:
+        """Display available models and status."""
+        status = self.get_model_status()
+        print(f"🔧 Ollama Available: {status['ollama_available']}")
+        print(f"📊 Total Models: {status['total_models']}")
+        print(f"🤖 Router Available: {status['router_available']}")
+        print("\n📋 Available Models:")
+
+        for model in status["available_models"]:
+            print(f"  • {model['name']} ({model.get('size_gb', 'unknown')}GB)")
+            if 'strengths' in model:
+                print(f"    Strengths: {', '.join(model['strengths'])}")
+            if 'recommended_for' in model:
+                print(f"    Best for: {', '.join(model['recommended_for'])}")
+            print()
+
+    def _cmd_task(self, task_description: str) -> None:
+        """Display optimal model for a task."""
+        selected_model = self.select_optimal_model(task_description)
+
+        config = self.model_configs.get(selected_model)
+        print(f"📋 Task: {task_description}")
+        print(f"🎯 Optimal Model: {selected_model}")
+        if config:
+            print(f"💪 Strengths: {', '.join(config.strengths)}")
+            print(f"🎯 Best for: {', '.join(config.recommended_for)}")
+
+    def _cmd_generate(self, prompt: str, include_maia_context: bool = False) -> None:
+        """Generate response with auto-selection."""
+        async def run_generation():
+            result = await self.generate_response(prompt, include_maia_context=include_maia_context)
+
+            if result["success"]:
+                print(f"🤖 Model: {result['model']}")
+                print(f"⚡ Speed: {result['tokens_per_second']:.1f} tokens/sec")
+                print(f"💰 Cost: ${result['cost_estimate']:.6f}")
+                print(f"⏱️  Time: {result['execution_time']:.2f}s")
+
+                if include_maia_context:
+                    print(f"🧠 Maia Context: {result['maia_context_applied']}")
+                    if 'compression_metrics' in result:
+                        metrics = result['compression_metrics']
+                        print(f"📊 Compression: {metrics['compressed_tokens']} tokens, "
+                              f"quality {metrics['quality_score']:.2f}, "
+                              f"systematic: {metrics['systematic_thinking_preserved']}")
+
+                print("\n📝 Response:")
+                print(result["response"])
+            else:
+                print(f"❌ Error: {result['error']}")
+
+        asyncio.run(run_generation())
+
+    def _cmd_test_compression(self, prompt: str) -> None:
+        """Test context compression system."""
+        result = self.test_context_compression(prompt)
+
+        if result.get("success"):
+            print("✅ Context Compression Test Results:")
+            print(f"📊 Token Count: {result['metrics']['token_count']}")
+            print(f"📈 Quality Score: {result['metrics']['quality_score']:.2f}")
+            print(f"🧠 Systematic Thinking: {result['metrics']['systematic_thinking_preserved']}")
+            print(f"⚡ Compression Ratio: {result['metrics']['compression_ratio']:.1f}x")
+            print("\n📝 Compressed Context:")
+            print(result['compressed_context'])
+        else:
+            print(f"❌ Error: {result['error']}")
+
+    def _cmd_test(self) -> None:
+        """Run test suite with sample prompts."""
+        test_prompts = [
+            ("Generate a Python function to parse CSV files", "code"),
+            ("Read a configuration file and extract settings", "simple"),
+            ("Create a complex web scraping architecture", "complex"),
+            ("Debug this authentication error", "debug"),
+            ("What is 2+2?", "simple")
+        ]
+
+        print("🧪 Running test suite...")
+        for prompt, category in test_prompts:
+            selected_model = self.select_optimal_model(prompt)
+            print(f"\n📋 {category.upper()}: {prompt}")
+            print(f"🎯 Selected: {selected_model}")
+
+
 def main():
-    """CLI interface for optimal local LLM usage"""
+    """
+    CLI interface for optimal local LLM usage.
+
+    Phase 230: Refactored to use helper methods for maintainability.
+    """
     interface = OptimalLocalLLMInterface()
-    
+
     if len(sys.argv) < 2:
         print("Usage: python optimal_local_llm_interface.py <command> [args]")
         print("\nCommands:")
@@ -380,136 +469,48 @@ def main():
         print("  pull <model_name>          - Download a model")
         print("  test                       - Run test suite")
         return
-    
+
     command = sys.argv[1]
-    
+
     if command == "models":
-        status = interface.get_model_status()
-        print(f"🔧 Ollama Available: {status['ollama_available']}")
-        print(f"📊 Total Models: {status['total_models']}")
-        print(f"🤖 Router Available: {status['router_available']}")
-        print("\n📋 Available Models:")
-        
-        for model in status["available_models"]:
-            print(f"  • {model['name']} ({model.get('size_gb', 'unknown')}GB)")
-            if 'strengths' in model:
-                print(f"    Strengths: {', '.join(model['strengths'])}")
-            if 'recommended_for' in model:
-                print(f"    Best for: {', '.join(model['recommended_for'])}")
-            print()
-    
+        interface._cmd_models()
+
     elif command == "status":
         status = interface.get_model_status()
         print(json.dumps(status, indent=2))
-    
+
     elif command == "task":
         if len(sys.argv) < 3:
             print("Usage: task <description>")
             return
-        
-        task_description = " ".join(sys.argv[2:])
-        selected_model = interface.select_optimal_model(task_description)
-        
-        config = interface.model_configs.get(selected_model)
-        print(f"📋 Task: {task_description}")
-        print(f"🎯 Optimal Model: {selected_model}")
-        if config:
-            print(f"💪 Strengths: {', '.join(config.strengths)}")
-            print(f"🎯 Best for: {', '.join(config.recommended_for)}")
-    
+        interface._cmd_task(" ".join(sys.argv[2:]))
+
     elif command in ["code", "generate"]:
         if len(sys.argv) < 3:
             print(f"Usage: {command} <prompt>")
             return
-        
-        prompt = " ".join(sys.argv[2:])
-        
-        async def run_generation():
-            result = await interface.generate_response(prompt)
-            
-            if result["success"]:
-                print(f"🤖 Model: {result['model']}")
-                print(f"⚡ Speed: {result['tokens_per_second']:.1f} tokens/sec")
-                print(f"💰 Cost: ${result['cost_estimate']:.6f}")
-                print(f"⏱️  Time: {result['execution_time']:.2f}s")
-                print("\n📝 Response:")
-                print(result["response"])
-            else:
-                print(f"❌ Error: {result['error']}")
-        
-        asyncio.run(run_generation())
-    
+        interface._cmd_generate(" ".join(sys.argv[2:]))
+
     elif command == "maia-generate":
         if len(sys.argv) < 3:
             print("Usage: maia-generate <prompt>")
             return
-        
-        prompt = " ".join(sys.argv[2:])
-        
-        async def run_maia_generation():
-            result = await interface.generate_response(prompt, include_maia_context=True)
-            
-            if result["success"]:
-                print(f"🤖 Model: {result['model']}")
-                print(f"⚡ Speed: {result['tokens_per_second']:.1f} tokens/sec")
-                print(f"💰 Cost: ${result['cost_estimate']:.6f}")
-                print(f"⏱️  Time: {result['execution_time']:.2f}s")
-                print(f"🧠 Maia Context: {result['maia_context_applied']}")
-                
-                if 'compression_metrics' in result:
-                    metrics = result['compression_metrics']
-                    print(f"📊 Compression: {metrics['compressed_tokens']} tokens, "
-                          f"quality {metrics['quality_score']:.2f}, "
-                          f"systematic: {metrics['systematic_thinking_preserved']}")
-                
-                print("\n📝 Response:")
-                print(result["response"])
-            else:
-                print(f"❌ Error: {result['error']}")
-        
-        asyncio.run(run_maia_generation())
-    
+        interface._cmd_generate(" ".join(sys.argv[2:]), include_maia_context=True)
+
     elif command == "test-compression":
         if len(sys.argv) < 3:
             print("Usage: test-compression <prompt>")
             return
-        
-        prompt = " ".join(sys.argv[2:])
-        result = interface.test_context_compression(prompt)
-        
-        if result.get("success"):
-            print("✅ Context Compression Test Results:")
-            print(f"📊 Token Count: {result['metrics']['token_count']}")
-            print(f"📈 Quality Score: {result['metrics']['quality_score']:.2f}")
-            print(f"🧠 Systematic Thinking: {result['metrics']['systematic_thinking_preserved']}")
-            print(f"⚡ Compression Ratio: {result['metrics']['compression_ratio']:.1f}x")
-            print("\n📝 Compressed Context:")
-            print(result['compressed_context'])
-        else:
-            print(f"❌ Error: {result['error']}")
-    
+        interface._cmd_test_compression(" ".join(sys.argv[2:]))
+
     elif command == "pull":
         if len(sys.argv) < 3:
             print("Usage: pull <model_name>")
             return
-        
-        model_name = sys.argv[2]
-        interface.pull_model(model_name)
-    
+        interface.pull_model(sys.argv[2])
+
     elif command == "test":
-        test_prompts = [
-            ("Generate a Python function to parse CSV files", "code"),
-            ("Read a configuration file and extract settings", "simple"),
-            ("Create a complex web scraping architecture", "complex"),
-            ("Debug this authentication error", "debug"),
-            ("What is 2+2?", "simple")
-        ]
-        
-        print("🧪 Running test suite...")
-        for prompt, category in test_prompts:
-            selected_model = interface.select_optimal_model(prompt)
-            print(f"\n📋 {category.upper()}: {prompt}")
-            print(f"🎯 Selected: {selected_model}")
+        interface._cmd_test()
 
 if __name__ == "__main__":
     main()

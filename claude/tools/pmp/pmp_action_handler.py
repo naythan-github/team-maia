@@ -432,11 +432,15 @@ class PMPActionHandler:
 
 
 # =============================================================================
-# CLI Interface
+# CLI Interface Helpers
 # =============================================================================
 
-def main():
-    """CLI interface for PMP action handler"""
+def _create_argument_parser():
+    """Create and configure argument parser for CLI.
+
+    Returns:
+        argparse.ArgumentParser: Configured parser
+    """
     import argparse
 
     parser = argparse.ArgumentParser(
@@ -469,6 +473,115 @@ Examples:
                         choices=['Deploy', 'Deploy Immediately', 'Draft'],
                         help='Action to perform (default: Draft for safety)')
 
+    return parser
+
+
+def _parse_ids(id_string: str) -> List[int]:
+    """Parse comma-separated ID string to list of integers.
+
+    Args:
+        id_string: Comma-separated IDs (e.g., "1,2,3") or None
+
+    Returns:
+        List of integers, empty list if input is None/empty
+    """
+    if not id_string:
+        return []
+    return [int(x.strip()) for x in id_string.split(',')]
+
+
+def _handle_action(handler: 'PMPActionHandler', args, patch_ids: List[int], resource_ids: List[int]):
+    """Dispatch action to appropriate handler method.
+
+    Args:
+        handler: PMPActionHandler instance
+        args: Parsed CLI arguments
+        patch_ids: List of patch IDs
+        resource_ids: List of resource IDs
+
+    Returns:
+        Result dict from action, or exits with error code
+    """
+    action = args.action
+
+    if action == 'approve':
+        if not patch_ids:
+            print("❌ --patch-ids required for approve")
+            sys.exit(1)
+        return handler.approve_patch(patch_ids)
+
+    elif action == 'unapprove':
+        if not patch_ids:
+            print("❌ --patch-ids required for unapprove")
+            sys.exit(1)
+        return handler.unapprove_patch(patch_ids)
+
+    elif action == 'decline':
+        if not patch_ids:
+            print("❌ --patch-ids required for decline")
+            sys.exit(1)
+        return handler.decline_patch(patch_ids)
+
+    elif action == 'install':
+        if not patch_ids or not args.config_name or not args.policy_id:
+            print("❌ --patch-ids, --config-name, and --policy-id required for install")
+            sys.exit(1)
+        return handler.install_patch(
+            patch_ids=patch_ids,
+            config_name=args.config_name,
+            deployment_policy_id=args.policy_id,
+            config_description=args.config_desc,
+            action_to_perform=args.action_type,
+            resource_ids=resource_ids if resource_ids else None
+        )
+
+    elif action == 'uninstall':
+        if not patch_ids or not args.config_name or not args.policy_id:
+            print("❌ --patch-ids, --config-name, and --policy-id required for uninstall")
+            sys.exit(1)
+        return handler.uninstall_patch(
+            patch_ids=patch_ids,
+            config_name=args.config_name,
+            deployment_policy_id=args.policy_id,
+            config_description=args.config_desc,
+            action_to_perform=args.action_type,
+            resource_ids=resource_ids if resource_ids else None
+        )
+
+    elif action == 'download':
+        if not patch_ids:
+            print("❌ --patch-ids required for download")
+            sys.exit(1)
+        return handler.download_patch(patch_ids)
+
+    elif action == 'scan':
+        if not resource_ids:
+            print("❌ --resource-ids required for scan")
+            sys.exit(1)
+        return handler.scan_computers(resource_ids)
+
+    elif action == 'scan-all':
+        return handler.scan_all_computers()
+
+    elif action == 'update-db':
+        return handler.update_patch_db()
+
+    elif action == 'db-status':
+        return handler.get_db_update_status()
+
+    elif action == 'test-all':
+        return 'test-all'  # Special marker for test mode
+
+    return None
+
+
+# =============================================================================
+# CLI Interface
+# =============================================================================
+
+def main():
+    """CLI interface for PMP action handler"""
+    parser = _create_argument_parser()
     args = parser.parse_args()
 
     # Check environment
@@ -486,87 +599,21 @@ Examples:
         print(str(e))
         sys.exit(1)
 
-    # Parse IDs
-    patch_ids = [int(x.strip()) for x in args.patch_ids.split(',')] if args.patch_ids else []
-    resource_ids = [int(x.strip()) for x in args.resource_ids.split(',')] if args.resource_ids else []
+    # Parse IDs using helper
+    patch_ids = _parse_ids(args.patch_ids)
+    resource_ids = _parse_ids(args.resource_ids)
 
-    result = None
-
-    # Execute action
-    if args.action == 'approve':
-        if not patch_ids:
-            print("❌ --patch-ids required for approve")
-            sys.exit(1)
-        result = handler.approve_patch(patch_ids)
-
-    elif args.action == 'unapprove':
-        if not patch_ids:
-            print("❌ --patch-ids required for unapprove")
-            sys.exit(1)
-        result = handler.unapprove_patch(patch_ids)
-
-    elif args.action == 'decline':
-        if not patch_ids:
-            print("❌ --patch-ids required for decline")
-            sys.exit(1)
-        result = handler.decline_patch(patch_ids)
-
-    elif args.action == 'install':
-        if not patch_ids or not args.config_name or not args.policy_id:
-            print("❌ --patch-ids, --config-name, and --policy-id required for install")
-            sys.exit(1)
-        result = handler.install_patch(
-            patch_ids=patch_ids,
-            config_name=args.config_name,
-            deployment_policy_id=args.policy_id,
-            config_description=args.config_desc,
-            action_to_perform=args.action_type,
-            resource_ids=resource_ids if resource_ids else None
-        )
-
-    elif args.action == 'uninstall':
-        if not patch_ids or not args.config_name or not args.policy_id:
-            print("❌ --patch-ids, --config-name, and --policy-id required for uninstall")
-            sys.exit(1)
-        result = handler.uninstall_patch(
-            patch_ids=patch_ids,
-            config_name=args.config_name,
-            deployment_policy_id=args.policy_id,
-            config_description=args.config_desc,
-            action_to_perform=args.action_type,
-            resource_ids=resource_ids if resource_ids else None
-        )
-
-    elif args.action == 'download':
-        if not patch_ids:
-            print("❌ --patch-ids required for download")
-            sys.exit(1)
-        result = handler.download_patch(patch_ids)
-
-    elif args.action == 'scan':
-        if not resource_ids:
-            print("❌ --resource-ids required for scan")
-            sys.exit(1)
-        result = handler.scan_computers(resource_ids)
-
-    elif args.action == 'scan-all':
-        result = handler.scan_all_computers()
-
-    elif args.action == 'update-db':
-        result = handler.update_patch_db()
-
-    elif args.action == 'db-status':
-        result = handler.get_db_update_status()
-
-    elif args.action == 'test-all':
+    # Handle test-all specially
+    if args.action == 'test-all':
         print(f"\n{'='*60}")
         print(f"PMP ACTION HANDLER - TEST ALL ACTIONS")
         print(f"Environment: {handler.environment}")
         print(f"{'='*60}\n")
-
-        # Run comprehensive test
         test_actions(handler)
         return
+
+    # Execute action using helper
+    result = _handle_action(handler, args, patch_ids, resource_ids)
 
     # Print result
     if result:

@@ -502,11 +502,15 @@ class FeatureTracker:
 
 
 # =============================================================================
-# CLI Interface
+# CLI Interface Helpers
 # =============================================================================
 
-def main():
-    """CLI entry point."""
+def _create_argument_parser():
+    """Create and configure argument parser for CLI.
+
+    Returns:
+        argparse.ArgumentParser: Configured parser with all subcommands
+    """
     parser = argparse.ArgumentParser(
         description="Feature Tracker - TDD Enforcement Tool",
         formatter_class=argparse.RawDescriptionHelpFormatter
@@ -558,14 +562,16 @@ def main():
     reset_parser.add_argument("project", help="Project name")
     reset_parser.add_argument("feature_id", help="Feature ID")
 
-    args = parser.parse_args()
+    return parser
 
-    if not args.command:
-        parser.print_help()
-        return
 
-    tracker = FeatureTracker(data_dir=args.data_dir)
+def _handle_command(tracker: FeatureTracker, args):
+    """Dispatch command to appropriate tracker method.
 
+    Args:
+        tracker: FeatureTracker instance
+        args: Parsed CLI arguments
+    """
     if args.command == "init":
         result = tracker.init(args.project, force=args.force)
         if result["success"]:
@@ -638,6 +644,23 @@ def main():
         else:
             print(f"❌ {result['error']}")
             sys.exit(1)
+
+
+# =============================================================================
+# CLI Interface
+# =============================================================================
+
+def main():
+    """CLI entry point."""
+    parser = _create_argument_parser()
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
+        return
+
+    tracker = FeatureTracker(data_dir=args.data_dir)
+    _handle_command(tracker, args)
 
 
 if __name__ == "__main__":

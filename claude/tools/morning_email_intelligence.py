@@ -353,115 +353,116 @@ Respond with JSON only:
 
         return brief
 
-    def _format_brief(self, categorized: Dict, action_items: List[Dict], sentiment: Dict) -> str:
-        """Format morning brief as markdown"""
-        now = datetime.now()
+    def _format_urgent_section(self, urgent_emails: List[Dict], sentiment: Dict, action_items: List[Dict]) -> str:
+        """Format urgent emails section with sentiment and action items.
 
-        brief = f"""# Morning Email Brief - {now.strftime('%A, %B %d, %Y')}
+        Args:
+            urgent_emails: List of urgent email dicts
+            sentiment: Sentiment analysis by sender
+            action_items: Extracted action items
 
-Generated: {now.strftime('%I:%M %p')} | Model: Claude Sonnet 4.5
-Processed: {sum(len(v) for v in categorized.values())} emails | Cost: ${self.total_cost:.3f}
+        Returns:
+            Markdown formatted string
+        """
+        section = f"## 🚨 URGENT ({len(urgent_emails)} emails - IMMEDIATE ACTION)\n\n"
 
----
-
-## 🚨 URGENT ({len(categorized['urgent'])} emails - IMMEDIATE ACTION)
-
-"""
-
-        # Urgent emails
-        for i, email in enumerate(categorized["urgent"][:10], 1):
+        for i, email in enumerate(urgent_emails[:10], 1):
             sender = email.get("sender", "Unknown")
             subject = email.get("subject", "No Subject")
-            date = email.get("date", "")[:19]  # Trim to date/time only
+            date = email.get("date", "")[:19]
 
-            # Check if sentiment available
             sentiment_info = sentiment.get(sender, {})
             sentiment_emoji = {
-                "POSITIVE": "😊",
-                "NEUTRAL": "😐",
-                "CONCERNED": "😟",
-                "FRUSTRATED": "😤"
+                "POSITIVE": "😊", "NEUTRAL": "😐", "CONCERNED": "😟", "FRUSTRATED": "😤"
             }.get(sentiment_info.get("sentiment", "NEUTRAL"), "😐")
 
-            brief += f"""{i}. **{subject}**
+            section += f"""{i}. **{subject}**
    From: {sender} | {date}
    Sentiment: {sentiment_emoji} {sentiment_info.get('sentiment', 'NEUTRAL')}
 
 """
-
-            # Show related action items
+            # Related action items
             related_actions = [a for a in action_items if a.get("sender", "").lower() in sender.lower()]
             if related_actions:
-                brief += "   **Action Items:**\n"
+                section += "   **Action Items:**\n"
                 for action in related_actions:
-                    brief += f"   - [ ] {action['task']} (Due: {action['deadline']})\n"
-                brief += "\n"
+                    section += f"   - [ ] {action['task']} (Due: {action['deadline']})\n"
+                section += "\n"
 
-        # All action items summary
-        if action_items:
-            brief += f"""---
+        return section
+
+    def _format_action_items_section(self, action_items: List[Dict]) -> str:
+        """Format action items summary section.
+
+        Args:
+            action_items: List of extracted action items
+
+        Returns:
+            Markdown formatted string
+        """
+        if not action_items:
+            return ""
+
+        section = f"""---
 
 ## 📋 ACTION ITEMS EXTRACTED ({len(action_items)} total)
 
 """
-            for action in action_items:
-                priority_emoji = "🔴" if action.get("priority") == "HIGH" else "🟡"
-                brief += f"""{priority_emoji} **{action['task']}**
+        for action in action_items:
+            priority_emoji = "🔴" if action.get("priority") == "HIGH" else "🟡"
+            section += f"""{priority_emoji} **{action['task']}**
    Requested by: {action['sender']}
    Due: {action['deadline']} | Priority: {action['priority']}
    Context: {action.get('context', 'N/A')}
 
 """
+        return section
 
-        # Project updates
-        brief += f"""---
+    def _format_relationship_section(self, sentiment: Dict) -> str:
+        """Format relationship intelligence section.
 
-## 📊 PROJECT UPDATES ({len(categorized['project'])} emails)
+        Args:
+            sentiment: Sentiment analysis by sender
 
-"""
-        for i, email in enumerate(categorized["project"][:10], 1):
-            subject = email.get("subject", "No Subject")
-            sender = email.get("sender", "Unknown")
-            brief += f"{i}. {subject}\n   From: {sender}\n\n"
+        Returns:
+            Markdown formatted string
+        """
+        if not sentiment:
+            return ""
 
-        if len(categorized["project"]) > 10:
-            brief += f"   ... and {len(categorized['project']) - 10} more\n\n"
-
-        # FYI section
-        brief += f"""---
-
-## 📨 FYI ({len(categorized['fyi'])} emails - Low Priority)
-
-"""
-        for i, email in enumerate(categorized["fyi"][:5], 1):
-            subject = email.get("subject", "No Subject")
-            brief += f"{i}. {subject}\n"
-
-        if len(categorized["fyi"]) > 5:
-            brief += f"\n... and {len(categorized['fyi']) - 5} more\n"
-
-        # Relationship intelligence
-        if sentiment:
-            brief += f"""
+        section = """
 
 ---
 
 ## 📈 RELATIONSHIP INTELLIGENCE
 
 """
-            for sender, data in list(sentiment.items())[:5]:
-                health = data.get("relationship_health", 75)
-                health_emoji = "🟢" if health >= 75 else "🟡" if health >= 60 else "🔴"
+        for sender, data in list(sentiment.items())[:5]:
+            health = data.get("relationship_health", 75)
+            health_emoji = "🟢" if health >= 75 else "🟡" if health >= 60 else "🔴"
 
-                brief += f"""**{sender}**
+            section += f"""**{sender}**
    {health_emoji} Health: {health}/100 | Sentiment: {data.get('sentiment', 'NEUTRAL')}
    Signals: {', '.join(data.get('signals', []))}
    Recommended: {data.get('recommended_action', 'Continue monitoring')}
 
 """
+        return section
 
-        # Footer with stats
-        brief += f"""---
+    def _format_stats_section(self, categorized: Dict, action_items: List[Dict], sentiment: Dict) -> str:
+        """Format processing stats footer section.
+
+        Args:
+            categorized: Dict of categorized emails
+            action_items: List of action items
+            sentiment: Sentiment analysis
+
+        Returns:
+            Markdown formatted string
+        """
+        at_risk = len([s for s, d in sentiment.items() if d.get('relationship_health', 75) < 70])
+
+        return f"""---
 
 ## 💰 PROCESSING STATS
 
@@ -474,13 +475,60 @@ Processed: {sum(len(v) for v in categorized.values())} emails | Cost: ${self.tot
 **Next Steps:**
 1. Address {len(categorized['urgent'])} urgent emails before 9 AM
 2. Review {len(action_items)} action items (auto-added to GTD tracker)
-3. Monitor relationship health for {len([s for s, d in sentiment.items() if d.get('relationship_health', 75) < 70])} at-risk contacts
+3. Monitor relationship health for {at_risk} at-risk contacts
 
 ---
 
 *Generated by Maia Morning Email Intelligence*
 *Schedule: Daily 7:00 AM (Mon-Fri) | Adjust: Edit LaunchAgent plist*
 """
+
+    def _format_brief(self, categorized: Dict, action_items: List[Dict], sentiment: Dict) -> str:
+        """Format morning brief as markdown using helper methods."""
+        now = datetime.now()
+        total_emails = sum(len(v) for v in categorized.values())
+
+        brief = f"""# Morning Email Brief - {now.strftime('%A, %B %d, %Y')}
+
+Generated: {now.strftime('%I:%M %p')} | Model: Claude Sonnet 4.5
+Processed: {total_emails} emails | Cost: ${self.total_cost:.3f}
+
+---
+
+"""
+        # Urgent section
+        brief += self._format_urgent_section(categorized['urgent'], sentiment, action_items)
+
+        # Action items summary
+        brief += self._format_action_items_section(action_items)
+
+        # Project updates (inline - simple pattern)
+        brief += f"""---
+
+## 📊 PROJECT UPDATES ({len(categorized['project'])} emails)
+
+"""
+        for i, email in enumerate(categorized["project"][:10], 1):
+            brief += f"{i}. {email.get('subject', 'No Subject')}\n   From: {email.get('sender', 'Unknown')}\n\n"
+        if len(categorized["project"]) > 10:
+            brief += f"   ... and {len(categorized['project']) - 10} more\n\n"
+
+        # FYI section (inline - simple pattern)
+        brief += f"""---
+
+## 📨 FYI ({len(categorized['fyi'])} emails - Low Priority)
+
+"""
+        for i, email in enumerate(categorized["fyi"][:5], 1):
+            brief += f"{i}. {email.get('subject', 'No Subject')}\n"
+        if len(categorized["fyi"]) > 5:
+            brief += f"\n... and {len(categorized['fyi']) - 5} more\n"
+
+        # Relationship intelligence
+        brief += self._format_relationship_section(sentiment)
+
+        # Processing stats
+        brief += self._format_stats_section(categorized, action_items, sentiment)
 
         return brief
 

@@ -407,9 +407,153 @@ class ExecutiveInformationManager:
         print(f"✅ Processed {stats['processed']} items: {stats['actioned']} actioned, {stats['deferred']} deferred, {stats['archived']} archived")
         return stats
 
+    def _build_tier1_section(self, cursor) -> Tuple[List[str], List]:
+        """
+        Build Tier 1 (Critical) items section.
+
+        Args:
+            cursor: Database cursor
+
+        Returns:
+            Tuple of (markdown lines, tier1_items list)
+        """
+        cursor.execute('''
+            SELECT id, source, title, relevance_score, action_taken
+            FROM information_items
+            WHERE priority_tier = 1 AND gtd_status != 'archived'
+            ORDER BY relevance_score DESC
+            LIMIT 10
+        ''')
+        tier1_items = cursor.fetchall()
+
+        lines = []
+        lines.append("## 🔴 Tier 1: Critical - Immediate Action")
+        lines.append(f"**Count**: {len(tier1_items)} items\n")
+
+        if tier1_items:
+            for item in tier1_items:
+                score = item[3] if item[3] else 0
+                lines.append(f"- [ ] **{item[2]}** (Score: {score:.1f}) - *{item[1]}*")
+                lines.append(f"  - Action: {item[4]}")
+        else:
+            lines.append("*No critical items - excellent!*")
+
+        lines.append("")
+        return lines, tier1_items
+
+    def _build_tier2_section(self, cursor) -> Tuple[List[str], List]:
+        """
+        Build Tier 2 (High Priority) items section.
+
+        Args:
+            cursor: Database cursor
+
+        Returns:
+            Tuple of (markdown lines, tier2_items list)
+        """
+        cursor.execute('''
+            SELECT id, source, title, relevance_score, action_taken
+            FROM information_items
+            WHERE priority_tier = 2 AND gtd_status != 'archived'
+            ORDER BY relevance_score DESC
+            LIMIT 15
+        ''')
+        tier2_items = cursor.fetchall()
+
+        lines = []
+        lines.append("\n## 🟡 Tier 2: High Priority - Schedule Today")
+        lines.append(f"**Count**: {len(tier2_items)} items\n")
+
+        if tier2_items:
+            for item in tier2_items:
+                score = item[3] if item[3] else 0
+                lines.append(f"- [ ] {item[2]} (Score: {score:.1f})")
+        else:
+            lines.append("*All clear*")
+
+        lines.append("")
+        return lines, tier2_items
+
+    def _build_meetings_section(self) -> List[str]:
+        """
+        Build today's meetings section.
+
+        Returns:
+            List of markdown lines
+        """
+        lines = []
+        lines.append("\n## 📅 Today's Meetings")
+
+        try:
+            calendar_bridge_path = MAIA_ROOT / "tools" / "macos_calendar_bridge.py"
+            calendar_module = import_module_from_path("macos_calendar_bridge", calendar_bridge_path)
+            calendar_bridge = calendar_module.MacOSCalendarBridge()
+
+            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            today_end = today_start + timedelta(days=1)
+
+            meetings = calendar_bridge.get_events_in_range(
+                start=today_start.isoformat(),
+                end=today_end.isoformat()
+            )
+
+            if meetings:
+                lines.append(f"**Count**: {len(meetings)} meetings\n")
+                for meeting in meetings[:8]:  # Limit to 8
+                    start_time = meeting.get('start', 'Unknown')
+                    if 'T' in start_time:
+                        start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
+                        start_time = start_dt.strftime('%H:%M')
+
+                    lines.append(f"- **{start_time}** - {meeting.get('summary', 'Untitled')}")
+
+                    # Show attendees if available
+                    attendees = meeting.get('attendees', [])
+                    if attendees:
+                        attendee_names = [a.split('@')[0].replace('.', ' ').title() for a in attendees[:3]]
+                        lines.append(f"  - With: {', '.join(attendee_names)}")
+            else:
+                lines.append("*No meetings scheduled - focus time available*")
+        except Exception as e:
+            logger.warning(f"Could not load today's meetings: {e}")
+            lines.append("*Meeting context unavailable*")
+
+        lines.append("")
+        return lines
+
+    def _build_system_status_section(self, cursor, tier1_count: int, tier2_count: int) -> List[str]:
+        """
+        Build system status summary section.
+
+        Args:
+            cursor: Database cursor
+            tier1_count: Number of tier 1 items
+            tier2_count: Number of tier 2 items
+
+        Returns:
+            List of markdown lines
+        """
+        cursor.execute('SELECT COUNT(*) FROM information_items WHERE gtd_status = "inbox"')
+        inbox_count = cursor.fetchone()[0]
+
+        cursor.execute('SELECT COUNT(*) FROM information_items WHERE priority_tier <= 3 AND gtd_status != "archived"')
+        active_count = cursor.fetchone()[0]
+
+        lines = []
+        lines.append("\n---")
+        lines.append("\n## 📊 System Status")
+        lines.append(f"- **Inbox**: {inbox_count} unprocessed items")
+        lines.append(f"- **Active Items**: {active_count} (Tiers 1-3)")
+        lines.append(f"- **Critical**: {tier1_count} items")
+        lines.append(f"- **High Priority**: {tier2_count} items")
+
+        return lines
+
     def generate_morning_ritual(self) -> str:
         """
         Generate 15-30 min morning ritual with tiered information.
+
+        Phase 230: Refactored to use helper functions for maintainability.
 
         Morning Ritual Structure:
             1. Tier 1 (Critical): Immediate action items
@@ -431,91 +575,18 @@ class ExecutiveInformationManager:
         ritual.append("# Morning Ritual")
         ritual.append(f"\n**Generated**: {datetime.now().strftime('%A, %B %d, %Y at %H:%M')}")
         ritual.append(f"**Duration**: 15-30 minutes\n")
-
         ritual.append("---\n")
 
-        # Section 1: Tier 1 - Critical Items (Immediate Action)
-        cursor.execute('''
-            SELECT id, source, title, relevance_score, action_taken
-            FROM information_items
-            WHERE priority_tier = 1 AND gtd_status != 'archived'
-            ORDER BY relevance_score DESC
-            LIMIT 10
-        ''')
-        tier1_items = cursor.fetchall()
+        # Section 1: Tier 1 - Critical Items
+        tier1_lines, tier1_items = self._build_tier1_section(cursor)
+        ritual.extend(tier1_lines)
 
-        ritual.append("## 🔴 Tier 1: Critical - Immediate Action")
-        ritual.append(f"**Count**: {len(tier1_items)} items\n")
-
-        if tier1_items:
-            for item in tier1_items:
-                ritual.append(f"- [ ] **{item[2]}** (Score: {item[3]:.1f}) - *{item[1]}*")
-                ritual.append(f"  - Action: {item[4]}")
-        else:
-            ritual.append("*No critical items - excellent!*")
-
-        ritual.append("")
-
-        # Section 2: Tier 2 - High Priority (Today)
-        cursor.execute('''
-            SELECT id, source, title, relevance_score, action_taken
-            FROM information_items
-            WHERE priority_tier = 2 AND gtd_status != 'archived'
-            ORDER BY relevance_score DESC
-            LIMIT 15
-        ''')
-        tier2_items = cursor.fetchall()
-
-        ritual.append("\n## 🟡 Tier 2: High Priority - Schedule Today")
-        ritual.append(f"**Count**: {len(tier2_items)} items\n")
-
-        if tier2_items:
-            for item in tier2_items:
-                ritual.append(f"- [ ] {item[2]} (Score: {item[3]:.1f})")
-        else:
-            ritual.append("*All clear*")
-
-        ritual.append("")
+        # Section 2: Tier 2 - High Priority
+        tier2_lines, tier2_items = self._build_tier2_section(cursor)
+        ritual.extend(tier2_lines)
 
         # Section 3: Today's Meetings
-        ritual.append("\n## 📅 Today's Meetings")
-
-        # Get today's meetings from calendar
-        try:
-            calendar_bridge_path = MAIA_ROOT / "tools" / "macos_calendar_bridge.py"
-            calendar_module = import_module_from_path("macos_calendar_bridge", calendar_bridge_path)
-            calendar_bridge = calendar_module.MacOSCalendarBridge()
-
-            today_start = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-            today_end = today_start + timedelta(days=1)
-
-            meetings = calendar_bridge.get_events_in_range(
-                start=today_start.isoformat(),
-                end=today_end.isoformat()
-            )
-
-            if meetings:
-                ritual.append(f"**Count**: {len(meetings)} meetings\n")
-                for meeting in meetings[:8]:  # Limit to 8
-                    start_time = meeting.get('start', 'Unknown')
-                    if 'T' in start_time:
-                        start_dt = datetime.fromisoformat(start_time.replace('Z', '+00:00'))
-                        start_time = start_dt.strftime('%H:%M')
-
-                    ritual.append(f"- **{start_time}** - {meeting.get('summary', 'Untitled')}")
-
-                    # Show attendees if available
-                    attendees = meeting.get('attendees', [])
-                    if attendees:
-                        attendee_names = [a.split('@')[0].replace('.', ' ').title() for a in attendees[:3]]
-                        ritual.append(f"  - With: {', '.join(attendee_names)}")
-            else:
-                ritual.append("*No meetings scheduled - focus time available*")
-        except Exception as e:
-            logger.warning(f"Could not load today's meetings: {e}")
-            ritual.append("*Meeting context unavailable*")
-
-        ritual.append("")
+        ritual.extend(self._build_meetings_section())
 
         # Section 4: Tier 3 - Medium Priority (This Week)
         cursor.execute('''
@@ -538,19 +609,8 @@ class ExecutiveInformationManager:
         ritual.append("*Items from GTD @waiting-for context*")
         ritual.append("*Follow up on blocked items*\n")
 
-        # Section 7: Daily Summary
-        cursor.execute('SELECT COUNT(*) FROM information_items WHERE gtd_status = "inbox"')
-        inbox_count = cursor.fetchone()[0]
-
-        cursor.execute('SELECT COUNT(*) FROM information_items WHERE priority_tier <= 3 AND gtd_status != "archived"')
-        active_count = cursor.fetchone()[0]
-
-        ritual.append("\n---")
-        ritual.append("\n## 📊 System Status")
-        ritual.append(f"- **Inbox**: {inbox_count} unprocessed items")
-        ritual.append(f"- **Active Items**: {active_count} (Tiers 1-3)")
-        ritual.append(f"- **Critical**: {len(tier1_items)} items")
-        ritual.append(f"- **High Priority**: {len(tier2_items)} items")
+        # Section 7: System Status
+        ritual.extend(self._build_system_status_section(cursor, len(tier1_items), len(tier2_items)))
 
         conn.close()
 

@@ -107,6 +107,98 @@ class ServiceDeskMultiRAGIndexer:
             metadata={"description": config["description"]}
         )
 
+    def _build_index_query(self, collection_name: str, limit: int = None) -> str:
+        """Build SQL query for indexing a collection.
+
+        Args:
+            collection_name: Name of collection
+            limit: Max documents to fetch
+
+        Returns:
+            SQL query string
+        """
+        config = self.collections[collection_name]
+        metadata_select = ", ".join(config['metadata_fields'])
+
+        # Build WHERE clause based on collection type
+        if collection_name == "comments":
+            where_clause = "WHERE comment_text IS NOT NULL AND comment_text != ''"
+        else:
+            where_clause = f"WHERE {config['text_field']} IS NOT NULL AND {config['text_field']} != ''"
+
+        limit_clause = f"LIMIT {limit}" if limit else ""
+
+        return f"""
+            SELECT
+                {config['id_field']} as id,
+                {config['text_field']} as text,
+                {metadata_select}
+            FROM {config['table']}
+            {where_clause}
+            {limit_clause}
+        """
+
+    def _process_row_to_document(self, row, collection_name: str, existing_ids: set):
+        """Process a database row into document tuple.
+
+        Args:
+            row: sqlite3.Row object
+            collection_name: Name of collection
+            existing_ids: Set of already indexed IDs (for resumable indexing)
+
+        Returns:
+            Tuple of (id, text, metadata) or None if row should be skipped
+        """
+        config = self.collections[collection_name]
+        row_id = str(row['id'])
+
+        # Skip if already indexed
+        if collection_name == "comments" and row_id in existing_ids:
+            return None
+
+        text = row['text']
+        if not text or text.strip() == '':
+            return None
+
+        # Truncate very long texts
+        if len(text) > 5000:
+            text = text[:5000] + "... [truncated]"
+
+        # Build metadata
+        metadata = {
+            "text_length": len(text),
+            "indexed_at": datetime.now().isoformat()
+        }
+
+        for field in config['metadata_fields']:
+            clean_field = field.replace('[', '').replace(']', '')
+            try:
+                value = row[field]
+            except (KeyError, IndexError):
+                try:
+                    value = row[clean_field]
+                except (KeyError, IndexError):
+                    continue
+
+            if value is not None:
+                metadata[clean_field] = str(value)
+
+        return (row_id, text, metadata)
+
+    def _print_index_completion(self, collection_name: str, total_indexed: int, elapsed: float):
+        """Print indexing completion summary.
+
+        Args:
+            collection_name: Name of collection
+            total_indexed: Total documents indexed
+            elapsed: Time elapsed in seconds
+        """
+        rate = total_indexed / elapsed if elapsed > 0 else 0
+        print(f"\n✅ {collection_name.upper()} indexing complete: {total_indexed:,} documents indexed")
+        print(f"   Time: {elapsed:.1f}s ({rate:.1f} docs/sec)")
+        print(f"   ChromaDB: {self.rag_db_path}")
+        print(f"   Collection: servicedesk_{collection_name}")
+
     def index_collection(self, collection_name: str, batch_size: int = 100, limit: int = None):
         """
         Index a single collection from ServiceDesk database
@@ -129,37 +221,18 @@ class ServiceDeskMultiRAGIndexer:
         print(f"Table: {config['table']}")
         print(f"Text field: {config['text_field']}")
 
-        # Build SQL query
-        metadata_select = ", ".join(config['metadata_fields'])
-
-        # Special handling for comments (exclude already indexed if resuming)
+        # Get existing IDs for resumable indexing (comments only)
+        existing_ids = set()
         if collection_name == "comments":
-            # Get already indexed comment IDs
-            existing_ids = set()
             try:
-                existing = collection.get(limit=200000)  # Get all existing IDs
+                existing = collection.get(limit=200000)
                 existing_ids = set(existing['ids'])
                 print(f"   Found {len(existing_ids)} already indexed comments")
             except Exception:
                 pass
 
-            where_clause = f"WHERE comment_text IS NOT NULL AND comment_text != ''"
-        else:
-            where_clause = f"WHERE {config['text_field']} IS NOT NULL AND {config['text_field']} != ''"
-
-        limit_clause = f"LIMIT {limit}" if limit else ""
-
-        query = f"""
-            SELECT
-                {config['id_field']} as id,
-                {config['text_field']} as text,
-                {metadata_select}
-            FROM {config['table']}
-            {where_clause}
-            {limit_clause}
-        """
-
-        # Execute query
+        # Build and execute query
+        query = self._build_index_query(collection_name, limit)
         conn = sqlite3.connect(self.db_path, timeout=30.0)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
@@ -170,83 +243,27 @@ class ServiceDeskMultiRAGIndexer:
 
         # Process in batches
         total_indexed = 0
-        batch_count = 0
-
         while True:
             rows = cursor.fetchmany(batch_size)
             if not rows:
                 break
 
-            # Prepare batch data
-            ids = []
-            documents = []
-            metadatas = []
-
+            ids, documents, metadatas = [], [], []
             for row in rows:
-                row_id = str(row['id'])
+                result = self._process_row_to_document(row, collection_name, existing_ids)
+                if result:
+                    row_id, text, metadata = result
+                    ids.append(row_id)
+                    documents.append(text)
+                    metadatas.append(metadata)
 
-                # Skip if already indexed (for resumable indexing)
-                if collection_name == "comments" and row_id in existing_ids:
-                    continue
-
-                text = row['text']
-                if not text or text.strip() == '':
-                    continue
-
-                # Truncate very long texts to save space
-                if len(text) > 5000:
-                    text = text[:5000] + "... [truncated]"
-
-                # Build metadata
-                metadata = {
-                    "text_length": len(text),
-                    "indexed_at": datetime.now().isoformat()
-                }
-
-                # Access fields by column name (row is sqlite3.Row with dict-like access)
-                for field in config['metadata_fields']:
-                    # Clean field name (remove brackets)
-                    clean_field = field.replace('[', '').replace(']', '')
-
-                    try:
-                        # Try direct access first
-                        value = row[field]
-                    except (KeyError, IndexError):
-                        # If that fails, try without brackets
-                        try:
-                            value = row[clean_field]
-                        except (KeyError, IndexError):
-                            # Skip if field not found
-                            continue
-
-                    # Convert to string for ChromaDB (only supports str, int, float, bool)
-                    if value is not None:
-                        metadata[clean_field] = str(value)
-
-                ids.append(row_id)
-                documents.append(text)
-                metadatas.append(metadata)
-
-            # Index batch
             if ids:
-                collection.add(
-                    ids=ids,
-                    documents=documents,
-                    metadatas=metadatas
-                )
-
+                collection.add(ids=ids, documents=documents, metadatas=metadatas)
                 total_indexed += len(ids)
-                batch_count += 1
-
                 print(f"   Progress: {total_indexed:,} indexed - Batch: {len(ids)} documents")
 
         conn.close()
-        elapsed = time.time() - start_time
-
-        print(f"\n✅ {collection_name.upper()} indexing complete: {total_indexed:,} documents indexed")
-        print(f"   Time: {elapsed:.1f}s ({total_indexed/elapsed:.1f} docs/sec)")
-        print(f"   ChromaDB: {self.rag_db_path}")
-        print(f"   Collection: servicedesk_{collection_name}")
+        self._print_index_completion(collection_name, total_indexed, time.time() - start_time)
 
     def index_all(self, batch_size: int = 100, skip_existing: bool = True):
         """Index all collections"""

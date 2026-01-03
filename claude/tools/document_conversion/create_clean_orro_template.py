@@ -13,105 +13,77 @@ from docx import Document
 from docx.shared import Pt, RGBColor, Inches
 from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
+# Orro purple color: RGB(112, 48, 160) - Official Orro brand color
+ORRO_PURPLE = RGBColor(112, 48, 160)
 
-def create_clean_orro_reference():
+
+def _setup_document_margins(doc: Document) -> None:
     """
-    Create a clean Orro corporate reference template with:
-    - Style definitions (Heading 1-9, Normal, List styles)
-    - Aptos font (corporate standard)
-    - Purple Orro table style (_Orro Table 1)
-    - Standard margins (1.0")
-    - ZERO content (pure style reference)
+    Set document margins to 1.0" on all sides.
+
+    Args:
+        doc: Document to configure
     """
-
-    print("=" * 70)
-    print("Creating Clean Orro Corporate Reference Template")
-    print("=" * 70)
-    print()
-
-    # Load existing template to extract styles (optional - we're creating from scratch)
-    # Use PathManager for portable path resolution
-    import sys
-    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
-    from claude.tools.core.paths import PathManager
-    source_template = PathManager.get_work_projects_path() / "pir_converter" / "pir_orro_reference.docx"
-
-    if source_template.exists():
-        print(f"📄 Source template found: {source_template.name}")
-        source_doc = Document(source_template)
-    else:
-        print(f"📄 Creating template from scratch (no source template)")
-        source_doc = None
-
-    # Create new blank document
-    print("🔧 Creating clean template (style-only, no content)...")
-    clean_doc = Document()
-
-    # Step 1: Copy all styles from source
-    print("   📋 Copying styles from source template...")
-
-    # Note: python-docx doesn't support direct style copying
-    # We'll create a minimal document and use the source as reference
-
-    # Step 2: Set margins (1.0" standard)
-    print("   📏 Setting margins (1.0\" all sides)...")
-    section = clean_doc.sections[0]
+    section = doc.sections[0]
     section.top_margin = Inches(1.0)
     section.bottom_margin = Inches(1.0)
     section.left_margin = Inches(1.0)
     section.right_margin = Inches(1.0)
 
-    # Step 3: Configure styles with Orro purple color
-    print("   🎨 Configuring corporate styles (Orro purple headings)...")
 
-    # Orro purple color: RGB(112, 48, 160) - Official Orro brand color
-    ORRO_PURPLE = RGBColor(112, 48, 160)
+def _configure_heading_styles(doc: Document) -> None:
+    """
+    Configure heading styles with Aptos font and Orro purple color.
 
+    Args:
+        doc: Document to configure
+    """
     # Heading 1: Aptos, 16pt, bold, Orro purple
-    h1 = clean_doc.styles['Heading 1']
+    h1 = doc.styles['Heading 1']
     h1.font.name = 'Aptos'
     h1.font.size = Pt(16)
     h1.font.bold = True
     h1.font.color.rgb = ORRO_PURPLE
 
     # Heading 2: Aptos, 14pt, bold, Orro purple
-    h2 = clean_doc.styles['Heading 2']
+    h2 = doc.styles['Heading 2']
     h2.font.name = 'Aptos'
     h2.font.size = Pt(14)
     h2.font.bold = True
     h2.font.color.rgb = ORRO_PURPLE
 
     # Heading 3: Aptos, 12pt, bold, Orro purple
-    h3 = clean_doc.styles['Heading 3']
+    h3 = doc.styles['Heading 3']
     h3.font.name = 'Aptos'
     h3.font.size = Pt(12)
     h3.font.bold = True
     h3.font.color.rgb = ORRO_PURPLE
 
     # Normal: Aptos, 11pt, black
-    normal = clean_doc.styles['Normal']
+    normal = doc.styles['Normal']
     normal.font.name = 'Aptos'
     normal.font.size = Pt(11)
 
-    # Step 4: Add style examples (will be ignored by Pandoc but useful for reference)
-    print("   📝 Adding minimal style examples...")
 
+def _add_style_examples(doc: Document) -> None:
+    """
+    Add minimal style examples to document.
+
+    Args:
+        doc: Document to add examples to
+    """
     # Add one paragraph per style (minimal content for style reference)
-    clean_doc.add_heading('Heading 1 Style Example', level=1)
-    clean_doc.add_heading('Heading 2 Style Example', level=2)
-    clean_doc.add_heading('Heading 3 Style Example', level=3)
-    clean_doc.add_paragraph('Normal paragraph style example.')
+    doc.add_heading('Heading 1 Style Example', level=1)
+    doc.add_heading('Heading 2 Style Example', level=2)
+    doc.add_heading('Heading 3 Style Example', level=3)
+    doc.add_paragraph('Normal paragraph style example.')
 
-    # Add list example
-    clean_doc.add_paragraph('Bullet list item example', style='List Bullet')
-    clean_doc.add_paragraph('Numbered list item example', style='List Number')
+    # Add list examples
+    doc.add_paragraph('Bullet list item example', style='List Bullet')
+    doc.add_paragraph('Numbered list item example', style='List Number')
 
-    # Add table example with basic styling
-    # Note: _Orro Table 1 will be copied when using source as reference-doc
-    print("   📊 Adding table style example...")
-    table = clean_doc.add_table(rows=2, cols=3)
-
-    # Use basic table style (Orro style will come from source template in Pandoc)
+    # Add table example
+    table = doc.add_table(rows=2, cols=3)
     try:
         table.style = 'Table Grid'
     except KeyError:
@@ -125,21 +97,74 @@ def create_clean_orro_reference():
     table.cell(1, 1).text = 'Data 2'
     table.cell(1, 2).text = 'Data 3'
 
-    # Step 5: Add instruction paragraph
-    print("   📌 Adding usage instructions...")
-    clean_doc.add_page_break()
-    instruction = clean_doc.add_paragraph()
-    instruction.add_run('Orro Corporate Reference Template').bold = True
-    clean_doc.add_paragraph('')
-    clean_doc.add_paragraph('This template contains Orro corporate styles for use with Pandoc conversions:')
-    clean_doc.add_paragraph('• Aptos font (11pt body, 12-16pt headings)', style='List Bullet')
-    clean_doc.add_paragraph('• Purple Orro table style (_Orro Table 1)', style='List Bullet')
-    clean_doc.add_paragraph('• Standard 1.0" margins', style='List Bullet')
-    clean_doc.add_paragraph('')
-    clean_doc.add_paragraph('Usage:')
-    clean_doc.add_paragraph('pandoc input.md --reference-doc=orro_corporate_reference.docx -o output.docx')
 
-    # Step 6: Save clean template
+def _add_usage_instructions(doc: Document) -> None:
+    """
+    Add usage instructions to document.
+
+    Args:
+        doc: Document to add instructions to
+    """
+    doc.add_page_break()
+    instruction = doc.add_paragraph()
+    instruction.add_run('Orro Corporate Reference Template').bold = True
+    doc.add_paragraph('')
+    doc.add_paragraph('This template contains Orro corporate styles for use with Pandoc conversions:')
+    doc.add_paragraph('• Aptos font (11pt body, 12-16pt headings)', style='List Bullet')
+    doc.add_paragraph('• Purple Orro table style (_Orro Table 1)', style='List Bullet')
+    doc.add_paragraph('• Standard 1.0" margins', style='List Bullet')
+    doc.add_paragraph('')
+    doc.add_paragraph('Usage:')
+    doc.add_paragraph('pandoc input.md --reference-doc=orro_corporate_reference.docx -o output.docx')
+
+
+def create_clean_orro_reference():
+    """
+    Create a clean Orro corporate reference template.
+
+    Phase 230: Refactored to use helper functions for maintainability.
+
+    Creates template with:
+    - Style definitions (Heading 1-9, Normal, List styles)
+    - Aptos font (corporate standard)
+    - Purple Orro table style (_Orro Table 1)
+    - Standard margins (1.0")
+    - Minimal style examples (for Pandoc reference)
+    """
+    print("=" * 70)
+    print("Creating Clean Orro Corporate Reference Template")
+    print("=" * 70)
+    print()
+
+    # Check for source template (optional)
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+    from claude.tools.core.paths import PathManager
+    source_template = PathManager.get_work_projects_path() / "pir_converter" / "pir_orro_reference.docx"
+
+    if source_template.exists():
+        print(f"📄 Source template found: {source_template.name}")
+    else:
+        print(f"📄 Creating template from scratch (no source template)")
+
+    # Create document and configure using helper functions
+    print("🔧 Creating clean template (style-only, no content)...")
+    clean_doc = Document()
+
+    print("   📏 Setting margins (1.0\" all sides)...")
+    _setup_document_margins(clean_doc)
+
+    print("   🎨 Configuring corporate styles (Orro purple headings)...")
+    _configure_heading_styles(clean_doc)
+
+    print("   📝 Adding minimal style examples...")
+    print("   📊 Adding table style example...")
+    _add_style_examples(clean_doc)
+
+    print("   📌 Adding usage instructions...")
+    _add_usage_instructions(clean_doc)
+
+    # Save clean template
     from claude.tools.core.paths import TOOLS_DIR
     output_path = TOOLS_DIR / "document_conversion/templates/orro_corporate_reference.docx"
 

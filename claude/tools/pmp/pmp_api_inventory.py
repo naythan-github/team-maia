@@ -29,6 +29,161 @@ class PMPAPIInventory:
         self.base_url = self.oauth_manager.server_url
         self.catalog = {}
 
+    def _get_endpoint_definitions(self) -> Dict[str, Dict[str, Any]]:
+        """
+        Return endpoint configuration dictionary.
+
+        Returns:
+            Dict mapping endpoint names to their configurations.
+        """
+        return {
+            # ===== SYSTEM ENDPOINTS =====
+            'System Inventory': {
+                'endpoint': '/api/1.4/patch/scandetails',
+                'description': 'System inventory with scan metadata',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+
+            # ===== PATCH ENDPOINTS =====
+            'All Patches': {
+                'endpoint': '/api/1.4/patch/allpatches',
+                'description': 'Complete patch catalog',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+            'Installed Patches': {
+                'endpoint': '/api/1.4/patch/installedpatches',
+                'description': 'Installed patch summary',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+            'Missing Patches': {
+                'endpoint': '/api/1.4/patch/missingpatches',
+                'description': 'Missing patch summary',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+            'Supported Patches': {
+                'endpoint': '/api/1.4/patch/supportedpatches',
+                'description': 'Supported patches catalog',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+
+            # ===== DCAPI ENDPOINTS =====
+            'DCAPI Patch Mappings': {
+                'endpoint': '/dcapi/threats/systemreport/patches',
+                'description': 'System-patch mappings (bulk)',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+
+            # ===== POLICY/CONFIG ENDPOINTS =====
+            'Deployment Policies': {
+                'endpoint': '/api/1.4/patch/deploymentpolicies',
+                'description': 'Patch deployment policies',
+                'params': {}
+            },
+            'Health Policy': {
+                'endpoint': '/api/1.4/patch/healthpolicy',
+                'description': 'Patch health policy',
+                'params': {}
+            },
+            'Approval Settings': {
+                'endpoint': '/api/1.4/patch/approvalsettings',
+                'description': 'Patch approval settings',
+                'params': {}
+            },
+
+            # ===== VULNERABILITY ENDPOINTS =====
+            'Vulnerabilities': {
+                'endpoint': '/api/1.4/patch/vulnerabilities',
+                'description': 'Vulnerability data',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+
+            # ===== POTENTIAL ADDITIONAL ENDPOINTS =====
+            'Patch Groups': {
+                'endpoint': '/api/1.4/patch/patchgroups',
+                'description': 'Patch groups/collections',
+                'params': {}
+            },
+            'Deployment Tasks': {
+                'endpoint': '/api/1.4/patch/deploymenttasks',
+                'description': 'Deployment task history',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+            'Scan History': {
+                'endpoint': '/api/1.4/patch/scanhistory',
+                'description': 'Patch scan history',
+                'params': {'page': 1, 'pageLimit': 1}
+            },
+        }
+
+    def _test_all_endpoints(self, endpoints: Dict[str, Dict]) -> tuple:
+        """
+        Test all endpoints and collect results.
+
+        Args:
+            endpoints: Dict of endpoint configurations
+
+        Returns:
+            Tuple of (results_dict, (success_count, empty_count, error_count))
+        """
+        results = {}
+        success_count = 0
+        empty_count = 0
+        error_count = 0
+
+        for name, config in endpoints.items():
+            print(f"Testing: {name}")
+            print(f"  Endpoint: {config['endpoint']}")
+
+            result = self.test_endpoint(config['endpoint'], config.get('params'))
+            results[name] = {
+                **config,
+                **result
+            }
+
+            # Print immediate feedback
+            if result['status'] == 'success':
+                print(f"  ✅ SUCCESS: {result['total_records']:,} records")
+                fields_preview = result.get('all_fields', [])[:10]
+                suffix = '...' if len(result.get('all_fields', [])) > 10 else ''
+                print(f"     Fields: {', '.join(fields_preview)}{suffix}")
+                success_count += 1
+            elif result['status'] == 'empty':
+                print(f"  ⚠️  EMPTY: No data available")
+                empty_count += 1
+            elif result['status'] == 'unauthorized':
+                print(f"  🔒 UNAUTHORIZED: {result.get('error_message', 'N/A')}")
+                error_count += 1
+            elif result['status'] == 'error':
+                print(f"  ❌ ERROR: {result.get('error_message', 'N/A')}")
+                error_count += 1
+
+            print(f"     Response time: {result.get('response_time_ms', 0):.2f}ms\n")
+
+            # Rate limiting
+            time.sleep(0.25)
+
+        return results, (success_count, empty_count, error_count)
+
+    def _print_inventory_summary(self, total_endpoints: int, success_count: int,
+                                  empty_count: int, error_count: int) -> None:
+        """
+        Print inventory summary statistics.
+
+        Args:
+            total_endpoints: Total number of endpoints tested
+            success_count: Number of successful endpoints
+            empty_count: Number of empty endpoints
+            error_count: Number of failed endpoints
+        """
+        print("=" * 80)
+        print("INVENTORY SUMMARY")
+        print("=" * 80)
+        print(f"Total endpoints tested: {total_endpoints}")
+        print(f"✅ Success: {success_count}")
+        print(f"⚠️  Empty: {empty_count}")
+        print(f"❌ Errors/Unauthorized: {error_count}")
+        print()
+
     def test_endpoint(self, endpoint: str, params: Optional[Dict] = None, method: str = "GET") -> Dict[str, Any]:
         """
         Test a single API endpoint and extract metadata.
@@ -146,6 +301,8 @@ class PMPAPIInventory:
         """
         Run comprehensive inventory of all known endpoints.
 
+        Phase 230: Refactored to use helper functions for maintainability.
+
         Returns catalog dict with endpoint results.
         """
         print("=" * 80)
@@ -153,129 +310,12 @@ class PMPAPIInventory:
         print("=" * 80)
         print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
-        endpoints = {
-            # ===== SYSTEM ENDPOINTS =====
-            'System Inventory': {
-                'endpoint': '/api/1.4/patch/scandetails',
-                'description': 'System inventory with scan metadata',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
+        # Get endpoint definitions and test them
+        endpoints = self._get_endpoint_definitions()
+        results, (success_count, empty_count, error_count) = self._test_all_endpoints(endpoints)
 
-            # ===== PATCH ENDPOINTS =====
-            'All Patches': {
-                'endpoint': '/api/1.4/patch/allpatches',
-                'description': 'Complete patch catalog',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-            'Installed Patches': {
-                'endpoint': '/api/1.4/patch/installedpatches',
-                'description': 'Installed patch summary',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-            'Missing Patches': {
-                'endpoint': '/api/1.4/patch/missingpatches',
-                'description': 'Missing patch summary',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-            'Supported Patches': {
-                'endpoint': '/api/1.4/patch/supportedpatches',
-                'description': 'Supported patches catalog',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-
-            # ===== DCAPI ENDPOINTS =====
-            'DCAPI Patch Mappings': {
-                'endpoint': '/dcapi/threats/systemreport/patches',
-                'description': 'System-patch mappings (bulk)',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-
-            # ===== POLICY/CONFIG ENDPOINTS =====
-            'Deployment Policies': {
-                'endpoint': '/api/1.4/patch/deploymentpolicies',
-                'description': 'Patch deployment policies',
-                'params': {}
-            },
-            'Health Policy': {
-                'endpoint': '/api/1.4/patch/healthpolicy',
-                'description': 'Patch health policy',
-                'params': {}
-            },
-            'Approval Settings': {
-                'endpoint': '/api/1.4/patch/approvalsettings',
-                'description': 'Patch approval settings',
-                'params': {}
-            },
-
-            # ===== VULNERABILITY ENDPOINTS =====
-            'Vulnerabilities': {
-                'endpoint': '/api/1.4/patch/vulnerabilities',
-                'description': 'Vulnerability data',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-
-            # ===== POTENTIAL ADDITIONAL ENDPOINTS =====
-            'Patch Groups': {
-                'endpoint': '/api/1.4/patch/patchgroups',
-                'description': 'Patch groups/collections',
-                'params': {}
-            },
-            'Deployment Tasks': {
-                'endpoint': '/api/1.4/patch/deploymenttasks',
-                'description': 'Deployment task history',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-            'Scan History': {
-                'endpoint': '/api/1.4/patch/scanhistory',
-                'description': 'Patch scan history',
-                'params': {'page': 1, 'pageLimit': 1}
-            },
-        }
-
-        results = {}
-        success_count = 0
-        empty_count = 0
-        error_count = 0
-
-        for name, config in endpoints.items():
-            print(f"Testing: {name}")
-            print(f"  Endpoint: {config['endpoint']}")
-
-            result = self.test_endpoint(config['endpoint'], config.get('params'))
-            results[name] = {
-                **config,
-                **result
-            }
-
-            # Print immediate feedback
-            if result['status'] == 'success':
-                print(f"  ✅ SUCCESS: {result['total_records']:,} records")
-                print(f"     Fields: {', '.join(result['all_fields'][:10])}{'...' if len(result['all_fields']) > 10 else ''}")
-                success_count += 1
-            elif result['status'] == 'empty':
-                print(f"  ⚠️  EMPTY: No data available")
-                empty_count += 1
-            elif result['status'] == 'unauthorized':
-                print(f"  🔒 UNAUTHORIZED: {result.get('error_message', 'N/A')}")
-                error_count += 1
-            elif result['status'] == 'error':
-                print(f"  ❌ ERROR: {result.get('error_message', 'N/A')}")
-                error_count += 1
-
-            print(f"     Response time: {result.get('response_time_ms', 0):.2f}ms\n")
-
-            # Rate limiting
-            time.sleep(0.25)
-
-        # Summary
-        print("=" * 80)
-        print("INVENTORY SUMMARY")
-        print("=" * 80)
-        print(f"Total endpoints tested: {len(endpoints)}")
-        print(f"✅ Success: {success_count}")
-        print(f"⚠️  Empty: {empty_count}")
-        print(f"❌ Errors/Unauthorized: {error_count}")
-        print()
+        # Print summary
+        self._print_inventory_summary(len(endpoints), success_count, empty_count, error_count)
 
         # Build catalog
         self.catalog = {
