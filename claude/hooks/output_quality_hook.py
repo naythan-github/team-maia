@@ -163,6 +163,116 @@ def format_quality_summary(result: Dict[str, Any]) -> str:
     return '\n'.join(lines)
 
 
+def comprehensive_quality_check(
+    output: str,
+    query: Optional[str] = None,
+    threshold: float = 0.7,
+    validate_code: bool = True,
+    check_security: bool = True
+) -> Dict[str, Any]:
+    """
+    Comprehensive quality check using unified quality gate.
+
+    Agentic AI Phase 2 Integration: Uses quality_gate.py which combines:
+    - OutputCritic (content quality)
+    - OutputValidator (code/config validation)
+    - Security checks
+
+    Args:
+        output: Response text to check
+        query: Original user query
+        threshold: Quality threshold (default: 0.7)
+        validate_code: Validate code blocks
+        check_security: Run security checks
+
+    Returns:
+        Dict with comprehensive quality assessment
+    """
+    try:
+        from quality_gate import check_quality, QualityResult
+
+        result = check_quality(
+            output,
+            query=query,
+            threshold=threshold,
+            validate_code=validate_code,
+            check_security=check_security
+        )
+
+        return {
+            'passed': result.passed,
+            'overall_score': result.overall_score,
+            'content_score': result.content_score,
+            'validation_passed': result.validation_passed,
+            'security_safe': result.security_safe,
+            'issues': result.issues,
+            'warnings': result.warnings,
+            'refinement_needed': result.refinement_needed,
+            'refinement_prompt': result.refinement_prompt,
+            'source': 'quality_gate'
+        }
+
+    except ImportError:
+        # Fallback to basic output_critic check
+        return check_output_quality(output, query, threshold)
+
+
+def validate_before_send(
+    output: str,
+    query: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Validate response before sending to user.
+
+    Quick validation suitable for hook integration.
+    Returns pass/fail with minimal latency.
+
+    Args:
+        output: Response to validate
+        query: Original query for context
+
+    Returns:
+        Dict with 'passed' boolean and 'reason' string
+    """
+    try:
+        result = comprehensive_quality_check(
+            output,
+            query=query,
+            threshold=0.6,  # Lower threshold for blocking
+            validate_code=True,
+            check_security=True
+        )
+
+        if not result['passed']:
+            reasons = []
+            if not result.get('validation_passed', True):
+                reasons.append('code validation failed')
+            if not result.get('security_safe', True):
+                reasons.append('security concerns detected')
+            if result.get('overall_score', 1.0) < 0.6:
+                reasons.append(f"quality score too low ({result['overall_score']:.0%})")
+
+            return {
+                'passed': False,
+                'reason': '; '.join(reasons) if reasons else 'quality check failed',
+                'score': result.get('overall_score', 0)
+            }
+
+        return {
+            'passed': True,
+            'reason': 'all checks passed',
+            'score': result.get('overall_score', 1.0)
+        }
+
+    except Exception as e:
+        # Graceful degradation - allow through on error
+        return {
+            'passed': True,
+            'reason': f'quality check error (allowing): {e}',
+            'score': 1.0
+        }
+
+
 # CLI interface
 def main():
     import argparse

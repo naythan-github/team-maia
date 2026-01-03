@@ -30,6 +30,13 @@ try:
 except ImportError:
     CAPABILITY_REGISTRY_AVAILABLE = False
 
+# Try to import ParallelExecutor (Agentic AI Phase 3)
+try:
+    from parallel_executor import ParallelExecutor
+    PARALLEL_EXECUTOR_AVAILABLE = True
+except ImportError:
+    PARALLEL_EXECUTOR_AVAILABLE = False
+
 
 @dataclass
 class Intent:
@@ -359,6 +366,14 @@ class AgentSelector:
             except ImportError:
                 self.use_adaptive_routing = False
 
+        # Initialize parallel executor (Phase 3 Agentic AI Enhancement)
+        self.parallel_executor = None
+        if PARALLEL_EXECUTOR_AVAILABLE:
+            try:
+                self.parallel_executor = ParallelExecutor()
+            except Exception:
+                pass
+
     def select(self, intent: Intent, user_query: str) -> RoutingDecision:
         """
         Select optimal routing strategy and agents.
@@ -399,6 +414,17 @@ class AgentSelector:
                 reasoning="SRE enforcement: reliability/testing work requires SRE Principal Engineer",
                 context=context
             )
+
+        # Agentic AI Phase 3: Check for parallelizable tasks
+        if self.parallel_executor:
+            try:
+                parallel_tasks = self.parallel_executor.identify_parallel_tasks(user_query)
+                if len(parallel_tasks) > 1:
+                    deps = self.parallel_executor.detect_dependencies(parallel_tasks)
+                    if not deps.get('has_dependencies', True):
+                        return self._route_parallel(intent, user_query, parallel_tasks)
+            except Exception:
+                pass  # Fall through to normal routing
 
         # Normal routing logic for other queries
         # Determine strategy based on complexity and domains
@@ -514,6 +540,59 @@ class AgentSelector:
             initial_agent=initial_agent,
             confidence=intent.confidence * 0.85,  # Lower for very complex
             reasoning=f"High complexity ({intent.complexity}/10), multi-domain ({len(intent.domains)} domains), swarm collaboration required",
+            context=context
+        )
+
+    def _route_parallel(
+        self,
+        intent: Intent,
+        user_query: str,
+        parallel_tasks: List[str]
+    ) -> RoutingDecision:
+        """
+        Route to parallel execution (Agentic AI Phase 3).
+
+        Used when query contains independent subtasks that can be
+        executed concurrently (e.g., "search linkedin and github").
+
+        Args:
+            intent: Classified intent
+            user_query: Original query
+            parallel_tasks: List of identified parallel tasks
+
+        Returns:
+            RoutingDecision with parallel strategy
+        """
+        # Determine agents for each task based on domains
+        primary_domain = intent.domains[0] if intent.domains else 'general'
+        agents = []
+
+        for _ in parallel_tasks:
+            agent = self.DOMAIN_AGENT_MAP.get(primary_domain, 'ai_specialists_agent')
+            if agent not in agents:
+                agents.append(agent)
+
+        # If multiple domains detected, add those agents
+        for domain in intent.domains:
+            agent = self.DOMAIN_AGENT_MAP.get(domain, 'ai_specialists_agent')
+            if agent not in agents:
+                agents.append(agent)
+
+        context = {
+            'query': user_query,
+            'intent_category': intent.category,
+            'complexity': intent.complexity,
+            'entities': intent.entities,
+            'parallel_tasks': parallel_tasks,
+            'coordination_hint': 'Parallel execution - merge results when complete'
+        }
+
+        return RoutingDecision(
+            strategy='parallel',
+            agents=agents,
+            initial_agent=agents[0] if agents else 'ai_specialists_agent',
+            confidence=intent.confidence * 0.9,
+            reasoning=f"Parallel execution: {len(parallel_tasks)} independent tasks identified",
             context=context
         )
 

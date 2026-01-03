@@ -664,6 +664,64 @@ def load_tdd_context() -> Optional[Dict[str, Any]]:
         return None
 
 
+def load_ltm_context() -> Optional[Dict[str, Any]]:
+    """
+    Load user preferences from Long-Term Memory system.
+
+    Agentic AI Phase 2 Integration: Adds cross-session memory to agent context.
+    Loads high-confidence user preferences and recent corrections.
+
+    Returns:
+        Dict with LTM context or None if unavailable:
+        {
+            "preferences": [{"key": "...", "value": "...", ...}, ...],
+            "recent_corrections": [...],
+            "ltm_active": True
+        }
+
+    Performance: <50ms (SQLite query)
+    Graceful: Never raises, returns None on any error
+    """
+    try:
+        # Import LTM system
+        ltm_path = MAIA_ROOT / "claude" / "tools" / "orchestration"
+        if str(ltm_path) not in sys.path:
+            sys.path.insert(0, str(ltm_path))
+
+        from long_term_memory import LongTermMemory
+
+        # Initialize LTM with default database
+        ltm = LongTermMemory()
+
+        # Load session context (preferences + corrections)
+        context = ltm.load_session_context()
+
+        if not context:
+            return None
+
+        preferences = context.get("preferences", [])
+        corrections = context.get("recent_corrections", [])
+
+        # Only return if we have meaningful data
+        if not preferences and not corrections:
+            return None
+
+        return {
+            "ltm_active": True,
+            "preferences": preferences[:10],  # Limit for token budget
+            "recent_corrections": corrections[:5],  # Limit for token budget
+            "preference_count": len(context.get("preferences", [])),
+            "loaded_at": datetime.utcnow().isoformat()
+        }
+
+    except ImportError:
+        # LTM system not available
+        return None
+    except Exception:
+        # Graceful degradation - LTM loading is non-critical
+        return None
+
+
 def is_development_task(query: str) -> bool:
     """
     Detect if a query is a development task that should use TDD.
@@ -822,6 +880,9 @@ def create_session_state(
         # Phase 221: Load TDD context if active project exists
         tdd_context = load_tdd_context()
 
+        # Agentic AI Phase 2: Load LTM (Long-Term Memory) context
+        ltm_context = load_ltm_context()
+
         session_data = {
             "current_agent": agent,
             "session_start": session_start,
@@ -833,10 +894,13 @@ def create_session_state(
             "query": query[:200],  # Truncate for file size
             "handoff_reason": classification.get("handoff_reason"),  # Phase 5: Track why handoff occurred
             "created_by": "swarm_auto_loader.py",
-            "version": "1.2",  # Phase 221: TDD integration
+            "version": "1.3",  # Agentic AI: LTM integration
             # Phase 221: TDD Feature Tracker Integration
             "tdd_context": tdd_context,
-            "tdd_status": format_tdd_context_for_session(tdd_context) if tdd_context else None
+            "tdd_status": format_tdd_context_for_session(tdd_context) if tdd_context else None,
+            # Agentic AI Phase 2: Long-Term Memory Integration
+            "ltm_context": ltm_context,
+            "user_preferences": ltm_context.get("preferences", []) if ltm_context else []
         }
 
         # Atomic write (tmp file + rename for consistency)

@@ -67,6 +67,16 @@ except ImportError:
     except ImportError:
         CAPABILITIES_REGISTRY_AVAILABLE = False
 
+# Try importing semantic search (Agentic AI Phase 3 integration)
+try:
+    _orchestration_path = str(Path(__file__).resolve().parent.parent / "orchestration")
+    if _orchestration_path not in sys.path:
+        sys.path.insert(0, _orchestration_path)
+    from semantic_search import SemanticSystemState
+    SEMANTIC_SEARCH_AVAILABLE = True
+except ImportError:
+    SEMANTIC_SEARCH_AVAILABLE = False
+
 # Configure logging
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
@@ -140,6 +150,19 @@ class SmartContextLoader:
                 logger.debug("Capabilities registry module not available")
             elif not self.capabilities_db_path.exists():
                 logger.debug(f"Capabilities database not found: {self.capabilities_db_path}")
+
+        # Initialize semantic search if available (Agentic AI Phase 3 integration)
+        self.semantic_search = None
+        self.use_semantic_search = False
+        if SEMANTIC_SEARCH_AVAILABLE:
+            try:
+                semantic_db_path = self.maia_root / "claude" / "data" / "rag_databases" / "system_state_rag"
+                self.semantic_search = SemanticSystemState(db_path=str(semantic_db_path))
+                self.use_semantic_search = True
+                logger.info("Semantic search enabled for SYSTEM_STATE")
+            except Exception as e:
+                logger.warning(f"Semantic search initialization failed: {e}")
+                self.use_semantic_search = False
 
     def load_for_intent(self, user_query: str, include_memory: bool = True) -> ContextLoadResult:
         """
@@ -250,11 +273,24 @@ class SmartContextLoader:
         # Step 2: If domain matched, search DB for relevant phases
         if matched_domain and self.use_database and self.db_queries:
             try:
-                phases = self._search_phases_by_keywords(matched_keywords, limit=10)
-                if phases:
-                    return (matched_domain, phases)
+                keyword_phases = self._search_phases_by_keywords(matched_keywords, limit=10)
+
+                # Agentic AI Phase 3: Augment with semantic search
+                semantic_phases = self._semantic_search_phases(user_query, limit=5)
+                if keyword_phases or semantic_phases:
+                    merged_phases = self._merge_keyword_and_semantic_phases(
+                        keyword_phases, semantic_phases, max_total=12
+                    )
+                    if merged_phases:
+                        return (matched_domain, merged_phases)
             except Exception as e:
                 logger.warning(f"DB search failed for {matched_domain}: {e}")
+
+        # Step 2b: No domain match - try semantic search alone
+        if self.use_semantic_search:
+            semantic_phases = self._semantic_search_phases(user_query, limit=8)
+            if semantic_phases:
+                return ("semantic_match", semantic_phases)
 
         # Step 3: Check intent complexity for strategic queries
         if intent and intent.complexity >= 8:
@@ -294,6 +330,59 @@ class SmartContextLoader:
 
         # Sort descending (most recent first) and limit
         return sorted(all_phases, reverse=True)[:limit]
+
+    def _semantic_search_phases(self, query: str, limit: int = 5) -> List[int]:
+        """
+        Search for phases using semantic similarity (Agentic AI Phase 3).
+
+        Args:
+            query: Natural language query
+            limit: Maximum phases to return
+
+        Returns:
+            List of phase numbers sorted by relevance
+        """
+        if not self.use_semantic_search or not self.semantic_search:
+            return []
+
+        try:
+            results = self.semantic_search.search(query, limit=limit)
+            return [int(r['phase_id']) for r in results if 'phase_id' in r]
+        except Exception as e:
+            logger.warning(f"Semantic search failed: {e}")
+            return []
+
+    def _merge_keyword_and_semantic_phases(
+        self,
+        keyword_phases: List[int],
+        semantic_phases: List[int],
+        max_total: int = 15
+    ) -> List[int]:
+        """
+        Merge keyword and semantic search results with deduplication.
+
+        Keyword results are prioritized (domain-specific), semantic results
+        augment with potentially related phases not captured by keywords.
+
+        Args:
+            keyword_phases: Phases from keyword search
+            semantic_phases: Phases from semantic search
+            max_total: Maximum phases to return
+
+        Returns:
+            Merged and deduplicated phase list
+        """
+        # Start with keyword phases (higher priority)
+        merged = list(keyword_phases)
+
+        # Add semantic phases that aren't already included
+        for phase in semantic_phases:
+            if phase not in merged:
+                merged.append(phase)
+                if len(merged) >= max_total:
+                    break
+
+        return merged[:max_total]
 
     def _calculate_token_budget(
         self,
