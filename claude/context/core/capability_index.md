@@ -1,7 +1,7 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 487 tools, 94 agents | **Updated**: 2025-01-03
+**Total**: 494 tools, 94 agents | **Updated**: 2025-01-04
 
 ---
 
@@ -456,6 +456,18 @@
 | `publish_interview_summaries.py` | Publish Interview Summaries to Confluence Creates comprehensive candidate assess... |
 | `publish_pmp_policy_plan_to_confluence.py` | Publish PMP Minimum Effective Policy Structure to Orro Confluence Space Strategi... |
 | `sdm_agent_ops_intel_integration.py` | SDM Agent Operations Intelligence Integration Helper module for ServiceDesk Mana... |
+
+### INTEGRATIONS (`claude/tools/integrations/`) - 7 tools
+
+| Tool | Purpose |
+|------|---------|
+| `otc/__init__.py` | OTC API Client package - Orro Ticketing Cloud integration |
+| `otc/auth.py` | OTC Keychain credential management - secure storage for API auth |
+| `otc/client.py` | OTC API Client - rate-limited, circuit-breaker protected legacy system client |
+| `otc/etl_adapter.py` | OTC ETL Adapter - bridges API to ServiceDesk ETL pipeline (pandas DataFrames) |
+| `otc/exceptions.py` | OTC exception hierarchy - OTCAuthError, OTCRateLimitError, OTCCircuitBreakerOpen |
+| `otc/models.py` | OTC Pydantic models - OTCTicket, OTCComment, OTCTimesheet with API field mapping |
+| `otc/views.py` | OTC API view GUIDs - tickets (3yr), comments (10d), timesheets (18mo) |
 
 ### MSP (`claude/tools/msp/`) - 6 tools
 
