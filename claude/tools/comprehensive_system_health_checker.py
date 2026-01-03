@@ -355,9 +355,9 @@ class ComprehensiveSystemHealthChecker:
             with open(self.base_path / 'claude/data/immutable_paths.json', 'r') as f:
                 config = json.load(f)
                 core_files = config['immutable_core']['absolute_immutability']
-        except:
+        except (OSError, json.JSONDecodeError, KeyError) as e:
             result['passed'] = False
-            result['error'] = 'Could not load immutable_paths.json'
+            result['error'] = f'Could not load immutable_paths.json: {e}'
             return result
 
         for core_file in core_files:

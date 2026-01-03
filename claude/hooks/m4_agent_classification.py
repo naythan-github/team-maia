@@ -53,5 +53,5 @@ def get_m4_classification(request: str) -> dict:
         from claude.models.agent_intent_classifier import AgentIntentClassifier
         classifier = AgentIntentClassifier()
         return classifier.classify_intent(request)
-    except:
-        return {"use_claude": True, "fallback": "classification_failed"}
+    except Exception as e:
+        return {"use_claude": True, "fallback": "classification_failed", "error": str(e)}

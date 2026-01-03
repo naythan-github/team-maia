@@ -815,7 +815,7 @@ class PersonalKnowledgeGraph:
             dot_product = np.dot(embedding1, embedding2)
             norms = np.linalg.norm(embedding1) * np.linalg.norm(embedding2)
             return dot_product / norms if norms > 0 else 0.0
-        except:
+        except (TypeError, ValueError):
             return 0.0
 
     def _save_node_to_db(self, node: KnowledgeNode) -> None:

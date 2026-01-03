@@ -292,7 +292,7 @@ class LinkedInDataProcessor:
         try:
             timestamp = os.path.getmtime(path)
             return datetime.fromtimestamp(timestamp).isoformat()
-        except:
+        except OSError:
             return "unknown"
 
 class LinkedInMCPServer:

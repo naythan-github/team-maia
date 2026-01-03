@@ -234,7 +234,7 @@ class DatabaseConnectionManager:
         if not conn.is_active and conn.connection:
             try:
                 pool.put_nowait(conn)
-            except:
+            except Exception:
                 # Pool is full, close connection
                 conn.close()
                 with self.lock:

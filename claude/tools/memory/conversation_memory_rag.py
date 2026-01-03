@@ -415,7 +415,7 @@ class ConversationMemoryRAG:
                         agents_list = json.loads(agents)
                         agent_names = [a.get("agent", "") for a in agents_list if isinstance(a, dict)]
                         agent_str = ", ".join(agent_names) if agent_names else "Unknown"
-                    except:
+                    except (json.JSONDecodeError, TypeError):
                         agent_str = "Unknown"
                 else:
                     agent_str = "Unknown"

@@ -138,8 +138,8 @@ class ModelComparer:
             try:
                 self.client.delete_collection(collection_name)
                 print(f"   Deleted existing collection")
-            except:
-                pass
+            except Exception:
+                pass  # Collection doesn't exist yet
 
             collection = self.client.create_collection(
                 name=collection_name,

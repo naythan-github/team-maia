@@ -277,7 +277,7 @@ class EnhancedDisasterRecoverySystem:
                     cursor.execute(f"SELECT COUNT(*) FROM `{table_name}`")
                     if cursor.fetchone()[0] == 0:
                         empty_tables.append(table_name)
-                except:
+                except Exception:
                     pass  # Some tables might not be queryable
 
             conn.close()

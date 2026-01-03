@@ -189,9 +189,9 @@ Respond in JSON format:
         try:
             if file_path.stat().st_size > 50000:
                 return True
-        except:
-            pass
-            
+        except OSError:
+            pass  # Can't stat file, don't exclude
+
         # Skip certain file types
         exclude_patterns = [
             '__pycache__',

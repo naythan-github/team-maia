@@ -176,7 +176,7 @@ class HookPerformanceProfiler:
                 text=True,
                 cwd=self.maia_root
             ).stdout.strip()
-        except:
+        except Exception:
             git_commit = "unknown"
 
         conn = sqlite3.connect(self.db_path)

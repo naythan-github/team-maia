@@ -318,8 +318,8 @@ class DashboardRegistry:
                 with sqlite3.connect(self.registry_db) as conn:
                     conn.execute("UPDATE dashboards SET status = 'stopped' WHERE name = ?", (name,))
                     conn.commit()
-            except:
-                pass
+            except Exception:
+                pass  # Best-effort status update
             return False
 
 class DashboardHub:
@@ -832,8 +832,8 @@ class DashboardService:
         try:
             if self.pidfile_path.exists():
                 self.pidfile_path.unlink()
-        except:
-            pass
+        except OSError:
+            pass  # Best-effort cleanup
 
 class UnifiedDashboardPlatform:
     """Main platform coordinator"""

@@ -239,7 +239,7 @@ class PersonalAssistantStartup:
                 time_ago = datetime.now() - last_time
                 hours_ago = time_ago.total_seconds() / 3600
                 print(f"   Last Indexed: {hours_ago:.1f}h ago")
-            except:
+            except ValueError:
                 print(f"   Last Indexed: {last_index}")
 
         print()

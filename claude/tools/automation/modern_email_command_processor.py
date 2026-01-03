@@ -665,8 +665,8 @@ class ModernEmailCommandProcessor:
                 with open(self.last_check_file, 'r') as f:
                     data = json.load(f)
                     return datetime.fromisoformat(data['last_check'])
-            except:
-                pass
+            except (json.JSONDecodeError, KeyError, ValueError, OSError):
+                pass  # File corrupt or invalid format
         
         # Default to 1 hour ago
         return datetime.now() - timedelta(hours=1)
@@ -698,8 +698,8 @@ class ModernEmailCommandProcessor:
             try:
                 with open(self.command_history_file, 'r') as f:
                     history = json.load(f)
-            except:
-                pass
+            except (json.JSONDecodeError, OSError):
+                pass  # File corrupt or doesn't exist
         
         # Add new entry and keep last 100
         history.append(history_entry)

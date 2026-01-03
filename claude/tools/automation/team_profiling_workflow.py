@@ -32,14 +32,14 @@ class TeamProfilingWorkflow:
         # Initialize research manager
         try:
             self.research_manager = SmartResearchManager()
-        except:
+        except Exception:
             self.research_manager = None
             print("⚠️  Smart Research Manager not available")
-        
+
         # Initialize knowledge graph
         try:
             self.knowledge_graph = PersonalKnowledgeGraph()
-        except:
+        except Exception:
             self.knowledge_graph = None
             print("⚠️  Personal Knowledge Graph not available")
     

@@ -268,7 +268,7 @@ class PMPPolicyExport:
                     # Unix timestamp
                     try:
                         cell_value = datetime.fromtimestamp(value/1000).strftime('%Y-%m-%d %H:%M')
-                    except:
+                    except (ValueError, OSError):
                         cell_value = str(value)
                 elif value == '--':
                     cell_value = 'N/A'

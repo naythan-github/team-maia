@@ -1,0 +1,155 @@
+{
+  "metadata": {
+    "created": "2026-01-03T12:30:00Z",
+    "last_updated": "2026-01-03T13:00:00Z",
+    "reviewer": "python_code_reviewer_agent",
+    "version": "1.0"
+  },
+  "summary": {
+    "total_files": 541,
+    "tools_files": 505,
+    "hooks_files": 36,
+    "reviewed": 541,
+    "pending_review": 0,
+    "issues_found": {
+      "critical": 2,
+      "high": 28,
+      "medium": 100,
+      "low": 47
+    }
+  },
+  "issue_categories": {
+    "long_functions_critical": {
+      "description": "Functions >= 200 lines requiring decomposition",
+      "count": 2,
+      "files": [
+        {
+          "path": "claude/hooks/swarm_auto_loader.py",
+          "function": "close_session",
+          "lines": 286,
+          "line_number": 1062
+        }
+      ],
+      "note": "Archive file create_azure_lighthouse_confluence_pages.py excluded (369 lines)"
+    },
+    "long_functions_high": {
+      "description": "Functions 150-199 lines needing refactoring",
+      "count": 28,
+      "files": [
+        {"path": "claude/tools/scripts/production_readiness_report.py", "function": "check_production_readiness", "lines": 198},
+        {"path": "claude/tools/sre/reindex_comments_with_quality.py", "function": "reindex_with_checkpoints", "lines": 189},
+        {"path": "claude/tools/intelligent_product_grouper.py", "function": "standardize_product", "lines": 188},
+        {"path": "claude/tools/historical_email_analyzer.py", "function": "generate_report", "lines": 188},
+        {"path": "claude/tools/business/server.py", "function": "serve", "lines": 184},
+        {"path": "claude/tools/pmp/pmp_complete_intelligence_extractor.py", "function": "init_database", "lines": 184},
+        {"path": "claude/tools/pmp/pmp_non_esu_systems_export.py", "function": "main", "lines": 183},
+        {"path": "claude/tools/system_backup_manager.py", "function": "main", "lines": 178},
+        {"path": "claude/tools/pmp/pmp_esu_failing_systems_export.py", "function": "main", "lines": 178},
+        {"path": "claude/tools/security/secret_detector.py", "function": "_initialize_patterns", "lines": 176},
+        {"path": "claude/tools/automation/data_enrichment_pipeline.py", "function": "load_enrichment_databases", "lines": 175},
+        {"path": "claude/tools/sre/compare_semantic_vs_original_categories.py", "function": "main", "lines": 174},
+        {"path": "claude/tools/intelligent_excel_matrix_generator.py", "function": "create_enhanced_matrix", "lines": 172},
+        {"path": "claude/tools/pmp/pmp_complete_intelligence_extractor_v4_resume.py", "function": "extract_all", "lines": 172},
+        {"path": "claude/tools/product_feature_matrix_generator.py", "function": "create_feature_matrix_excel", "lines": 169},
+        {"path": "claude/tools/sre/servicedesk_etl_data_profiler.py", "function": "profile_database", "lines": 164},
+        {"path": "claude/tools/pmp/pmp_complete_intelligence_extractor.py", "function": "extract_all", "lines": 164},
+        {"path": "claude/tools/business/cv_converter.py", "function": "_parse_structure", "lines": 162},
+        {"path": "claude/tools/sre/generate_semantic_report.py", "function": "main", "lines": 160},
+        {"path": "claude/tools/sre/servicedesk_semantic_ticket_analyzer.py", "function": "index_tickets", "lines": 157},
+        {"path": "claude/tools/email_rag_ollama.py", "function": "index_inbox", "lines": 156},
+        {"path": "claude/tools/sre/restore_maia_enterprise.py", "function": "_install_dependencies", "lines": 154},
+        {"path": "claude/tools/pmp/pmp_api_inventory.py", "function": "run_full_inventory", "lines": 149},
+        {"path": "claude/tools/information_management/executive_information_manager.py", "function": "generate_morning_ritual", "lines": 148},
+        {"path": "claude/tools/core/optimal_local_llm_interface.py", "function": "main", "lines": 147},
+        {"path": "claude/tools/automated_daily_briefing.py", "function": "format_html_briefing", "lines": 145},
+        {"path": "claude/tools/document_conversion/create_clean_orro_template.py", "function": "create_clean_orro_reference", "lines": 145}
+      ]
+    },
+    "long_functions_medium": {
+      "description": "Functions 100-149 lines needing review",
+      "count": 100,
+      "note": "See PYTHON_REFACTORING_PLAN.md for full list"
+    },
+    "bare_except_clauses": {
+      "description": "Anti-pattern: bare except: without exception type",
+      "severity": "MUST-FIX",
+      "count": 0,
+      "status": "FIXED",
+      "fixed_date": "2026-01-03T13:00:00Z",
+      "original_count": 49,
+      "tools_fixed": 47,
+      "hooks_fixed": 2,
+      "files_fixed": [
+        "claude/tools/pmp/pmp_resilient_extractor.py:546",
+        "claude/tools/pmp/pmp_policy_export.py:271",
+        "claude/tools/enhanced_profile_scorer.py:428",
+        "claude/tools/vtt_to_email_rag.py:71",
+        "claude/tools/memory/conversation_memory_rag.py:418",
+        "claude/tools/automation/data_enrichment_pipeline.py:341",
+        "claude/tools/automation/modern_email_command_processor.py:668",
+        "claude/tools/automation/modern_email_command_processor.py:701",
+        "claude/tools/personal_assistant_startup.py:242",
+        "claude/tools/automation/team_profiling_workflow.py:35",
+        "claude/tools/automation/team_profiling_workflow.py:42",
+        "claude/tools/core/production_llm_router.py:634",
+        "claude/tools/business/jobs_agent_integration.py:180",
+        "claude/tools/business/jobs_agent_integration.py:261",
+        "claude/tools/m4_integration_manager.py:190",
+        "claude/tools/monitoring/unified_dashboard_platform.py:321",
+        "claude/tools/monitoring/unified_dashboard_platform.py:835",
+        "claude/tools/sre/hook_performance_profiler.py:179",
+        "claude/tools/business/connection_scoring_system.py:274",
+        "claude/tools/sre/servicedesk_parallel_rag_indexer.py:457",
+        "claude/tools/business/server.py:295",
+        "claude/tools/email_question_monitor.py:127",
+        "claude/tools/sre/rag_ab_test_sample.py:260",
+        "claude/tools/sre/rag_ab_test_sample.py:324",
+        "claude/tools/comprehensive_system_health_checker.py:358",
+        "claude/tools/rag/agentic_email_search.py:360",
+        "claude/tools/database_connection_manager.py:237",
+        "claude/tools/sma_api_discovery.py:70",
+        "claude/tools/email_action_tracker.py:571",
+        "claude/tools/automation_health_monitor.py:177",
+        "claude/tools/governance/llm_enhanced_dependency_scanner.py:192",
+        "claude/tools/sre/disaster_recovery_system.py:280",
+        "claude/tools/interview/evidence_analyzer.py:158",
+        "claude/tools/maia_system_health_checker.py:151",
+        "claude/tools/sre/servicedesk_semantic_ticket_analyzer.py:136",
+        "claude/tools/sre/rag_model_comparison.py:141",
+        "claude/tools/sre/rag_quality_test_sampled.py:154",
+        "claude/tools/sre/rag_quality_test_sampled.py:354",
+        "claude/tools/sre/reindex_comments_with_quality.py:66",
+        "claude/tools/sre/reindex_comments_with_quality.py:77",
+        "claude/tools/sre/session_start_health_check.py:52",
+        "claude/tools/sre/session_start_health_check.py:88",
+        "claude/tools/personal_knowledge_graph.py:818",
+        "claude/hooks/swarm_auto_loader.py:1140",
+        "claude/hooks/m4_agent_classification.py:56"
+      ],
+      "verification": "grep -rn 'except:' claude/tools/*.py claude/hooks/*.py | grep -v 'except Exception' | grep -v 'except (' | wc -l = 0"
+    },
+    "mutable_default_args": {
+      "description": "Anti-pattern: mutable default arguments (list/dict)",
+      "severity": "MUST-FIX",
+      "count": 0,
+      "status": "PASS"
+    },
+    "import_star": {
+      "description": "Anti-pattern: from X import *",
+      "severity": "SHOULD-FIX",
+      "count": 0,
+      "status": "PASS",
+      "note": "One false positive in string literal (advanced_documentation_intelligence.py)"
+    }
+  },
+  "reviewed_directories": [
+    "claude/tools/",
+    "claude/hooks/"
+  ],
+  "excluded_from_scope": [
+    "claude/tools/archive/",
+    "claude/tools/*/tests/",
+    "claude/hooks/tests/",
+    "**/test_*.py"
+  ]
+}

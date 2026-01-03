@@ -271,7 +271,7 @@ class ConnectionScoringSystem:
             else:
                 return 0.2      # Older connections
                 
-        except:
+        except (ValueError, TypeError):
             return 0.5  # Default for unparseable dates
             
     def calculate_composite_score(self, 

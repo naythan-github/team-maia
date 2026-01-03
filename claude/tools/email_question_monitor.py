@@ -124,7 +124,7 @@ class EmailQuestionMonitor:
                 # Extract date from format like "Friday, 3 October 2025 at 6:27:25 pm"
                 # This is simplified - you may need more robust parsing
                 email_date = datetime.now()  # Placeholder
-            except:
+            except ValueError:
                 email_date = datetime.now()
 
             # Skip if too old

@@ -133,8 +133,8 @@ class SemanticTicketAnalyzer:
             elif force_reindex:
                 print(f"\n🗑️  Deleting existing collection...")
                 self.client.delete_collection(name=collection_name)
-        except:
-            pass
+        except Exception:
+            pass  # Collection doesn't exist yet
 
         print(f"\n📊 Indexing tickets from database...")
 

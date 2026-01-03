@@ -338,9 +338,9 @@ class LinkedInDataEnrichmentPipeline:
                     score += 0.2
                 elif days_ago < 365:
                     score += 0.1
-            except:
-                pass
-                
+            except (ValueError, TypeError):
+                pass  # Date parsing failed
+
         return min(score, 1.0)
         
     def calculate_business_value_score(self, connection: EnrichedConnection) -> float:

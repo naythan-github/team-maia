@@ -63,7 +63,7 @@ class ResumableReIndexer:
                     try:
                         self.indexer.client.delete_collection('servicedesk_comments')
                         print(f"   ✅ Collection dropped")
-                    except:
+                    except Exception:
                         print(f"   ℹ️  Collection doesn't exist (first run)")
 
                     start_offset = 0
@@ -74,7 +74,7 @@ class ResumableReIndexer:
                 try:
                     self.indexer.client.delete_collection('servicedesk_comments')
                     print(f"   ✅ Collection dropped")
-                except:
+                except Exception:
                     print(f"   ℹ️  Collection doesn't exist (first run)")
 
                 start_offset = 0

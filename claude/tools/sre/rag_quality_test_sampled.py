@@ -151,8 +151,8 @@ class RAGQualityTester:
         print(f"   Creating GPU test collection...")
         try:
             self.client.delete_collection("test_comments_gpu")
-        except:
-            pass
+        except Exception:
+            pass  # Collection doesn't exist yet
 
         gpu_coll = self.client.create_collection(
             name="test_comments_gpu",
@@ -351,7 +351,7 @@ def main():
         gpu_coll = tester.client.get_collection("test_comments_gpu")
         print(f"\n✅ GPU test collection already exists: {gpu_coll.count():,} docs")
         print(f"   Skipping creation step...")
-    except:
+    except Exception:
         print(f"\n⚠️  GPU test collection not found, creating it...")
         tester.create_gpu_test_collection()
 

@@ -177,9 +177,9 @@ class LinkedInJobsIntegration:
                 connected_date = datetime.strptime(conn.get('connected_on', ''), "%d %b %Y")
                 if connected_date >= recent_cutoff:
                     recent_connections += 1
-            except:
-                pass
-                
+            except (ValueError, TypeError):
+                pass  # Date parsing failed
+
         # Departments represented
         departments = set()
         for conn in connections:
@@ -258,9 +258,9 @@ class LinkedInJobsIntegration:
                     connection_strength += 0.1
                 elif days_ago < 365:  # Within 1 year
                     connection_strength += 0.05
-            except:
-                pass
-                
+            except (ValueError, TypeError):
+                pass  # Date parsing failed
+
             total_strength += min(connection_strength, 1.0)
             
         # Return average strength, capped at 1.0

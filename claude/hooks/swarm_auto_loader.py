@@ -1137,8 +1137,8 @@ def close_session():
                 for f in recent_files[:5]:  # Check first 5
                     try:
                         recent_file_mtimes.append(Path(f).stat().st_mtime)
-                    except:
-                        pass
+                    except (FileNotFoundError, OSError, PermissionError):
+                        pass  # Skip inaccessible files gracefully
 
                 if recent_file_mtimes and max(recent_file_mtimes) > system_state_mtime:
                     issues_found.append("docs")

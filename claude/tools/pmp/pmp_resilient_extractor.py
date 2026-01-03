@@ -543,7 +543,7 @@ class PMPResilientExtractor:
                     http_status = e.response.status_code
                     try:
                         response_sample = e.response.text
-                    except:
+                    except Exception:
                         response_sample = str(e)
                 else:
                     response_sample = str(e)

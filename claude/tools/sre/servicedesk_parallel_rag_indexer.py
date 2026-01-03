@@ -454,8 +454,8 @@ class ParallelRAGIndexer:
         try:
             shutil.rmtree(test_rag_path)
             print(f"\n🧹 Cleaned up test directory: {test_rag_path}")
-        except:
-            pass
+        except Exception:
+            pass  # Best-effort cleanup
 
 
 def main():

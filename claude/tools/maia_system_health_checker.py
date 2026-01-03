@@ -148,7 +148,7 @@ class MaiaSystemHealthChecker:
             with open(file_path, 'r') as f:
                 content = f.read()
                 return len(content) > 0
-        except:
+        except OSError:
             return False
     
     def test_context_loading(self) -> Dict:

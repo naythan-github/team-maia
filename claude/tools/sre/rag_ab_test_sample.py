@@ -257,8 +257,8 @@ class RAGABTestSampler:
         try:
             client.delete_collection(collection_name)
             print(f"   Deleted existing collection: {collection_name}")
-        except:
-            pass
+        except Exception:
+            pass  # Collection doesn't exist yet
 
         collection = client.create_collection(
             name=collection_name,
@@ -321,8 +321,8 @@ class RAGABTestSampler:
         try:
             client.delete_collection(collection_name)
             print(f"   Deleted existing collection: {collection_name}")
-        except:
-            pass
+        except Exception:
+            pass  # Collection doesn't exist yet
 
         collection = client.create_collection(
             name=collection_name,

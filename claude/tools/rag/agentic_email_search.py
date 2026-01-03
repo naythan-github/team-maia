@@ -357,7 +357,7 @@ Reply with JSON array only: ["query1", "query2", "query3"]"""
             variations = json.loads(response.strip())
             if not isinstance(variations, list):
                 variations = [query]
-        except:
+        except (json.JSONDecodeError, TypeError):
             variations = [query]
 
         # Include original query

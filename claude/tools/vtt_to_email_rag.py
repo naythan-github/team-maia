@@ -68,8 +68,8 @@ class VTTEmailRAGIntegration:
             if existing['ids']:
                 logger.info(f"Summary already indexed: {summary_file.name}")
                 return {"status": "skipped", "reason": "already_indexed"}
-        except:
-            pass
+        except Exception:
+            pass  # Collection query failed, proceed with indexing
 
         # Get embedding
         embedding = self.rag._get_embedding(content)

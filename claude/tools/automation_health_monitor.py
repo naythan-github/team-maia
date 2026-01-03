@@ -174,7 +174,7 @@ class AutomationHealthMonitor:
                         error_time = datetime.strptime(timestamp_str, '%Y-%m-%d %H:%M:%S,%f')
                         if error_time > cutoff_time:
                             recent_actual_errors.append(line)
-                    except:
+                    except ValueError:
                         # If can't parse timestamp, include it to be safe
                         recent_actual_errors.append(line)
             # else: log file is stale (>12h), so ignore old errors

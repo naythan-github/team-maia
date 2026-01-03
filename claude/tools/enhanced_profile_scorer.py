@@ -425,7 +425,7 @@ class EnhancedProfileScorer:
             with open(config_path, 'r') as f:
                 config = json.load(f)
                 pm_exceptions = config.get('keywords', {}).get('pm_exceptions', [])
-        except:
+        except (OSError, json.JSONDecodeError, KeyError):
             # Fallback exception keywords
             pm_exceptions = [
                 'business relationship', 'client partner', 'stakeholder management',

@@ -67,7 +67,7 @@ class SMAAPIDiscovery:
                     result['sample_data'] = response.json()
                     if isinstance(result['sample_data'], dict):
                         result['keys'] = list(result['sample_data'].keys())[:10]  # First 10 keys
-                except:
+                except (json.JSONDecodeError, ValueError):
                     result['sample_data'] = "JSON parse failed"
             elif result['content_length'] < 1000:  # Small text response
                 result['sample_data'] = response.text[:500]  # First 500 chars

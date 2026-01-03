@@ -49,8 +49,8 @@ def check_failed_services(maia_root: Path) -> Tuple[int, List[str]]:
             if "Failed:" in line:
                 try:
                     failed_count = int(line.split(":")[1].strip().split()[0])
-                except:
-                    pass
+                except (ValueError, IndexError):
+                    pass  # Line format didn't match expected pattern
             elif "FAILED" in line and "com.maia." in line:
                 service_name = line.split()[0]
                 failed_services.append(service_name)
@@ -85,8 +85,8 @@ def check_critical_phantoms(maia_root: Path) -> Tuple[int, List[str]]:
             if "Critical Phantoms:" in line:
                 try:
                     critical_count = int(line.split(":")[1].strip().split()[0])
-                except:
-                    pass
+                except (ValueError, IndexError):
+                    pass  # Line format didn't match expected pattern
             elif "Critical Phantom Dependencies:" in line:
                 in_phantoms_section = True
             elif in_phantoms_section and line.strip().startswith("•"):

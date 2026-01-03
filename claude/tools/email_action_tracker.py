@@ -568,7 +568,7 @@ Return JSON:
                     return IntentResult(intent=ReplyIntent.DECLINED, confidence=0.8)
                 else:
                     return IntentResult(intent=ReplyIntent.ACKNOWLEDGED, confidence=0.6)
-        except:
+        except Exception:
             # Final fallback to keyword detection
             if any(kw in reply_lower for kw in completed_keywords):
                 return IntentResult(intent=ReplyIntent.COMPLETED, confidence=0.8)

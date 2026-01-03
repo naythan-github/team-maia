@@ -631,8 +631,8 @@ class ProductionLLMRouter:
                 if os.path.exists(temp_path):
                     try:
                         os.unlink(temp_path)
-                    except:
-                        pass
+                    except OSError:
+                        pass  # Best-effort cleanup
 
         except Exception as e:
             logger.error(f"Error saving usage stats: {e}")
