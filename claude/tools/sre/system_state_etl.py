@@ -17,6 +17,14 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
 
+# Portable path resolution
+try:
+    from claude.tools.core.paths import MAIA_ROOT, DATABASES_DIR
+except ImportError:
+    # Fallback: derive from this file's location
+    MAIA_ROOT = Path(__file__).parent.parent.parent.parent.resolve()
+    DATABASES_DIR = MAIA_ROOT / "claude/data/databases"
+
 
 @dataclass
 class Phase:
@@ -624,10 +632,10 @@ def main():
 
     parser = argparse.ArgumentParser(description='ETL for SYSTEM_STATE.md → Database')
     parser.add_argument('--db', type=Path,
-                       default=Path.home() / 'git/maia/claude/data/databases/system/system_state.db',
+                       default=DATABASES_DIR / 'system/system_state.db',
                        help='Database path')
     parser.add_argument('--source', type=Path,
-                       default=Path.home() / 'git/maia/SYSTEM_STATE.md',
+                       default=MAIA_ROOT / 'SYSTEM_STATE.md',
                        help='SYSTEM_STATE.md path')
     parser.add_argument('--phases', type=int, nargs='+',
                        help='Specific phase numbers to process (e.g., --phases 144 145 146)')
