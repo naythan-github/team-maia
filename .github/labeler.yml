@@ -1,0 +1,107 @@
+# ═══════════════════════════════════════════════════════════════════
+# Maia Auto-Labeler Configuration
+# Automatically labels PRs based on changed files
+# ═══════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────
+# Protection tier labels
+# ───────────────────────────────────────────────────────────────────
+core-change:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/agents/**'
+          - 'claude/hooks/**'
+          - 'claude/context/core/**'
+          - 'claude/tools/core/**'
+          - 'CLAUDE.md'
+          - 'SYSTEM_STATE.md'
+          - '.github/CODEOWNERS'
+          - 'CODEOWNERS'
+
+# ───────────────────────────────────────────────────────────────────
+# Domain labels
+# ───────────────────────────────────────────────────────────────────
+sre:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/sre/**'
+          - 'tests/sre/**'
+
+security:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/security/**'
+          - 'tests/security/**'
+
+servicedesk:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/servicedesk/**'
+
+automation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/automation/**'
+
+dashboards:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/dashboards/**'
+
+monitoring:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/monitoring/**'
+
+# ───────────────────────────────────────────────────────────────────
+# Type labels
+# ───────────────────────────────────────────────────────────────────
+tools:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/**/*.py'
+
+agents:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/agents/**'
+
+commands:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/commands/**'
+
+documentation:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.md'
+          - 'docs/**'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**'
+          - '**/*_test.py'
+          - '**/test_*.py'
+
+ci-cd:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/workflows/**'
+          - '.github/*.yml'
+
+# ───────────────────────────────────────────────────────────────────
+# Special labels
+# ───────────────────────────────────────────────────────────────────
+experimental:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'claude/tools/experimental/**'
+          - 'claude/extensions/**'
+
+dependencies:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'requirements*.txt'
+          - 'pyproject.toml'
+          - 'setup.py'

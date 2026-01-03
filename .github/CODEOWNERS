@@ -1,0 +1,91 @@
+# ═══════════════════════════════════════════════════════════════════
+# MAIA CODEOWNERS - Defense in Depth Ownership Model
+# ═══════════════════════════════════════════════════════════════════
+#
+# Tier 1: PROTECTED - Core team approval required
+# Tier 2: DOMAIN - Domain team + core visibility
+# Tier 3: OPEN - Any contributor, CI gates only
+#
+# ═══════════════════════════════════════════════════════════════════
+
+# ───────────────────────────────────────────────────────────────────
+# TIER 1: PROTECTED - @org/maia-core approval required
+# ───────────────────────────────────────────────────────────────────
+
+# System identity
+/CLAUDE.md                                  @org/maia-core
+/SYSTEM_STATE.md                            @org/maia-core
+
+# Protection rules (self-protecting)
+/.github/CODEOWNERS                         @org/maia-core
+/CODEOWNERS                                 @org/maia-core
+
+# Core context (identity, protocols, strategies)
+/claude/context/core/                       @org/maia-core
+
+# All agent definitions
+/claude/agents/                             @org/maia-core
+
+# System hooks (security-critical)
+/claude/hooks/                              @org/maia-core
+
+# Core utilities (path resolution, system bootstrap)
+/claude/tools/core/                         @org/maia-core
+
+# UFC system
+/claude/context/ufc_system.md               @org/maia-core
+
+# ───────────────────────────────────────────────────────────────────
+# TIER 2: DOMAIN - Domain team ownership with core visibility
+# ───────────────────────────────────────────────────────────────────
+
+# SRE tools
+/claude/tools/sre/                          @org/maia-sre @org/maia-core
+/tests/sre/                                 @org/maia-sre
+
+# Security tools
+/claude/tools/security/                     @org/maia-security @org/maia-core
+/tests/security/                            @org/maia-security
+
+# ServiceDesk tools
+/claude/tools/servicedesk/                  @org/maia-sre @org/maia-core
+
+# Automation
+/claude/tools/automation/                   @org/maia-sre @org/maia-core
+
+# Business tools
+/claude/tools/business/                     @org/maia-core
+
+# Communication tools
+/claude/tools/communication/                @org/maia-core
+
+# Commands (slash commands)
+/claude/commands/                           @org/maia-core
+
+# Dashboards
+/claude/tools/dashboards/                   @org/maia-sre @org/maia-core
+
+# Monitoring
+/claude/tools/monitoring/                   @org/maia-sre @org/maia-core
+
+# General tests
+/tests/                                     @org/maia-core
+
+# ───────────────────────────────────────────────────────────────────
+# TIER 3: OPEN - CI gates only, any contributor
+# ───────────────────────────────────────────────────────────────────
+
+# Extensions (experimental, plugins)
+/claude/extensions/
+
+# User namespaces
+/claude/projects/*/
+
+# Experimental tools
+/claude/tools/experimental/
+
+# Archive (historical)
+/claude/tools/archive/
+
+# Non-core documentation
+/docs/

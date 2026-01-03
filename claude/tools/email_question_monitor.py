@@ -147,7 +147,7 @@ class EmailQuestionMonitor:
 
         return unanswered
 
-    def create_trello_cards(self, questions: List[Dict], board_id: str, list_name: str = "Naythan") -> Dict:
+    def create_trello_cards(self, questions: List[Dict], board_id: str, list_name: str = "To Do") -> Dict:
         """Create Trello cards for unanswered questions"""
 
         results = {
@@ -220,7 +220,7 @@ class EmailQuestionMonitor:
 
         return results
 
-    def run_check(self, board_id: str, list_name: str = "Naythan", days_back: int = 7):
+    def run_check(self, board_id: str, list_name: str = "To Do", days_back: int = 7):
         """Run full check and create cards"""
         print(f"🔍 Checking for unanswered questions in last {days_back} days...\n")
 
@@ -258,7 +258,7 @@ def main():
 
     parser = argparse.ArgumentParser(description="Monitor emails for unanswered questions")
     parser.add_argument('--board-id', type=str, help='Trello board ID')
-    parser.add_argument('--list', type=str, default='Naythan', help='Target list name (default: Naythan)')
+    parser.add_argument('--list', type=str, default='To Do', help='Target list name (default: To Do)')
     parser.add_argument('--days', type=int, default=7, help='Days to look back (default: 7)')
 
     args = parser.parse_args()
@@ -273,7 +273,7 @@ def main():
         for board in boards:
             print(f"  • {board['name']}: {board['id']}")
 
-        # Use "Naythan's Personal Board" if available
+        # Use a personal board if available
         for board in boards:
             if 'personal' in board['name'].lower():
                 args.board_id = board['id']

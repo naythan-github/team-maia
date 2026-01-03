@@ -345,8 +345,19 @@ def update_excel_complete(input_file: str, output_file: str, results: List[Dict]
     print(f"\n✅ Results saved to: {output_file}")
 
 def main():
-    input_file = '/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Claude/Route53 domains - 2025.10.10 1.xlsx'
-    output_file = '/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Claude/Route53 domains - Complete Audit.xlsx'
+    import argparse
+    parser = argparse.ArgumentParser(description='Complete DNS Audit for Route53 domains')
+    parser.add_argument('input_file', help='Input Excel file with domains')
+    parser.add_argument('--output', '-o', help='Output Excel file (default: input_Complete_Audit.xlsx)')
+    args = parser.parse_args()
+
+    input_file = args.input_file
+    if args.output:
+        output_file = args.output
+    else:
+        from pathlib import Path
+        input_path = Path(input_file)
+        output_file = str(input_path.parent / f"{input_path.stem} - Complete Audit.xlsx")
 
     # Load domains
     wb = openpyxl.load_workbook(input_file)

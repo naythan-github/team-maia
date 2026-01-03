@@ -1,0 +1,39 @@
+#!/bin/bash
+# Maia pre-push hook
+# Installed by scripts/setup-team-member.sh
+
+set -e
+
+MAIA_ROOT="$(git rev-parse --show-toplevel)"
+
+# ───────────────────────────────────────────────────────────────
+# Block direct push to main
+# ───────────────────────────────────────────────────────────────
+current_branch=$(git symbolic-ref HEAD 2>/dev/null | sed -e 's,.*/\(.*\),\1,')
+
+if [ "$current_branch" = "main" ]; then
+    echo "❌ BLOCKED: Direct push to main not allowed"
+    echo ""
+    echo "   Create a feature branch instead:"
+    echo "   git checkout -b feature/your-feature"
+    echo "   git push -u origin feature/your-feature"
+    echo ""
+    exit 1
+fi
+
+# ───────────────────────────────────────────────────────────────
+# Run contribution reviewer
+# ───────────────────────────────────────────────────────────────
+if [ -f "$MAIA_ROOT/claude/hooks/contribution_reviewer.py" ]; then
+    echo "🤖 Running contribution review..."
+    python3 "$MAIA_ROOT/claude/hooks/contribution_reviewer.py" --local
+
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "❌ BLOCKED: Contribution review failed"
+        echo "   Fix the issues above and try again"
+        exit 1
+    fi
+fi
+
+echo "✅ Ready to push"

@@ -30,7 +30,11 @@ def create_clean_orro_reference():
     print()
 
     # Load existing template to extract styles (optional - we're creating from scratch)
-    source_template = Path("/Users/naythandawe/work_projects/pir_converter/pir_orro_reference.docx")
+    # Use PathManager for portable path resolution
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+    from claude.tools.core.paths import PathManager
+    source_template = PathManager.get_work_projects_path() / "pir_converter" / "pir_orro_reference.docx"
 
     if source_template.exists():
         print(f"📄 Source template found: {source_template.name}")

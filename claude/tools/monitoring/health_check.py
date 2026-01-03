@@ -12,15 +12,16 @@ from datetime import datetime
 
 def check_databases():
     """Check database connectivity"""
-    icloud_base = Path("/Users/naythan/Library/Mobile Documents/com~apple~CloudDocs/maia")
-    local_base = Path(__file__).parent.parent.parent / "claude" / "data_local"
+    # Use PathManager for portable path resolution
+    import sys
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+    from claude.tools.core.paths import PathManager, DATABASES_DIR
 
-    base_path = icloud_base if icloud_base.exists() else local_base
-
+    # Check both shared (system) and user databases
     databases = [
-        base_path / "databases" / "jobs.db",
-        base_path / "databases" / "personal_knowledge_graph.db",
-        base_path / "databases" / "contacts.db"
+        DATABASES_DIR / "system" / "system_state.db",
+        DATABASES_DIR / "system" / "capabilities.db",
+        PathManager.get_user_db_path("preferences.db"),
     ]
 
     results = {}

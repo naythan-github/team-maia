@@ -681,12 +681,15 @@ detect_environment() {{
         WIN_USERNAME=$(ls -1 /mnt/c/Users/ 2>/dev/null | grep -v "Public\\|Default\\|All Users" | head -1)
         echo "  Windows User: $WIN_USERNAME"
 
-        # WSL OneDrive paths (mounted from Windows)
-        if [ -d "/mnt/c/Users/$WIN_USERNAME/OneDrive - ORROPTYLTD" ]; then
-            ONEDRIVE_PATH="/mnt/c/Users/$WIN_USERNAME/OneDrive - ORROPTYLTD"
-        elif [ -d "/mnt/c/Users/$WIN_USERNAME/OneDrive" ]; then
-            ONEDRIVE_PATH="/mnt/c/Users/$WIN_USERNAME/OneDrive"
-        else
+        # WSL OneDrive paths (mounted from Windows) - detect any org
+        ONEDRIVE_PATH=""
+        for dir in "/mnt/c/Users/$WIN_USERNAME/OneDrive"*; do
+            if [ -d "$dir" ]; then
+                ONEDRIVE_PATH="$dir"
+                break
+            fi
+        done
+        if [ -z "$ONEDRIVE_PATH" ]; then
             echo "⚠️  OneDrive not found on Windows filesystem."
             echo "   Expected: /mnt/c/Users/$WIN_USERNAME/OneDrive"
             read -p "OneDrive path (Windows mount): " ONEDRIVE_PATH
@@ -699,14 +702,18 @@ detect_environment() {{
         MACOS_VERSION=$(sw_vers -productVersion)
         echo "  macOS: $MACOS_VERSION"
 
-        # Detect OneDrive location
-        if [ -d "$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD" ]; then
-            ONEDRIVE_PATH="$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD"
-        elif [ -d "$HOME/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD" ]; then
-            ONEDRIVE_PATH="$HOME/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD"
-        elif [ -d "$HOME/OneDrive" ]; then
+        # Detect OneDrive location (portable - works with any org)
+        ONEDRIVE_PATH=""
+        for dir in "$HOME/Library/CloudStorage"/OneDrive-*; do
+            if [ -d "$dir" ]; then
+                ONEDRIVE_PATH="$dir"
+                break
+            fi
+        done
+        if [ -z "$ONEDRIVE_PATH" ] && [ -d "$HOME/OneDrive" ]; then
             ONEDRIVE_PATH="$HOME/OneDrive"
-        else
+        fi
+        if [ -z "$ONEDRIVE_PATH" ]; then
             echo "⚠️  OneDrive not found. Please enter path manually:"
             read -p "OneDrive path: " ONEDRIVE_PATH
         fi

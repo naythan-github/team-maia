@@ -34,6 +34,110 @@ class ResumableReIndexer:
     def __init__(self, indexer: GPURAGIndexer):
         self.indexer = indexer
 
+    def _prepare_document_batch(self, docs: list) -> tuple:
+        """
+        Prepare a batch of documents for indexing.
+
+        Args:
+            docs: List of document dicts with 'id', 'text', and other fields
+
+        Returns:
+            Tuple of (ids, texts, metadatas)
+        """
+        from datetime import datetime
+
+        ids = []
+        texts = []
+        metadatas = []
+
+        for doc in docs:
+            # Truncate very long texts
+            text = doc['text']
+            if len(text) > 5000:
+                text = text[:5000] + "... [truncated]"
+
+            # Build metadata
+            metadata = {
+                'text_length': len(text),
+                'indexed_at': datetime.now().isoformat()
+            }
+
+            # Copy all other fields as metadata
+            for key, value in doc.items():
+                if key not in ['id', 'text']:
+                    if value is not None:
+                        if 'score' in key and value != '':
+                            try:
+                                metadata[key] = int(value) if key.endswith('_score') and key != 'quality_score' else float(value)
+                            except (ValueError, TypeError):
+                                metadata[key] = str(value)
+                        elif key == 'has_quality_analysis':
+                            metadata[key] = int(value)
+                        else:
+                            metadata[key] = str(value)
+
+            ids.append(doc['id'])
+            texts.append(text)
+            metadatas.append(metadata)
+
+        return ids, texts, metadatas
+
+    def _index_single_batch(self, collection, ids: list, texts: list, metadatas: list):
+        """
+        Index a single batch of documents to ChromaDB.
+
+        Args:
+            collection: ChromaDB collection
+            ids: Document IDs
+            texts: Document texts
+            metadatas: Document metadata dicts
+        """
+        # Generate embeddings on GPU
+        embeddings = self.indexer.model.encode(
+            texts,
+            batch_size=self.indexer.batch_size,
+            show_progress_bar=False,
+            convert_to_numpy=True
+        )
+
+        # Add to ChromaDB
+        collection.add(
+            ids=ids,
+            documents=texts,
+            metadatas=metadatas,
+            embeddings=embeddings.tolist()
+        )
+
+    def _print_completion_stats(self, total_indexed: int, fetch_time: float, index_time: float, total_docs: int):
+        """
+        Print completion statistics.
+
+        Args:
+            total_indexed: Number of documents indexed
+            fetch_time: Time spent fetching documents
+            index_time: Time spent indexing
+            total_docs: Total document count
+        """
+        total_time = fetch_time + index_time
+
+        print(f"\n✅ RE-INDEXING COMPLETE:")
+        print(f"   Documents indexed: {total_indexed:,}")
+        print(f"   Fetch time: {fetch_time:.1f}s")
+        print(f"   Index time: {index_time:.1f}s ({total_indexed/index_time:.1f} docs/sec)" if index_time > 0 else "")
+        print(f"   Total time: {total_time:.1f}s ({total_time/60:.1f}m)")
+        print(f"   Collection: servicedesk_comments")
+
+        # Show quality statistics
+        print(f"\n📊 Quality Metadata Statistics:")
+        stats = self.indexer.get_quality_statistics()
+
+        if stats.get('error'):
+            print(f"   ⚠️  {stats['error']}")
+        else:
+            print(f"   Total analyzed: {stats['total_analyzed']:,} comments")
+            print(f"   Coverage: {stats['total_analyzed']/total_docs*100:.1f}% of total")
+            print(f"   Quality avg: {stats['quality_score']['avg']:.2f}/5.0")
+
     def reindex_with_checkpoints(self, mode='full'):
         """
         Re-index with automatic checkpoint saving
@@ -117,57 +221,9 @@ class ResumableReIndexer:
                 batch_docs = documents[offset:batch_end]
                 batch_size = len(batch_docs)
 
-                # Prepare batch
-                ids = []
-                texts = []
-                metadatas = []
-
-                for doc in batch_docs:
-                    # Truncate very long texts
-                    text = doc['text']
-                    if len(text) > 5000:
-                        text = text[:5000] + "... [truncated]"
-
-                    # Build metadata
-                    metadata = {
-                        'text_length': len(text),
-                        'indexed_at': datetime.now().isoformat()
-                    }
-
-                    # Copy all other fields as metadata
-                    for key, value in doc.items():
-                        if key not in ['id', 'text']:
-                            if value is not None:
-                                # Convert to string or int based on field
-                                if 'score' in key and value != '':
-                                    try:
-                                        metadata[key] = int(value) if key.endswith('_score') and key != 'quality_score' else float(value)
-                                    except (ValueError, TypeError):
-                                        metadata[key] = str(value)
-                                elif key == 'has_quality_analysis':
-                                    metadata[key] = int(value)
-                                else:
-                                    metadata[key] = str(value)
-
-                    ids.append(doc['id'])
-                    texts.append(text)
-                    metadatas.append(metadata)
-
-                # Generate embeddings on GPU
-                embeddings = self.indexer.model.encode(
-                    texts,
-                    batch_size=self.indexer.batch_size,
-                    show_progress_bar=False,
-                    convert_to_numpy=True
-                )
-
-                # Add to ChromaDB
-                collection.add(
-                    ids=ids,
-                    documents=texts,
-                    metadatas=metadatas,
-                    embeddings=embeddings.tolist()
-                )
+                # Use helper functions for batch processing
+                ids, texts, metadatas = self._prepare_document_batch(batch_docs)
+                self._index_single_batch(collection, ids, texts, metadatas)
 
                 total_indexed += batch_size
 
@@ -195,7 +251,6 @@ class ResumableReIndexer:
 
         # Mark complete
         index_time = time.time() - start_index
-        total_time = fetch_time + index_time
 
         self._save_checkpoint({
             'last_processed': total_docs,
@@ -203,26 +258,11 @@ class ResumableReIndexer:
             'status': 'complete',
             'mode': mode,
             'total_docs': total_docs,
-            'total_time': total_time
+            'total_time': fetch_time + index_time
         })
 
-        print(f"\n✅ RE-INDEXING COMPLETE:")
-        print(f"   Documents indexed: {total_indexed:,}")
-        print(f"   Fetch time: {fetch_time:.1f}s")
-        print(f"   Index time: {index_time:.1f}s ({total_indexed/index_time:.1f} docs/sec)")
-        print(f"   Total time: {total_time:.1f}s ({total_time/60:.1f}m)")
-        print(f"   Collection: servicedesk_comments")
-
-        # Show quality statistics
-        print(f"\n📊 Quality Metadata Statistics:")
-        stats = self.indexer.get_quality_statistics()
-
-        if stats.get('error'):
-            print(f"   ⚠️  {stats['error']}")
-        else:
-            print(f"   Total analyzed: {stats['total_analyzed']:,} comments")
-            print(f"   Coverage: {stats['total_analyzed']/total_docs*100:.1f}% of total")
-            print(f"   Quality avg: {stats['quality_score']['avg']:.2f}/5.0")
+        # Use helper for completion stats (includes quality statistics)
+        self._print_completion_stats(total_indexed, fetch_time, index_time, total_docs)
 
     def _load_checkpoint(self) -> dict:
         """Load checkpoint file"""

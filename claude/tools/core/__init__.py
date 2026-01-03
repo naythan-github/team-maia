@@ -10,7 +10,9 @@ from claude.tools.core.paths import (
     HOOKS_DIR,
     DATABASES_DIR,
     get_maia_root,
+    get_user_data,
     ensure_maia_root_env,
+    PathManager,
 )
 
 __all__ = [
@@ -23,5 +25,7 @@ __all__ = [
     "HOOKS_DIR",
     "DATABASES_DIR",
     "get_maia_root",
+    "get_user_data",
     "ensure_maia_root_env",
+    "PathManager",
 ]

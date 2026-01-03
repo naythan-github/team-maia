@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Enhanced Profile-Based Job Scorer - Phase 2 Implementation
-Integrates ATS qualification screening + Naythan's USPs, experience patterns, and career trajectory
+Integrates ATS qualification screening with user's USPs, experience patterns, and career trajectory.
+Configurable via ~/.maia/context/personal/profile.md
 """
 
 import json
@@ -32,7 +33,7 @@ class USPMatcher:
 
 class EnhancedProfileScorer:
     def __init__(self):
-        """Initialize with Naythan's profile data, USPs, and ATS qualification matcher"""
+        """Initialize with user's profile data, USPs, and ATS qualification matcher"""
         self.profile = self._load_profile_data()
         self.usps = self._load_usp_data()
         self.company_tiers = self._load_company_tiers()

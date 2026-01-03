@@ -96,8 +96,14 @@ class ModernEmailCommandProcessor:
     
     def __init__(self):
         """Initialize the email command processor"""
-        self.command_inbox = "naythan.dev+maia@gmail.com"
-        self.response_address = "naythan.general@icloud.com" 
+        import os
+        # Load email addresses from environment variables (portable)
+        self.command_inbox = os.environ.get("MAIA_COMMAND_INBOX", "")
+        self.response_address = os.environ.get("MAIA_RESPONSE_EMAIL", "")
+        if not self.command_inbox or not self.response_address:
+            raise ValueError(
+                "Email configuration required. Set MAIA_COMMAND_INBOX and MAIA_RESPONSE_EMAIL environment variables."
+            )
         self.data_dir = Path("claude/data/email_commands")
         self.data_dir.mkdir(parents=True, exist_ok=True)
         

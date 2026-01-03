@@ -279,9 +279,9 @@ def test_db():
 @pytest.fixture
 def sample_cv_path():
     """Path to a sample CV for testing"""
-    # Use one of the actual CVs from the recruitment folder
-    cv_path = "/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles/Asscociates/Amritpal Singh Sohal - Assoc Cloud Eng.docx"
-    if os.path.exists(cv_path):
+    # Check for CV path via environment variable (portable)
+    cv_path = os.environ.get("TEST_CV_PATH")
+    if cv_path and os.path.exists(cv_path):
         return cv_path
 
     # Fallback: create a temp text file for basic testing

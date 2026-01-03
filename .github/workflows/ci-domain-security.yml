@@ -1,0 +1,34 @@
+name: Security Domain Tests
+
+on:
+  pull_request:
+    paths:
+      - 'claude/tools/security/**'
+      - 'tests/security/**'
+
+jobs:
+  security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov bandit
+
+      - name: Run Security-specific tests
+        run: |
+          python -m pytest tests/security/ -v --tb=short \
+            --cov=claude/tools/security \
+            --cov-report=term-missing
+
+      - name: Security scan with Bandit
+        run: |
+          bandit -r claude/tools/security/ -ll || true

@@ -1,0 +1,120 @@
+name: Emergency Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_commit:
+        description: 'Commit SHA to revert to (leave empty to revert last commit)'
+        required: false
+        type: string
+      reason:
+        description: 'Emergency reason (required for audit)'
+        required: true
+        type: string
+      create_issue:
+        description: 'Create post-mortem issue?'
+        type: boolean
+        default: true
+
+jobs:
+  emergency-rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ADMIN_PAT }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "Maia Emergency Bot"
+          git config user.email "maia-emergency@noreply.github.com"
+
+      - name: Create revert commit
+        run: |
+          echo "🚨 EMERGENCY ROLLBACK"
+          echo "Reason: ${{ inputs.reason }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo ""
+
+          if [ -z "${{ inputs.target_commit }}" ]; then
+            echo "Reverting last commit..."
+            git revert --no-edit HEAD
+          else
+            echo "Reverting to ${{ inputs.target_commit }}..."
+            git revert --no-edit --no-commit HEAD...${{ inputs.target_commit }}
+            git commit -m "Revert to ${{ inputs.target_commit }}"
+          fi
+
+      - name: Push revert
+        run: git push origin main
+
+      - name: Create post-mortem issue
+        if: inputs.create_issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Post-Mortem: Emergency Rollback - ${new Date().toISOString().split('T')[0]}`,
+              labels: ['incident', 'post-mortem', 'P1'],
+              body: `## Emergency Rollback Triggered
+
+            | Field | Value |
+            |-------|-------|
+            | **Timestamp** | ${new Date().toISOString()} |
+            | **Triggered By** | @${{ github.actor }} |
+            | **Reason** | ${{ inputs.reason }} |
+            | **Target Commit** | ${{ inputs.target_commit || 'HEAD~1 (last commit)' }} |
+
+            ## Post-Mortem Checklist
+
+            - [ ] Root cause identified
+            - [ ] Timeline documented
+            - [ ] Impact assessed
+            - [ ] Fix identified and PR created
+            - [ ] Prevention measures documented
+            - [ ] Runbooks updated (if needed)
+
+            ## Root Cause Analysis
+
+            _To be completed within 24 hours_
+
+            ### What happened?
+
+            ### Why did it happen?
+
+            ### What's the fix?
+
+            ## Timeline
+
+            | Time (UTC) | Event |
+            |------------|-------|
+            | ${new Date().toISOString()} | Emergency rollback triggered |
+            | | |
+
+            ## Impact
+
+            - Users affected:
+            - Duration:
+            - Services impacted:
+
+            ## Prevention
+
+            What changes will prevent this from recurring?
+
+            ---
+            _This issue was auto-created by the emergency rollback workflow._
+            `
+            });
+            console.log(`Created issue #${issue.data.number}`);
+
+      - name: Summary
+        run: |
+          echo "✅ Emergency rollback complete"
+          echo ""
+          echo "Next steps:"
+          echo "1. Verify Maia works: git pull && type 'load' in Claude Code"
+          echo "2. Fill in the post-mortem issue"
+          echo "3. Create fix PR when ready"

@@ -101,8 +101,9 @@ class PersonalAssistantStartup:
                     cards = self.trello.get_cards(lst['id'])
                     total_cards += len(cards)
 
-                    # Count cards in "Naythan" list
-                    if lst['name'].lower() == 'naythan':
+                    # Count cards in user's personal list (configurable via MAIA_TRELLO_LIST)
+                    user_list = os.environ.get('MAIA_TRELLO_LIST', 'To Do').lower()
+                    if lst['name'].lower() == user_list:
                         my_cards = len(cards)
 
             return {

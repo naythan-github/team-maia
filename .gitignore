@@ -95,3 +95,62 @@ claude/data/servicedesk_comment_sample.json
 # Old log files
 unified_dashboard.log
 unified_dashboard.error.log
+
+# ═══════════════════════════════════════════════════════════════════
+# PERSONAL DATA - CRITICAL: NEVER COMMIT
+# ═══════════════════════════════════════════════════════════════════
+
+# Personal profile and context (template OK, actual file local)
+claude/context/personal/
+!claude/context/personal/.gitkeep
+!claude/context/personal/TEMPLATE_profile.md
+
+# User-specific databases
+claude/data/databases/user/
+*_naythan*.db
+personal_knowledge_graph.db
+
+# User preferences (actual file - template is separate)
+claude/data/user_preferences.json
+
+# ═══════════════════════════════════════════════════════════════════
+# SECRETS AND CREDENTIALS (extended)
+# ═══════════════════════════════════════════════════════════════════
+
+# Additional credential patterns
+*.p12
+*.pfx
+*credentials*.json
+!*credentials.example.json
+*token*.json
+!*token.example.json
+secrets/
+*.secret
+
+# Environment files (extended)
+.env.*
+!.env.example
+
+# OAuth
+oauth*.json
+*_credentials.json
+*_token.json
+
+# ═══════════════════════════════════════════════════════════════════
+# DERIVED/REGENERABLE DATABASES
+# ═══════════════════════════════════════════════════════════════════
+
+# System databases (regenerated locally)
+claude/data/databases/system/*.db
+claude/data/databases/system/*.db-*
+claude/data/databases/intelligence/*.db
+claude/data/databases/intelligence/*.db-*
+
+# ═══════════════════════════════════════════════════════════════════
+# SESSION DATA
+# ═══════════════════════════════════════════════════════════════════
+
+# Session files (should be in ~/.maia but catch if local)
+maia_*.json
+*_session_*.json
+checkpoint_*.json

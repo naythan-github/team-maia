@@ -1,0 +1,36 @@
+name: Performance Baseline
+
+on:
+  pull_request:
+    paths:
+      - 'claude/context/core/**'
+      - 'claude/tools/sre/smart_context_loader.py'
+      - 'claude/hooks/swarm_auto_loader.py'
+      - 'claude/tools/core/**'
+  schedule:
+    - cron: '0 6 * * 1'  # Weekly Monday 6 AM UTC
+
+jobs:
+  performance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run performance baseline check
+        run: python3 claude/tools/sre/performance_baseline.py --check --verbose
+
+      - name: Upload baseline results
+        if: github.event_name == 'schedule'
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-baseline-${{ github.run_number }}
+          path: claude/data/performance_baselines.json

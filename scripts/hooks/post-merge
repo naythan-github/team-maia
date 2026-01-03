@@ -1,0 +1,27 @@
+#!/bin/bash
+# Maia post-merge hook
+# Regenerates local databases after pulling changes
+
+MAIA_ROOT="$(git rev-parse --show-toplevel)"
+
+echo "🔄 Post-merge: Refreshing local databases..."
+
+# Regenerate capabilities database
+if [ -f "$MAIA_ROOT/claude/tools/sre/capabilities_registry.py" ]; then
+    if python3 "$MAIA_ROOT/claude/tools/sre/capabilities_registry.py" scan --quiet 2>/dev/null; then
+        echo "  ✅ Capabilities database updated"
+    else
+        echo "  ⚠️ Capabilities refresh failed (will regenerate on first use)"
+    fi
+fi
+
+# Regenerate system state database
+if [ -f "$MAIA_ROOT/claude/tools/sre/system_state_etl.py" ]; then
+    if python3 "$MAIA_ROOT/claude/tools/sre/system_state_etl.py" --recent all --quiet 2>/dev/null; then
+        echo "  ✅ System state database updated"
+    else
+        echo "  ⚠️ System state refresh failed (non-critical)"
+    fi
+fi
+
+echo "✅ Post-merge complete"

@@ -378,19 +378,16 @@ class PersonalKnowledgeGraph:
                     profile_content = f.read()
 
                 # Create personal profile node if not exists
-                if not self.get_node_by_name("Naythan Dawe", NodeType.PERSON):
+                if not self.get_node_by_name("Owner", NodeType.PERSON):
                     self.add_node(
                         node_type=NodeType.PERSON,
-                        name="Naythan Dawe",
-                        description="Senior Business Relationship Manager and Technology Leader",
+                        name="Owner",
+                        description="Knowledge Graph Owner - Configure via ~/.maia/context/personal/profile.md",
                         attributes={
-                            "location": "Perth, Australia",
-                            "email": "nd25@londonxyz.com",
-                            "phone": "+61 (0)483 20 44 17",
-                            "linkedin": "https://www.linkedin.com/in/naythandawe/",
-                            "current_role": "Senior Client Partner at Zetta",
-                            "portfolio_value": "~$1m+ new business secured",
-                            "expertise_areas": ["portfolio_governance", "stakeholder_management", "cost_optimization"]
+                            "location": "",
+                            "email": "",
+                            "current_role": "",
+                            "note": "Personal data moved to ~/.maia/ for multi-user support"
                         },
                         source_agent="knowledge_graph_migration"
                     )

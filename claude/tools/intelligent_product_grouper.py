@@ -206,9 +206,14 @@ class IntelligentProductGrouper:
 
 def main():
     """Process unique.xlsx with intelligent grouping"""
+    import argparse
+    parser = argparse.ArgumentParser(description='Intelligent product grouper for standardization')
+    parser.add_argument('input_file', help='Input Excel file with product descriptions')
+    parser.add_argument('--output', '-o', help='Output Excel file (default: input_STANDARDIZED.xlsx)')
+    args = parser.parse_args()
 
     # Load data
-    input_file = '/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Claude/unique.xlsx'
+    input_file = args.input_file
     df = pd.read_excel(input_file)
 
     print(f"📂 Processing {len(df)} unique descriptions...\n")
@@ -230,7 +235,12 @@ def main():
     result_df = pd.DataFrame(results)
 
     # Output
-    output_file = '/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Claude/unique_STANDARDIZED.xlsx'
+    if args.output:
+        output_file = args.output
+    else:
+        from pathlib import Path
+        input_path = Path(input_file)
+        output_file = str(input_path.parent / f"{input_path.stem}_STANDARDIZED.xlsx")
     result_df[['Shortened Description', 'Standardized Product', 'Confidence Score', 'Review Needed']].to_excel(
         output_file, index=False, sheet_name='Standardized'
     )

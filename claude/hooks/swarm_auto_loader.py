@@ -1059,6 +1059,213 @@ def _capture_session_memory(session_data: dict) -> bool:
         return False
 
 
+# =============================================================================
+# Phase 2 Refactoring: close_session() Helper Functions
+# TDD: See claude/hooks/tests/test_close_session_helpers.py
+# =============================================================================
+
+def _check_git_status() -> tuple:
+    """
+    Check for uncommitted git changes.
+
+    Returns:
+        tuple: (has_issues: bool, files: List[str])
+    """
+    try:
+        result = subprocess.run(
+            ['git', '-C', str(MAIA_ROOT), 'status', '--short'],
+            capture_output=True,
+            text=True,
+            timeout=2
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
+            files = result.stdout.strip().split('\n')
+            return (True, files)
+        return (False, [])
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return (False, [])
+
+
+def _check_docs_currency() -> tuple:
+    """
+    Check if documentation (SYSTEM_STATE.md) is older than recent code changes.
+
+    Returns:
+        tuple: (has_issues: bool, message: str)
+    """
+    try:
+        system_state = MAIA_ROOT / "SYSTEM_STATE.md"
+        if not system_state.exists():
+            return (False, "")
+
+        system_state_mtime = system_state.stat().st_mtime
+
+        # Check for recent python/md file changes in last hour
+        result = subprocess.run(
+            ['find', str(MAIA_ROOT / 'claude'), '-name', '*.py', '-o', '-name', '*.md',
+             '-mtime', '-1h'],
+            capture_output=True,
+            text=True,
+            timeout=2
+        )
+
+        if result.stdout.strip():
+            recent_files = result.stdout.strip().split('\n')
+            recent_file_mtimes = []
+            for f in recent_files[:5]:
+                try:
+                    recent_file_mtimes.append(Path(f).stat().st_mtime)
+                except (FileNotFoundError, OSError, PermissionError):
+                    pass
+
+            if recent_file_mtimes and max(recent_file_mtimes) > system_state_mtime:
+                msg = f"Last update: {datetime.fromtimestamp(system_state_mtime).strftime('%Y-%m-%d %H:%M')}"
+                return (True, msg)
+
+        return (False, "")
+    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+        return (False, "")
+
+
+def _check_background_processes() -> tuple:
+    """
+    Check for running background processes (Claude Code background tasks).
+
+    Returns:
+        tuple: (has_issues: bool, count: int)
+    """
+    try:
+        result = subprocess.run(
+            ['pgrep', '-f', 'claude.*bash.*run_in_background'],
+            capture_output=True,
+            text=True,
+            timeout=1
+        )
+
+        if result.returncode == 0 and result.stdout.strip():
+            pids = result.stdout.strip().split('\n')
+            return (True, len(pids))
+        return (False, 0)
+    except (subprocess.TimeoutExpired, FileNotFoundError):
+        return (False, 0)
+
+
+def _check_checkpoint_currency(has_git_issues: bool) -> tuple:
+    """
+    Check if checkpoint is stale (>2 hours old with uncommitted changes).
+
+    Args:
+        has_git_issues: Whether there are uncommitted git changes
+
+    Returns:
+        tuple: (has_issues: bool, age_hours: float)
+    """
+    try:
+        checkpoints_dir = MAIA_ROOT / "claude" / "data" / "checkpoints"
+        if not checkpoints_dir.exists():
+            return (False, 0.0)
+
+        checkpoints = sorted(
+            checkpoints_dir.glob("checkpoint_*.json"),
+            key=lambda p: p.stat().st_mtime,
+            reverse=True
+        )
+
+        if checkpoints:
+            latest_checkpoint = checkpoints[0]
+            checkpoint_age_hours = (time.time() - latest_checkpoint.stat().st_mtime) / 3600
+
+            # Warn if checkpoint is >2 hours old and we have git changes
+            if checkpoint_age_hours > 2 and has_git_issues:
+                return (True, checkpoint_age_hours)
+            return (False, checkpoint_age_hours)
+
+        return (False, 0.0)
+    except (OSError, ValueError):
+        return (False, 0.0)
+
+
+def _check_development_cleanup() -> dict:
+    """
+    Check for development files that need cleanup.
+
+    Returns:
+        dict: {
+            'versioned_files': List[str],
+            'misplaced_tests': List[str],
+            'build_artifacts': List[str]
+        }
+    """
+    result = {
+        'versioned_files': [],
+        'misplaced_tests': [],
+        'build_artifacts': []
+    }
+
+    try:
+        tools_dir = MAIA_ROOT / 'claude' / 'tools'
+
+        # Find versioned files (*_v2.py, *_v3.py, etc.)
+        if tools_dir.exists():
+            for py_file in tools_dir.rglob('*_v[0-9]*.py'):
+                result['versioned_files'].append(str(py_file.relative_to(MAIA_ROOT)))
+
+            # Find misplaced test files (test_*.py not in tests/ directories)
+            for py_file in tools_dir.rglob('test_*.py'):
+                if 'tests' not in py_file.parts:
+                    result['misplaced_tests'].append(str(py_file.relative_to(MAIA_ROOT)))
+
+        # Find build artifacts
+        for artifact in MAIA_ROOT.rglob('.DS_Store'):
+            result['build_artifacts'].append(str(artifact.relative_to(MAIA_ROOT)))
+
+        claude_dir = MAIA_ROOT / 'claude'
+        if claude_dir.exists():
+            for pycache in claude_dir.rglob('__pycache__'):
+                if pycache.is_dir():
+                    result['build_artifacts'].append(str(pycache.relative_to(MAIA_ROOT)))
+
+    except Exception:
+        pass  # Graceful degradation
+
+    return result
+
+
+def _cleanup_session(session_file: Path) -> bool:
+    """
+    Capture session memory and delete session file.
+
+    Args:
+        session_file: Path to the session file
+
+    Returns:
+        bool: True if cleanup succeeded, False otherwise
+    """
+    if not session_file.exists():
+        return False
+
+    try:
+        # Read session info
+        with open(session_file, 'r') as f:
+            session_data = json.load(f)
+
+        # Capture session memory before deletion
+        _capture_session_memory(session_data)
+
+        # Delete session file
+        session_file.unlink()
+        return True
+
+    except (json.JSONDecodeError, IOError, OSError):
+        # File corrupt - try to delete anyway
+        try:
+            session_file.unlink()
+            return True
+        except OSError:
+            return False
+
+
 def close_session():
     """
     Pre-shutdown workflow: Comprehensive checks before closing Claude Code window.
@@ -1066,6 +1273,7 @@ def close_session():
     Phase 134.7: User-controlled session lifecycle management.
     Phase 213: Enhanced pre-shutdown checklist (git, docs, processes, checkpoints, session)
     Phase 214: Development file cleanup detection (versioned files, misplaced tests, artifacts)
+    Phase 230: Refactored to use helper functions for maintainability.
 
     Usage:
         python3 swarm_auto_loader.py close_session
@@ -1086,177 +1294,76 @@ def close_session():
     issues_found = []
     response = ""  # Initialize for later reference
 
-    # =========================================================================
     # Check 1: Git Status
-    # =========================================================================
-    try:
-        result = subprocess.run(
-            ['git', '-C', str(MAIA_ROOT), 'status', '--short'],
-            capture_output=True,
-            text=True,
-            timeout=2
-        )
+    has_git_issues, git_files = _check_git_status()
+    if has_git_issues:
+        issues_found.append("git")
+        print("⚠️  Uncommitted changes detected:")
+        for file in git_files[:10]:
+            print(f"   {file}")
+        if len(git_files) > 10:
+            print(f"   ... and {len(git_files) - 10} more")
+        print()
 
-        if result.returncode == 0 and result.stdout.strip():
-            issues_found.append("git")
-            print("⚠️  Uncommitted changes detected:")
-            # Show first 10 files
-            all_files = result.stdout.strip().split('\n')
-            files = all_files[:10]
-            for file in files:
-                print(f"   {file}")
-            if len(all_files) > 10:
-                remaining = len(all_files) - 10
-                print(f"   ... and {remaining} more")
-            print()
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass  # Git not available or timeout - graceful degradation
-
-    # =========================================================================
     # Check 2: Documentation Currency
-    # =========================================================================
-    try:
-        # Check if SYSTEM_STATE.md is older than recent code changes
-        system_state = MAIA_ROOT / "SYSTEM_STATE.md"
-        if system_state.exists():
-            system_state_mtime = system_state.stat().st_mtime
+    has_docs_issues, docs_message = _check_docs_currency()
+    if has_docs_issues:
+        issues_found.append("docs")
+        print("⚠️  Recent code changes detected without SYSTEM_STATE.md update")
+        print(f"   {docs_message}")
+        print()
 
-            # Check for recent python/md file changes in last hour
-            result = subprocess.run(
-                ['find', str(MAIA_ROOT / 'claude'), '-name', '*.py', '-o', '-name', '*.md',
-                 '-mtime', '-1h'],
-                capture_output=True,
-                text=True,
-                timeout=2
-            )
-
-            # If there are recent file changes but SYSTEM_STATE.md is older
-            if result.stdout.strip():
-                recent_files = result.stdout.strip().split('\n')
-                recent_file_mtimes = []
-                for f in recent_files[:5]:  # Check first 5
-                    try:
-                        recent_file_mtimes.append(Path(f).stat().st_mtime)
-                    except (FileNotFoundError, OSError, PermissionError):
-                        pass  # Skip inaccessible files gracefully
-
-                if recent_file_mtimes and max(recent_file_mtimes) > system_state_mtime:
-                    issues_found.append("docs")
-                    print("⚠️  Recent code changes detected without SYSTEM_STATE.md update")
-                    print(f"   Last SYSTEM_STATE.md update: {datetime.fromtimestamp(system_state_mtime).strftime('%Y-%m-%d %H:%M')}")
-                    print()
-    except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
-        pass  # Graceful degradation
-
-    # =========================================================================
     # Check 3: Active Background Processes
-    # =========================================================================
-    try:
-        # Check for background bash shells (Claude Code background tasks)
-        result = subprocess.run(
-            ['pgrep', '-f', 'claude.*bash.*run_in_background'],
-            capture_output=True,
-            text=True,
-            timeout=1
-        )
+    has_process_issues, process_count = _check_background_processes()
+    if has_process_issues:
+        issues_found.append("processes")
+        print(f"⚠️  {process_count} background process(es) still running")
+        print("   These may be interrupted when window closes")
+        print()
 
-        if result.returncode == 0 and result.stdout.strip():
-            issues_found.append("processes")
-            bg_pids = result.stdout.strip().split('\n')
-            print(f"⚠️  {len(bg_pids)} background process(es) still running")
-            print("   These may be interrupted when window closes")
-            print()
-    except (subprocess.TimeoutExpired, FileNotFoundError):
-        pass  # Graceful degradation
-
-    # =========================================================================
     # Check 4: Checkpoint Currency
-    # =========================================================================
-    try:
-        checkpoints_dir = MAIA_ROOT / "claude" / "data" / "checkpoints"
-        if checkpoints_dir.exists():
-            # Find most recent checkpoint
-            checkpoints = sorted(checkpoints_dir.glob("checkpoint_*.json"),
-                               key=lambda p: p.stat().st_mtime,
-                               reverse=True)
+    has_checkpoint_issues, checkpoint_age = _check_checkpoint_currency(has_git_issues)
+    if has_checkpoint_issues:
+        issues_found.append("checkpoint")
+        print(f"⚠️  Last checkpoint is {checkpoint_age:.1f} hours old")
+        print("   Consider creating checkpoint before closing")
+        print()
 
-            if checkpoints:
-                latest_checkpoint = checkpoints[0]
-                checkpoint_age_hours = (time.time() - latest_checkpoint.stat().st_mtime) / 3600
+    # Check 5: Development File Cleanup
+    cleanup_result = _check_development_cleanup()
+    versioned_files = cleanup_result.get("versioned_files", [])
+    misplaced_tests = cleanup_result.get("misplaced_tests", [])
+    build_artifacts = cleanup_result.get("build_artifacts", [])
 
-                # Warn if checkpoint is >2 hours old and we have git changes
-                if checkpoint_age_hours > 2 and "git" in issues_found:
-                    issues_found.append("checkpoint")
-                    print(f"⚠️  Last checkpoint is {checkpoint_age_hours:.1f} hours old")
-                    print("   Consider creating checkpoint before closing")
-                    print()
-    except (OSError, ValueError):
-        pass  # Graceful degradation
+    if versioned_files or misplaced_tests or build_artifacts:
+        issues_found.append("cleanup")
+        print("⚠️  Development file cleanup needed:")
 
-    # =========================================================================
-    # Check 6: Development File Cleanup
-    # =========================================================================
-    try:
-        cleanup_issues = []
+        if versioned_files:
+            print(f"   📦 {len(versioned_files)} versioned files (e.g., _v2.py, _v3.py)")
+            for vf in versioned_files[:3]:
+                print(f"      - {vf}")
+            if len(versioned_files) > 3:
+                print(f"      ... and {len(versioned_files) - 3} more")
 
-        # Find versioned files (*_v2.py, *_v3.py, etc.)
-        versioned_files = []
-        for py_file in (MAIA_ROOT / 'claude' / 'tools').rglob('*_v[0-9]*.py'):
-            versioned_files.append(str(py_file.relative_to(MAIA_ROOT)))
+        if misplaced_tests:
+            print(f"   🧪 {len(misplaced_tests)} test files in production directories")
+            for mt in misplaced_tests[:3]:
+                print(f"      - {mt}")
+            if len(misplaced_tests) > 3:
+                print(f"      ... and {len(misplaced_tests) - 3} more")
 
-        # Find misplaced test files (test_*.py not in tests/ directories)
-        misplaced_tests = []
-        for py_file in (MAIA_ROOT / 'claude' / 'tools').rglob('test_*.py'):
-            # Only flag if not already in a 'tests' directory
-            if 'tests' not in py_file.parts:
-                misplaced_tests.append(str(py_file.relative_to(MAIA_ROOT)))
+        if build_artifacts:
+            print(f"   🗑️  {len(build_artifacts)} build artifacts (.DS_Store, __pycache__)")
+            for ba in build_artifacts[:3]:
+                print(f"      - {ba}")
+            if len(build_artifacts) > 3:
+                print(f"      ... and {len(build_artifacts) - 3} more")
 
-        # Find build artifacts
-        build_artifacts = []
-        for artifact in MAIA_ROOT.rglob('.DS_Store'):
-            build_artifacts.append(str(artifact.relative_to(MAIA_ROOT)))
-        for pycache in (MAIA_ROOT / 'claude').rglob('__pycache__'):
-            if pycache.is_dir():
-                build_artifacts.append(str(pycache.relative_to(MAIA_ROOT)))
+        print(f"   💡 Tip: These accumulate during development and should be cleaned periodically")
+        print()
 
-        # Report findings
-        if versioned_files or misplaced_tests or build_artifacts:
-            issues_found.append("cleanup")
-            print("⚠️  Development file cleanup needed:")
-
-            if versioned_files:
-                cleanup_issues.append(f"versioned: {len(versioned_files)}")
-                print(f"   📦 {len(versioned_files)} versioned files (e.g., _v2.py, _v3.py)")
-                for vf in versioned_files[:3]:
-                    print(f"      - {vf}")
-                if len(versioned_files) > 3:
-                    print(f"      ... and {len(versioned_files) - 3} more")
-
-            if misplaced_tests:
-                cleanup_issues.append(f"misplaced tests: {len(misplaced_tests)}")
-                print(f"   🧪 {len(misplaced_tests)} test files in production directories")
-                for mt in misplaced_tests[:3]:
-                    print(f"      - {mt}")
-                if len(misplaced_tests) > 3:
-                    print(f"      ... and {len(misplaced_tests) - 3} more")
-
-            if build_artifacts:
-                cleanup_issues.append(f"artifacts: {len(build_artifacts)}")
-                print(f"   🗑️  {len(build_artifacts)} build artifacts (.DS_Store, __pycache__)")
-                for ba in build_artifacts[:3]:
-                    print(f"      - {ba}")
-                if len(build_artifacts) > 3:
-                    print(f"      ... and {len(build_artifacts) - 3} more")
-
-            print(f"   💡 Tip: These accumulate during development and should be cleaned periodically")
-            print()
-
-    except Exception:
-        pass  # Graceful degradation
-
-    # =========================================================================
     # Offer to run save_state if issues found
-    # =========================================================================
     if issues_found:
         print("=" * 60)
 
@@ -1279,11 +1386,8 @@ def close_session():
         if response.lower() in ['y', 'yes']:
             print("\n🔄 Running save_state workflow...\n")
             try:
-                # Run save_state command
                 save_state_cmd = MAIA_ROOT / "claude" / "commands" / "save_state.md"
                 if save_state_cmd.exists():
-                    # Note: This would need to be integrated with actual save_state execution
-                    # For now, just inform user to run it in the main context
                     print("⚠️  Please run 'save state' in the main Claude conversation")
                     print("   Then run /close-session again")
                     print()
@@ -1298,44 +1402,20 @@ def close_session():
     else:
         print("✅ All checks passed - clean state\n")
 
-    # =========================================================================
-    # Check 5: Session Memory Capture + File Cleanup
-    # =========================================================================
+    # Check 6: Session Memory Capture + File Cleanup
     session_file = get_session_file_path()
 
     if session_file.exists():
-        try:
-            # Read session info for confirmation message
-            with open(session_file, 'r') as f:
-                session_data = json.load(f)
-                agent = session_data.get("current_agent", "unknown")
-                domain = session_data.get("domain", "unknown")
-                context = session_data.get("context", "")
-
-            # Phase 220: Capture session memory before deletion
-            _capture_session_memory(session_data)
-
-            # Delete session file
-            session_file.unlink()
-
+        if _cleanup_session(session_file):
+            # Read session info for confirmation (already captured in helper)
             print(f"✅ Agent session closed")
-            print(f"   Agent: {agent}")
-            print(f"   Domain: {domain}")
-
-        except (json.JSONDecodeError, IOError, OSError) as e:
-            # File corrupt or permission error - try to delete anyway
-            try:
-                session_file.unlink()
-                print(f"✅ Agent session closed (file was corrupted)")
-            except OSError:
-                print(f"⚠️  Could not delete session file: {e}")
-                sys.exit(1)
+        else:
+            print(f"⚠️  Could not delete session file")
+            sys.exit(1)
     else:
         print(f"ℹ️  No active agent session")
 
-    # =========================================================================
     # Final Confirmation
-    # =========================================================================
     print("\n" + "=" * 60)
     print("✅ Pre-shutdown complete")
     print("   Safe to close Claude Code window")
