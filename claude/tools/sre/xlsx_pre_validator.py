@@ -171,294 +171,247 @@ class XLSXPreValidator:
             row_count = ws.max_row - 1  # Subtract header row
             wb.close()
             return row_count
-        except:
+        except Exception:
             # Fallback: load entire file (slow but accurate)
             df = pd.read_excel(file_path)
             return len(df)
 
-    def _validate_comments(self, df: pd.DataFrame, report: FileValidationReport):
-        """Validate comments XLSX file"""
-        schema = self.EXPECTED_SCHEMAS['comments']
+    # ========== Reusable Validation Helpers ==========
 
-        # Check 1: Schema - Expected column count
-        if len(df.columns) == schema['expected_column_count']:
+    def _check_exact_column_count(self, df: pd.DataFrame, report: FileValidationReport,
+                                   expected: int) -> None:
+        """Check if DataFrame has exact expected column count"""
+        actual = len(df.columns)
+        if actual == expected:
             report.add_result(ValidationResult(
                 check_name="Schema: Column Count",
                 passed=True,
                 severity='INFO',
-                message=f"✅ All {schema['expected_column_count']} expected columns present"
+                message=f"✅ All {expected} expected columns present"
             ))
         else:
             report.add_result(ValidationResult(
                 check_name="Schema: Column Count",
                 passed=False,
                 severity='CRITICAL',
-                message=f"Expected {schema['expected_column_count']} columns, found {len(df.columns)}",
+                message=f"Expected {expected} columns, found {actual}",
                 details={'actual_columns': list(df.columns)}
             ))
 
-        # Check 2: Required columns present
-        missing_cols = [col for col in schema['required_columns'] if col not in df.columns]
-        if not missing_cols:
+    def _check_column_count_range(self, df: pd.DataFrame, report: FileValidationReport,
+                                   min_count: int, max_count: int) -> None:
+        """Check if DataFrame column count is within expected range"""
+        actual = len(df.columns)
+        if min_count <= actual <= max_count:
+            report.add_result(ValidationResult(
+                check_name="Schema: Column Count",
+                passed=True,
+                severity='INFO',
+                message=f"Column count in expected range: {actual}"
+            ))
+        else:
+            report.add_result(ValidationResult(
+                check_name="Schema: Column Count",
+                passed=False,
+                severity='WARNING',
+                message=f"Column count {actual} outside expected range ({min_count}-{max_count})"
+            ))
+
+    def _check_required_columns(self, df: pd.DataFrame, report: FileValidationReport,
+                                 required_cols: List[str]) -> None:
+        """Check if all required columns are present"""
+        missing = [col for col in required_cols if col not in df.columns]
+        if not missing:
             report.add_result(ValidationResult(
                 check_name="Schema: Required Columns",
                 passed=True,
                 severity='INFO',
-                message=f"✅ All {len(schema['required_columns'])} required columns present"
+                message=f"✅ All {len(required_cols)} required columns present"
             ))
         else:
             report.add_result(ValidationResult(
                 check_name="Schema: Required Columns",
                 passed=False,
                 severity='CRITICAL',
-                message=f"Missing required columns: {missing_cols}",
-                details={'missing': missing_cols}
+                message=f"Missing required columns: {missing}",
+                details={'missing': missing}
             ))
 
-        # Check 3: CT-VISIBLE-CUSTOMER field population
-        if 'CT-VISIBLE-CUSTOMER' in df.columns:
-            populated_pct = df['CT-VISIBLE-CUSTOMER'].notna().sum() / len(df)
-            if populated_pct >= schema['critical_threshold']:
-                report.add_result(ValidationResult(
-                    check_name="Field Completeness: CT-VISIBLE-CUSTOMER",
-                    passed=True,
-                    severity='INFO',
-                    message=f"✅ CT-VISIBLE-CUSTOMER: {populated_pct*100:.2f}% populated (sparse but present)",
-                    details={'populated_pct': populated_pct}
-                ))
-            else:
-                report.add_result(ValidationResult(
-                    check_name="Field Completeness: CT-VISIBLE-CUSTOMER",
-                    passed=False,
-                    severity='CRITICAL',
-                    message=f"CT-VISIBLE-CUSTOMER only {populated_pct*100:.2f}% populated (need >0.1%)",
-                    details={'populated_pct': populated_pct}
-                ))
+    def _check_row_count_threshold(self, report: FileValidationReport,
+                                    threshold: int, file_type: str) -> None:
+        """Check if row count meets minimum threshold"""
+        print(f"   ✅ Total rows: {report.total_rows:,}")
+        if report.total_rows >= threshold:
+            report.add_result(ValidationResult(
+                check_name="Data Volume: Row Count",
+                passed=True,
+                severity='INFO',
+                message=f"Row count reasonable: {report.total_rows:,} (pre-filter)",
+                details={'total_rows': report.total_rows}
+            ))
         else:
             report.add_result(ValidationResult(
-                check_name="Field Completeness: CT-VISIBLE-CUSTOMER",
+                check_name="Data Volume: Row Count",
                 passed=False,
-                severity='CRITICAL',
-                message="CT-VISIBLE-CUSTOMER column not found (data corruption suspected)"
+                severity='WARNING',
+                message=f"Unexpected row count: {report.total_rows:,} (expected {threshold:,}+ pre-filter)",
+                details={'total_rows': report.total_rows}
             ))
 
-        # Check 4: Ticket IDs numeric
-        if 'CT-TKT-ID' in df.columns:
-            try:
-                df['CT-TKT-ID'].astype(int)
+    def _check_field_population(self, df: pd.DataFrame, report: FileValidationReport,
+                                 field_name: str, threshold: float) -> None:
+        """Check if a field meets minimum population threshold"""
+        if field_name not in df.columns:
+            report.add_result(ValidationResult(
+                check_name=f"Field Completeness: {field_name}",
+                passed=False,
+                severity='CRITICAL',
+                message=f"{field_name} column not found (data corruption suspected)"
+            ))
+            return
+
+        populated_pct = df[field_name].notna().sum() / len(df)
+        if populated_pct >= threshold:
+            report.add_result(ValidationResult(
+                check_name=f"Field Completeness: {field_name}",
+                passed=True,
+                severity='INFO',
+                message=f"✅ {field_name}: {populated_pct*100:.2f}% populated",
+                details={'populated_pct': populated_pct}
+            ))
+        else:
+            report.add_result(ValidationResult(
+                check_name=f"Field Completeness: {field_name}",
+                passed=False,
+                severity='CRITICAL',
+                message=f"{field_name} only {populated_pct*100:.2f}% populated (need >{threshold*100:.1f}%)",
+                details={'populated_pct': populated_pct}
+            ))
+
+    def _check_field_numeric(self, df: pd.DataFrame, report: FileValidationReport,
+                              field_name: str) -> None:
+        """Check if a field contains numeric values"""
+        if field_name not in df.columns:
+            return
+
+        try:
+            df[field_name].astype(int)
+            report.add_result(ValidationResult(
+                check_name="Data Type: Ticket IDs",
+                passed=True,
+                severity='INFO',
+                message="✅ Ticket IDs: All numeric (convertible to int)"
+            ))
+        except (ValueError, TypeError):
+            non_numeric = df[~df[field_name].apply(lambda x: str(x).isdigit())]
+            report.add_result(ValidationResult(
+                check_name="Data Type: Ticket IDs",
+                passed=False,
+                severity='WARNING',
+                message=f"Found {len(non_numeric)} non-numeric ticket IDs",
+                details={'sample_invalid': list(non_numeric[field_name].head(5))}
+            ))
+
+    def _check_field_dates(self, df: pd.DataFrame, report: FileValidationReport,
+                            field_name: str) -> None:
+        """Check if a date field is parseable"""
+        if field_name not in df.columns:
+            return
+
+        try:
+            pd.to_datetime(df[field_name], dayfirst=True, errors='coerce')
+            unparseable = df[field_name].isna().sum()
+            if unparseable == 0:
                 report.add_result(ValidationResult(
-                    check_name="Data Type: Ticket IDs",
+                    check_name="Data Type: Dates",
                     passed=True,
                     severity='INFO',
-                    message="✅ Ticket IDs: All numeric (convertible to int)"
+                    message="✅ Dates: All parseable (DD/MM/YYYY format)"
                 ))
-            except (ValueError, TypeError) as e:
-                non_numeric = df[~df['CT-TKT-ID'].apply(lambda x: str(x).isdigit())]
-                report.add_result(ValidationResult(
-                    check_name="Data Type: Ticket IDs",
-                    passed=False,
-                    severity='WARNING',
-                    message=f"Found {len(non_numeric)} non-numeric ticket IDs",
-                    details={'sample_invalid': list(non_numeric['CT-TKT-ID'].head(5))}
-                ))
-
-        # Check 5: Dates parseable
-        if 'CT-DATEAMDTIME' in df.columns:
-            try:
-                pd.to_datetime(df['CT-DATEAMDTIME'], dayfirst=True, errors='coerce')
-                unparseable = df['CT-DATEAMDTIME'].isna().sum()
-                if unparseable == 0:
-                    report.add_result(ValidationResult(
-                        check_name="Data Type: Dates",
-                        passed=True,
-                        severity='INFO',
-                        message="✅ Dates: All parseable (DD/MM/YYYY format)"
-                    ))
-                else:
-                    report.add_result(ValidationResult(
-                        check_name="Data Type: Dates",
-                        passed=False,
-                        severity='WARNING',
-                        message=f"Found {unparseable} unparseable dates",
-                        details={'unparseable_count': unparseable}
-                    ))
-            except Exception as e:
+            else:
                 report.add_result(ValidationResult(
                     check_name="Data Type: Dates",
                     passed=False,
                     severity='WARNING',
-                    message=f"Date parsing failed: {str(e)}"
+                    message=f"Found {unparseable} unparseable dates",
+                    details={'unparseable_count': unparseable}
                 ))
-
-        # Check 6: Comment text integrity
-        if 'CT-COMMENT' in df.columns:
-            avg_length = df['CT-COMMENT'].astype(str).str.len().mean()
-            min_length = df['CT-COMMENT'].astype(str).str.len().min()
-
-            # Expect avg >100 chars (if much lower, likely truncated)
-            if avg_length >= 100:
-                report.add_result(ValidationResult(
-                    check_name="Text Integrity: Comment Length",
-                    passed=True,
-                    severity='INFO',
-                    message=f"✅ Comment text: Average {avg_length:.0f} chars",
-                    details={'avg_length': avg_length, 'min_length': min_length}
-                ))
-            else:
-                report.add_result(ValidationResult(
-                    check_name="Text Integrity: Comment Length",
-                    passed=False,
-                    severity='WARNING',
-                    message=f"Comment text avg {avg_length:.0f} chars (expected >100, possible truncation)",
-                    details={'avg_length': avg_length, 'min_length': min_length}
-                ))
-
-        # Check 7: Row count reasonable
-        print(f"   ✅ Total rows: {report.total_rows:,}")
-        if report.total_rows >= 100000:  # Expect 200K+ comments (full export, pre-filter)
+        except Exception as e:
             report.add_result(ValidationResult(
-                check_name="Data Volume: Row Count",
+                check_name="Data Type: Dates",
+                passed=False,
+                severity='WARNING',
+                message=f"Date parsing failed: {str(e)}"
+            ))
+
+    def _check_text_length(self, df: pd.DataFrame, report: FileValidationReport,
+                            field_name: str, min_avg_length: int) -> None:
+        """Check if text field has reasonable average length"""
+        if field_name not in df.columns:
+            return
+
+        avg_length = df[field_name].astype(str).str.len().mean()
+        min_length = df[field_name].astype(str).str.len().min()
+
+        if avg_length >= min_avg_length:
+            report.add_result(ValidationResult(
+                check_name="Text Integrity: Comment Length",
                 passed=True,
                 severity='INFO',
-                message=f"Row count reasonable: {report.total_rows:,} (pre-filter)",
-                details={'total_rows': report.total_rows}
+                message=f"✅ Comment text: Average {avg_length:.0f} chars",
+                details={'avg_length': avg_length, 'min_length': min_length}
             ))
         else:
             report.add_result(ValidationResult(
-                check_name="Data Volume: Row Count",
+                check_name="Text Integrity: Comment Length",
                 passed=False,
                 severity='WARNING',
-                message=f"Low row count: {report.total_rows:,} (expected 200K+ pre-filter)",
-                details={'total_rows': report.total_rows}
+                message=f"Comment text avg {avg_length:.0f} chars (expected >{min_avg_length}, possible truncation)",
+                details={'avg_length': avg_length, 'min_length': min_length}
             ))
+
+    def _validate_comments(self, df: pd.DataFrame, report: FileValidationReport):
+        """Validate comments XLSX file using reusable helpers"""
+        schema = self.EXPECTED_SCHEMAS['comments']
+
+        # Schema checks
+        self._check_exact_column_count(df, report, schema['expected_column_count'])
+        self._check_required_columns(df, report, schema['required_columns'])
+
+        # Field-specific checks
+        self._check_field_population(df, report, 'CT-VISIBLE-CUSTOMER', schema['critical_threshold'])
+        self._check_field_numeric(df, report, 'CT-TKT-ID')
+        self._check_field_dates(df, report, 'CT-DATEAMDTIME')
+        self._check_text_length(df, report, 'CT-COMMENT', min_avg_length=100)
+
+        # Volume check
+        self._check_row_count_threshold(report, threshold=100000, file_type='comments')
 
     def _validate_tickets(self, df: pd.DataFrame, report: FileValidationReport):
-        """Validate tickets XLSX file"""
+        """Validate tickets XLSX file using reusable helpers"""
         schema = self.EXPECTED_SCHEMAS['tickets']
 
-        # Check 1: Required columns present
-        missing_cols = [col for col in schema['required_columns'] if col not in df.columns]
-        if not missing_cols:
-            report.add_result(ValidationResult(
-                check_name="Schema: Required Columns",
-                passed=True,
-                severity='INFO',
-                message=f"✅ Ticket ID column: TKT-Ticket ID"
-            ))
-            report.add_result(ValidationResult(
-                check_name="Schema: Required Columns",
-                passed=True,
-                severity='INFO',
-                message=f"✅ Created Time column: TKT-Created Date-Time"
-            ))
-        else:
-            report.add_result(ValidationResult(
-                check_name="Schema: Required Columns",
-                passed=False,
-                severity='CRITICAL',
-                message=f"Missing required columns: {missing_cols}",
-                details={'missing': missing_cols, 'found': list(df.columns)}
-            ))
+        # Schema checks
+        self._check_required_columns(df, report, schema['required_columns'])
+        self._check_column_count_range(df, report,
+                                        schema['expected_column_count_min'],
+                                        schema['expected_column_count_max'])
 
-        # Check 2: Column count in expected range
-        col_count = len(df.columns)
-        if schema['expected_column_count_min'] <= col_count <= schema['expected_column_count_max']:
-            report.add_result(ValidationResult(
-                check_name="Schema: Column Count",
-                passed=True,
-                severity='INFO',
-                message=f"Column count in expected range: {col_count}"
-            ))
-        else:
-            report.add_result(ValidationResult(
-                check_name="Schema: Column Count",
-                passed=False,
-                severity='WARNING',
-                message=f"Column count {col_count} outside expected range ({schema['expected_column_count_min']}-{schema['expected_column_count_max']})"
-            ))
-
-        # Check 3: Row count
-        print(f"   ✅ Total rows: {report.total_rows:,}")
-        if report.total_rows >= 500000:  # Expect 600K+ tickets (full export, pre-filter)
-            report.add_result(ValidationResult(
-                check_name="Data Volume: Row Count",
-                passed=True,
-                severity='INFO',
-                message=f"Row count reasonable: {report.total_rows:,} (pre-filter)",
-                details={'total_rows': report.total_rows}
-            ))
-        else:
-            report.add_result(ValidationResult(
-                check_name="Data Volume: Row Count",
-                passed=False,
-                severity='WARNING',
-                message=f"Unexpected row count: {report.total_rows:,} (expected 600K+ pre-filter)",
-                details={'total_rows': report.total_rows}
-            ))
+        # Volume check
+        self._check_row_count_threshold(report, threshold=500000, file_type='tickets')
 
     def _validate_timesheets(self, df: pd.DataFrame, report: FileValidationReport):
-        """Validate timesheets XLSX file"""
+        """Validate timesheets XLSX file using reusable helpers"""
         schema = self.EXPECTED_SCHEMAS['timesheets']
 
-        # Check 1: Required columns present
-        missing_cols = [col for col in schema['required_columns'] if col not in df.columns]
-        if not missing_cols:
-            report.add_result(ValidationResult(
-                check_name="Schema: Required Columns",
-                passed=True,
-                severity='INFO',
-                message=f"✅ Date column: Date"
-            ))
-            report.add_result(ValidationResult(
-                check_name="Schema: Required Columns",
-                passed=True,
-                severity='INFO',
-                message=f"✅ CRM column: Crm"
-            ))
-        else:
-            report.add_result(ValidationResult(
-                check_name="Schema: Required Columns",
-                passed=False,
-                severity='CRITICAL',
-                message=f"Missing required columns: {missing_cols}",
-                details={'missing': missing_cols, 'found': list(df.columns)}
-            ))
+        # Schema checks
+        self._check_required_columns(df, report, schema['required_columns'])
+        self._check_column_count_range(df, report,
+                                        schema['expected_column_count_min'],
+                                        schema['expected_column_count_max'])
 
-        # Check 2: Column count in expected range
-        col_count = len(df.columns)
-        if schema['expected_column_count_min'] <= col_count <= schema['expected_column_count_max']:
-            report.add_result(ValidationResult(
-                check_name="Schema: Column Count",
-                passed=True,
-                severity='INFO',
-                message=f"Column count in expected range: {col_count}"
-            ))
-        else:
-            report.add_result(ValidationResult(
-                check_name="Schema: Column Count",
-                passed=False,
-                severity='WARNING',
-                message=f"Column count {col_count} outside expected range ({schema['expected_column_count_min']}-{schema['expected_column_count_max']})"
-            ))
-
-        # Check 3: Row count
-        print(f"   ✅ Total rows: {report.total_rows:,}")
-        if report.total_rows >= 500000:  # Expect 700K+ timesheets (full export, pre-filter)
-            report.add_result(ValidationResult(
-                check_name="Data Volume: Row Count",
-                passed=True,
-                severity='INFO',
-                message=f"Row count reasonable: {report.total_rows:,} (pre-filter)",
-                details={'total_rows': report.total_rows}
-            ))
-        else:
-            report.add_result(ValidationResult(
-                check_name="Data Volume: Row Count",
-                passed=False,
-                severity='WARNING',
-                message=f"Unexpected row count: {report.total_rows:,} (expected 700K+ pre-filter)",
-                details={'total_rows': report.total_rows}
-            ))
+        # Volume check
+        self._check_row_count_threshold(report, threshold=500000, file_type='timesheets')
 
     def _calculate_quality_score(self, report: FileValidationReport) -> float:
         """

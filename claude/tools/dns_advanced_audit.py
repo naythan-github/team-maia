@@ -78,7 +78,7 @@ class AdvancedDNSAuditor:
                             return "PASS", "MTA-STS fully configured", record[:100]
                         else:
                             return "WARN", "MTA-STS DNS record exists but policy file missing", record[:100]
-                    except:
+                    except requests.RequestException:
                         return "WARN", "MTA-STS DNS record exists but policy unreachable", record[:100]
 
             return "WARN", "No MTA-STS record", ""
@@ -166,7 +166,7 @@ class AdvancedDNSAuditor:
                                 vulnerable_count += 1
                                 vulnerable_subdomains.append(f"{subdomain}→{cname_target[:30]}")
                                 break
-                except:
+                except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
                     continue
 
             if vulnerable_count > 0:
@@ -195,9 +195,9 @@ class AdvancedDNSAuditor:
                         try:
                             ptr_answer = self.resolver.resolve_address(ip)
                             ptr_results.append(f"{mx_host[:20]}→{ip}→PTR:OK")
-                        except:
+                        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
                             ptr_results.append(f"{mx_host[:20]}→{ip}→PTR:MISSING")
-                except:
+                except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
                     continue
 
             if not ptr_results:
@@ -233,7 +233,7 @@ class AdvancedDNSAuditor:
                 answers = temp_resolver.resolve(domain, 'NS')
                 ns_set = frozenset(str(rdata) for rdata in answers)
                 ns_results[resolver_ip] = ns_set
-            except:
+            except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
                 ns_results[resolver_ip] = None
 
         # Check consistency

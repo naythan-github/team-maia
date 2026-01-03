@@ -767,136 +767,111 @@ Model: Gemma2 9B (Local) | Processed: {sum(len(v) for v in categorized.values())
 
         return brief
 
-    def _format_brief_v2(self, categorized: Dict, action_items: List[Dict], sentiment: Dict, thread_states: Dict) -> str:
-        """Format morning brief with thread-aware sections (v2)"""
-        now = datetime.now()
+    # ========== Brief Formatting Helpers ==========
 
-        # Separate threads by state
-        needs_action = [t for t in thread_states.values() if t['state'] == 'NEEDS_ACTION']
-        actioned = [t for t in thread_states.values() if t['state'] == 'ACTIONED']
-        waiting = [t for t in thread_states.values() if t['state'] == 'WAITING']
+    def _format_needs_action_section(self, needs_action: List[Dict], categorized: Dict,
+                                      sentiment: Dict) -> str:
+        """Format the NEEDS ACTION section of the brief"""
+        lines = [f"---\n\n## 🎯 NEEDS YOUR ACTION ({len(needs_action)} conversations)\n\n"]
 
-        # Calculate stats
-        total_threads = len(thread_states)
-        total_emails = sum(len(v) for v in categorized.values())
+        if not needs_action:
+            lines.append("✅ No conversations need your action right now!\n\n")
+            return "".join(lines)
 
-        brief = f"""# Email Intelligence Brief - {now.strftime('%A, %B %d, %Y %I:%M %p')}
+        urgent_subjects = {self._normalize_subject(e.get('subject', '')): True
+                          for e in categorized.get('urgent', [])}
 
-Model: Gemma2 9B (Local) | Threads: {total_threads} | Emails: {total_emails} | Cost: $0.00
+        for i, thread in enumerate(needs_action[:15], 1):
+            subject = thread.get('subject', 'No Subject')
+            last_inbox = thread.get('last_inbox', {})
+            sender = last_inbox.get('from', 'Unknown')
+            date = last_inbox.get('date', '')[:16]
 
----
+            is_urgent = self._normalize_subject(subject) in urgent_subjects
+            urgency_marker = "🔴 " if is_urgent else ""
 
-"""
+            sender_sentiment = sentiment.get(sender, {})
+            sentiment_text = sender_sentiment.get('sentiment', '')
+            sentiment_emoji = {"POSITIVE": "😊", "NEUTRAL": "", "CONCERNED": "😟",
+                              "FRUSTRATED": "😤"}.get(sentiment_text, "")
 
-        # Add action tracker dashboard
-        action_dashboard = self.action_tracker.format_action_dashboard()
-        brief += action_dashboard
+            lines.append(f"{i}. {urgency_marker}**{subject}**\n")
+            lines.append(f"   From: {sender} | {date} {sentiment_emoji}\n")
+            if sender_sentiment.get('recommended_action'):
+                lines.append(f"   → {sender_sentiment.get('recommended_action')}\n")
+            lines.append("\n")
 
-        # NEEDS ACTION section (urgent + project combined)
-        brief += f"""---
+        return "".join(lines)
 
-## 🎯 NEEDS YOUR ACTION ({len(needs_action)} conversations)
+    def _format_actioned_section(self, actioned: List[Dict]) -> str:
+        """Format the ACTIONED section of the brief"""
+        lines = [f"---\n\n## ✅ ACTIONED ({len(actioned)} conversations - you replied)\n\n"]
 
-"""
-        if needs_action:
-            # Sort by urgency (urgent first)
-            urgent_subjects = {self._normalize_subject(e.get('subject', '')): True
-                              for e in categorized.get('urgent', [])}
+        if not actioned:
+            lines.append("No recent replies tracked.\n\n")
+            return "".join(lines)
 
-            for i, thread in enumerate(needs_action[:15], 1):
-                subject = thread.get('subject', 'No Subject')
-                last_inbox = thread.get('last_inbox', {})
-                sender = last_inbox.get('from', 'Unknown')
-                date = last_inbox.get('date', '')[:16]
+        for i, thread in enumerate(actioned[:5], 1):
+            subject = thread.get('subject', 'No Subject')
+            last_sent = thread.get('last_sent', {})
+            sent_date = last_sent.get('date', '')[:16]
+            lines.append(f"{i}. {subject} (replied {sent_date})\n")
 
-                # Check if urgent
-                is_urgent = self._normalize_subject(subject) in urgent_subjects
-                urgency_marker = "🔴 " if is_urgent else ""
+        if len(actioned) > 5:
+            lines.append(f"\n... and {len(actioned) - 5} more conversations you've handled\n")
 
-                # Sentiment
-                sender_sentiment = sentiment.get(sender, {})
-                sentiment_text = sender_sentiment.get('sentiment', '')
-                sentiment_emoji = {"POSITIVE": "😊", "NEUTRAL": "", "CONCERNED": "😟", "FRUSTRATED": "😤"}.get(sentiment_text, "")
+        lines.append("\n")
+        return "".join(lines)
 
-                brief += f"""{i}. {urgency_marker}**{subject}**
-   From: {sender} | {date} {sentiment_emoji}
-"""
-                # Add recommended action if available
-                if sender_sentiment.get('recommended_action'):
-                    brief += f"   → {sender_sentiment.get('recommended_action')}\n"
-                brief += "\n"
-        else:
-            brief += "✅ No conversations need your action right now!\n\n"
+    def _format_waiting_section(self, waiting: List[Dict]) -> str:
+        """Format the WAITING FOR REPLY section of the brief"""
+        lines = [f"---\n\n## 📤 WAITING FOR REPLY ({len(waiting)} sent, awaiting response)\n\n"]
 
-        # ACTIONED section (things you've already replied to)
-        brief += f"""---
+        if not waiting:
+            lines.append("No outstanding sent emails awaiting reply.\n\n")
+            return "".join(lines)
 
-## ✅ ACTIONED ({len(actioned)} conversations - you replied)
+        for i, thread in enumerate(waiting[:10], 1):
+            subject = thread.get('subject', 'No Subject')
+            last_sent = thread.get('last_sent', {})
+            sent_date = last_sent.get('date', '')[:16]
 
-"""
-        if actioned:
-            for i, thread in enumerate(actioned[:5], 1):
-                subject = thread.get('subject', 'No Subject')
-                last_sent = thread.get('last_sent', {})
-                sent_date = last_sent.get('date', '')[:16]
-                brief += f"{i}. {subject} (replied {sent_date})\n"
+            stale_marker = ""
+            try:
+                if any(day in sent_date for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday']):
+                    stale_marker = " ⚠️ STALE"
+            except (TypeError, AttributeError):
+                pass
 
-            if len(actioned) > 5:
-                brief += f"\n... and {len(actioned) - 5} more conversations you've handled\n"
-        else:
-            brief += "No recent replies tracked.\n"
+            lines.append(f"{i}. {subject} (sent {sent_date}){stale_marker}\n")
 
-        brief += "\n"
+        if len(waiting) > 10:
+            lines.append(f"\n... and {len(waiting) - 10} more awaiting reply\n")
 
-        # WAITING FOR REPLY section
-        brief += f"""---
+        lines.append("\n")
+        return "".join(lines)
 
-## 📤 WAITING FOR REPLY ({len(waiting)} sent, awaiting response)
+    def _format_stakeholder_intelligence(self, sentiment: Dict) -> str:
+        """Format the STAKEHOLDER INTELLIGENCE section of the brief"""
+        if not sentiment:
+            return ""
 
-"""
-        if waiting:
-            for i, thread in enumerate(waiting[:10], 1):
-                subject = thread.get('subject', 'No Subject')
-                last_sent = thread.get('last_sent', {})
-                sent_date = last_sent.get('date', '')[:16]
+        lines = ["---\n\n## 📈 STAKEHOLDER INTELLIGENCE\n\n"]
 
-                # Calculate days waiting (simple check based on date string)
-                stale_marker = ""
-                try:
-                    # Check if date contains "Friday" or earlier day for stale detection
-                    if any(day in sent_date for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday']):
-                        stale_marker = " ⚠️ STALE"
-                except:
-                    pass
+        for sender, data in list(sentiment.items())[:5]:
+            health = data.get("relationship_health", 75)
+            health_emoji = "🟢" if health >= 75 else "🟡" if health >= 60 else "🔴"
 
-                brief += f"{i}. {subject} (sent {sent_date}){stale_marker}\n"
+            lines.append(f"**{sender}**\n")
+            lines.append(f"   {health_emoji} Health: {health}/100 | Sentiment: {data.get('sentiment', 'NEUTRAL')}\n")
+            lines.append(f"   Recommended: {data.get('recommended_action', 'Continue monitoring')}\n\n")
 
-            if len(waiting) > 10:
-                brief += f"\n... and {len(waiting) - 10} more awaiting reply\n"
-        else:
-            brief += "No outstanding sent emails awaiting reply.\n"
+        return "".join(lines)
 
-        brief += "\n"
-
-        # Relationship intelligence (external senders only)
-        if sentiment:
-            brief += f"""---
-
-## 📈 STAKEHOLDER INTELLIGENCE
-
-"""
-            for sender, data in list(sentiment.items())[:5]:
-                health = data.get("relationship_health", 75)
-                health_emoji = "🟢" if health >= 75 else "🟡" if health >= 60 else "🔴"
-
-                brief += f"""**{sender}**
-   {health_emoji} Health: {health}/100 | Sentiment: {data.get('sentiment', 'NEUTRAL')}
-   Recommended: {data.get('recommended_action', 'Continue monitoring')}
-
-"""
-
-        # Footer with stats
-        brief += f"""---
+    def _format_stats_footer(self, total_threads: int, needs_action_count: int,
+                             actioned_count: int, waiting_count: int, now: datetime) -> str:
+        """Format the processing stats footer of the brief"""
+        return f"""---
 
 ## 💰 PROCESSING STATS
 
@@ -907,9 +882,9 @@ Model: Gemma2 9B (Local) | Threads: {total_threads} | Emails: {total_emails} | C
 - Cost: $0.00
 
 **Summary:**
-- 🎯 {len(needs_action)} conversations need action
-- ✅ {len(actioned)} already handled
-- 📤 {len(waiting)} awaiting reply
+- 🎯 {needs_action_count} conversations need action
+- ✅ {actioned_count} already handled
+- 📤 {waiting_count} awaiting reply
 
 ---
 
@@ -917,7 +892,32 @@ Model: Gemma2 9B (Local) | Threads: {total_threads} | Emails: {total_emails} | C
 *Updates hourly | Last run: {now.strftime('%I:%M %p')}*
 """
 
-        return brief
+    def _format_brief_v2(self, categorized: Dict, action_items: List[Dict],
+                         sentiment: Dict, thread_states: Dict) -> str:
+        """Format morning brief with thread-aware sections (v2) using helpers"""
+        now = datetime.now()
+
+        # Separate threads by state
+        needs_action = [t for t in thread_states.values() if t['state'] == 'NEEDS_ACTION']
+        actioned = [t for t in thread_states.values() if t['state'] == 'ACTIONED']
+        waiting = [t for t in thread_states.values() if t['state'] == 'WAITING']
+
+        total_threads = len(thread_states)
+        total_emails = sum(len(v) for v in categorized.values())
+
+        # Build brief using section helpers
+        sections = [
+            f"# Email Intelligence Brief - {now.strftime('%A, %B %d, %Y %I:%M %p')}\n\n",
+            f"Model: Gemma2 9B (Local) | Threads: {total_threads} | Emails: {total_emails} | Cost: $0.00\n\n---\n\n",
+            self.action_tracker.format_action_dashboard(),
+            self._format_needs_action_section(needs_action, categorized, sentiment),
+            self._format_actioned_section(actioned),
+            self._format_waiting_section(waiting),
+            self._format_stakeholder_intelligence(sentiment),
+            self._format_stats_footer(total_threads, len(needs_action), len(actioned), len(waiting), now)
+        ]
+
+        return "".join(sections)
 
     def _generate_empty_brief(self) -> str:
         """Generate brief when no emails found"""

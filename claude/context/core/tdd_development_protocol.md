@@ -211,6 +211,79 @@ This phase catches production issues that unit/integration tests miss (performan
 
 **Gate**: Production deployment NOT approved until all validation passing
 
+## 🔧 **REFACTORING EXISTING CODE WORKFLOW** ⭐ **PHASE 230**
+
+### Purpose
+When refactoring existing code (bare except fixes, long function decomposition, code quality improvements), the standard TDD workflow applies but with **MANDATORY smoke testing** to verify runtime behavior of modified modules.
+
+**Key Difference**: Unlike new feature development where tests are written first, refactoring modifies code that may lack comprehensive test coverage. Smoke tests bridge this gap.
+
+### Refactoring Procedure (Standard Workflow)
+
+**Phase R1: TDD Foundation**
+1. Write TDD tests for the specific issue being fixed
+2. Run tests - expect failure (red)
+3. Apply fixes/refactoring
+4. Run tests - expect pass (green)
+5. Verify syntax compiles: `python3 -m py_compile <file.py>`
+
+**Phase R2: Smoke Testing (MANDATORY)** ⭐ **NEW**
+For EACH modified module, execute these verification steps:
+
+1. **Import Test** - Module loads without errors:
+   ```python
+   from claude.tools.sre import launchagent_health_monitor  # Should succeed
+   ```
+
+2. **Instantiation Test** - Classes can be created:
+   ```python
+   monitor = LaunchAgentHealthMonitor()  # Should succeed
+   ```
+
+3. **Method Existence Test** - Extracted helpers exist:
+   ```python
+   hasattr(monitor, '_calculate_schedule_aware_health')  # Should be True
+   ```
+
+4. **Basic Behavioral Test** - Key functions work with mock data:
+   ```python
+   # Test helper with minimal inputs
+   result = validator._check_required_columns(df, report, ['A', 'B'])
+   assert result == True  # Expected behavior
+   ```
+
+**Phase R3: Tool Execution (When Possible)**
+If the tool has CLI capabilities, run it:
+```bash
+python3 claude/tools/sre/launchagent_health_monitor.py --dashboard  # Full execution
+python3 claude/tools/sre/xlsx_pre_validator.py --help  # Basic startup
+```
+
+### Confidence Levels After Verification
+| Verification Step | Confidence Level |
+|-------------------|------------------|
+| Syntax check (`py_compile`) | High - Code parses |
+| Import test | High - Dependencies resolve |
+| Instantiation test | High - Classes initialize |
+| Method existence test | High - Refactored structure correct |
+| Basic behavioral test | Medium-High - Logic preserved |
+| Full tool execution | Highest - Production-ready |
+
+### When Smoke Tests Fail
+1. **Import Error**: Check dependencies, circular imports, syntax in imported modules
+2. **Instantiation Error**: Check `__init__` method, required parameters
+3. **Method Missing**: Verify extraction created correct method names
+4. **Behavioral Mismatch**: Logic change during refactoring - review diff carefully
+
+### Gate
+**Code refactoring is NOT complete until**:
+- ✅ TDD tests pass
+- ✅ Syntax compiles
+- ✅ All smoke tests pass (import, instantiation, methods, behavior)
+- ✅ Tool executes (when CLI available)
+
+---
+
 ## 🤖 **AGENT PAIRING PROTOCOL** 🤖
 
 ### Automatic Agent Selection
@@ -403,6 +476,7 @@ claude/data/project_status/active/
 - **Resilience tested** (circuit breakers, fallbacks, graceful degradation) ⭐ **PHASE 193**
 - **Observability confirmed** (logs/metrics/traces emitted, dashboard functional) ⭐ **PHASE 193**
 - **Production readiness approved** (SRE sign-off on all validation categories) ⭐ **PHASE 193**
+- **Refactoring smoke tested** (import, instantiation, methods, behavior verified for all modified modules) ⭐ **PHASE 230**
 
 ## Quality Gates
 1. **Requirements Gate**: No tests until "requirements complete" confirmation
@@ -416,6 +490,7 @@ claude/data/project_status/active/
 9. **Integration Test Design Gate** ⭐ **PHASE 193**: Phase 3.5 integration tests designed and approved
 10. **Integration Execution Gate** ⭐ **PHASE 193**: Phase 5 integration tests passing
 11. **Production Readiness Gate** ⭐ **PHASE 193**: Phase 6 all validation passing (performance, resilience, observability, smoke, contracts)
+12. **Refactoring Smoke Test Gate** ⭐ **PHASE 230**: All smoke tests passing (import, instantiation, methods, behavior) for refactored code
 
 ## Risk Mitigation
 - Active probing during discovery phase
@@ -512,9 +587,10 @@ Features are blocked when `attempts >= max_attempts` (default 5):
 ⚠️ **Config with logic**: If config changes affect behavior → TDD required
 
 ---
-*Last Updated: 2025-11-26*
+*Last Updated: 2026-01-03*
 *Status: MANDATORY Protocol - Enforced for ALL Development*
 *Agent Pairing: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)*
 *Agent Continuity: Explicit reload commands + incremental progress saving (ALWAYS)*
 *Database Sync: Phase 5 registration + sync mandatory before production (PHASE 179)*
 *Integration & Validation: Phase 3.5 integration tests + Phase 6 production validation (PHASE 193)*
+*Refactoring Smoke Tests: Mandatory import/instantiation/method/behavior verification (PHASE 230)*

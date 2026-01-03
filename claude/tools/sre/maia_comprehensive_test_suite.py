@@ -304,7 +304,7 @@ class MaiaTestSuite:
                     try:
                         cursor.execute(f"SELECT count(*) FROM [{table[0]}]")
                         total_rows += cursor.fetchone()[0]
-                    except:
+                    except sqlite3.Error:
                         pass
 
                 conn.close()
@@ -502,6 +502,160 @@ class MaiaTestSuite:
     # CATEGORY 6: Core Functionality Tests
     # =========================================================================
 
+    def _test_file_readable(self, file_path: Path, test_name: str,
+                            content_pattern: str = None) -> TestResult:
+        """Helper: Test that a file exists, is readable, and optionally matches a pattern."""
+        test_start = time.time()
+        try:
+            if file_path.exists():
+                with open(file_path, 'r') as f:
+                    content = f.read()
+                extra_info = ""
+                if content_pattern:
+                    matches = len(re.findall(content_pattern, content))
+                    extra_info = f", {matches} pattern matches"
+                return TestResult(
+                    category="core",
+                    name=test_name,
+                    passed=True,
+                    message=f"Readable ({len(content)} chars{extra_info})",
+                    duration_ms=(time.time() - test_start) * 1000
+                )
+            else:
+                return TestResult(
+                    category="core",
+                    name=test_name,
+                    passed=False,
+                    message="File not found",
+                    duration_ms=(time.time() - test_start) * 1000
+                )
+        except Exception as e:
+            return TestResult(
+                category="core",
+                name=test_name,
+                passed=False,
+                message=f"Read error: {str(e)[:100]}",
+                duration_ms=(time.time() - test_start) * 1000
+            )
+
+    def _test_tool_execution(self, tool_path: Path, test_name: str,
+                             args: List[str], success_pattern: str = None) -> TestResult:
+        """Helper: Test that a Python tool executes successfully."""
+        test_start = time.time()
+        try:
+            if tool_path.exists():
+                result = subprocess.run(
+                    [sys.executable, str(tool_path)] + args,
+                    capture_output=True, text=True, timeout=10,
+                    cwd=str(self.maia_root)
+                )
+                if result.returncode == 0:
+                    if success_pattern and success_pattern not in result.stdout:
+                        return TestResult(
+                            category="core",
+                            name=test_name,
+                            passed=False,
+                            message=f"Missing expected output pattern",
+                            duration_ms=(time.time() - test_start) * 1000
+                        )
+                    return TestResult(
+                        category="core",
+                        name=test_name,
+                        passed=True,
+                        message="Execution successful",
+                        duration_ms=(time.time() - test_start) * 1000
+                    )
+                else:
+                    return TestResult(
+                        category="core",
+                        name=test_name,
+                        passed=False,
+                        message=f"Exit code {result.returncode}: {result.stderr[:100]}",
+                        duration_ms=(time.time() - test_start) * 1000
+                    )
+            else:
+                return TestResult(
+                    category="core",
+                    name=test_name,
+                    passed=False,
+                    message="File not found",
+                    duration_ms=(time.time() - test_start) * 1000
+                )
+        except subprocess.TimeoutExpired:
+            return TestResult(
+                category="core",
+                name=test_name,
+                passed=False,
+                message="Timeout (>10s)",
+                duration_ms=(time.time() - test_start) * 1000
+            )
+        except Exception as e:
+            return TestResult(
+                category="core",
+                name=test_name,
+                passed=False,
+                message=f"Error: {str(e)[:100]}",
+                duration_ms=(time.time() - test_start) * 1000
+            )
+
+    def _test_syntax_valid(self, file_path: Path, test_name: str) -> TestResult:
+        """Helper: Test that a Python file has valid syntax."""
+        test_start = time.time()
+        try:
+            if file_path.exists():
+                with open(file_path, 'r') as f:
+                    source = f.read()
+                ast.parse(source)
+                return TestResult(
+                    category="core",
+                    name=test_name,
+                    passed=True,
+                    message="Syntax valid",
+                    duration_ms=(time.time() - test_start) * 1000
+                )
+            else:
+                return TestResult(
+                    category="core",
+                    name=test_name,
+                    passed=False,
+                    message="File not found",
+                    duration_ms=(time.time() - test_start) * 1000
+                )
+        except Exception as e:
+            return TestResult(
+                category="core",
+                name=test_name,
+                passed=False,
+                message=f"Error: {str(e)[:100]}",
+                duration_ms=(time.time() - test_start) * 1000
+            )
+
+    def _test_directories_exist(self, dir_paths: List[str], test_name: str) -> TestResult:
+        """Helper: Test that required directories exist."""
+        test_start = time.time()
+        missing_dirs = []
+        for dir_path in dir_paths:
+            full_path = self.maia_root / dir_path
+            if not full_path.exists():
+                missing_dirs.append(dir_path)
+
+        if not missing_dirs:
+            return TestResult(
+                category="core",
+                name=test_name,
+                passed=True,
+                message=f"All {len(dir_paths)} required directories exist",
+                duration_ms=(time.time() - test_start) * 1000
+            )
+        else:
+            return TestResult(
+                category="core",
+                name=test_name,
+                passed=False,
+                message=f"Missing directories: {', '.join(missing_dirs)}",
+                duration_ms=(time.time() - test_start) * 1000
+            )
+
     def test_core(self) -> CategoryResult:
         """Test core Maia functionality"""
         self.log("\n" + "="*60)
@@ -510,306 +664,59 @@ class MaiaTestSuite:
 
         start_time = time.time()
 
-        # Test 1: SYSTEM_STATE.md exists and is readable
-        test_start = time.time()
-        system_state = self.maia_root / "SYSTEM_STATE.md"
-        try:
-            if system_state.exists():
-                with open(system_state, 'r') as f:
-                    content = f.read()
-                phase_count = len(re.findall(r'## Phase \d+', content))
-                result = TestResult(
-                    category="core",
-                    name="SYSTEM_STATE.md",
-                    passed=True,
-                    message=f"Readable ({len(content)} chars, {phase_count} phases)",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-            else:
-                result = TestResult(
-                    category="core",
-                    name="SYSTEM_STATE.md",
-                    passed=False,
-                    message="File not found",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-        except Exception as e:
-            result = TestResult(
-                category="core",
-                name="SYSTEM_STATE.md",
-                passed=False,
-                message=f"Read error: {str(e)[:100]}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result)
+        # Test 1: SYSTEM_STATE.md
+        self.add_result("core", self._test_file_readable(
+            self.maia_root / "SYSTEM_STATE.md",
+            "SYSTEM_STATE.md",
+            content_pattern=r'## Phase \d+'
+        ))
 
-        # Test 2: CLAUDE.md exists and is readable
-        test_start = time.time()
-        claude_md = self.maia_root / "CLAUDE.md"
-        try:
-            if claude_md.exists():
-                with open(claude_md, 'r') as f:
-                    content = f.read()
-                result = TestResult(
-                    category="core",
-                    name="CLAUDE.md",
-                    passed=True,
-                    message=f"Readable ({len(content)} chars)",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-            else:
-                result = TestResult(
-                    category="core",
-                    name="CLAUDE.md",
-                    passed=False,
-                    message="File not found",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-        except Exception as e:
-            result = TestResult(
-                category="core",
-                name="CLAUDE.md",
-                passed=False,
-                message=f"Read error: {str(e)[:100]}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result)
+        # Test 2: CLAUDE.md
+        self.add_result("core", self._test_file_readable(
+            self.maia_root / "CLAUDE.md",
+            "CLAUDE.md"
+        ))
 
-        # Test 3: UFC System exists
-        test_start = time.time()
-        ufc_system = self.maia_root / "claude" / "context" / "ufc_system.md"
-        try:
-            if ufc_system.exists():
-                with open(ufc_system, 'r') as f:
-                    content = f.read()
-                result = TestResult(
-                    category="core",
-                    name="UFC System",
-                    passed=True,
-                    message=f"Readable ({len(content)} chars)",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-            else:
-                result = TestResult(
-                    category="core",
-                    name="UFC System",
-                    passed=False,
-                    message="File not found",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-        except Exception as e:
-            result = TestResult(
-                category="core",
-                name="UFC System",
-                passed=False,
-                message=f"Read error: {str(e)[:100]}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result)
+        # Test 3: UFC System
+        self.add_result("core", self._test_file_readable(
+            self.maia_root / "claude" / "context" / "ufc_system.md",
+            "UFC System"
+        ))
 
-        # Test 4: Capability Index exists
-        test_start = time.time()
-        cap_index = self.maia_root / "claude" / "context" / "core" / "capability_index.md"
-        try:
-            if cap_index.exists():
-                with open(cap_index, 'r') as f:
-                    content = f.read()
-                tool_count = len(re.findall(r'\.py\b', content))
-                result = TestResult(
-                    category="core",
-                    name="Capability Index",
-                    passed=True,
-                    message=f"Readable ({len(content)} chars, ~{tool_count} tool refs)",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-            else:
-                result = TestResult(
-                    category="core",
-                    name="Capability Index",
-                    passed=False,
-                    message="File not found",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-        except Exception as e:
-            result = TestResult(
-                category="core",
-                name="Capability Index",
-                passed=False,
-                message=f"Read error: {str(e)[:100]}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result)
+        # Test 4: Capability Index
+        self.add_result("core", self._test_file_readable(
+            self.maia_root / "claude" / "context" / "core" / "capability_index.md",
+            "Capability Index",
+            content_pattern=r'\.py\b'
+        ))
 
         # Test 5: Smart Context Loader
-        test_start = time.time()
-        smart_loader = self.maia_root / "claude" / "tools" / "sre" / "smart_context_loader.py"
-        try:
-            if smart_loader.exists():
-                result = subprocess.run(
-                    [sys.executable, str(smart_loader), "test query", "--stats"],
-                    capture_output=True, text=True, timeout=10,
-                    cwd=str(self.maia_root)
-                )
-                if result.returncode == 0:
-                    result_obj = TestResult(
-                        category="core",
-                        name="Smart Context Loader",
-                        passed=True,
-                        message="Execution successful",
-                        duration_ms=(time.time() - test_start) * 1000
-                    )
-                else:
-                    result_obj = TestResult(
-                        category="core",
-                        name="Smart Context Loader",
-                        passed=False,
-                        message=f"Exit code {result.returncode}: {result.stderr[:100]}",
-                        duration_ms=(time.time() - test_start) * 1000
-                    )
-            else:
-                result_obj = TestResult(
-                    category="core",
-                    name="Smart Context Loader",
-                    passed=False,
-                    message="File not found",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-        except subprocess.TimeoutExpired:
-            result_obj = TestResult(
-                category="core",
-                name="Smart Context Loader",
-                passed=False,
-                message="Timeout (>10s)",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        except Exception as e:
-            result_obj = TestResult(
-                category="core",
-                name="Smart Context Loader",
-                passed=False,
-                message=f"Error: {str(e)[:100]}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result_obj)
+        self.add_result("core", self._test_tool_execution(
+            self.maia_root / "claude" / "tools" / "sre" / "smart_context_loader.py",
+            "Smart Context Loader",
+            args=["test query", "--stats"]
+        ))
 
         # Test 6: SYSTEM_STATE Query Interface
-        test_start = time.time()
-        query_tool = self.maia_root / "claude" / "tools" / "sre" / "system_state_queries.py"
-        try:
-            if query_tool.exists():
-                result = subprocess.run(
-                    [sys.executable, str(query_tool), "recent", "--count", "3"],
-                    capture_output=True, text=True, timeout=10,
-                    cwd=str(self.maia_root)
-                )
-                if result.returncode == 0 and "Phase" in result.stdout:
-                    result_obj = TestResult(
-                        category="core",
-                        name="SYSTEM_STATE Query Interface",
-                        passed=True,
-                        message="Query successful, returned phases",
-                        duration_ms=(time.time() - test_start) * 1000
-                    )
-                else:
-                    result_obj = TestResult(
-                        category="core",
-                        name="SYSTEM_STATE Query Interface",
-                        passed=False,
-                        message=f"Query failed or no phases: {result.stderr[:100]}",
-                        duration_ms=(time.time() - test_start) * 1000
-                    )
-            else:
-                result_obj = TestResult(
-                    category="core",
-                    name="SYSTEM_STATE Query Interface",
-                    passed=False,
-                    message="File not found",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-        except subprocess.TimeoutExpired:
-            result_obj = TestResult(
-                category="core",
-                name="SYSTEM_STATE Query Interface",
-                passed=False,
-                message="Timeout (>10s)",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        except Exception as e:
-            result_obj = TestResult(
-                category="core",
-                name="SYSTEM_STATE Query Interface",
-                passed=False,
-                message=f"Error: {str(e)[:100]}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result_obj)
+        self.add_result("core", self._test_tool_execution(
+            self.maia_root / "claude" / "tools" / "sre" / "system_state_queries.py",
+            "SYSTEM_STATE Query Interface",
+            args=["recent", "--count", "3"],
+            success_pattern="Phase"
+        ))
 
         # Test 7: Swarm Auto Loader
-        test_start = time.time()
-        swarm_loader = self.maia_root / "claude" / "hooks" / "swarm_auto_loader.py"
-        try:
-            if swarm_loader.exists():
-                with open(swarm_loader, 'r') as f:
-                    source = f.read()
-                ast.parse(source)
-                result_obj = TestResult(
-                    category="core",
-                    name="Swarm Auto Loader",
-                    passed=True,
-                    message="Syntax valid",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-            else:
-                result_obj = TestResult(
-                    category="core",
-                    name="Swarm Auto Loader",
-                    passed=False,
-                    message="File not found",
-                    duration_ms=(time.time() - test_start) * 1000
-                )
-        except Exception as e:
-            result_obj = TestResult(
-                category="core",
-                name="Swarm Auto Loader",
-                passed=False,
-                message=f"Error: {str(e)[:100]}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result_obj)
+        self.add_result("core", self._test_syntax_valid(
+            self.maia_root / "claude" / "hooks" / "swarm_auto_loader.py",
+            "Swarm Auto Loader"
+        ))
 
-        # Test 8: Directory Structure Integrity
-        test_start = time.time()
-        required_dirs = [
-            "claude/agents",
-            "claude/tools",
-            "claude/data",
-            "claude/context",
-            "claude/hooks",
-            "claude/commands",
-        ]
-        missing_dirs = []
-        for dir_path in required_dirs:
-            full_path = self.maia_root / dir_path
-            if not full_path.exists():
-                missing_dirs.append(dir_path)
-
-        if not missing_dirs:
-            result_obj = TestResult(
-                category="core",
-                name="Directory Structure",
-                passed=True,
-                message=f"All {len(required_dirs)} required directories exist",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        else:
-            result_obj = TestResult(
-                category="core",
-                name="Directory Structure",
-                passed=False,
-                message=f"Missing directories: {', '.join(missing_dirs)}",
-                duration_ms=(time.time() - test_start) * 1000
-            )
-        self.add_result("core", result_obj)
+        # Test 8: Directory Structure
+        self.add_result("core", self._test_directories_exist(
+            ["claude/agents", "claude/tools", "claude/data",
+             "claude/context", "claude/hooks", "claude/commands"],
+            "Directory Structure"
+        ))
 
         self.report.categories["core"].duration_seconds = time.time() - start_time
         return self.report.categories["core"]

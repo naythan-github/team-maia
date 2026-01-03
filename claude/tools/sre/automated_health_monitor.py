@@ -100,12 +100,12 @@ class AutomatedHealthMonitor:
                 if "Dependency Health Score:" in line:
                     try:
                         health_score = float(line.split(":")[1].split("/")[0].strip())
-                    except:
+                    except (ValueError, IndexError, AttributeError):
                         pass
                 elif "Critical Phantoms:" in line:
                     try:
                         critical_phantoms = int(line.split(":")[1].strip().split()[0])
-                    except:
+                    except (ValueError, IndexError, AttributeError):
                         pass
 
         result["health_score"] = health_score
@@ -143,7 +143,7 @@ class AutomatedHealthMonitor:
                 if "Health Score:" in line:
                     try:
                         health_score = float(line.split(":")[1].strip().rstrip("%"))
-                    except:
+                    except (ValueError, IndexError, AttributeError):
                         pass
                 elif "Overall Health:" in line:
                     overall_status = line.split(":")[1].strip()
@@ -183,12 +183,12 @@ class AutomatedHealthMonitor:
                 if "Service Availability:" in line:
                     try:
                         availability = float(line.split(":")[1].strip().rstrip("%"))
-                    except:
+                    except (ValueError, IndexError, AttributeError):
                         pass
                 elif "Failed:" in line:
                     try:
                         failed_count = int(line.split(":")[1].strip().split()[0])
-                    except:
+                    except (ValueError, IndexError, AttributeError):
                         pass
 
         result["availability"] = availability
@@ -231,7 +231,7 @@ class AutomatedHealthMonitor:
                 if "Violations (Critical/High):" in line:
                     try:
                         violations_count = int(line.split(":")[1].strip())
-                    except:
+                    except (ValueError, IndexError, AttributeError):
                         pass
 
         result["compliant"] = compliant

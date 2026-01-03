@@ -245,7 +245,7 @@ class AnalysisPatternLibrary:
         if pattern.get('tags'):
             try:
                 pattern['tags'] = json.loads(pattern['tags'])
-            except:
+            except json.JSONDecodeError:
                 pattern['tags'] = []
 
         # Add usage statistics
@@ -308,7 +308,7 @@ class AnalysisPatternLibrary:
             if pattern.get('tags'):
                 try:
                     pattern['tags'] = json.loads(pattern['tags'])
-                except:
+                except json.JSONDecodeError:
                     pattern['tags'] = []
             patterns.append(pattern)
 
@@ -391,7 +391,7 @@ class AnalysisPatternLibrary:
             if pattern.get('tags'):
                 try:
                     pattern['tags'] = json.loads(pattern['tags'])
-                except:
+                except json.JSONDecodeError:
                     pattern['tags'] = []
             # Higher default similarity for SQLite matches (they matched LIKE)
             results.append((pattern, 0.80))  # Default similarity for SQLite

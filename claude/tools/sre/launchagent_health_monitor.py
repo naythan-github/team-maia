@@ -166,15 +166,60 @@ class LaunchAgentHealthMonitor:
 
         return schedule_map
 
+    # ========== Service Type Health Handlers ==========
+
+    def _health_continuous(self, has_pid: bool, service_type: str) -> Dict:
+        """Health check for CONTINUOUS services (must always have PID)"""
+        if has_pid:
+            return {'health': 'HEALTHY', 'reason': 'Running (has PID)', 'service_type': service_type}
+        return {'health': 'FAILED', 'reason': 'Not running (should be continuous)', 'service_type': service_type}
+
+    def _health_interval(self, service_name: str, interval_seconds: int, service_type: str) -> Dict:
+        """Health check for INTERVAL services (check last run against interval)"""
+        time_since_run = self.log_checker.get_time_since_last_run(service_name)
+
+        if time_since_run is None:
+            return {'health': 'UNKNOWN', 'reason': 'No log file found', 'service_type': service_type}
+
+        # Grace periods: 1.5x for healthy, 3x for degraded
+        if time_since_run < interval_seconds * 1.5:
+            time_ago = f'{int(time_since_run/60)}m' if time_since_run < 3600 else f'{time_since_run/3600:.1f}h'
+            interval_str = f'{int(interval_seconds/60)}m' if interval_seconds < 3600 else f'{interval_seconds/3600:.1f}h'
+            return {'health': 'HEALTHY', 'reason': f'Ran {time_ago} ago (every {interval_str})', 'service_type': service_type}
+        elif time_since_run < interval_seconds * 3:
+            return {'health': 'DEGRADED', 'reason': f'Missed 1-2 runs ({int(time_since_run/60)}m since last run)', 'service_type': service_type}
+        else:
+            return {'health': 'FAILED', 'reason': f'Missed 3+ runs ({time_since_run/3600:.1f}h since last run)', 'service_type': service_type}
+
+    def _health_calendar(self, service_name: str, service_type: str) -> Dict:
+        """Health check for CALENDAR services (check grace period of scheduled time)"""
+        time_since_run = self.log_checker.get_time_since_last_run(service_name)
+
+        if time_since_run is None:
+            return {'health': 'UNKNOWN', 'reason': 'No log file found', 'service_type': service_type}
+
+        # Simple heuristic: if ran within last 24h, consider healthy
+        if time_since_run < 3600:  # Within 1 hour
+            return {'health': 'HEALTHY', 'reason': f'Ran {int(time_since_run/60)}m ago (on schedule)', 'service_type': service_type}
+        elif time_since_run < 86400:  # Within 24 hours
+            return {'health': 'HEALTHY', 'reason': f'Ran {time_since_run/3600:.1f}h ago (daily schedule)', 'service_type': service_type}
+        elif time_since_run < 172800:  # Within 48 hours
+            return {'health': 'DEGRADED', 'reason': f'Late by {time_since_run/3600:.1f}h', 'service_type': service_type}
+        else:
+            return {'health': 'FAILED', 'reason': f'Missed scheduled run ({time_since_run/86400:.1f}d ago)', 'service_type': service_type}
+
+    def _health_trigger_oneshot(self, last_exit_code: Optional[int], service_type: str) -> Dict:
+        """Health check for TRIGGER/ONE_SHOT services (check last run success)"""
+        if last_exit_code == 0:
+            return {'health': 'IDLE', 'reason': 'Last run successful (waiting for trigger)', 'service_type': service_type}
+        elif last_exit_code and last_exit_code != 0:
+            return {'health': 'FAILED', 'reason': f'Last run failed (exit {last_exit_code})', 'service_type': service_type}
+        else:
+            return {'health': 'UNKNOWN', 'reason': 'Never triggered/run', 'service_type': service_type}
+
     def _calculate_schedule_aware_health(self, service_name: str,
                                          launchctl_data: Dict) -> Dict:
-        """Calculate health based on service type and schedule compliance
-
-        Returns dict with:
-        - health: HEALTHY, DEGRADED, FAILED, IDLE, UNKNOWN
-        - reason: Human-readable explanation
-        - service_type: Type of service
-        """
+        """Calculate health based on service type and schedule compliance using handlers"""
         schedule_info = self.schedule_info.get(service_name, {})
         service_type = schedule_info.get('service_type', 'UNKNOWN')
         schedule_config = schedule_info.get('schedule_config', {})
@@ -182,121 +227,17 @@ class LaunchAgentHealthMonitor:
         has_pid = launchctl_data.get('pid') is not None
         last_exit_code = launchctl_data.get('last_exit_status')
 
-        # CONTINUOUS services: must always have PID
+        # Dispatch to appropriate handler
         if service_type == 'CONTINUOUS':
-            if has_pid:
-                return {
-                    'health': 'HEALTHY',
-                    'reason': 'Running (has PID)',
-                    'service_type': service_type
-                }
-            else:
-                return {
-                    'health': 'FAILED',
-                    'reason': 'Not running (should be continuous)',
-                    'service_type': service_type
-                }
-
-        # INTERVAL services: check last run against interval
+            return self._health_continuous(has_pid, service_type)
         elif service_type == 'INTERVAL':
-            interval_seconds = schedule_config.get('interval_seconds', 0)
-            time_since_run = self.log_checker.get_time_since_last_run(service_name)
-
-            if time_since_run is None:
-                return {
-                    'health': 'UNKNOWN',
-                    'reason': 'No log file found',
-                    'service_type': service_type
-                }
-
-            # Grace periods: 1.5x for healthy, 3x for degraded
-            if time_since_run < interval_seconds * 1.5:
-                time_ago = f'{int(time_since_run/60)}m' if time_since_run < 3600 else f'{time_since_run/3600:.1f}h'
-                interval_str = f'{int(interval_seconds/60)}m' if interval_seconds < 3600 else f'{interval_seconds/3600:.1f}h'
-                return {
-                    'health': 'HEALTHY',
-                    'reason': f'Ran {time_ago} ago (every {interval_str})',
-                    'service_type': service_type
-                }
-            elif time_since_run < interval_seconds * 3:
-                return {
-                    'health': 'DEGRADED',
-                    'reason': f'Missed 1-2 runs ({int(time_since_run/60)}m since last run)',
-                    'service_type': service_type
-                }
-            else:
-                return {
-                    'health': 'FAILED',
-                    'reason': f'Missed 3+ runs ({time_since_run/3600:.1f}h since last run)',
-                    'service_type': service_type
-                }
-
-        # CALENDAR services: check if ran within grace period of scheduled time
+            return self._health_interval(service_name, schedule_config.get('interval_seconds', 0), service_type)
         elif service_type == 'CALENDAR':
-            time_since_run = self.log_checker.get_time_since_last_run(service_name)
-
-            if time_since_run is None:
-                return {
-                    'health': 'UNKNOWN',
-                    'reason': 'No log file found',
-                    'service_type': service_type
-                }
-
-            # Simple heuristic: if ran within last 24h, consider healthy
-            # (proper calendar calculation would require parsing StartCalendarInterval)
-            if time_since_run < 3600:  # Within 1 hour
-                return {
-                    'health': 'HEALTHY',
-                    'reason': f'Ran {int(time_since_run/60)}m ago (on schedule)',
-                    'service_type': service_type
-                }
-            elif time_since_run < 86400:  # Within 24 hours
-                return {
-                    'health': 'HEALTHY',
-                    'reason': f'Ran {time_since_run/3600:.1f}h ago (daily schedule)',
-                    'service_type': service_type
-                }
-            elif time_since_run < 172800:  # Within 48 hours
-                return {
-                    'health': 'DEGRADED',
-                    'reason': f'Late by {time_since_run/3600:.1f}h',
-                    'service_type': service_type
-                }
-            else:
-                return {
-                    'health': 'FAILED',
-                    'reason': f'Missed scheduled run ({time_since_run/86400:.1f}d ago)',
-                    'service_type': service_type
-                }
-
-        # TRIGGER / ONE_SHOT: check if ran successfully when triggered
+            return self._health_calendar(service_name, service_type)
         elif service_type in ['TRIGGER', 'ONE_SHOT']:
-            if last_exit_code == 0:
-                return {
-                    'health': 'IDLE',
-                    'reason': 'Last run successful (waiting for trigger)',
-                    'service_type': service_type
-                }
-            elif last_exit_code and last_exit_code != 0:
-                return {
-                    'health': 'FAILED',
-                    'reason': f'Last run failed (exit {last_exit_code})',
-                    'service_type': service_type
-                }
-            else:
-                return {
-                    'health': 'UNKNOWN',
-                    'reason': 'Never triggered/run',
-                    'service_type': service_type
-                }
-
-        # UNKNOWN service type
+            return self._health_trigger_oneshot(last_exit_code, service_type)
         else:
-            return {
-                'health': 'UNKNOWN',
-                'reason': f'Unknown service type: {service_type}',
-                'service_type': service_type
-            }
+            return {'health': 'UNKNOWN', 'reason': f'Unknown service type: {service_type}', 'service_type': service_type}
 
     def get_service_status(self, service_name: str) -> Dict:
         """Get detailed status for a specific service"""
@@ -336,14 +277,14 @@ class LaunchAgentHealthMonitor:
                         pid = int(line.split('=')[1].strip())
                         status_info['pid'] = pid
                         status_info['status'] = 'RUNNING'
-                    except:
+                    except (ValueError, IndexError):
                         pass
 
                 if 'last exit code =' in line:
                     try:
                         exit_code = int(line.split('=')[1].strip())
                         status_info['last_exit_status'] = exit_code
-                    except:
+                    except (ValueError, IndexError):
                         pass
 
                 if 'state =' in line:
@@ -588,7 +529,7 @@ class LaunchAgentHealthMonitor:
                     timeout=5
                 )
                 return result.stdout
-            except:
+            except (subprocess.SubprocessError, OSError, subprocess.TimeoutExpired):
                 return f"Could not read log file: {log_path}"
         else:
             return f"Log file not found: {log_path}"

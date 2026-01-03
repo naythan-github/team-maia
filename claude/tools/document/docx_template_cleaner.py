@@ -103,7 +103,7 @@ def get_used_styles_from_document(doc_path: Path) -> Dict[str, Set[str]]:
                         for row in table.rows:
                             for cell in row.cells:
                                 process_paragraphs(cell.paragraphs)
-                except:
+                except (KeyError, AttributeError, TypeError):
                     pass
 
         for footer in [section.footer, section.first_page_footer, section.even_page_footer]:
@@ -116,7 +116,7 @@ def get_used_styles_from_document(doc_path: Path) -> Dict[str, Set[str]]:
                         for row in table.rows:
                             for cell in row.cells:
                                 process_paragraphs(cell.paragraphs)
-                except:
+                except (KeyError, AttributeError, TypeError):
                     pass
 
     return used

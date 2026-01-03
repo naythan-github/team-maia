@@ -81,7 +81,7 @@ class CompleteDNSAuditor:
                         else:
                             found_selectors.append(selector)
                         break
-            except:
+            except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
                 continue
 
         if not found_selectors:
@@ -167,7 +167,7 @@ class CompleteDNSAuditor:
             if caa_records:
                 return "PASS", f"CAA configured ({len(caa_records)})"
             return "WARN", "No CAA records"
-        except:
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
             return "WARN", "No CAA records"
 
     def check_mta_sts(self, domain: str) -> Tuple[str, str]:
@@ -178,7 +178,7 @@ class CompleteDNSAuditor:
                 if 'v=STSv1' in str(rdata):
                     return "PASS", "MTA-STS configured"
             return "WARN", "No MTA-STS"
-        except:
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
             return "WARN", "No MTA-STS"
 
     def check_subdomain_takeover(self, domain: str) -> Tuple[str, str]:
@@ -193,10 +193,10 @@ class CompleteDNSAuditor:
                         for pattern in vulnerable_patterns:
                             if pattern in target:
                                 return "FAIL", f"Potential takeover: {subdomain}"
-                except:
+                except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout):
                     continue
             return "PASS", "No obvious risks"
-        except:
+        except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout, Exception):
             return "INFO", "Check inconclusive"
 
     def audit_domain_complete(self, domain: str) -> Dict:

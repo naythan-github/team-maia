@@ -234,32 +234,83 @@ class GPURAGIndexer:
         conn.close()
         return documents
 
-    def index_collection_gpu(self, collection_name: str, limit: int = None):
-        """
-        Index a collection using GPU batch embeddings
+    # ========== GPU Indexing Helpers ==========
 
-        Args:
-            collection_name: Name of collection to index
-            limit: Max documents to index (None = all)
-        """
+    def _prepare_batch_data(self, batch: List[Dict]) -> tuple:
+        """Prepare batch data for GPU processing (ids, texts, metadatas)"""
+        ids = []
+        texts = []
+        metadatas = []
+
+        for doc in batch:
+            text = doc['text']
+            if len(text) > 5000:
+                text = text[:5000] + "... [truncated]"
+
+            metadata = {
+                'text_length': len(text),
+                'indexed_at': datetime.now().isoformat()
+            }
+            for key, value in doc.items():
+                if key not in ['id', 'text']:
+                    metadata[key] = value
+
+            ids.append(doc['id'])
+            texts.append(text)
+            metadatas.append(metadata)
+
+        return ids, texts, metadatas
+
+    def _init_collection(self, collection_name: str, description: str):
+        """Initialize ChromaDB collection (delete existing if present)"""
+        client = chromadb.PersistentClient(
+            path=self.rag_db_path,
+            settings=Settings(anonymized_telemetry=False)
+        )
+
+        collection_fullname = f"servicedesk_{collection_name}"
+        try:
+            client.delete_collection(collection_fullname)
+            print(f"   🗑️  Deleted existing collection: {collection_fullname}")
+        except Exception:
+            pass
+
+        return client.create_collection(
+            name=collection_fullname,
+            metadata={"description": description, "model": self.model_name}
+        )
+
+    def _process_and_add_batch(self, collection, ids: List[str], texts: List[str],
+                                metadatas: List[Dict]) -> None:
+        """Generate embeddings on GPU and add to ChromaDB"""
+        embeddings = self.model.encode(
+            texts, batch_size=self.batch_size, show_progress_bar=False, convert_to_numpy=True
+        )
+        collection.add(ids=ids, documents=texts, metadatas=metadatas, embeddings=embeddings.tolist())
+
+    def _print_progress(self, indexed: int, total: int, start_time: float, batch_num: int) -> None:
+        """Print progress update every 10 batches"""
+        if batch_num % 10 == 0 or indexed >= total:
+            elapsed = time.time() - start_time
+            rate = indexed / elapsed if elapsed > 0 else 0
+            eta = (total - indexed) / rate if rate > 0 else 0
+            print(f"   Progress: {indexed:,}/{total:,} ({100*indexed/total:.1f}%) - "
+                  f"Rate: {rate:.0f} docs/s - ETA: {eta/60:.1f}m")
+
+    def index_collection_gpu(self, collection_name: str, limit: int = None):
+        """Index a collection using GPU batch embeddings"""
         if collection_name not in self.collections:
             raise ValueError(f"Unknown collection: {collection_name}")
 
         config = self.collections[collection_name]
+        print(f"\n{'='*70}\nGPU BATCH INDEXING: {collection_name}\n{'='*70}")
+        print(f"Description: {config['description']}\nDevice: {self.device}\nBatch size: {self.batch_size}")
 
-        print(f"\n{'='*70}")
-        print(f"GPU BATCH INDEXING: {collection_name}")
-        print(f"{'='*70}")
-        print(f"Description: {config['description']}")
-        print(f"Device: {self.device}")
-        print(f"Batch size: {self.batch_size}")
-
-        # Fetch all documents
+        # Fetch documents
         print(f"\n📊 Fetching documents from database...")
         start_fetch = time.time()
         documents = self.fetch_documents(collection_name, limit=limit)
         fetch_time = time.time() - start_fetch
-
         total_docs = len(documents)
         print(f"   Fetched {total_docs:,} documents in {fetch_time:.1f}s")
 
@@ -267,24 +318,8 @@ class GPURAGIndexer:
             print("   ⚠️  No documents to index")
             return
 
-        # Initialize ChromaDB
-        client = chromadb.PersistentClient(
-            path=self.rag_db_path,
-            settings=Settings(anonymized_telemetry=False)
-        )
-
-        # Delete existing collection if it exists (for model changes)
-        collection_fullname = f"servicedesk_{collection_name}"
-        try:
-            client.delete_collection(collection_fullname)
-            print(f"   🗑️  Deleted existing collection: {collection_fullname}")
-        except:
-            pass
-
-        collection = client.create_collection(
-            name=collection_fullname,
-            metadata={"description": config['description'], "model": self.model_name}
-        )
+        # Initialize ChromaDB collection
+        collection = self._init_collection(collection_name, config['description'])
 
         # Process in batches
         print(f"\n🚀 GPU batch processing...")
@@ -293,74 +328,19 @@ class GPURAGIndexer:
 
         for i in range(0, total_docs, self.batch_size):
             batch = documents[i:i+self.batch_size]
-
-            # Prepare batch data
-            ids = []
-            texts = []
-            metadatas = []
-
-            for doc in batch:
-                text = doc['text']
-
-                # Truncate very long texts
-                if len(text) > 5000:
-                    text = text[:5000] + "... [truncated]"
-
-                # Build metadata
-                metadata = {
-                    'text_length': len(text),
-                    'indexed_at': datetime.now().isoformat()
-                }
-
-                # Copy all other fields as metadata
-                for key, value in doc.items():
-                    if key not in ['id', 'text']:
-                        metadata[key] = value
-
-                ids.append(doc['id'])
-                texts.append(text)
-                metadatas.append(metadata)
-
-            # Generate embeddings on GPU (THIS IS THE FAST PART!)
-            embeddings = self.model.encode(
-                texts,
-                batch_size=self.batch_size,
-                show_progress_bar=False,
-                convert_to_numpy=True
-            )
-
-            # Convert to list for ChromaDB
-            embeddings_list = embeddings.tolist()
-
-            # Add to ChromaDB with pre-computed embeddings
-            collection.add(
-                ids=ids,
-                documents=texts,
-                metadatas=metadatas,
-                embeddings=embeddings_list
-            )
-
+            ids, texts, metadatas = self._prepare_batch_data(batch)
+            self._process_and_add_batch(collection, ids, texts, metadatas)
             total_indexed += len(ids)
+            self._print_progress(total_indexed, total_docs, start_index, (i // self.batch_size + 1))
 
-            # Progress update
-            if (i // self.batch_size + 1) % 10 == 0 or i + self.batch_size >= total_docs:
-                elapsed = time.time() - start_index
-                rate = total_indexed / elapsed if elapsed > 0 else 0
-                eta = (total_docs - total_indexed) / rate if rate > 0 else 0
-
-                print(f"   Progress: {total_indexed:,}/{total_docs:,} ({100*total_indexed/total_docs:.1f}%) - "
-                      f"Rate: {rate:.0f} docs/s - ETA: {eta/60:.1f}m")
-
+        # Summary
         index_time = time.time() - start_index
-        total_time = fetch_time + index_time
-
         print(f"\n✅ {collection_name.upper()} GPU indexing complete:")
         print(f"   Documents indexed: {total_indexed:,}")
         print(f"   Fetch time: {fetch_time:.1f}s")
         print(f"   Index time: {index_time:.1f}s ({total_indexed/index_time:.1f} docs/sec)")
-        print(f"   Total time: {total_time:.1f}s")
-        print(f"   ChromaDB: {self.rag_db_path}")
-        print(f"   Collection: servicedesk_{collection_name}")
+        print(f"   Total time: {fetch_time + index_time:.1f}s")
+        print(f"   ChromaDB: {self.rag_db_path}\n   Collection: servicedesk_{collection_name}")
 
     def index_all_gpu(self):
         """Index all collections using GPU"""
