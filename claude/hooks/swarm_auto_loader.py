@@ -133,34 +133,72 @@ def get_context_id() -> str:
     return _CONTEXT_ID_CACHE
 
 
+def get_sessions_dir() -> Path:
+    """
+    Get the sessions directory path (~/.maia/sessions/).
+
+    Phase 230: Multi-user architecture - session files moved from /tmp/ to ~/.maia/sessions/
+    for proper user isolation and persistence across reboots.
+
+    Returns:
+        Path to sessions directory (creates if not exists)
+    """
+    sessions_dir = Path.home() / ".maia" / "sessions"
+    sessions_dir.mkdir(parents=True, exist_ok=True)
+    return sessions_dir
+
+
 def get_session_file_path() -> Path:
     """
     Get session state file path for current context.
 
     Phase 134.3: Context-specific session files prevent concurrency issues.
+    Phase 230: Multi-user architecture - moved from /tmp/ to ~/.maia/sessions/
 
     Returns:
         Path to session file for this context
-        Example: /tmp/maia_active_swarm_session_context_12345.json
+        Example: ~/.maia/sessions/swarm_session_12345.json
     """
     context_id = get_context_id()
-    return Path(f"/tmp/maia_active_swarm_session_{context_id}.json")
+    return get_sessions_dir() / f"swarm_session_{context_id}.json"
 
 
 def migrate_legacy_session():
     """
-    One-time migration: old global session → new context-specific session.
+    One-time migration: old /tmp/ session → new ~/.maia/sessions/ location.
 
     Phase 134.3: Backward compatibility for existing sessions.
-    Migrates /tmp/maia_active_swarm_session.json → context-specific file.
+    Phase 230: Multi-user architecture - migrate from /tmp/ to ~/.maia/sessions/
+
+    Migration paths:
+    - /tmp/maia_active_swarm_session.json → ~/.maia/sessions/swarm_session_{context_id}.json
+    - /tmp/maia_active_swarm_session_*.json → ~/.maia/sessions/swarm_session_*.json
     """
-    old_session = Path("/tmp/maia_active_swarm_session.json")
+    context_id = get_context_id()
     new_session = get_session_file_path()
 
-    # Only migrate if old exists and new doesn't
-    if old_session.exists() and not new_session.exists():
+    # Only migrate if new doesn't exist
+    if new_session.exists():
+        return
+
+    # Try context-specific /tmp file first
+    old_context_session = Path(f"/tmp/maia_active_swarm_session_{context_id}.json")
+    if old_context_session.exists():
         try:
-            old_session.rename(new_session)
+            import shutil
+            shutil.copy2(old_context_session, new_session)
+            old_context_session.unlink()
+            return
+        except OSError:
+            pass
+
+    # Try legacy global /tmp file
+    old_global_session = Path("/tmp/maia_active_swarm_session.json")
+    if old_global_session.exists():
+        try:
+            import shutil
+            shutil.copy2(old_global_session, new_session)
+            old_global_session.unlink()
         except OSError:
             pass  # Graceful degradation
 
@@ -187,9 +225,10 @@ def cleanup_stale_sessions(max_age_hours: int = 24):
     """
     Remove session files older than max_age_hours.
 
-    Phase 134.3: Prevent /tmp pollution from abandoned contexts.
+    Phase 134.3: Prevent session pollution from abandoned contexts.
     Phase 134.5: Also remove legacy non-numeric context IDs (e.g., sre_001)
     Phase 134.5.1: Check if process still running before deleting (multi-session safety)
+    Phase 230: Multi-user architecture - clean up from ~/.maia/sessions/ and legacy /tmp/
     Runs on every startup (fast: glob + stat).
 
     Safety: Will NOT delete session if:
@@ -201,35 +240,42 @@ def cleanup_stale_sessions(max_age_hours: int = 24):
     """
     cutoff_time = time.time() - (max_age_hours * 3600)
 
+    def cleanup_session_file(session_file: Path, prefix: str):
+        """Clean up a single session file if stale."""
+        try:
+            filename = session_file.name
+            if filename.startswith(prefix) and filename.endswith(".json"):
+                context_id = filename[len(prefix):-len(".json")]
+
+                # Check if legacy format (non-numeric)
+                is_legacy = not context_id.isdigit()
+
+                # Legacy sessions: Always remove (not PID-based, can't verify if active)
+                if is_legacy:
+                    session_file.unlink()
+                    return
+
+                # Numeric context ID (PID): Check if process still running
+                pid = int(context_id)
+                process_alive = is_process_alive(pid)
+
+                # Only delete if BOTH conditions met:
+                # 1. Process no longer running AND
+                # 2. Session file older than max_age_hours
+                if not process_alive and session_file.stat().st_mtime < cutoff_time:
+                    session_file.unlink()
+        except (OSError, ValueError):
+            pass  # Graceful degradation (file may be locked or deleted)
+
     try:
+        # Clean up new location (~/.maia/sessions/)
+        sessions_dir = get_sessions_dir()
+        for session_file in sessions_dir.glob("swarm_session_*.json"):
+            cleanup_session_file(session_file, "swarm_session_")
+
+        # Clean up legacy location (/tmp/) for backward compatibility
         for session_file in Path("/tmp").glob("maia_active_swarm_session_*.json"):
-            try:
-                # Extract context ID from filename
-                # Expected format: maia_active_swarm_session_{CONTEXT_ID}.json
-                filename = session_file.name
-                if filename.startswith("maia_active_swarm_session_") and filename.endswith(".json"):
-                    context_id = filename[len("maia_active_swarm_session_"):-len(".json")]
-
-                    # Check if legacy format (non-numeric)
-                    is_legacy = not context_id.isdigit()
-
-                    # Legacy sessions: Always remove (not PID-based, can't verify if active)
-                    if is_legacy:
-                        session_file.unlink()
-                        continue
-
-                    # Numeric context ID (PID): Check if process still running
-                    pid = int(context_id)
-                    process_alive = is_process_alive(pid)
-
-                    # Only delete if BOTH conditions met:
-                    # 1. Process no longer running AND
-                    # 2. Session file older than max_age_hours
-                    if not process_alive and session_file.stat().st_mtime < cutoff_time:
-                        session_file.unlink()
-
-            except (OSError, ValueError):
-                pass  # Graceful degradation (file may be locked or deleted)
+            cleanup_session_file(session_file, "maia_active_swarm_session_")
     except Exception:
         pass  # Graceful degradation
 
@@ -832,7 +878,7 @@ def create_session_state(
     """
     Create session state file for Maia agent context loading (Phase 5 - with handoff support).
 
-    File: /tmp/maia_active_swarm_session.json
+    File: ~/.maia/sessions/swarm_session_{context_id}.json (Phase 230: multi-user)
     Format:
     {
         "current_agent": "security_specialist_agent",
