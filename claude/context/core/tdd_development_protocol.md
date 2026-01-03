@@ -1,596 +1,188 @@
-# TDD Development Protocol - Maia Standard Workflow
+# TDD Protocol v2.3 (Compressed Template)
 
-## 🚨 **MANDATORY ENFORCEMENT** 🚨
-**STATUS**: REQUIRED for ALL development work (tools, agents, features, bug fixes, schema changes)
-**ENFORCEMENT**: ✅ **ACTIVE** - Pre-commit hook blocks violations (Phase 217)
-**EXEMPTIONS**: Documentation-only changes, configuration-only changes (no code logic)
-**AGENT PAIRING**: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)
-**BYPASS**: `git commit --no-verify` (requires justification, logged in `claude/data/TDD_EXEMPTIONS.md`)
-
-## Overview
-MANDATORY protocol for ALL Test-Driven Development to prevent requirements drift and ensure production-ready, SRE-hardened implementations before deployment.
-
-## Key Problems Addressed
-- Requirements drift during implementation
-- Premature test creation before complete requirements gathering
-- Lost decisions and requirements through conversation
-- Better outcomes consistently observed with TDD approach
-- Production reliability issues from missing SRE review
-- Domain expertise gaps without specialist agent involvement
-
-## Standard TDD Workflow
-
-### Phase 0: Pre-Discovery Architecture Review ⭐ **PHASE 135**
-**CRITICAL**: Check architecture BEFORE starting requirements
-
-1. **Architecture Documentation Check**
-   - Does `PROJECT/ARCHITECTURE.md` exist for this system?
-   - If YES: Read it to understand deployment model, integration points, operational commands
-   - If NO + infrastructure work: Plan to create ARCHITECTURE.md after implementation
-
-2. **Review Relevant ADRs**
-   - Check `PROJECT/ADRs/` directory for related decisions
-   - Understand: Why current architecture? What alternatives were rejected?
-   - Identify architectural constraints (e.g., "MUST use docker exec, NOT direct connection")
-
-3. **Verify Active Deployments**
-   - Check `claude/context/core/active_deployments.md`
-   - Understand: What systems are running? How to access them?
-   - Avoid: Duplicate deployments, conflicting ports, incompatible versions
-
-**Gate**: Understand current architecture before proceeding to requirements
+## Enforcement
+**STATUS**: MANDATORY | **HOOK**: Pre-commit blocks violations (Phase 217)
+**AGENT PAIRING**: Domain Specialist + SRE Principal Engineer (ALWAYS)
+**BYPASS**: `git commit --no-verify` → log in `claude/data/TDD_EXEMPTIONS.md`
 
 ---
 
-### Phase 1: Requirements Discovery (NO CODING/TESTS)
-**CRITICAL**: No tests or code until requirements are complete and confirmed
+## Workflow State Machine
 
-1. **Core Purpose Discovery**
-   - What problem are we solving?
-   - Who will use this?
-   - What's the success criteria?
+```
+P0:Architecture → P1:Requirements → P2:Documentation → P3:Tests → P3.5:Integration → P4:Implementation → P5:Execution → P6:Validation
+     ↓ GATE           ↓ GATE            ↓ GATE          ↓ GATE       ↓ GATE            ↓ GATE           ↓ GATE         ↓ GATE
+  Read ARCH.md    "requirements     Approval of      All tests    Integration      All tests        DBs synced     SRE sign-off
+  + ADRs          complete"         requirements.md   written      plan approved    passing          + registered
+```
 
-2. **Functional Requirements Gathering**
-   - Input: What goes in?
-   - Processing: What transformations?
-   - Output: What comes out?
-   - Error cases: What could go wrong?
+---
 
-3. **Example-Driven Clarification**
-   - "Walk me through a typical use case"
-   - "What happens if [edge case]?"
-   - "Show me example input/output"
-   - Request at least 3 concrete usage examples
+## Phase Details
 
-4. **Non-Functional Requirements**
-   - Performance requirements?
-   - Security constraints?
-   - Integration points?
-   - Future extensibility needs?
+### P0: Architecture Review
+**CHECK**: `PROJECT/ARCHITECTURE.md` exists? → Read it | `PROJECT/ADRs/` → Review decisions | `active_deployments.md` → Avoid conflicts
+**GATE**: Understand current architecture before requirements
 
-5. **Explicit Confirmation Checkpoint**
-   - Summarize all requirements discovered
-   - Ask "What am I missing?"
-   - Wait for explicit "requirements complete" confirmation
-   - **HARD GATE**: Do not proceed without confirmation
+### P1: Requirements Discovery (NO CODE/TESTS)
+**ACTIONS**: Core purpose | Functional reqs (I/O/Transform/Errors) | 3+ examples | Non-functional | Explicit confirmation
+**KEY PHRASE**: "requirements complete" = proceed signal
+**GATE**: No tests until explicit confirmation
 
-### Phase 2: Requirements Documentation
-1. Create `requirements.md` with all discovered requirements
-2. Include acceptance criteria for each requirement
-3. Document example scenarios and edge cases
-4. Get explicit approval of documented requirements
+### P2: Requirements Documentation
+**OUTPUT**: `requirements.md` with acceptance criteria + examples
+**GATE**: Approval before test design
 
-### Phase 3: Test Design (ONLY after requirements confirmed)
-1. Set up appropriate test framework
-2. Create `test_requirements.py` (or language-appropriate test file)
-3. Write failing tests for EACH requirement
-4. Confirm test coverage matches requirements
-5. No implementation until all requirement tests exist
+### P3: Test Design
+**ACTIONS**: Framework setup | `test_requirements.py` | Failing tests for EACH requirement
+**GATE**: No implementation until all tests written
 
-### Phase 3.5: Integration Test Design ⭐ **NEW - MANDATORY**
-**CRITICAL**: Design integration tests BEFORE implementation
+### P3.5: Integration Test Design
+**CATEGORIES**: Cross-component | External dependencies | State management
+**SRE REVIEW**: Failure modes, observability coverage
+**GATE**: No implementation until integration plan approved
 
-Integration tests verify cross-component interactions, not just isolated unit behavior. These tests catch the gaps that unit tests miss (N+1 queries, circuit breaker failures, missing observability).
+### P4: Implementation
+**CYCLE**: Red → Green → Refactor | Regular verification against requirements.md
 
-**Required Test Categories**:
-
-1. **Cross-Component Integration Tests** (MANDATORY)
-   - Test interactions between modules/services
-   - Verify data flow across boundaries
-   - Validate error propagation
-   - Example: `test_end_to_end_workflow()`, `test_database_to_api_integration()`
-
-2. **External Integration Tests** (if applicable)
-   - Test interactions with external services (APIs, databases, queues)
-   - Use test doubles/mocks for external dependencies
-   - Validate contract adherence
-   - Example: `test_api_client_handles_rate_limits()`, `test_database_connection_pooling()`
-
-3. **State Management Tests** (if applicable)
-   - Test data persistence across operations
-   - Validate transaction boundaries
-   - Test rollback scenarios
-   - Example: `test_transaction_rollback_on_error()`, `test_session_state_persistence()`
-
-**SRE Collaboration** (Phase 3.5):
-- SRE Agent reviews integration test design
-- Validates failure mode coverage
-- Ensures observability test coverage
-- Approves integration test plan
-
-**Gate**: No implementation until integration test plan approved
-
-### Phase 4: Implementation
-1. Standard TDD red-green-refactor cycle
-2. Make tests pass one at a time
-3. Regular verification against requirements.md
-4. Update documentation if requirements evolve
-
-### Phase 5: Integration Test Execution & Registration ⭐ **ENHANCED - MANDATORY**
-**CRITICAL**: Execute integration tests and register new capabilities
-
-1. **Unit Test Verification** (existing)
-   - All Phase 3 requirement tests passing
-   - Code coverage >80%
-
-2. **Integration Test Execution** ⭐ **NEW**
-   - Run Phase 3.5 integration tests
-   - Verify cross-component interactions
-   - Validate state management
-   - **Gate**: All integration tests must pass
-
-3. **Capabilities Scan** (if new tools/agents created)
-   ```bash
-   python3 claude/tools/sre/capabilities_registry.py scan
-   ```
-   - Registers new tools/agents in capabilities.db
-   - Makes them discoverable by smart context loader
-
-4. **SYSTEM_STATE Update** (if significant feature)
-   - Add phase entry documenting the new capability
-   - Run ETL to sync:
-   ```bash
-   python3 claude/tools/sre/system_state_etl.py --recent 10
-   ```
-
-5. **Save State Handoff**
-   - If TDD project complete, execute save_state workflow
-   - Ensures all databases synchronized
-   - Commits with proper phase documentation
-
-**Gate**: New capabilities NOT production-ready until:
-- ✅ Unit tests passing
-- ✅ Integration tests passing ⭐ **NEW**
-- ✅ Databases synchronized
-
-### Phase 6: Post-Implementation Validation ⭐ **NEW - MANDATORY**
-**CRITICAL**: Production readiness validation before declaring complete
-
-This phase catches production issues that unit/integration tests miss (performance degradation, circuit breaker failures, missing observability).
-
-**Required Validation Categories**:
-
-1. **Performance Testing** (MANDATORY)
-   - Load test at 10x expected traffic
-   - Validate P95/P99 latency meets SLOs
-   - Resource utilization acceptable (<70% CPU/memory)
-   - Query count assertions (prevent N+1)
-   - Example: `test_api_latency_under_10x_load()`, `test_max_query_count()`
-
-2. **Resilience Testing** (MANDATORY)
-   - Circuit breaker validation (dependency failures)
-   - Fallback behavior verification
-   - Graceful degradation tests
-   - Retry logic with exponential backoff
-   - Example: `test_circuit_breaker_opens_on_errors()`, `test_fallback_to_cache()`
-
-3. **Observability Validation** (MANDATORY)
-   - Structured logs emitted for key operations
-   - Metrics exported (RED: Rate, Errors, Duration)
-   - Trace context propagated
-   - Dashboard smoke test
-   - Example: `test_logs_contain_request_id()`, `test_metrics_exported()`
-
-4. **Smoke Testing** (MANDATORY)
-   - End-to-end happy path in production-like environment
-   - Health check endpoints responding
-   - Critical user journeys functional
-   - Example: `test_smoke_create_user_e2e()`, `test_health_check_returns_200()`
-
-5. **Contract Testing** (if public API)
-   - API response schemas validated
-   - Backward compatibility verified
-   - OpenAPI spec generation/validation
-   - Example: `test_api_matches_published_schema()`, `test_backward_compatibility()`
-
-**SRE Production Readiness Review** (Phase 6):
-- SRE Agent validates all 5 validation categories
-- Reviews performance test results against SLOs
-- Approves resilience and observability implementation
-- Signs off on production deployment
-
-**Gate**: Production deployment NOT approved until all validation passing
-
-## 🔧 **REFACTORING EXISTING CODE WORKFLOW** ⭐ **PHASE 230**
-
-### Purpose
-When refactoring existing code (bare except fixes, long function decomposition, code quality improvements), the standard TDD workflow applies but with **MANDATORY smoke testing** to verify runtime behavior of modified modules.
-
-**Key Difference**: Unlike new feature development where tests are written first, refactoring modifies code that may lack comprehensive test coverage. Smoke tests bridge this gap.
-
-### Refactoring Procedure (Standard Workflow)
-
-**Phase R1: TDD Foundation**
-1. Write TDD tests for the specific issue being fixed
-2. Run tests - expect failure (red)
-3. Apply fixes/refactoring
-4. Run tests - expect pass (green)
-5. Verify syntax compiles: `python3 -m py_compile <file.py>`
-
-**Phase R2: Smoke Testing (MANDATORY)** ⭐ **NEW**
-For EACH modified module, execute these verification steps:
-
-1. **Import Test** - Module loads without errors:
-   ```python
-   from claude.tools.sre import launchagent_health_monitor  # Should succeed
-   ```
-
-2. **Instantiation Test** - Classes can be created:
-   ```python
-   monitor = LaunchAgentHealthMonitor()  # Should succeed
-   ```
-
-3. **Method Existence Test** - Extracted helpers exist:
-   ```python
-   hasattr(monitor, '_calculate_schedule_aware_health')  # Should be True
-   ```
-
-4. **Basic Behavioral Test** - Key functions work with mock data:
-   ```python
-   # Test helper with minimal inputs
-   result = validator._check_required_columns(df, report, ['A', 'B'])
-   assert result == True  # Expected behavior
-   ```
-
-**Phase R3: Tool Execution (When Possible)**
-If the tool has CLI capabilities, run it:
+### P5: Execution & Registration
+**UNIT**: All P3 tests passing, >80% coverage
+**INTEGRATION**: All P3.5 tests passing
+**REGISTER** (if new tools/agents):
 ```bash
-python3 claude/tools/sre/launchagent_health_monitor.py --dashboard  # Full execution
-python3 claude/tools/sre/xlsx_pre_validator.py --help  # Basic startup
+python3 claude/tools/sre/capabilities_registry.py scan
+python3 claude/tools/sre/system_state_etl.py --recent 10
 ```
+**GATE**: Unit + Integration tests passing, DBs synced
 
-### Confidence Levels After Verification
-| Verification Step | Confidence Level |
-|-------------------|------------------|
-| Syntax check (`py_compile`) | High - Code parses |
-| Import test | High - Dependencies resolve |
-| Instantiation test | High - Classes initialize |
-| Method existence test | High - Refactored structure correct |
-| Basic behavioral test | Medium-High - Logic preserved |
-| Full tool execution | Highest - Production-ready |
-
-### When Smoke Tests Fail
-1. **Import Error**: Check dependencies, circular imports, syntax in imported modules
-2. **Instantiation Error**: Check `__init__` method, required parameters
-3. **Method Missing**: Verify extraction created correct method names
-4. **Behavioral Mismatch**: Logic change during refactoring - review diff carefully
-
-### Gate
-**Code refactoring is NOT complete until**:
-- ✅ TDD tests pass
-- ✅ Syntax compiles
-- ✅ All smoke tests pass (import, instantiation, methods, behavior)
-- ✅ Tool executes (when CLI available)
+### P6: Post-Implementation Validation
+**PERFORMANCE**: 10x load, P95/P99 meets SLOs, <70% CPU/mem, no N+1
+**RESILIENCE**: Circuit breakers, fallbacks, graceful degradation, retries
+**OBSERVABILITY**: Structured logs, RED metrics, traces, dashboard
+**SMOKE**: E2E happy path, health checks, critical journeys
+**CONTRACT** (if API): Schema validation, backward compat
+**GATE**: All categories passing → SRE production sign-off
 
 ---
 
-## 🤖 **AGENT PAIRING PROTOCOL** 🤖
+## Refactoring Workflow (Phase 230)
 
-### Automatic Agent Selection
-**TRIGGER**: ANY development task (tool, agent, feature, bug fix, schema change)
+**R1: TDD Foundation**
+Write tests → Red → Fix → Green → `python3 -m py_compile <file>`
 
-**AGENT PAIRING FORMULA**:
-1. **Domain Specialist Agent** - Primary domain expertise
-2. **SRE Principal Engineer Agent** - Production reliability, observability, error handling
+**R2: Smoke Tests (MANDATORY)**
+| Test | Command |
+|------|---------|
+| Import | `from module import X` |
+| Instantiation | `obj = Class()` |
+| Method existence | `hasattr(obj, 'method')` |
+| Behavior | `result = obj.method(input)` |
 
-### Agent Selection Process (Self-Consultation)
-**Maia's Internal Process**:
-1. Detect development task type (ServiceDesk, Security, Cloud, Data, etc.)
-2. Ask internally: "Which domain specialist would Naythan want for this?"
-3. Analyze options using systematic framework:
-   - Domain expertise match (90% weight)
-   - Past success with similar tasks (10% weight)
-4. Present recommendation with reasoning
-5. Proceed with selected pairing (no approval wait)
-
-**Example Output**:
-> "This ServiceDesk ETL work needs the **Service Desk Manager Agent** (domain expertise in ticket analysis patterns) + **SRE Principal Engineer Agent** (pipeline reliability, circuit breakers, observability). Proceeding with this pairing."
-
-### SRE Agent Lifecycle Integration
-**Phase 1 (Requirements)**: SRE defines reliability requirements
-- Observability needs (logging, metrics, tracing)
-- Error handling requirements (circuit breakers, retries, fallbacks)
-- Performance SLOs (latency, throughput, resource limits)
-- Data quality gates (validation, cleaning, profiling)
-- Operational requirements (health checks, graceful degradation)
-
-**Phase 2-3 (Test Design & Implementation)**: SRE collaborates during development
-- Review test coverage for failure modes
-- Validate error handling paths
-- Ensure observability instrumentation
-- Co-design reliability patterns
-
-**Phase 4 (Review)**: SRE reviews implementation
-- Production readiness assessment
-- Performance validation
-- Security review
-- Operational runbook validation
-
-### Domain Specialist Examples
-- **ServiceDesk work** → Service Desk Manager Agent
-- **Security analysis** → Security Specialist Agent
-- **Cloud infrastructure** → Azure Solutions Architect Agent
-- **Data pipelines** → Data Analyst Agent
-- **Recruitment tools** → Technical Recruitment Agent
-- **Information management** → Information Management Orchestrator Agent
-
-## Conversation Management
-
-### Starting a TDD Project (AUTOMATIC TRIGGER)
-**OLD BEHAVIOR** (deprecated): User says "Let's do TDD"
-**NEW BEHAVIOR** (mandatory): Maia auto-detects development work and initiates TDD
-
-**🚨 AUTO-DETECTION TRIGGERS - TDD IS MANDATORY FOR** 🚨
-
-**ALWAYS Trigger TDD Workflow When Creating**:
-- ✅ Tools: `*.py` files in `claude/tools/`
-- ✅ Agents: `*.md` files in `claude/agents/`
-- ✅ Hooks: `*.py` files in `claude/hooks/`
-- ✅ Core Policies: `*.md` files in `claude/context/core/` (if executable/enforced)
-- ✅ Commands: `*.md` files in `claude/commands/` (if they contain logic)
-- ✅ ANY code that will be executed (Python, bash, etc.)
-- ✅ Database schema changes
-- ✅ API modifications
-- ✅ Integration work
-
-**🚨 CRITICAL: User Saying "Proceed" Does NOT Override TDD** 🚨
-- Even if user says "go ahead", "do it", "execute", "proceed"
-- TDD is MANDATORY for development work (not optional)
-- Must complete requirements discovery FIRST
-- Must get "requirements complete" confirmation
-- Must write tests BEFORE implementation
-
-**Exception - User Can Skip TDD By**:
-- Explicitly saying "skip TDD for this" (rare, emergency only)
-- Documentation-only changes (no executable code)
-- Configuration-only changes (no logic)
-
-**Maia's Automatic Workflow**:
-1. **Detect development task** (code changes, new tools, bug fixes, schema changes)
-2. **Halt execution** if no requirements.md exists yet
-3. **Agent Pairing**: Select domain specialist + SRE (announce selection)
-4. **Phase 1**: Initiate requirements discovery questions
-5. **Phase 2-4**: Execute TDD workflow with both agents
-
-### During Development
-- Start each session: "Let me read the requirements file"
-- After design decisions: "Updating requirements with our decisions..."
-- Before implementing: "Let me verify against our test suite"
-- Regular checkpoint: "Are we still aligned with requirements?"
-
-### 🚨 Agent Continuity & Progress Preservation 🚨
-
-**CRITICAL**: Multi-phase projects risk losing agent context after:
-- Context compression (long sessions)
-- Session breaks
-- Phase transitions
-- Base Maia taking over without agent reload
-
-**MANDATORY PRACTICES**:
-
-1. **Agent Reload Instructions in ALL Implementation Plans**:
-   ```markdown
-   ## Phase 1: Requirements Discovery
-   **AGENT**: Load SRE Principal Engineer Agent + [Domain Specialist]
-   **Command**: "load sre_principal_engineer_agent"
-
-   [Phase 1 steps...]
-
-   **Save Progress**: Update {PROJECT}_progress.md with Phase 1 completion
-
-   ## Phase 2: Test Design
-   **AGENT RELOAD**: "load sre_principal_engineer_agent" (don't assume persistence)
-
-   [Phase 2 steps...]
-   ```
-
-2. **Incremental Progress Saving**:
-   - **Location**: `claude/data/project_status/active/{PROJECT}_progress.md`
-   - **Frequency**: After EACH phase completion (not just at end)
-   - **Trigger**: Every 30-60 minutes of work OR natural breakpoints
-   - **Content**:
-     ```markdown
-     # {PROJECT} - Progress Tracker
-
-     **Last Updated**: [timestamp]
-     **Active Agents**: SRE Principal Engineer Agent + [Domain Specialist]
-
-     ## Completed Phases
-     - [x] Phase 1: Requirements Discovery (2025-11-07 14:30)
-       - Created requirements.md
-       - Confirmed with user
-       - Decision: [key decisions made]
-
-     ## Current Phase
-     - [ ] Phase 2: Test Design (IN PROGRESS)
-       - Status: 60% complete
-       - Next: Write remaining edge case tests
-
-     ## Session Resumption
-     **Command**: "load sre_principal_engineer_agent"
-     **Context**: Working on {PROJECT}, Phase 2 test design
-     **Next Step**: Complete edge case tests, then proceed to implementation
-     ```
-
-3. **Session Start Protocol**:
-   - Read `{PROJECT}_progress.md` FIRST
-   - Reload agent context: "load sre_principal_engineer_agent"
-   - Confirm identity: "I'm the SRE Principal Engineer Agent, resuming..."
-   - Continue from documented next step
-
-4. **Base Maia Takeover Detection**:
-   - **Warning sign**: Response doesn't start with agent identity
-   - **Recovery**: User says "reload SRE agent" or "load sre_principal_engineer_agent"
-   - **Prevention**: Explicit reload commands at phase transitions
-
-### Key Phrases
-- **"Requirements complete"** - User signal to proceed to test phase
-- **"Check requirements"** - Prompts re-reading of requirements.md
-- **"Update requirements"** - Captures new decisions
-- **"Show me the tests"** - Validates test coverage
-
-## File Structure for TDD Projects
+**R3: Tool Execution**
+```bash
+python3 claude/tools/sre/tool.py --help  # or --dashboard
 ```
-project_name/
-├── requirements.md          # Living requirements document
-├── test_requirements.py     # Tests encoding all requirements
-├── implementation.py        # Actual implementation
-└── README.md               # Project overview
+
+**GATE**: Syntax + Import + Instantiation + Methods + Behavior all pass
+
+---
+
+## Auto-Triggers (TDD Required)
+
+**ALWAYS**: Tools (`claude/tools/*.py`) | Agents (`claude/agents/*.md`) | Hooks | Schema changes | API mods | Bug fixes | Integration work
+
+**EXEMPT**: Documentation-only | Config-only (no logic) | README | Comments
+
+**USER OVERRIDE**: "skip TDD" (rare, emergency only)
+
+---
+
+## Agent Pairing Protocol
+
+**FORMULA**: Detect task type → Select Domain Specialist → Pair with SRE
+
+| Domain | Specialist Agent |
+|--------|------------------|
+| ServiceDesk | Service Desk Manager |
+| Security | Security Specialist |
+| Cloud | Azure Solutions Architect |
+| Data | Data Analyst |
+| Recruitment | Technical Recruitment |
+
+**SRE LIFECYCLE**:
+- P1: Define reliability reqs (logging, circuit breakers, SLOs)
+- P2-4: Review failure modes, validate error handling
+- P5-6: Production readiness, performance, security
+
+---
+
+## Quality Gates (12 Total)
+
+| # | Gate | Blocks |
+|---|------|--------|
+| 1 | Requirements Gate | Tests until "requirements complete" |
+| 2 | Test Gate | Implementation until tests written |
+| 3 | Implementation Gate | Complete until tests pass |
+| 4 | Documentation Gate | Complete until requirements.md current |
+| 5 | Progress Gate | Complete until progress saved |
+| 6 | Agent Continuity Gate | Next phase until identity confirmed |
+| 7 | Registration Gate | Production until capabilities.db updated |
+| 8 | Sync Gate | Production until DBs synced |
+| 9 | Integration Test Design Gate | Implementation until P3.5 approved |
+| 10 | Integration Execution Gate | Production until integration tests pass |
+| 11 | Production Readiness Gate | Deploy until P6 validation pass |
+| 12 | Refactoring Smoke Test Gate | Complete until smoke tests pass |
+
+---
+
+## Feature Tracker CLI
+
+```bash
+# Structural TDD enforcement (Phase 221)
+python3 claude/tools/sre/feature_tracker.py init <project>
+python3 claude/tools/sre/feature_tracker.py add <project> "Feature" --priority 1 --verification "Test 1" "Test 2"
+python3 claude/tools/sre/feature_tracker.py next <project>
+python3 claude/tools/sre/feature_tracker.py update <project> F001 --passes|--fails
+python3 claude/tools/sre/feature_tracker.py status <project>
+python3 claude/tools/sre/feature_tracker.py reset <project> F001  # After fixing blocked feature
+```
+
+**CIRCUIT BREAKER**: 5 failed attempts → feature blocked → requires `reset` after fix
+
+---
+
+## File Structure
+
+```
+project/
+├── requirements.md           # Living requirements
+├── test_requirements.py      # Tests for all requirements
+└── implementation.py         # Code
 
 claude/data/project_status/active/
-└── {PROJECT}_progress.md    # Incremental progress tracking (multi-phase projects)
+└── {PROJECT}_progress.md     # Incremental tracking
+└── {PROJECT}_features.json   # Feature tracker state
 ```
-
-## Success Metrics
-- Zero requirement misses after implementation
-- All initial tests remain valid (no deletion due to misunderstanding)
-- Requirements document stays current with implementation
-- No "oh, I forgot to mention" moments after test creation
-- **Agent continuity maintained** (no base Maia takeovers mid-project)
-- **Progress preserved** (can resume after any interruption)
-- **Incremental saves completed** (progress.md updated after each phase)
-- **Capabilities registered** (new tools/agents in capabilities.db) ⭐ **PHASE 179**
-- **Databases synchronized** (system_state.db + capabilities.db current) ⭐ **PHASE 179**
-- **Integration tests passing** (cross-component, external, state management) ⭐ **PHASE 193**
-- **Performance validated** (P95/P99 latency meets SLOs, no N+1 queries) ⭐ **PHASE 193**
-- **Resilience tested** (circuit breakers, fallbacks, graceful degradation) ⭐ **PHASE 193**
-- **Observability confirmed** (logs/metrics/traces emitted, dashboard functional) ⭐ **PHASE 193**
-- **Production readiness approved** (SRE sign-off on all validation categories) ⭐ **PHASE 193**
-- **Refactoring smoke tested** (import, instantiation, methods, behavior verified for all modified modules) ⭐ **PHASE 230**
-
-## Quality Gates
-1. **Requirements Gate**: No tests until "requirements complete" confirmation
-2. **Test Gate**: No implementation until all tests written
-3. **Implementation Gate**: No feature complete until all tests pass
-4. **Documentation Gate**: Requirements.md updated with any changes
-5. **Progress Gate**: Progress saved after EACH phase (not just at end)
-6. **Agent Continuity Gate**: Agent identity confirmed at phase transitions
-7. **Registration Gate** ⭐ **PHASE 179**: New tools/agents registered in capabilities.db
-8. **Sync Gate** ⭐ **PHASE 179**: Databases synced before declaring production-ready
-9. **Integration Test Design Gate** ⭐ **PHASE 193**: Phase 3.5 integration tests designed and approved
-10. **Integration Execution Gate** ⭐ **PHASE 193**: Phase 5 integration tests passing
-11. **Production Readiness Gate** ⭐ **PHASE 193**: Phase 6 all validation passing (performance, resilience, observability, smoke, contracts)
-12. **Refactoring Smoke Test Gate** ⭐ **PHASE 230**: All smoke tests passing (import, instantiation, methods, behavior) for refactored code
-
-## Risk Mitigation
-- Active probing during discovery phase
-- Multiple concrete examples required
-- Explicit confirmation checkpoints
-- Regular requirements verification
-- Test-first discipline enforcement
-- **Agent context loss prevention** (explicit reload commands in plans)
-- **Progress loss prevention** (incremental saves after each phase)
-- **Base Maia takeover prevention** (identity confirmation at transitions)
-
-## Why This Works
-1. **Persistent Documentation**: Requirements survive context resets
-2. **Executable Verification**: Tests prove requirements are met
-3. **Double Verification**: Both documentation and tests must align
-4. **Systematic Discovery**: Comprehensive requirements before coding
-5. **Clear Checkpoints**: Explicit gates prevent premature progress
-
-## Integration with Maia Principles
-- **Solve Once**: Capture requirements properly first time
-- **System Design**: Systematic approach over ad-hoc development
-- **Continuous Learning**: Update protocol based on project outcomes
-- **Documentation-First**: Always update requirements when decisions change
-
-## 🔧 Feature Tracker - Structural TDD Enforcement ⭐ **PHASE 221**
-
-### Purpose
-The **Feature Tracker** (`claude/tools/sre/feature_tracker.py`) provides structural enforcement of TDD workflow - replacing documentation-based enforcement (easily ignored) with objective, persistent state.
-
-### Key Benefits
-1. **Forces requirements phase** - Must `init` project before coding
-2. **Tracks progress objectively** - X/Y passing (not subjective estimates)
-3. **Recovers TDD state** - JSON persists through context compaction
-4. **Prevents infinite loops** - Circuit breaker blocks after 5 failed attempts
-
-### Workflow Integration
-```bash
-# 1. Initialize TDD project
-python3 claude/tools/sre/feature_tracker.py init my_project
-
-# 2. Add features (requirements phase)
-python3 claude/tools/sre/feature_tracker.py add my_project "User auth" --priority 1 --verification "POST returns 200" "Token in response"
-
-# 3. Get next feature to work on
-python3 claude/tools/sre/feature_tracker.py next my_project
-
-# 4. Record test results
-python3 claude/tools/sre/feature_tracker.py update my_project F001 --passes
-python3 claude/tools/sre/feature_tracker.py update my_project F002 --fails
-
-# 5. Check progress
-python3 claude/tools/sre/feature_tracker.py status my_project  # Agent-injectable format
-python3 claude/tools/sre/feature_tracker.py summary my_project  # Counts
-
-# 6. Reset blocked features (after fixing root cause)
-python3 claude/tools/sre/feature_tracker.py reset my_project F002
-```
-
-### Session Integration
-TDD state is automatically injected into agent sessions via `swarm_auto_loader.py`:
-- **On session start**: Loads most recent `*_features.json` project
-- **Context injection**: Status injected into session state for agent awareness
-- **Development detection**: Warns if development task detected but no TDD project exists
-
-### Circuit Breaker
-Features are blocked when `attempts >= max_attempts` (default 5):
-- Blocked features excluded from `next` command
-- Forces human intervention to diagnose root cause
-- `reset` clears attempts and unblocks after fix
-
-### File Location
-- **Tool**: `claude/tools/sre/feature_tracker.py`
-- **Tests**: `claude/tools/sre/tests/test_feature_tracker.py` (31 tests)
-- **Data**: `claude/data/project_status/active/{project}_features.json`
-
-## TDD Scope & Exemptions
-
-### REQUIRES TDD (Mandatory)
-✅ New tools, agents, features
-✅ Bug fixes to existing code
-✅ Database schema changes
-✅ API modifications
-✅ Data pipeline changes
-✅ Integration work
-
-### EXEMPT FROM TDD
-❌ Documentation-only changes (no code logic)
-❌ Configuration-only changes (no code logic)
-❌ README/markdown updates
-❌ Comment-only changes
-
-### Grey Areas (Use Judgment)
-⚠️ **Small typo fixes in code**: Generally exempt, but if touching critical logic → TDD
-⚠️ **Config with logic**: If config changes affect behavior → TDD required
 
 ---
-*Last Updated: 2026-01-03*
-*Status: MANDATORY Protocol - Enforced for ALL Development*
-*Agent Pairing: Domain Specialist + SRE Principal Engineer Agent (ALWAYS)*
-*Agent Continuity: Explicit reload commands + incremental progress saving (ALWAYS)*
-*Database Sync: Phase 5 registration + sync mandatory before production (PHASE 179)*
-*Integration & Validation: Phase 3.5 integration tests + Phase 6 production validation (PHASE 193)*
-*Refactoring Smoke Tests: Mandatory import/instantiation/method/behavior verification (PHASE 230)*
+
+## Key Phrases
+
+| Phrase | Action |
+|--------|--------|
+| "requirements complete" | Proceed to P3 (tests) |
+| "check requirements" | Re-read requirements.md |
+| "update requirements" | Capture new decisions |
+| "show me the tests" | Validate coverage |
+
+---
+
+## Session Continuity
+
+**AGENT RELOAD**: Include in all plans: `load sre_principal_engineer_agent`
+**PROGRESS SAVE**: After EACH phase → `{PROJECT}_progress.md`
+**RECOVERY**: Read progress.md → Reload agent → Continue from documented step
+
+---
+
+*v2.3 | 595→~200 lines (~66% reduction) | All 12 gates preserved*
