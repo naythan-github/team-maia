@@ -55,6 +55,9 @@ claude/data/context_state.json
 claude/data/*.db
 *.sqlite
 
+# RAG databases (regenerable from source data - 72MB+)
+claude/data/rag_databases/
+
 # Operational work outputs (should be in ~/work_projects/)
 claude/data/*ServiceDesk*.xlsx
 claude/data/*ServiceDesk*.csv
