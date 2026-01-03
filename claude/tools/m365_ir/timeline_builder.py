@@ -58,8 +58,8 @@ PHASE_KEYWORDS = {
     ],
 }
 
-# High-risk countries for initial access detection
-HIGH_RISK_COUNTRIES = {"RU", "CN", "KP", "IR", "BY"}
+# High-risk countries for attack detection (nation-state threat actors)
+HIGH_RISK_COUNTRIES = {"RU", "CN", "KP", "IR", "BY", "VE", "CU", "SY"}
 
 
 @dataclass

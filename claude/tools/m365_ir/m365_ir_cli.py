@@ -277,9 +277,9 @@ class M365IRAnalyzer:
 
         print(f"\nAttack Summary:")
         if self.timeline:
-            sorted_timeline = self.timeline_builder.sort_chronologically(self.timeline) if hasattr(self.timeline_builder, 'sort_chronologically') else self.timeline
-            print(f"  First activity: {sorted_timeline[0].timestamp.strftime('%Y-%m-%d %H:%M') if sorted_timeline else 'N/A'}")
-            print(f"  Last activity: {sorted_timeline[-1].timestamp.strftime('%Y-%m-%d %H:%M') if sorted_timeline else 'N/A'}")
+            # Timeline is already sorted chronologically by TimelineBuilder.build()
+            print(f"  First activity: {self.timeline[0].timestamp.strftime('%Y-%m-%d %H:%M')}")
+            print(f"  Last activity: {self.timeline[-1].timestamp.strftime('%Y-%m-%d %H:%M')}")
 
         print(f"\nMITRE ATT&CK Techniques:")
         for t in self.mitre_techniques:

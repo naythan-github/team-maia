@@ -287,12 +287,13 @@ class TierCategorizer:
             return 'L2'
 
 
-def main():
-    print("📊 Categorizing ServiceDesk Tickets by Support Tier (L1/L2/L3)...\n")
+# ============================================================================
+# Helper Functions for main() (Phase 230 Refactoring)
+# ============================================================================
 
-    # Load tickets from database
+def _load_tickets_from_db() -> pd.DataFrame:
+    """Load tickets from SQLite database."""
     conn = sqlite3.connect(DB_PATH)
-
     query = """
     SELECT
         "TKT-Ticket ID" as ticket_id,
@@ -309,19 +310,14 @@ def main():
     FROM tickets
     ORDER BY "TKT-Created Time" DESC
     """
-
     df = pd.read_sql_query(query, conn)
     conn.close()
+    return df
 
-    print(f"✅ Loaded {len(df):,} tickets from database\n")
 
-    # Initialize categorizer
-    categorizer = TierCategorizer()
-
-    # Categorize each ticket
-    print("🔍 Categorizing tickets by tier...")
+def _categorize_all_tickets(df: pd.DataFrame, categorizer: TierCategorizer) -> list:
+    """Categorize all tickets and return tier list."""
     tiers = []
-
     for idx, row in df.iterrows():
         ticket = {
             'title': row['title'],
@@ -329,20 +325,15 @@ def main():
             'category': row['category'],
             'root_cause': row['root_cause']
         }
-
         tier = categorizer.categorize_ticket(ticket)
         tiers.append(tier)
-
         if (idx + 1) % 1000 == 0:
             print(f"   Processed {idx+1:,}/{len(df):,} tickets...")
+    return tiers
 
-    df['Support_Tier'] = tiers
 
-    print(f"\n✅ Categorization complete!\n")
-
-    # Tier breakdown
-    tier_counts = df['Support_Tier'].value_counts()
-
+def _print_tier_breakdown(df: pd.DataFrame, tier_counts: pd.Series) -> None:
+    """Print tier breakdown summary."""
     print("="*80)
     print("📊 TIER BREAKDOWN")
     print("="*80)
@@ -351,18 +342,18 @@ def main():
     for tier in ['L1', 'L2', 'L3']:
         count = tier_counts.get(tier, 0)
         pct = count / len(df) * 100
-
         tier_name = {
             'L1': 'Tier 1 (Help Desk / Service Desk)',
             'L2': 'Tier 2 (Technical Support)',
             'L3': 'Tier 3 (Subject Matter Experts / Engineering)'
         }[tier]
-
         print(f"{tier}: {tier_name}")
         print(f"   Total Tickets: {count:,} ({pct:.1f}%)")
         print()
 
-    # Tier breakdown by category
+
+def _print_tier_by_category(df: pd.DataFrame) -> pd.DataFrame:
+    """Print and return tier breakdown by category."""
     print("="*80)
     print("📊 TIER BREAKDOWN BY CATEGORY")
     print("="*80)
@@ -382,106 +373,74 @@ def main():
                 print(f"   {tier}: {count:,} ({pct:.1f}%)")
         print()
 
-    # Save to Excel
-    print("="*80)
-    print("💾 SAVING RESULTS TO EXCEL")
-    print("="*80)
-    print()
+    return tier_by_category
 
-    output_path = MAIA_ROOT / "claude/data/ServiceDesk_Tier_Analysis_L1_L2_L3.xlsx"
 
-    with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+def _create_excel_sheets(writer, df: pd.DataFrame, tier_counts: pd.Series, tier_by_category: pd.DataFrame) -> None:
+    """Create all Excel worksheets."""
+    # Sheet 1: Executive Summary
+    summary_data = {
+        'Metric': [
+            'Total Tickets', 'L1 (Help Desk) Tickets', 'L1 Percentage',
+            'L2 (Technical Support) Tickets', 'L2 Percentage',
+            'L3 (SME / Engineering) Tickets', 'L3 Percentage', 'Analysis Date'
+        ],
+        'Value': [
+            f"{len(df):,}",
+            f"{tier_counts.get('L1', 0):,}",
+            f"{tier_counts.get('L1', 0) / len(df) * 100:.1f}%",
+            f"{tier_counts.get('L2', 0):,}",
+            f"{tier_counts.get('L2', 0) / len(df) * 100:.1f}%",
+            f"{tier_counts.get('L3', 0):,}",
+            f"{tier_counts.get('L3', 0) / len(df) * 100:.1f}%",
+            pd.Timestamp.now().strftime('%Y-%m-%d')
+        ]
+    }
+    pd.DataFrame(summary_data).to_excel(writer, sheet_name='Executive Summary', index=False)
 
-        # Sheet 1: Executive Summary
-        summary_data = {
-            'Metric': [
-                'Total Tickets',
-                'L1 (Help Desk) Tickets',
-                'L1 Percentage',
-                'L2 (Technical Support) Tickets',
-                'L2 Percentage',
-                'L3 (SME / Engineering) Tickets',
-                'L3 Percentage',
-                'Analysis Date'
-            ],
-            'Value': [
-                f"{len(df):,}",
-                f"{tier_counts.get('L1', 0):,}",
-                f"{tier_counts.get('L1', 0) / len(df) * 100:.1f}%",
-                f"{tier_counts.get('L2', 0):,}",
-                f"{tier_counts.get('L2', 0) / len(df) * 100:.1f}%",
-                f"{tier_counts.get('L3', 0):,}",
-                f"{tier_counts.get('L3', 0) / len(df) * 100:.1f}%",
-                pd.Timestamp.now().strftime('%Y-%m-%d')
-            ]
-        }
+    # Sheet 2: All Tickets with Tier
+    df_export = df[['ticket_id', 'title', 'category', 'root_cause', 'Support_Tier',
+                   'status', 'account_name', 'created_time', 'assigned_to']].copy()
+    df_export.to_excel(writer, sheet_name='All Tickets with Tier', index=False)
 
-        pd.DataFrame(summary_data).to_excel(writer, sheet_name='Executive Summary', index=False)
+    # Sheet 3: Tier Breakdown by Category
+    tier_by_category.to_excel(writer, sheet_name='Tier by Category')
 
-        # Sheet 2: All Tickets with Tier
-        df_export = df[['ticket_id', 'title', 'category', 'root_cause', 'Support_Tier',
-                       'status', 'account_name', 'created_time', 'assigned_to']].copy()
-        df_export.to_excel(writer, sheet_name='All Tickets with Tier', index=False)
+    # Sheet 4: Tier Breakdown by Root Cause
+    tier_by_root_cause = df.groupby(['root_cause', 'Support_Tier']).size().unstack(fill_value=0)
+    tier_by_root_cause['Total'] = tier_by_root_cause.sum(axis=1)
+    tier_by_root_cause = tier_by_root_cause.sort_values('Total', ascending=False)
+    tier_by_root_cause.to_excel(writer, sheet_name='Tier by Root Cause')
 
-        # Sheet 3: Tier Breakdown by Category
-        tier_by_category.to_excel(writer, sheet_name='Tier by Category')
+    # Sheet 5: Tier Breakdown by Account
+    tier_by_account = df.groupby(['account_name', 'Support_Tier']).size().unstack(fill_value=0)
+    tier_by_account['Total'] = tier_by_account.sum(axis=1)
+    tier_by_account = tier_by_account.sort_values('Total', ascending=False).head(50)
+    tier_by_account.to_excel(writer, sheet_name='Tier by Account (Top 50)')
 
-        # Sheet 4: Tier Breakdown by Root Cause
-        tier_by_root_cause = df.groupby(['root_cause', 'Support_Tier']).size().unstack(fill_value=0)
-        tier_by_root_cause['Total'] = tier_by_root_cause.sum(axis=1)
-        tier_by_root_cause = tier_by_root_cause.sort_values('Total', ascending=False)
-        tier_by_root_cause.to_excel(writer, sheet_name='Tier by Root Cause')
+    # Sheets 6-8: Sample Tickets by Tier
+    for tier, sheet_name in [('L1', 'L1 Sample Tickets'), ('L2', 'L2 Sample Tickets'), ('L3', 'L3 Sample Tickets')]:
+        samples = df[df['Support_Tier'] == tier][['ticket_id', 'title', 'category', 'root_cause', 'account_name']].head(100)
+        samples.to_excel(writer, sheet_name=sheet_name, index=False)
 
-        # Sheet 5: Tier Breakdown by Account
-        tier_by_account = df.groupby(['account_name', 'Support_Tier']).size().unstack(fill_value=0)
-        tier_by_account['Total'] = tier_by_account.sum(axis=1)
-        tier_by_account = tier_by_account.sort_values('Total', ascending=False).head(50)
-        tier_by_account.to_excel(writer, sheet_name='Tier by Account (Top 50)')
+    # Sheet 9: Staffing Recommendations
+    staffing_data = {
+        'Tier': ['L1', 'L2', 'L3'],
+        'Tickets': [tier_counts.get('L1', 0), tier_counts.get('L2', 0), tier_counts.get('L3', 0)],
+        'Percentage': [
+            f"{tier_counts.get('L1', 0) / len(df) * 100:.1f}%",
+            f"{tier_counts.get('L2', 0) / len(df) * 100:.1f}%",
+            f"{tier_counts.get('L3', 0) / len(df) * 100:.1f}%"
+        ],
+        'Industry Benchmark': ['60-70%', '25-35%', '5-10%'],
+        'Current vs Benchmark': ['Compare to 60-70%', 'Compare to 25-35%', 'Compare to 5-10%'],
+        'Recommended FTE': ['Calculate based on volume'] * 3
+    }
+    pd.DataFrame(staffing_data).to_excel(writer, sheet_name='Staffing Recommendations', index=False)
 
-        # Sheet 6: L1 Sample Tickets
-        l1_samples = df[df['Support_Tier'] == 'L1'][['ticket_id', 'title', 'category', 'root_cause', 'account_name']].head(100)
-        l1_samples.to_excel(writer, sheet_name='L1 Sample Tickets', index=False)
 
-        # Sheet 7: L2 Sample Tickets
-        l2_samples = df[df['Support_Tier'] == 'L2'][['ticket_id', 'title', 'category', 'root_cause', 'account_name']].head(100)
-        l2_samples.to_excel(writer, sheet_name='L2 Sample Tickets', index=False)
-
-        # Sheet 8: L3 Sample Tickets
-        l3_samples = df[df['Support_Tier'] == 'L3'][['ticket_id', 'title', 'category', 'root_cause', 'account_name']].head(100)
-        l3_samples.to_excel(writer, sheet_name='L3 Sample Tickets', index=False)
-
-        # Sheet 9: Staffing Recommendations
-        staffing_data = {
-            'Tier': ['L1', 'L2', 'L3'],
-            'Tickets': [
-                tier_counts.get('L1', 0),
-                tier_counts.get('L2', 0),
-                tier_counts.get('L3', 0)
-            ],
-            'Percentage': [
-                f"{tier_counts.get('L1', 0) / len(df) * 100:.1f}%",
-                f"{tier_counts.get('L2', 0) / len(df) * 100:.1f}%",
-                f"{tier_counts.get('L3', 0) / len(df) * 100:.1f}%"
-            ],
-            'Industry Benchmark': ['60-70%', '25-35%', '5-10%'],
-            'Current vs Benchmark': [
-                'Compare to 60-70%',
-                'Compare to 25-35%',
-                'Compare to 5-10%'
-            ],
-            'Recommended FTE': [
-                'Calculate based on volume',
-                'Calculate based on volume',
-                'Calculate based on volume'
-            ]
-        }
-
-        pd.DataFrame(staffing_data).to_excel(writer, sheet_name='Staffing Recommendations', index=False)
-
-    print(f"✅ Excel report saved: {output_path}")
-    print(f"   File size: {output_path.stat().st_size / 1024:.1f} KB")
-    print()
-
+def _print_key_insights(df: pd.DataFrame, tier_counts: pd.Series) -> None:
+    """Print key insights and recommendations."""
     print("="*80)
     print("🎯 KEY INSIGHTS")
     print("="*80)
@@ -497,7 +456,6 @@ def main():
     print(f"   L3: {l3_pct:.1f}% (Industry: 5-10%)")
     print()
 
-    # Insights
     if l1_pct < 60:
         print(f"⚠️  L1 below industry benchmark ({l1_pct:.1f}% vs 60-70%)")
         print(f"   → Opportunity: Shift more tickets to L1 via automation/training")
@@ -512,6 +470,42 @@ def main():
     if l3_pct > 10:
         print(f"⚠️  L3 above industry benchmark ({l3_pct:.1f}% vs 5-10%)")
         print(f"   → Opportunity: Improve L2 expertise, reduce L3 escalations")
+
+
+def main():
+    """Categorize ServiceDesk tickets by tier (refactored - Phase 230)."""
+    print("📊 Categorizing ServiceDesk Tickets by Support Tier (L1/L2/L3)...\n")
+
+    # Load and categorize tickets
+    df = _load_tickets_from_db()
+    print(f"✅ Loaded {len(df):,} tickets from database\n")
+
+    categorizer = TierCategorizer()
+    print("🔍 Categorizing tickets by tier...")
+    df['Support_Tier'] = _categorize_all_tickets(df, categorizer)
+    print(f"\n✅ Categorization complete!\n")
+
+    # Get tier counts and display results
+    tier_counts = df['Support_Tier'].value_counts()
+    _print_tier_breakdown(df, tier_counts)
+    tier_by_category = _print_tier_by_category(df)
+
+    # Save to Excel
+    print("="*80)
+    print("💾 SAVING RESULTS TO EXCEL")
+    print("="*80)
+    print()
+
+    output_path = MAIA_ROOT / "claude/data/ServiceDesk_Tier_Analysis_L1_L2_L3.xlsx"
+    with pd.ExcelWriter(output_path, engine='openpyxl') as writer:
+        _create_excel_sheets(writer, df, tier_counts, tier_by_category)
+
+    print(f"✅ Excel report saved: {output_path}")
+    print(f"   File size: {output_path.stat().st_size / 1024:.1f} KB")
+    print()
+
+    # Print insights
+    _print_key_insights(df, tier_counts)
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ Created: 2025-12-18 (Phase 225)
 
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 from pathlib import Path
 import sys
 
@@ -245,7 +245,7 @@ class UserBaseliner:
     def get_summary(
         self,
         baselines: Dict[str, UserBaseline],
-    ) -> Dict[str, any]:
+    ) -> Dict[str, Any]:
         """
         Get summary statistics from baselines.
 

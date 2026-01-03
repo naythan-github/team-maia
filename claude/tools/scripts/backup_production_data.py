@@ -130,16 +130,205 @@ class ProductionBackupSystem:
             "claude/logs/production/alerts.log",
             "claude/logs/production/health.log"
         ]
-    
+
+    # =========================================================================
+    # Helper Methods for Backup (Phase 230 Refactoring)
+    # =========================================================================
+
+    def _backup_databases(self, backup_path: Path, manifest: dict) -> float:
+        """Backup all database files with compression."""
+        db_backup_dir = backup_path / "databases"
+        db_backup_dir.mkdir(exist_ok=True)
+        total_size = 0
+
+        for db_file in self.database_files:
+            if os.path.exists(db_file):
+                try:
+                    backup_db_path = db_backup_dir / f"{Path(db_file).name}.gz"
+                    with open(db_file, 'rb') as f_in:
+                        with gzip.open(backup_db_path, 'wb') as f_out:
+                            f_out.writelines(f_in)
+
+                    file_size = os.path.getsize(backup_db_path) / 1024 / 1024
+                    total_size += file_size
+
+                    manifest["databases_backed_up"].append({
+                        "original_path": db_file,
+                        "backup_path": str(backup_db_path),
+                        "size_mb": round(file_size, 2)
+                    })
+                    logger.info(f"Backed up database: {db_file} ({file_size:.2f} MB)")
+                except Exception as e:
+                    logger.error(f"Failed to backup database {db_file}: {e}")
+
+        return total_size
+
+    def _backup_configuration_files(self, backup_path: Path, manifest: dict) -> None:
+        """Backup configuration files with proper encoding."""
+        config_backup_dir = backup_path / "configuration"
+        config_backup_dir.mkdir(exist_ok=True)
+
+        for config_file in self.configuration_files:
+            if os.path.exists(config_file):
+                try:
+                    backup_config_path = config_backup_dir / Path(config_file).name
+                    if Path(config_file).suffix in ['.md', '.json', '.py', '.sh', '.txt']:
+                        with open(config_file, 'r', encoding='utf-8', errors='replace') as f_in:
+                            content = f_in.read()
+                        with open(backup_config_path, 'w', encoding='utf-8') as f_out:
+                            f_out.write(content)
+                    else:
+                        shutil.copy2(config_file, backup_config_path)
+
+                    file_size = os.path.getsize(backup_config_path) / 1024
+
+                    manifest["configuration_files_backed_up"].append({
+                        "original_path": config_file,
+                        "backup_path": str(backup_config_path),
+                        "size_kb": round(file_size, 2),
+                        "type": "configuration"
+                    })
+                    logger.info(f"Backed up config: {config_file}")
+                except Exception as e:
+                    logger.error(f"Failed to backup config file {config_file}: {e}")
+
+    def _backup_system_directories(self, backup_path: Path, manifest: dict) -> float:
+        """Backup system directories with enterprise-compatible structure."""
+        total_size = 0
+
+        for directory in self.system_directories:
+            if os.path.exists(directory):
+                try:
+                    if directory == "claude/tools":
+                        backup_dir_path = backup_path / "tools" / "claude" / "tools"
+                    elif directory == "claude/agents":
+                        backup_dir_path = backup_path / "agents" / "claude" / "agents"
+                    else:
+                        backup_dir_path = backup_path / Path(directory).name
+
+                    backup_dir_path.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copytree(directory, backup_dir_path, dirs_exist_ok=True)
+
+                    file_count = sum(1 for _ in Path(backup_dir_path).rglob('*') if _.is_file())
+                    dir_size = sum(f.stat().st_size for f in Path(backup_dir_path).rglob('*') if f.is_file()) / 1024 / 1024
+                    total_size += dir_size
+
+                    manifest["directories_backed_up"].append({
+                        "original_path": directory,
+                        "backup_path": str(backup_dir_path),
+                        "file_count": file_count,
+                        "size_mb": round(dir_size, 2),
+                        "type": "system_directory"
+                    })
+                    logger.info(f"Backed up directory: {directory} ({file_count} files, {dir_size:.2f} MB)")
+                except Exception as e:
+                    logger.error(f"Failed to backup directory {directory}: {e}")
+
+        return total_size
+
+    def _backup_restoration_docs(self, backup_path: Path, manifest: dict) -> None:
+        """Backup restoration documentation files."""
+        docs_backup_dir = backup_path / "restoration_docs"
+        docs_backup_dir.mkdir(exist_ok=True)
+
+        for doc_file in self.restoration_files:
+            if os.path.exists(doc_file):
+                try:
+                    backup_doc_path = docs_backup_dir / Path(doc_file).name
+                    with open(doc_file, 'r', encoding='utf-8', errors='replace') as f_in:
+                        content = f_in.read()
+                    with open(backup_doc_path, 'w', encoding='utf-8') as f_out:
+                        f_out.write(content)
+
+                    file_size = os.path.getsize(backup_doc_path) / 1024
+
+                    manifest["files_backed_up"].append({
+                        "original_path": doc_file,
+                        "backup_path": str(backup_doc_path),
+                        "size_kb": round(file_size, 2),
+                        "type": "restoration_documentation"
+                    })
+                    logger.info(f"Backed up restoration doc: {doc_file}")
+                except Exception as e:
+                    logger.error(f"Failed to backup restoration doc {doc_file}: {e}")
+
+    def _backup_credentials(self, backup_path: Path, manifest: dict) -> None:
+        """Backup credential files."""
+        cred_backup_dir = backup_path / "credentials"
+        cred_backup_dir.mkdir(exist_ok=True)
+
+        for cred_file in self.credential_files:
+            if os.path.exists(cred_file):
+                try:
+                    backup_cred_path = cred_backup_dir / Path(cred_file).name
+                    shutil.copy2(cred_file, backup_cred_path)
+
+                    file_size = os.path.getsize(backup_cred_path) / 1024
+
+                    manifest["files_backed_up"].append({
+                        "original_path": cred_file,
+                        "backup_path": str(backup_cred_path),
+                        "size_kb": round(file_size, 2),
+                        "type": "credential"
+                    })
+                    logger.info(f"Backed up credentials: {cred_file}")
+                except Exception as e:
+                    logger.error(f"Failed to backup credential file {cred_file}: {e}")
+
+    def _backup_logs(self, backup_path: Path, manifest: dict) -> None:
+        """Backup log files with compression."""
+        log_backup_dir = backup_path / "logs"
+        log_backup_dir.mkdir(exist_ok=True)
+
+        for log_file in self.log_files:
+            if os.path.exists(log_file):
+                try:
+                    backup_log_path = log_backup_dir / f"{Path(log_file).name}.gz"
+                    with open(log_file, 'rb') as f_in:
+                        with gzip.open(backup_log_path, 'wb') as f_out:
+                            f_out.writelines(f_in)
+
+                    file_size = os.path.getsize(backup_log_path) / 1024
+
+                    manifest["files_backed_up"].append({
+                        "original_path": log_file,
+                        "backup_path": str(backup_log_path),
+                        "size_kb": round(file_size, 2),
+                        "type": "log"
+                    })
+                    logger.info(f"Backed up log: {log_file}")
+                except Exception as e:
+                    logger.error(f"Failed to backup log file {log_file}: {e}")
+
+    def _create_compressed_archive(self, backup_path: Path, backup_name: str, total_size: float, manifest: dict) -> None:
+        """Create compressed tar.gz archive of backup."""
+        archive_path = backup_path.parent / f"{backup_name}.tar.gz"
+        logger.info(f"Creating compressed archive: {archive_path.name}")
+
+        try:
+            with tarfile.open(archive_path, "w:gz") as tar:
+                tar.add(backup_path, arcname=backup_name)
+
+            archive_size_mb = os.path.getsize(archive_path) / (1024 * 1024)
+            manifest["archive_created"] = {
+                "archive_path": str(archive_path),
+                "archive_size_mb": round(archive_size_mb, 2),
+                "compression_ratio": round((archive_size_mb / total_size) * 100, 1) if total_size > 0 else 0
+            }
+            logger.info(f"✅ Archive created: {archive_path.name} ({archive_size_mb:.2f} MB, {manifest['archive_created']['compression_ratio']}% of original)")
+        except Exception as e:
+            logger.error(f"Failed to create archive: {e}")
+            manifest["archive_created"] = None
+
     def create_backup(self, backup_type="daily"):
-        """Create comprehensive backup"""
+        """Create comprehensive backup (refactored - Phase 230)."""
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         backup_name = f"maia_backup_{backup_type}_{timestamp}"
         backup_path = self.backup_dir / backup_name
         backup_path.mkdir(exist_ok=True)
-        
+
         logger.info(f"Creating {backup_type} backup: {backup_name}")
-        
+
         backup_manifest = {
             "backup_name": backup_name,
             "backup_type": backup_type,
@@ -153,230 +342,39 @@ class ProductionBackupSystem:
             "total_files": 0,
             "coverage_complete": True
         }
-        
-        total_size = 0
-        
-        # Backup databases
-        db_backup_dir = backup_path / "databases"
-        db_backup_dir.mkdir(exist_ok=True)
-        
-        for db_file in self.database_files:
-            if os.path.exists(db_file):
-                try:
-                    # Create compressed backup of database
-                    backup_db_path = db_backup_dir / f"{Path(db_file).name}.gz"
-                    
-                    with open(db_file, 'rb') as f_in:
-                        with gzip.open(backup_db_path, 'wb') as f_out:
-                            f_out.writelines(f_in)
-                    
-                    file_size = os.path.getsize(backup_db_path) / 1024 / 1024  # MB
-                    total_size += file_size
-                    
-                    backup_manifest["databases_backed_up"].append({
-                        "original_path": db_file,
-                        "backup_path": str(backup_db_path),
-                        "size_mb": round(file_size, 2)
-                    })
-                    
-                    logger.info(f"Backed up database: {db_file} ({file_size:.2f} MB)")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to backup database {db_file}: {e}")
-        
-        # Backup configuration files - CRITICAL SYSTEM CONFIG
-        config_backup_dir = backup_path / "configuration"
-        config_backup_dir.mkdir(exist_ok=True)
-        
-        for config_file in self.configuration_files:
-            if os.path.exists(config_file):
-                try:
-                    backup_config_path = config_backup_dir / Path(config_file).name
-                    # CRITICAL FIX: Handle encoding properly for text files
-                    if Path(config_file).suffix in ['.md', '.json', '.py', '.sh', '.txt']:
-                        # Read and write with explicit UTF-8 encoding
-                        with open(config_file, 'r', encoding='utf-8', errors='replace') as f_in:
-                            content = f_in.read()
-                        with open(backup_config_path, 'w', encoding='utf-8') as f_out:
-                            f_out.write(content)
-                    else:
-                        shutil.copy2(config_file, backup_config_path)
-                    
-                    file_size = os.path.getsize(backup_config_path) / 1024  # KB
-                    
-                    backup_manifest["configuration_files_backed_up"].append({
-                        "original_path": config_file,
-                        "backup_path": str(backup_config_path),
-                        "size_kb": round(file_size, 2),
-                        "type": "configuration"
-                    })
-                    
-                    logger.info(f"Backed up config: {config_file}")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to backup config file {config_file}: {e}")
-        
-        # Backup system directories - TOOLS, AGENTS, COMMANDS, HOOKS (FIXED STRUCTURE)
-        for directory in self.system_directories:
-            if os.path.exists(directory):
-                try:
-                    # CRITICAL FIX: Create enterprise restoration compatible structure
-                    if directory == "claude/tools":
-                        # Enterprise expects tools/claude/tools/
-                        backup_dir_path = backup_path / "tools" / "claude" / "tools"
-                    elif directory == "claude/agents":
-                        # Enterprise expects agents/claude/agents/
-                        backup_dir_path = backup_path / "agents" / "claude" / "agents"  
-                    else:
-                        # Other directories go to root level
-                        backup_dir_path = backup_path / Path(directory).name
-                    
-                    backup_dir_path.parent.mkdir(parents=True, exist_ok=True)
-                    
-                    # Copy entire directory
-                    shutil.copytree(directory, backup_dir_path, dirs_exist_ok=True)
-                    
-                    # Count files in directory
-                    file_count = sum(1 for _ in Path(backup_dir_path).rglob('*') if _.is_file())
-                    dir_size = sum(f.stat().st_size for f in Path(backup_dir_path).rglob('*') if f.is_file()) / 1024 / 1024  # MB
-                    total_size += dir_size
-                    
-                    backup_manifest["directories_backed_up"].append({
-                        "original_path": directory,
-                        "backup_path": str(backup_dir_path),
-                        "file_count": file_count,
-                        "size_mb": round(dir_size, 2),
-                        "type": "system_directory"
-                    })
-                    
-                    logger.info(f"Backed up directory: {directory} ({file_count} files, {dir_size:.2f} MB)")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to backup directory {directory}: {e}")
-        
-        # Backup restoration documentation - SELF-CONTAINED RESTORATION
-        docs_backup_dir = backup_path / "restoration_docs"
-        docs_backup_dir.mkdir(exist_ok=True)
-        
-        for doc_file in self.restoration_files:
-            if os.path.exists(doc_file):
-                try:
-                    backup_doc_path = docs_backup_dir / Path(doc_file).name
-                    # CRITICAL FIX: Handle encoding properly for documentation files
-                    with open(doc_file, 'r', encoding='utf-8', errors='replace') as f_in:
-                        content = f_in.read()
-                    with open(backup_doc_path, 'w', encoding='utf-8') as f_out:
-                        f_out.write(content)
-                    
-                    file_size = os.path.getsize(backup_doc_path) / 1024  # KB
-                    
-                    backup_manifest["files_backed_up"].append({
-                        "original_path": doc_file,
-                        "backup_path": str(backup_doc_path),
-                        "size_kb": round(file_size, 2),
-                        "type": "restoration_documentation"
-                    })
-                    
-                    logger.info(f"Backed up restoration doc: {doc_file}")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to backup restoration doc {doc_file}: {e}")
-        
-        # Create master restoration script - ONE-COMMAND RESTORATION
+
+        # Execute backup operations using helper methods
+        total_size = self._backup_databases(backup_path, backup_manifest)
+        self._backup_configuration_files(backup_path, backup_manifest)
+        total_size += self._backup_system_directories(backup_path, backup_manifest)
+        self._backup_restoration_docs(backup_path, backup_manifest)
+
+        # Create master restoration script
         master_restore_script = backup_path / "RESTORE_MAIA_HERE.py"
         self._create_master_restoration_script(master_restore_script, backup_path)
-        
         backup_manifest["files_backed_up"].append({
             "original_path": "generated",
             "backup_path": str(master_restore_script),
             "size_kb": round(os.path.getsize(master_restore_script) / 1024, 2),
             "type": "master_restoration_script"
         })
-        
         logger.info("Created master restoration script: RESTORE_MAIA_HERE.py")
-        
-        # Backup credential files (if they exist)
-        cred_backup_dir = backup_path / "credentials"
-        cred_backup_dir.mkdir(exist_ok=True)
-        
-        for cred_file in self.credential_files:
-            if os.path.exists(cred_file):
-                try:
-                    backup_cred_path = cred_backup_dir / Path(cred_file).name
-                    shutil.copy2(cred_file, backup_cred_path)
-                    
-                    file_size = os.path.getsize(backup_cred_path) / 1024  # KB
-                    
-                    backup_manifest["files_backed_up"].append({
-                        "original_path": cred_file,
-                        "backup_path": str(backup_cred_path),
-                        "size_kb": round(file_size, 2),
-                        "type": "credential"
-                    })
-                    
-                    logger.info(f"Backed up credentials: {cred_file}")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to backup credential file {cred_file}: {e}")
-        
-        # Backup log files
-        log_backup_dir = backup_path / "logs"
-        log_backup_dir.mkdir(exist_ok=True)
-        
-        for log_file in self.log_files:
-            if os.path.exists(log_file):
-                try:
-                    backup_log_path = log_backup_dir / f"{Path(log_file).name}.gz"
-                    
-                    with open(log_file, 'rb') as f_in:
-                        with gzip.open(backup_log_path, 'wb') as f_out:
-                            f_out.writelines(f_in)
-                    
-                    file_size = os.path.getsize(backup_log_path) / 1024  # KB
-                    
-                    backup_manifest["files_backed_up"].append({
-                        "original_path": log_file,
-                        "backup_path": str(backup_log_path),
-                        "size_kb": round(file_size, 2),
-                        "type": "log"
-                    })
-                    
-                    logger.info(f"Backed up log: {log_file}")
-                    
-                except Exception as e:
-                    logger.error(f"Failed to backup log file {log_file}: {e}")
-        
+
+        # Backup credentials and logs
+        self._backup_credentials(backup_path, backup_manifest)
+        self._backup_logs(backup_path, backup_manifest)
+
         # Save backup manifest
         backup_manifest["backup_size_mb"] = round(total_size, 2)
         manifest_path = backup_path / "backup_manifest.json"
-        
         with open(manifest_path, 'w') as f:
             json.dump(backup_manifest, f, indent=2)
-        
+
         logger.info(f"Backup completed: {backup_name} ({total_size:.2f} MB)")
-        
-        # CREATE COMPRESSED ARCHIVE - AUTOMATIC TAR.GZ GENERATION
-        archive_path = backup_path.parent / f"{backup_name}.tar.gz"
-        logger.info(f"Creating compressed archive: {archive_path.name}")
-        
-        try:
-            with tarfile.open(archive_path, "w:gz") as tar:
-                # Add the entire backup directory to the archive
-                tar.add(backup_path, arcname=backup_name)
-            
-            archive_size_mb = os.path.getsize(archive_path) / (1024 * 1024)
-            backup_manifest["archive_created"] = {
-                "archive_path": str(archive_path),
-                "archive_size_mb": round(archive_size_mb, 2),
-                "compression_ratio": round((archive_size_mb / total_size) * 100, 1) if total_size > 0 else 0
-            }
-            
-            logger.info(f"✅ Archive created: {archive_path.name} ({archive_size_mb:.2f} MB, {backup_manifest['archive_created']['compression_ratio']}% of original)")
-            
-        except Exception as e:
-            logger.error(f"Failed to create archive: {e}")
-            backup_manifest["archive_created"] = None
-        
+
+        # Create compressed archive
+        self._create_compressed_archive(backup_path, backup_name, total_size, backup_manifest)
+
         return backup_manifest
     
     def restore_backup(self, backup_name):

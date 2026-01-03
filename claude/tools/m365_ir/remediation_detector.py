@@ -45,8 +45,9 @@ REMEDIATION_SIGNALS = {
     "Enable account": "account_enable",
 }
 
-# High-risk countries for attack detection (excluding legitimate business locations)
-HIGH_RISK_COUNTRIES = {"RU", "CN", "KP", "IR", "BY", "VE", "CU", "SY", "NL", "DE", "KR", "IN", "BR", "TW", "MY", "PH"}
+# High-risk countries for attack detection (nation-state threat actors only)
+# Note: NL, DE, KR, IN, BR, TW, MY, PH removed - legitimate business destinations
+HIGH_RISK_COUNTRIES = {"RU", "CN", "KP", "IR", "BY", "VE", "CU", "SY"}
 
 
 @dataclass

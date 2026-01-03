@@ -383,8 +383,8 @@ class M365LogParser:
                         if col in row and row[col]:
                             dates.append(row[col])
                             break
-        except Exception:
-            pass
+        except (FileNotFoundError, csv.Error, UnicodeDecodeError, KeyError) as e:
+            logger.debug(f"Could not extract sample dates from {csv_path}: {e}")
         return dates
 
     def parse_signin_logs(self, csv_path: Union[str, Path]) -> List[SignInLogEntry]:

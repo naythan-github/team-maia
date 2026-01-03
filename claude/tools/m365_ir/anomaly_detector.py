@@ -41,7 +41,7 @@ class AnomalyType(Enum):
 HIGH_RISK_COUNTRIES = {"RU", "CN", "KP", "IR", "BY", "VE", "CU", "SY"}
 
 # Approximate city coordinates for travel calculations (major cities)
-CITY_COORDS: Dict[str, Tuple[float, float]] = {
+CITY_COORDS: Dict[Tuple[str, str], Tuple[float, float]] = {
     # Australia
     ("Melbourne", "AU"): (-37.8136, 144.9631),
     ("Sydney", "AU"): (-33.8688, 151.2093),
