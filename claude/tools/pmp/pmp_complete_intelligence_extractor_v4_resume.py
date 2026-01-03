@@ -46,12 +46,12 @@ class PMPCompleteIntelligenceExtractor:
         # Initialize database schema
         self.init_database()
 
-    def init_database(self):
-        """Initialize database schema for all endpoint data"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+    # =========================================================================
+    # Database Schema Creation - Helper Methods (Phase 230 Refactoring)
+    # =========================================================================
 
-        # Extraction runs tracking
+    def _create_run_tracking_table(self, cursor) -> None:
+        """Create extraction run tracking table."""
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS api_extraction_runs (
                 extraction_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -64,7 +64,9 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
-        # 1. Patch Summary
+    def _create_patch_tables(self, cursor) -> None:
+        """Create patch-related tables (summary, all, supported, installed, missing)."""
+        # Patch Summary
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS patch_summary (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +77,7 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
-        # 3. All Patches (5,217 patches)
+        # All Patches (5,217 patches)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS all_patches (
                 patch_id INTEGER PRIMARY KEY,
@@ -93,8 +95,7 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
-        # 5. Supported Patches (364,673 patches - master catalog)
-        # FIXED: Use patch_id (unique) as PRIMARY KEY, not update_id (0-9 sequential)
+        # Supported Patches (364,673 patches - master catalog)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS supported_patches (
                 patch_id INTEGER PRIMARY KEY,
@@ -110,93 +111,7 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
-        # 7. All Systems (3,364 systems)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS all_systems (
-                resource_id INTEGER PRIMARY KEY,
-                extraction_id INTEGER,
-                resource_health_status INTEGER,
-                os_platform_name TEXT,
-                branch_office_id INTEGER,
-                last_patched_time INTEGER,
-                total_driver_patches INTEGER,
-                missing_bios_patches INTEGER,
-                raw_data TEXT,
-                extracted_at TEXT NOT NULL,
-                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
-            )
-        """)
-
-        # 9. Deployment Policies (92 policies)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS deployment_policies (
-                template_id INTEGER PRIMARY KEY,
-                extraction_id INTEGER,
-                template_name TEXT,
-                creation_time INTEGER,
-                modified_time INTEGER,
-                is_template_alive INTEGER,
-                set_as_default INTEGER,
-                user_id INTEGER,
-                raw_data TEXT,
-                extracted_at TEXT NOT NULL,
-                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
-            )
-        """)
-
-        # 10. Health Policy
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS health_policy (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                extraction_id INTEGER,
-                policy_data TEXT NOT NULL,
-                extracted_at TEXT NOT NULL,
-                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
-            )
-        """)
-
-        # 11. View Configurations (225 configs)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS view_configurations (
-                config_id INTEGER PRIMARY KEY,
-                extraction_id INTEGER,
-                collection_id INTEGER,
-                total_target_count INTEGER,
-                os_platform_name TEXT,
-                collection_platform_id INTEGER,
-                raw_data TEXT,
-                extracted_at TEXT NOT NULL,
-                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
-            )
-        """)
-
-        # 12. Approval Settings
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS approval_settings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                extraction_id INTEGER,
-                settings_data TEXT NOT NULL,
-                extracted_at TEXT NOT NULL,
-                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
-            )
-        """)
-
-        # 13. Scan Details (3,364 systems)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS scan_details (
-                resource_id INTEGER PRIMARY KEY,
-                extraction_id INTEGER,
-                resource_health_status INTEGER,
-                os_platform_name TEXT,
-                branch_office_id INTEGER,
-                agent_installed_on INTEGER,
-                raw_data TEXT,
-                extracted_at TEXT NOT NULL,
-                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
-            )
-        """)
-
-        # 14. Installed Patches (3,505 patches)
+        # Installed Patches (3,505 patches)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS installed_patches (
                 patch_id INTEGER,
@@ -213,7 +128,7 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
-        # 15. Missing Patches (1,712 patches)
+        # Missing Patches (1,712 patches)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS missing_patches (
                 patch_id INTEGER,
@@ -230,7 +145,41 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
-        # 16. SOM Computers (3,448 records)
+    def _create_system_tables(self, cursor) -> None:
+        """Create system-related tables (all_systems, scan_details, som_computers, som_summary)."""
+        # All Systems (3,364 systems)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS all_systems (
+                resource_id INTEGER PRIMARY KEY,
+                extraction_id INTEGER,
+                resource_health_status INTEGER,
+                os_platform_name TEXT,
+                branch_office_id INTEGER,
+                last_patched_time INTEGER,
+                total_driver_patches INTEGER,
+                missing_bios_patches INTEGER,
+                raw_data TEXT,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
+        # Scan Details (3,364 systems)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS scan_details (
+                resource_id INTEGER PRIMARY KEY,
+                extraction_id INTEGER,
+                resource_health_status INTEGER,
+                os_platform_name TEXT,
+                branch_office_id INTEGER,
+                agent_installed_on INTEGER,
+                raw_data TEXT,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
+        # SOM Computers (3,448 records)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS som_computers (
                 resource_id INTEGER PRIMARY KEY,
@@ -243,7 +192,7 @@ class PMPCompleteIntelligenceExtractor:
             )
         """)
 
-        # 17. SOM Summary (single record)
+        # SOM Summary (single record)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS som_summary (
                 extraction_id INTEGER PRIMARY KEY,
@@ -252,6 +201,78 @@ class PMPCompleteIntelligenceExtractor:
                 FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
             )
         """)
+
+    def _create_config_tables(self, cursor) -> None:
+        """Create configuration tables (policies, health, view_config, approval)."""
+        # Deployment Policies (92 policies)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS deployment_policies (
+                template_id INTEGER PRIMARY KEY,
+                extraction_id INTEGER,
+                template_name TEXT,
+                creation_time INTEGER,
+                modified_time INTEGER,
+                is_template_alive INTEGER,
+                set_as_default INTEGER,
+                user_id INTEGER,
+                raw_data TEXT,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
+        # Health Policy
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS health_policy (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                extraction_id INTEGER,
+                policy_data TEXT NOT NULL,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
+        # View Configurations (225 configs)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS view_configurations (
+                config_id INTEGER PRIMARY KEY,
+                extraction_id INTEGER,
+                collection_id INTEGER,
+                total_target_count INTEGER,
+                os_platform_name TEXT,
+                collection_platform_id INTEGER,
+                raw_data TEXT,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
+        # Approval Settings
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS approval_settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                extraction_id INTEGER,
+                settings_data TEXT NOT NULL,
+                extracted_at TEXT NOT NULL,
+                FOREIGN KEY (extraction_id) REFERENCES api_extraction_runs(extraction_id)
+            )
+        """)
+
+    def init_database(self):
+        """
+        Initialize database schema for all endpoint data.
+
+        Phase 230 Refactoring: Decomposed from 209 lines to ~15 lines orchestrator
+        with 4 helper methods for grouped table creation.
+        """
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+
+        # Create all tables via helper methods
+        self._create_run_tracking_table(cursor)
+        self._create_patch_tables(cursor)
+        self._create_system_tables(cursor)
+        self._create_config_tables(cursor)
 
         conn.commit()
         conn.close()

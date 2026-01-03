@@ -643,11 +643,13 @@ class EnhancedDisasterRecoverySystem:
 
         print("   ✅ OneDrive sync initiated (verify in OneDrive app)")
 
-    def _generate_restoration_script(self, backup_path: Path, manifest: Dict):
-        """Generate self-contained restoration script"""
-        script_path = backup_path / "restore_maia.sh"
+    # =========================================================================
+    # Restoration Script Generation - Helper Methods (Phase 230 Refactoring)
+    # =========================================================================
 
-        script_content = f'''#!/bin/bash
+    def _script_header(self, manifest: Dict) -> str:
+        """Generate restoration script header with metadata."""
+        return f'''#!/bin/bash
 # Maia Enhanced Disaster Recovery - Restoration Script
 # Generated: {manifest['created_at']}
 # Backup ID: {manifest['backup_id']}
@@ -661,8 +663,11 @@ echo "Backup: {manifest['backup_id']}"
 echo "Created: {manifest['created_at']}"
 echo "Original system: {manifest['system_metadata']['hostname']} ({manifest['system_metadata']['macos_version']})"
 echo ""
+'''
 
-# Detect environment
+    def _script_detect_environment(self, manifest: Dict) -> str:
+        """Generate environment detection bash function."""
+        return f'''# Detect environment
 detect_environment() {{
     echo "🔍 Detecting system environment..."
 
@@ -710,9 +715,12 @@ detect_environment() {{
     echo "  OneDrive: $ONEDRIVE_PATH"
     BACKUP_DIR="$ONEDRIVE_PATH/MaiaBackups/{manifest['backup_id']}"
 }}
+'''
 
-# Choose Maia installation location
-choose_maia_location() {{
+    def _script_choose_location(self) -> str:
+        """Generate location selection bash function."""
+        return '''# Choose Maia installation location
+choose_maia_location() {
     echo ""
     echo "📁 Where should Maia be installed?"
 
@@ -744,19 +752,25 @@ choose_maia_location() {{
     fi
 
     echo "  Installing to: $MAIA_ROOT"
-}}
+}
+'''
 
-# Restore code
-restore_code() {{
+    def _script_restore_code(self) -> str:
+        """Generate code restoration bash function."""
+        return '''# Restore code
+restore_code() {
     echo ""
     echo "📦 Restoring Maia code..."
     mkdir -p "$MAIA_ROOT"
     tar -xzf "$BACKUP_DIR/maia_code.tar.gz" -C "$MAIA_ROOT"
     echo "  ✅ Code restored"
-}}
+}
+'''
 
-# Restore databases
-restore_databases() {{
+    def _script_restore_databases(self) -> str:
+        """Generate database restoration bash function."""
+        return '''# Restore databases
+restore_databases() {
     echo ""
     echo "💾 Restoring databases..."
 
@@ -768,15 +782,18 @@ restore_databases() {{
         if [ -f "$chunk_base" ]; then
             DB_NAME=$(basename "$chunk_base" .chunk1)
             echo "  🔗 Reassembling $DB_NAME..."
-            cat "$BACKUP_DIR/${{DB_NAME}}.chunk"* > "$MAIA_ROOT/claude/data/$DB_NAME"
+            cat "$BACKUP_DIR/${DB_NAME}.chunk"* > "$MAIA_ROOT/claude/data/$DB_NAME"
         fi
     done
 
     echo "  ✅ Databases restored"
-}}
+}
+'''
 
-# Restore LaunchAgents
-restore_launchagents() {{
+    def _script_restore_launchagents(self) -> str:
+        """Generate LaunchAgents restoration bash function."""
+        return '''# Restore LaunchAgents
+restore_launchagents() {
     if [ "$IS_WSL" = true ]; then
         echo ""
         echo "⚙️  Skipping LaunchAgents (WSL environment - not applicable)"
@@ -801,10 +818,13 @@ restore_launchagents() {{
 
     rm -rf "$TEMP_DIR"
     echo "  ✅ LaunchAgents restored (paths updated)"
-}}
+}
+'''
 
-# Restore dependencies
-restore_dependencies() {{
+    def _script_restore_dependencies(self) -> str:
+        """Generate dependencies restoration bash function."""
+        return '''# Restore dependencies
+restore_dependencies() {
     echo ""
     echo "📦 Installing Python dependencies..."
     pip3 install -r "$BACKUP_DIR/requirements_freeze.txt"
@@ -823,10 +843,13 @@ restore_dependencies() {{
             cat "$BACKUP_DIR/brew_packages.txt" | xargs brew install
         fi
     fi
-}}
+}
+'''
 
-# Restore shell configs
-restore_shell_configs() {{
+    def _script_restore_shell_configs(self) -> str:
+        """Generate shell configs restoration bash function."""
+        return '''# Restore shell configs
+restore_shell_configs() {
     if [ "$IS_WSL" = true ]; then
         echo ""
         echo "🐚 Skipping macOS shell configs (WSL environment)"
@@ -850,10 +873,13 @@ restore_shell_configs() {{
     done
 
     rm -rf "$TEMP_DIR"
-}}
+}
+'''
 
-# Restore credentials
-restore_credentials() {{
+    def _script_restore_credentials(self) -> str:
+        """Generate credentials restoration bash function."""
+        return '''# Restore credentials
+restore_credentials() {
     echo ""
     if [ ! -f "$BACKUP_DIR/credentials.vault.enc" ]; then
         echo "ℹ️  No credentials vault found (skipped during backup)"
@@ -873,10 +899,13 @@ restore_credentials() {{
     else
         echo "  ❌ Failed to decrypt credentials (wrong password?)"
     fi
-}}
+}
+'''
 
-# Rewrite config paths (LESSON LEARNED: Issue #2 - Hardcoded paths)
-rewrite_config_paths() {{
+    def _script_rewrite_config_paths(self) -> str:
+        """Generate config path rewriting bash function (LESSON LEARNED: Issue #2)."""
+        return '''# Rewrite config paths (LESSON LEARNED: Issue #2 - Hardcoded paths)
+rewrite_config_paths() {
     echo ""
     echo "🔧 Updating configuration paths..."
 
@@ -899,7 +928,7 @@ try:
         config = json.load(f)
 
     # Update all hook environment paths and disable by default
-    for hook_name, hook_config in config.get("hooks", {{}}).items():
+    for hook_name, hook_config in config.get("hooks", {}).items():
         # Disable hooks in restored instance for safety
         hook_config["enabled"] = False
 
@@ -909,7 +938,7 @@ try:
                 hook_config["description"] += " (DISABLED in restored instance - verify paths before enabling)"
 
         # Update environment paths
-        env = hook_config.get("environment", {{}})
+        env = hook_config.get("environment", {})
         if "MAIA_ROOT" in env:
             env["MAIA_ROOT"] = maia_root
         if "PYTHONPATH" in env:
@@ -918,7 +947,7 @@ try:
     with open(hooks_json, 'w') as f:
         json.dump(config, f, indent=2)
 
-    print("    ✅ Updated %d hooks" % len(config.get('hooks', {{}})))
+    print("    ✅ Updated %d hooks" % len(config.get('hooks', {})))
 
 except Exception as e:
     print("    ⚠️  Failed to update hooks.json: %s" % e)
@@ -931,7 +960,7 @@ PYTHON_EOF
         echo "  ℹ️  No .claude/hooks.json found"
     fi
 
-    # Fix .claude/settings.local.json (NEW - Phase 134.5: Hook system upgrade compatibility)
+    # Fix .claude/settings.local.json (Phase 134.5: Hook system upgrade compatibility)
     SETTINGS_JSON="$MAIA_ROOT/.claude/settings.local.json"
     if [ -f "$SETTINGS_JSON" ]; then
         echo "  📝 Updating .claude/settings.local.json..."
@@ -952,14 +981,13 @@ try:
     # Update all permission paths
     updated_count = 0
     for permission_type in ["allow", "deny", "ask"]:
-        if permission_type in config.get("permissions", {{}}):
+        if permission_type in config.get("permissions", {}):
             permissions = config["permissions"][permission_type]
 
             for i, permission in enumerate(permissions):
                 original_perm = permission
 
                 # Replace any absolute paths with restore location
-                # Pattern: /Users/username/git/maia or similar
                 if "/Users/" in permission and "/git/maia" in permission:
                     permission = re.sub(
                         r'/Users/[^/]+/git/maia',
@@ -994,10 +1022,13 @@ PYTHON_EOF
     else
         echo "  ℹ️  No .claude/settings.local.json found"
     fi
-}}
+}
+'''
 
-# Main restoration flow
-main() {{
+    def _script_main_and_next_steps(self) -> str:
+        """Generate main function and next steps for restoration script."""
+        return '''# Main restoration flow
+main() {
     detect_environment
     choose_maia_location
     restore_code
@@ -1036,10 +1067,34 @@ main() {{
         echo "  3. Check services: launchctl list | grep com.maia"
     fi
     echo ""
-}}
+}
 
 main
 '''
+
+    def _generate_restoration_script(self, backup_path: Path, manifest: Dict):
+        """
+        Generate self-contained restoration script.
+
+        Phase 230 Refactoring: Decomposed from 400 lines to ~30 lines orchestrator
+        with 11 helper methods generating each script section.
+        """
+        script_path = backup_path / "restore_maia.sh"
+
+        # Assemble script from helper method outputs
+        script_content = (
+            self._script_header(manifest) +
+            self._script_detect_environment(manifest) +
+            self._script_choose_location() +
+            self._script_restore_code() +
+            self._script_restore_databases() +
+            self._script_restore_launchagents() +
+            self._script_restore_dependencies() +
+            self._script_restore_shell_configs() +
+            self._script_restore_credentials() +
+            self._script_rewrite_config_paths() +
+            self._script_main_and_next_steps()
+        )
 
         script_path.write_text(script_content)
         script_path.chmod(0o755)  # Make executable

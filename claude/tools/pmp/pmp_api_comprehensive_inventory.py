@@ -136,18 +136,13 @@ class PMPAPIComprehensiveInventory:
                 'response_time_ms': 0
             }
 
-    def run_full_inventory(self) -> Dict[str, Any]:
-        """
-        Test all 27 documented API endpoints.
-        """
-        print("=" * 80)
-        print("PMP API COMPREHENSIVE INVENTORY (27 Endpoints)")
-        print("=" * 80)
-        print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+    # =========================================================================
+    # API Endpoint Definitions (Phase 230 Refactoring - extracted from run_full_inventory)
+    # =========================================================================
 
-        # Define all endpoints from documentation
-        endpoints = {
-            # ===== PATCH MANAGEMENT: SUMMARY & REPORTING =====
+    def _get_patch_summary_endpoints(self) -> Dict[str, Dict]:
+        """Return Patch Management: Summary & Reporting endpoints."""
+        return {
             '1. Patch Summary': {
                 'endpoint': '/api/1.4/patch/summary',
                 'params': {},
@@ -156,12 +151,15 @@ class PMPAPIComprehensiveInventory:
             },
             '2. System Report': {
                 'endpoint': '/api/1.4/patch/systemreport',
-                'params': {'resid': 95000000079557},  # Use known resource ID from DCAPI
+                'params': {'resid': 95000000079557},
                 'scope': 'PatchMgmt.READ',
                 'description': 'Detailed patch status for specific system'
             },
+        }
 
-            # ===== PATCH MANAGEMENT: PATCH QUERIES =====
+    def _get_patch_query_endpoints(self) -> Dict[str, Dict]:
+        """Return Patch Management: Patch Query endpoints."""
+        return {
             '3. All Patches': {
                 'endpoint': '/api/1.4/patch/allpatches',
                 'params': {},
@@ -170,7 +168,7 @@ class PMPAPIComprehensiveInventory:
             },
             '4. All Patch Details': {
                 'endpoint': '/api/1.4/patch/allpatchdetails',
-                'params': {'patchid': 10044},  # Use known patch ID from DCAPI
+                'params': {'patchid': 10044},
                 'scope': 'PatchMgmt.READ',
                 'description': 'Status of specific patch across all computers'
             },
@@ -186,8 +184,11 @@ class PMPAPIComprehensiveInventory:
                 'scope': 'PatchMgmt.READ',
                 'description': 'Enhanced patch list with extensive filtering'
             },
+        }
 
-            # ===== PATCH MANAGEMENT: SYSTEM QUERIES =====
+    def _get_system_query_endpoints(self) -> Dict[str, Dict]:
+        """Return Patch Management: System Query endpoints."""
+        return {
             '7. All Systems': {
                 'endpoint': '/api/1.4/patch/allsystems',
                 'params': {},
@@ -200,8 +201,11 @@ class PMPAPIComprehensiveInventory:
                 'scope': 'PatchMgmt.READ',
                 'description': 'Systems with patch details (enhanced)'
             },
+        }
 
-            # ===== PATCH MANAGEMENT: CONFIGURATION & POLICY =====
+    def _get_config_policy_endpoints(self) -> Dict[str, Dict]:
+        """Return Patch Management: Configuration & Policy endpoints."""
+        return {
             '9. Deployment Policies': {
                 'endpoint': '/api/1.4/patch/deploymentpolicies',
                 'params': {},
@@ -226,11 +230,11 @@ class PMPAPIComprehensiveInventory:
                 'scope': 'PatchMgmt.READ',
                 'description': 'Patch approval settings'
             },
+        }
 
-            # ===== PATCH MANAGEMENT: PATCH ACTIONS (WRITE) =====
-            # Skip write operations for read-only inventory
-
-            # ===== PATCH MANAGEMENT: SCAN OPERATIONS =====
+    def _get_scan_operation_endpoints(self) -> Dict[str, Dict]:
+        """Return Patch Management: Scan Operation endpoints."""
+        return {
             '18. Patch DB Update Status': {
                 'endpoint': '/api/1.4/patch/updatedbstatus',
                 'params': {},
@@ -243,8 +247,11 @@ class PMPAPIComprehensiveInventory:
                 'scope': 'PatchMgmt.READ',
                 'description': 'All systems and scan status'
             },
+        }
 
-            # ===== SYSTEM ON MANAGEMENT: SUMMARY & QUERIES =====
+    def _get_som_endpoints(self) -> Dict[str, Dict]:
+        """Return System on Management (SoM) endpoints."""
+        return {
             '22. SoM Summary': {
                 'endpoint': '/api/1.4/som/summary',
                 'params': {},
@@ -263,8 +270,11 @@ class PMPAPIComprehensiveInventory:
                 'scope': 'SOM.READ',
                 'description': 'Remote offices and configurations'
             },
+        }
 
-            # ===== ADDITIONAL ENDPOINTS (from previous testing) =====
+    def _get_additional_endpoints(self) -> Dict[str, Dict]:
+        """Return additional endpoints from previous testing."""
+        return {
             'Installed Patches': {
                 'endpoint': '/api/1.4/patch/installedpatches',
                 'params': {},
@@ -279,57 +289,88 @@ class PMPAPIComprehensiveInventory:
             },
         }
 
-        results = {}
-        success_count = 0
-        redirect_count = 0
-        empty_count = 0
-        error_count = 0
+    def _get_all_endpoints(self) -> Dict[str, Dict]:
+        """Return all API endpoints combined from category methods."""
+        endpoints = {}
+        endpoints.update(self._get_patch_summary_endpoints())
+        endpoints.update(self._get_patch_query_endpoints())
+        endpoints.update(self._get_system_query_endpoints())
+        endpoints.update(self._get_config_policy_endpoints())
+        endpoints.update(self._get_scan_operation_endpoints())
+        endpoints.update(self._get_som_endpoints())
+        endpoints.update(self._get_additional_endpoints())
+        return endpoints
 
-        for name, config in endpoints.items():
-            print(f"Testing: {name}")
-            print(f"  Endpoint: {config['endpoint']}")
-            print(f"  Scope: {config['scope']}")
+    def _test_and_report_endpoint(self, name: str, config: Dict) -> tuple:
+        """Test single endpoint and print feedback. Returns (result, status_category)."""
+        print(f"Testing: {name}")
+        print(f"  Endpoint: {config['endpoint']}")
+        print(f"  Scope: {config['scope']}")
 
-            result = self.test_endpoint(config['endpoint'], config.get('params'))
-            results[name] = {
-                **config,
-                **result
-            }
+        result = self.test_endpoint(config['endpoint'], config.get('params'))
+        status = result['status']
 
-            # Print immediate feedback
-            if result['status'] == 'success':
-                print(f"  ✅ SUCCESS: {result.get('total_records', 'N/A')} records")
-                fields = result.get('all_fields', [])
-                print(f"     Fields: {', '.join(fields[:8])}{'...' if len(fields) > 8 else ''}")
-                success_count += 1
-            elif result['status'] == 'redirect':
-                print(f"  🔐 REDIRECT: {result.get('error_message', 'N/A')}")
-                redirect_count += 1
-            elif result['status'] == 'empty':
-                print(f"  ⚠️  EMPTY: No data available")
-                empty_count += 1
-            elif result['status'] == 'unauthorized':
-                print(f"  🔒 UNAUTHORIZED: {result.get('error_message', 'N/A')}")
-                error_count += 1
-            elif result['status'] == 'error':
-                print(f"  ❌ ERROR: {result.get('error_message', 'N/A')}")
-                error_count += 1
+        if status == 'success':
+            print(f"  ✅ SUCCESS: {result.get('total_records', 'N/A')} records")
+            fields = result.get('all_fields', [])
+            print(f"     Fields: {', '.join(fields[:8])}{'...' if len(fields) > 8 else ''}")
+        elif status == 'redirect':
+            print(f"  🔐 REDIRECT: {result.get('error_message', 'N/A')}")
+        elif status == 'empty':
+            print(f"  ⚠️  EMPTY: No data available")
+        elif status == 'unauthorized':
+            print(f"  🔒 UNAUTHORIZED: {result.get('error_message', 'N/A')}")
+        elif status == 'error':
+            print(f"  ❌ ERROR: {result.get('error_message', 'N/A')}")
 
-            print(f"     Response time: {result.get('response_time_ms', 0):.2f}ms\n")
+        print(f"     Response time: {result.get('response_time_ms', 0):.2f}ms\n")
+        return {**config, **result}, status
 
-            # Rate limiting
-            time.sleep(0.25)
-
-        # Summary
+    def _print_inventory_summary(self, endpoints: Dict, counts: Dict):
+        """Print inventory summary to console."""
         print("=" * 80)
         print("INVENTORY SUMMARY")
         print("=" * 80)
         print(f"Total endpoints tested: {len(endpoints)}")
-        print(f"✅ Success: {success_count}")
-        print(f"🔐 Redirect (auth/scope): {redirect_count}")
-        print(f"⚠️  Empty: {empty_count}")
-        print(f"❌ Errors/Unauthorized: {error_count}")
+        print(f"✅ Success: {counts['success']}")
+        print(f"🔐 Redirect (auth/scope): {counts['redirect']}")
+        print(f"⚠️  Empty: {counts['empty']}")
+        print(f"❌ Errors/Unauthorized: {counts['error']}")
         print()
+
+    def run_full_inventory(self) -> Dict[str, Any]:
+        """
+        Test all 27 documented API endpoints.
+
+        Phase 230 Refactoring: Decomposed from 210 lines to ~40 lines orchestrator
+        with 9 helper methods for endpoint definitions and processing.
+        """
+        print("=" * 80)
+        print("PMP API COMPREHENSIVE INVENTORY (27 Endpoints)")
+        print("=" * 80)
+        print(f"Started: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+
+        endpoints = self._get_all_endpoints()
+        results = {}
+        counts = {'success': 0, 'redirect': 0, 'empty': 0, 'error': 0}
+
+        for name, config in endpoints.items():
+            result, status = self._test_and_report_endpoint(name, config)
+            results[name] = result
+
+            # Update counts
+            if status == 'success':
+                counts['success'] += 1
+            elif status == 'redirect':
+                counts['redirect'] += 1
+            elif status == 'empty':
+                counts['empty'] += 1
+            else:  # unauthorized or error
+                counts['error'] += 1
+
+            time.sleep(0.25)  # Rate limiting
+
+        self._print_inventory_summary(endpoints, counts)
 
         # Build catalog
         self.catalog = {
@@ -337,10 +378,7 @@ class PMPAPIComprehensiveInventory:
             'server_url': self.base_url,
             'summary': {
                 'total_endpoints': len(endpoints),
-                'success_count': success_count,
-                'redirect_count': redirect_count,
-                'empty_count': empty_count,
-                'error_count': error_count
+                **counts
             },
             'endpoints': results
         }
