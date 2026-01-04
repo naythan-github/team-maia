@@ -562,7 +562,7 @@
 
 ## Agents (`claude/agents/`)
 
-### SRE - 47 agents
+### SRE - 48 agents
 
 | Agent | Purpose |
 |-------|---------|
@@ -601,6 +601,7 @@
 | `microsoft_365_integration_agent.md` | Enterprise M365 automation - intelligent integration across Outlook, Teams, and ... |
 | `pagerduty_specialist_agent.md` | Incident management platform expertise - PagerDuty Event Intelligence (AIOps), a... |
 | `patch_manager_plus_api_specialist_agent.md` | ManageEngine Patch Manager Plus REST API expert - programmatic patch automation,... |
+| `perth_garden_specialist_agent.md` | Transform Perth sandy soils into thriving gardens - soil science, drought-tolerant flowering perennials, WA native plants... |
 | `presentation_generator_agent.md` | Strategic presentation design - executive communications, BRM reviews, interview... |
 | `security_specialist.md` | Enterprise security operations - automated vulnerability scanning, compliance ma... |
 | `security_specialist_enhanced.md` | Enterprise security operations - automated vulnerability scanning, compliance ma... |
