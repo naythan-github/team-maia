@@ -98,24 +98,24 @@ maia/
 | # | Principle | Action | Reference |
 |---|-----------|--------|-----------|
 | 1 | **Read Context First** | Hydrate before acting | - |
-| 2 | **Use Existing Tools** | Check before creating | `claude/context/core/capability_index.md` |
+| 2 | **Use Existing Tools** | Check before creating | `capability_index.md` |
 | 3 | **Solve Once** | Turn solutions into modules | - |
 | 4 | **Fix Forward** | No Band-Aid solutions, complete fixes | - |
-| 5 | **Execution State Machine** | DISCOVERY → user approval → EXECUTION (no re-asking) | `claude/context/core/identity.md` |
+| 5 | **Execution State Machine** | DISCOVERY → user approval → EXECUTION (no re-asking) | `identity.md` |
 | 6 | **Mandatory Docs** | Update ALL docs with ANY change | - |
-| 7 | **Save State** | `python3 claude/tools/sre/save_state.py` on request | Phase 233 |
+| 7 | **Save State** | `python3 claude/tools/sre/save_state.py` on request | - |
 | 8 | **UI Agent** | Use for dashboards/interfaces | `ui_systems_agent.md` |
 | 9 | **Implementation-Ready** | Agents provide exact specs, not just guidance | - |
 | 10 | **Test Before Production** | Unit + integration tests required before complete | - |
-| 11 | **Local LLMs** | `/codellama`, `/starcoder`, `/local` for cost savings | 99.3% savings |
+| 11 | **Local LLMs** | `/codellama`, `/starcoder`, `/local` for cost savings | - |
 | 12 | **Experimental First** | New features → `claude/tools/experimental/` → graduate | `development_workflow_protocol.md` |
 | 13 | **No Token Shortcuts** | Complete work properly, tokens renew 5hr | - |
-| 14 | **Agent Persistence** | Auto-load >70% confidence, `/close-session` to clear | Phase 134, Phase 230 |
+| 14 | **Agent Persistence** | Auto-load >70% confidence, `/close-session` to clear | - |
 | 15 | **TDD Mandatory** | Tests required, pre-commit enforced | `tdd_development_protocol.md` |
-| 16 | **Architecture First** | Read `ARCHITECTURE.md` before infra changes | Phase 135 |
+| 16 | **Architecture First** | Read `ARCHITECTURE.md` before infra changes | - |
 | 17 | **File Discipline** | Outputs → `~/work_projects/`, system → `claude/` | `file_organization_policy.md` |
-| 18 | **DB-First Queries** | Use `system_state_queries.py`, not markdown | Phase 165, Phase 166 |
-| 19 | **Checkpoints** | Auto every 10 tools, manual via save state | Phase 176, Phase 177, Phase 178 |
+| 18 | **DB-First Queries** | Capabilities → `find_capability.py`, state → `system_state_queries.py` | - |
+| 19 | **Checkpoints** | Auto every 10 tools, manual via save state | - |
 | 20 | **PAI v2 Learning** | Auto-capture on session, VERIFY+LEARN on close | `claude/tools/learning/` |
 
 ---
@@ -165,6 +165,24 @@ maia/
 | `/close-session` | End session + learning |
 | `save state` | Commit + sync + push |
 | `/memory search <query>` | Search past sessions |
+
+---
+
+## DB-First Capability Lookups
+
+**Use the helper script** (preferred - easier than Grep):
+```bash
+python3 claude/tools/core/find_capability.py "keyword"     # Search all
+python3 claude/tools/core/find_capability.py -c sre        # Filter by category
+python3 claude/tools/core/find_capability.py -t agent      # Filter by type
+python3 claude/tools/core/find_capability.py --list-categories  # Show categories
+```
+
+**Raw SQL** (for complex queries):
+```bash
+sqlite3 claude/data/databases/system/capabilities.db "SELECT name, path FROM capabilities WHERE keywords LIKE '%trello%'"
+sqlite3 claude/data/databases/system/capabilities.db "SELECT * FROM v_tools WHERE category='sre'"
+```
 
 ---
 

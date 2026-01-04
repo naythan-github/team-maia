@@ -147,26 +147,15 @@ class TestVersioning:
 
 
 class TestNoRegressions:
-    """Verify no critical content was lost vs backup."""
+    """Verify no critical content was lost."""
 
-    @pytest.fixture
-    def backup_content(self):
-        """Load backup content if exists."""
-        backup = MAIA_ROOT / "CLAUDE.md.backup"
-        if backup.exists():
-            return backup.read_text()
-        pytest.skip("No backup file available")
+    def test_no_phase_references(self, claude_md_content):
+        """Phase references should NOT be in CLAUDE.md.
 
-    def test_all_phase_references_retained(self, claude_md_content, backup_content):
-        """Key phase references should be retained."""
-        # Extract phase numbers from backup
+        Design decision: Phase numbers are historical metadata that don't
+        help Claude operate. They add noise without actionable information.
+        Historical traceability belongs in SYSTEM_STATE.md, not CLAUDE.md.
+        """
         import re
-        backup_phases = set(re.findall(r'Phase (\d+)', backup_content))
-        current_phases = set(re.findall(r'Phase (\d+)', claude_md_content))
-
-        # Critical phases that must be retained
-        critical_phases = {'134', '165', '166', '176', '177', '178', '230', '233'}
-
-        for phase in critical_phases:
-            if phase in backup_phases:
-                assert phase in current_phases, f"Lost critical Phase {phase} reference"
+        phase_refs = re.findall(r'Phase \d+', claude_md_content)
+        assert len(phase_refs) == 0, f"Found Phase references that should be removed: {phase_refs}"
