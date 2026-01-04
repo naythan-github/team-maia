@@ -21,6 +21,7 @@ Or in conversation:
 
 **Phase 213 Enhancement**: Full pre-shutdown verification
 **Phase 214 Enhancement**: Development file cleanup detection
+**Phase PAI-v2**: Learning system integration
 
 1. **Git Status Check**
    - Detects uncommitted changes
@@ -42,19 +43,26 @@ Or in conversation:
    - Warns if >2 hours old with uncommitted changes
    - Suggests creating checkpoint before closing
 
-5. **Development File Cleanup Check** ⭐ **NEW - Phase 214**
+5. **Development File Cleanup Check** ⭐ **Phase 214**
    - Detects versioned files (e.g., `tool_v2.py`, `script_v3.py`)
    - Finds misplaced test files (test_*.py outside tests/ directories)
    - Identifies build artifacts (.DS_Store, __pycache__, *.pyc)
    - Shows first 3 of each category with counts
    - Prevents development file accumulation
 
-6. **Session File Cleanup**
-   - Deletes `/tmp/maia_active_swarm_session_{CONTEXT_ID}.json`
+6. **PAI v2 Learning Analysis** ⭐ **NEW - Personal PAI v2**
+   - Runs VERIFY phase to measure session success
+   - Runs LEARN phase to extract patterns (if successful)
+   - Saves session summary to Maia Memory for future context
+   - Displays confidence score and extracted patterns
+   - Enables cross-session learning and preference tracking
+
+7. **Session File Cleanup**
+   - Deletes `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json`
    - Displays closed agent and domain
    - Confirms clean shutdown
 
-7. **Final Confirmation**
+8. **Final Confirmation**
    - "Safe to close Claude Code window" message
    - Summary of any skipped items
    - Peace of mind before closing
@@ -69,7 +77,12 @@ Or in conversation:
 
 ✅ All checks passed - clean state
 
-ℹ️  No active agent session
+📊 Running learning analysis...
+   ✅ Session successful (confidence: 85%)
+   📚 Extracted 2 pattern(s)
+   💾 Summary saved to Maia Memory
+
+✅ Agent session closed
 
 ============================================================
 ✅ Pre-shutdown complete
@@ -160,7 +173,8 @@ Day 4: [Opens new Claude Code window]
 | Documentation | SYSTEM_STATE.md older than code | Warn about stale docs |
 | Background Processes | Running bash shells | Warn about interruption |
 | Checkpoints | >2hr old with git changes | Suggest creating checkpoint |
-| **Development Cleanup** ⭐ | Versioned files, misplaced tests, build artifacts | Show counts and examples, remind to clean |
+| Development Cleanup | Versioned files, misplaced tests, build artifacts | Show counts and examples, remind to clean |
+| **PAI v2 Learning** ⭐ | Active learning session | Run VERIFY + LEARN, save to Maia Memory |
 | Session File | Active agent session | Delete and confirm |
 
 ## Related
@@ -169,3 +183,5 @@ Day 4: [Opens new Claude Code window]
 - **Working Principle #15**: Automatic Agent Persistence system
 - **Phase 134.7**: User-controlled session lifecycle management
 - **Phase 213**: Enhanced pre-shutdown checklist
+- **Phase PAI-v2**: Personal learning system integration
+- **/memory**: Search past sessions in Maia Memory

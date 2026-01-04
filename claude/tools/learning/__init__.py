@@ -4,7 +4,7 @@ Maia Personal Learning System (PAI v2 Implementation)
 
 Personal-only learning with no team sharing:
 - UOCS: Universal Output Capture System
-- Kai: Session history and summaries
+- Memory: Session history and summaries (Maia Memory)
 - VERIFY: Success measurement
 - LEARN: Pattern extraction
 
@@ -26,7 +26,7 @@ def get_learning_root() -> Path:
     # Create directory structure
     dirs = [
         root / "outputs",
-        root / "kai_history" / "summaries",
+        root / "memory" / "summaries",
         root / "learning",
     ]
 

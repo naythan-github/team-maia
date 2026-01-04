@@ -1320,6 +1320,7 @@ def close_session():
     Phase 213: Enhanced pre-shutdown checklist (git, docs, processes, checkpoints, session)
     Phase 214: Development file cleanup detection (versioned files, misplaced tests, artifacts)
     Phase 230: Refactored to use helper functions for maintainability.
+    Phase PAI-v2: Learning system integration (VERIFY + LEARN + Maia Memory)
 
     Usage:
         python3 swarm_auto_loader.py close_session
@@ -1330,7 +1331,8 @@ def close_session():
     3. Active background processes (running shells/tasks?)
     4. Checkpoint currency (work since last checkpoint?)
     5. Development file cleanup (versioned files, test files, build artifacts)
-    6. Session file cleanup
+    6. PAI v2 Learning (VERIFY success, LEARN patterns, save to Maia Memory)
+    7. Session file cleanup
 
     Returns:
         Prints status message and exits with code 0
@@ -1448,7 +1450,34 @@ def close_session():
     else:
         print("✅ All checks passed - clean state\n")
 
-    # Check 6: Session Memory Capture + File Cleanup
+    # Check 6: PAI v2 Learning System - VERIFY + LEARN
+    try:
+        from claude.tools.learning.session import get_session_manager
+        manager = get_session_manager()
+        if manager.active_session_id:
+            print("📊 Running learning analysis...")
+            learning_result = manager.end_session()
+
+            # Display VERIFY results
+            verify = learning_result.get('verify', {})
+            if verify.get('success'):
+                print(f"   ✅ Session successful (confidence: {verify.get('confidence', 0):.0%})")
+            else:
+                print(f"   ⚠️  Session had issues (confidence: {verify.get('confidence', 0):.0%})")
+
+            # Display LEARN results
+            insights = learning_result.get('learn', [])
+            if insights:
+                print(f"   📚 Extracted {len(insights)} pattern(s)")
+
+            print(f"   💾 Summary saved to Maia Memory")
+            print()
+    except ImportError:
+        pass  # PAI v2 learning system not installed
+    except Exception as e:
+        print(f"   ⚠️  Learning analysis skipped: {e}")
+
+    # Check 7: Session File Cleanup
     session_file = get_session_file_path()
 
     if session_file.exists():

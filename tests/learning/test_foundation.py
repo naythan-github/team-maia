@@ -30,8 +30,8 @@ class TestLearningPackageInit:
                 # Verify all required directories exist
                 assert (root / "outputs").exists()
                 assert (root / "outputs").is_dir()
-                assert (root / "kai_history" / "summaries").exists()
-                assert (root / "kai_history" / "summaries").is_dir()
+                assert (root / "memory" / "summaries").exists()
+                assert (root / "memory" / "summaries").is_dir()
                 assert (root / "learning").exists()
                 assert (root / "learning").is_dir()
 
@@ -71,14 +71,14 @@ class TestLearningPackageInit:
 class TestDatabaseSchema:
     """Tests for claude/tools/learning/schema.py"""
 
-    def test_kai_schema_creates_sessions_table(self):
-        """Test that Kai schema creates sessions table."""
+    def test_memory_schema_creates_sessions_table(self):
+        """Test that Memory schema creates sessions table."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "kai.db"
+            db_path = Path(tmpdir) / "memory.db"
 
-            from claude.tools.learning.schema import init_kai_db
+            from claude.tools.learning.schema import init_memory_db
 
-            conn = init_kai_db(db_path)
+            conn = init_memory_db(db_path)
 
             # Verify sessions table exists
             cursor = conn.execute(
@@ -101,14 +101,14 @@ class TestDatabaseSchema:
 
             conn.close()
 
-    def test_kai_schema_creates_fts_table(self):
-        """Test that Kai schema creates FTS virtual table."""
+    def test_memory_schema_creates_fts_table(self):
+        """Test that Memory schema creates FTS virtual table."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "kai.db"
+            db_path = Path(tmpdir) / "memory.db"
 
-            from claude.tools.learning.schema import init_kai_db
+            from claude.tools.learning.schema import init_memory_db
 
-            conn = init_kai_db(db_path)
+            conn = init_memory_db(db_path)
 
             # Verify FTS table exists
             cursor = conn.execute(
@@ -118,14 +118,14 @@ class TestDatabaseSchema:
 
             conn.close()
 
-    def test_kai_schema_creates_indexes(self):
-        """Test that Kai schema creates performance indexes."""
+    def test_memory_schema_creates_indexes(self):
+        """Test that Memory schema creates performance indexes."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "kai.db"
+            db_path = Path(tmpdir) / "memory.db"
 
-            from claude.tools.learning.schema import init_kai_db
+            from claude.tools.learning.schema import init_memory_db
 
-            conn = init_kai_db(db_path)
+            conn = init_memory_db(db_path)
 
             # Verify indexes exist
             cursor = conn.execute(
@@ -212,15 +212,15 @@ class TestDatabaseSchema:
     def test_database_init_idempotent(self):
         """Test that initializing database multiple times is safe."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            kai_path = Path(tmpdir) / "kai.db"
+            kai_path = Path(tmpdir) / "memory.db"
             learning_path = Path(tmpdir) / "learning.db"
 
-            from claude.tools.learning.schema import init_kai_db, init_learning_db
+            from claude.tools.learning.schema import init_memory_db, init_learning_db
 
             # Initialize twice
-            conn1 = init_kai_db(kai_path)
+            conn1 = init_memory_db(kai_path)
             conn1.close()
-            conn2 = init_kai_db(kai_path)
+            conn2 = init_memory_db(kai_path)
 
             conn3 = init_learning_db(learning_path)
             conn3.close()
@@ -233,14 +233,15 @@ class TestDatabaseSchema:
             conn2.close()
             conn4.close()
 
-    def test_kai_schema_insert_and_query(self):
+    def test_memory_schema_insert_and_query(self):
         """Test that we can insert and query session data."""
         with tempfile.TemporaryDirectory() as tmpdir:
-            db_path = Path(tmpdir) / "kai.db"
+            db_path = Path(tmpdir) / "memory.db"
 
-            from claude.tools.learning.schema import init_kai_db
+            from claude.tools.learning.schema import init_memory_db
 
-            conn = init_kai_db(db_path)
+            conn = init_memory_db(db_path)
+            conn.row_factory = sqlite3.Row  # Use Row for named access
 
             # Insert test data
             conn.execute("""
@@ -254,8 +255,9 @@ class TestDatabaseSchema:
             row = cursor.fetchone()
 
             assert row is not None
-            assert row[0] == "test_001"  # id
-            assert row[3] == "Fix the bug"  # initial_query
+            assert row["id"] == "test_001"
+            assert row["initial_query"] == "Fix the bug"
+            assert row["status"] == "active"
 
             conn.close()
 
@@ -301,7 +303,7 @@ class TestDirectoryStructureValidation:
                 # Verify structure matches Phase 1.1 spec
                 expected_dirs = [
                     root / "outputs",
-                    root / "kai_history" / "summaries",
+                    root / "memory" / "summaries",
                     root / "learning",
                 ]
 
