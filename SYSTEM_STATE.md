@@ -67837,3 +67837,92 @@ result: BLOCKED → ROUTES CORRECTLY ✅
 2. **Keyword phrases need flexibility**: "review the python code" doesn't contain "review python" as substring
 3. **Domain check was redundant**: Low confidence already handles general queries
 4. **TDD prevents regressions**: 28 tests ensure future changes don't break routing
+
+
+## Phase 233: Save State Enforcement
+
+**Date**: 2026-01-04
+**Type**: Infrastructure Enhancement
+**Status**: ✅ Complete
+
+### Problem Statement
+
+Documentation drift was occurring because save_state protocol wasn't enforced:
+- User often had to ask "did you update docs?"
+- capabilities.db was 18 days stale
+- New tools/agents committed without documentation
+
+### Solution: Enforced Save State Script
+
+Created `claude/tools/sre/save_state.py` with blocking enforcement:
+
+| Check | Condition | Action |
+|-------|-----------|--------|
+| capability_index.md | New tools/agents detected | **BLOCK** |
+| agents.md | New agents detected | **BLOCK** |
+| SYSTEM_STATE.md | Significant work (>5 files or new capabilities) | **BLOCK** |
+| Security | Secrets detected | **BLOCK** |
+| capabilities.db | Every save | Auto-sync |
+
+### Files Modified
+
+- `claude/tools/sre/save_state.py` (created - 620 lines)
+- `claude/commands/save_state.md` (updated)
+- `CLAUDE.md` (Working Principle #8 updated)
+
+### Usage
+
+```bash
+python3 claude/tools/sre/save_state.py           # Standard (blocks if docs missing)
+python3 claude/tools/sre/save_state.py --check   # Check only
+python3 claude/tools/sre/save_state.py --force   # Emergency bypass
+```
+
+
+## Phase 233.1: Comprehensive Verification
+
+**Date**: 2026-01-04
+**Type**: Enhancement
+**Status**: ✅ Complete
+
+### Problem Statement
+
+Basic blocking checks weren't enough - needed comprehensive verification:
+- Capability counts could drift from actual files
+- Protocol changes in hooks/commands might not update CLAUDE.md
+- New tools might not be listed in capability_index.md even after modification
+
+### Solution: Non-Blocking Verification Layer
+
+Added three verification methods to save_state.py (run after blocking checks):
+
+| Verification | What It Checks | Action |
+|--------------|----------------|--------|
+| `verify_capability_counts()` | Tool/agent counts match actual files (10% tolerance) | ⚠️ Warning |
+| `check_protocol_changes()` | CLAUDE.md updated if hooks/commands/core changed | ⚠️ Warning |
+| `verify_documentation_completeness()` | New tools actually listed in capability_index.md | ⚠️ Warning |
+
+### Files Modified
+
+- `claude/tools/sre/save_state.py` (enhanced with verification methods)
+- `claude/commands/save_state.md` (documented verification checks)
+- `claude/context/core/capability_index.md` (corrected counts: 594 tools, 95 agents)
+
+### Example Output
+
+```
+🔍 Running comprehensive verification...
+   ✅ All verifications passed
+```
+
+Or with warnings:
+```
+🔍 Running comprehensive verification...
+
+⚠️ TOOL COUNT MISMATCH:
+   capability_index.md claims: 501 tools
+   Actual files found: 594 tools
+   → Update capability_index.md header
+
+   ⚠️ Review warnings above (non-blocking)
+```

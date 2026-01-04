@@ -1,7 +1,7 @@
 # Save State Command - Enforced Documentation Protocol
 
 **Purpose**: Checkpoint system state with ENFORCED documentation updates + git commit
-**Status**: ✅ Production Ready | **Phase 233**: Blocking enforcement active
+**Status**: ✅ Production Ready | **Phase 233/233.1**: Blocking enforcement + comprehensive verification
 
 ---
 
@@ -37,7 +37,16 @@ The script automatically detects what changed:
 | Significant work | SYSTEM_STATE.md | **BLOCK** |
 | Security issues | Fix secrets | **BLOCK** |
 
-### 3. Automatic Actions
+### 3. Comprehensive Verification (Phase 233.1)
+After blocking checks pass, runs additional non-blocking verification:
+
+| Check | What It Verifies | Action if Issue |
+|-------|------------------|-----------------|
+| Capability Counts | Tool/agent counts match actual files | ⚠️ Warning |
+| Protocol Changes | CLAUDE.md updated if hooks/commands changed | ⚠️ Warning |
+| Documentation Completeness | New tools actually listed in capability_index.md | ⚠️ Warning |
+
+### 4. Automatic Actions
 - Syncs capabilities.db on every save
 - Runs security check
 - Generates structured commit message
@@ -61,8 +70,11 @@ The script automatically detects what changed:
 📝 Checking documentation updates...
    ✅ All required documentation updated
 
+🔍 Running comprehensive verification...
+   ✅ All verifications passed
+
 🔄 Syncing capabilities database...
-   ✅ Capabilities DB synced: 569 tools, 95 agents
+   ✅ Capabilities DB synced: 594 tools, 95 agents
 
 🔒 Running security check...
    ✅ Security check passed

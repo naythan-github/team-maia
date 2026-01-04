@@ -3,12 +3,16 @@
 Save State - Enforced Documentation Protocol
 
 Phase 233: Automated save_state with blocking enforcement
+Phase 233.1: Comprehensive documentation verification
 
 Ensures all documentation is updated before commits:
 1. Auto-detect what changed (new tools, agents, commands)
 2. Block commit if required docs not updated
 3. Sync capabilities.db on every save
 4. Require SYSTEM_STATE.md for significant work
+5. Verify capability counts match actual files
+6. Check CLAUDE.md if protocols/hooks changed
+7. Validate cross-references exist
 
 Usage:
     python3 claude/tools/sre/save_state.py              # Interactive mode
@@ -196,6 +200,126 @@ class SaveState:
 
         return (len(issues) == 0, issues)
 
+    def verify_capability_counts(self) -> Tuple[bool, List[str]]:
+        """
+        Verify capability_index.md counts match actual files.
+
+        Returns:
+            (passes, list of warnings)
+        """
+        warnings = []
+
+        # Count actual tools
+        actual_tools = 0
+        for tools_subdir in self.tools_dir.iterdir():
+            if tools_subdir.is_dir() and not tools_subdir.name.startswith('.'):
+                actual_tools += len(list(tools_subdir.glob('*.py')))
+            elif tools_subdir.suffix == '.py':
+                actual_tools += 1
+
+        # Count actual agents
+        actual_agents = len(list(self.agents_dir.glob('*.md')))
+
+        # Read capability_index.md for claimed counts
+        cap_index = self.maia_root / "claude" / "context" / "core" / "capability_index.md"
+        if cap_index.exists():
+            content = cap_index.read_text()
+
+            # Extract claimed counts (e.g., "501 tools, 94 agents")
+            import re
+            match = re.search(r'\*\*Total\*\*:\s*(\d+)\s*tools,\s*(\d+)\s*agents', content)
+            if match:
+                claimed_tools = int(match.group(1))
+                claimed_agents = int(match.group(2))
+
+                # Allow 10% variance (some tools may be in subdirs, etc.)
+                tool_diff = abs(actual_tools - claimed_tools)
+                agent_diff = abs(actual_agents - claimed_agents)
+
+                if tool_diff > claimed_tools * 0.1:
+                    warnings.append(
+                        f"⚠️ TOOL COUNT MISMATCH:\n"
+                        f"   capability_index.md claims: {claimed_tools} tools\n"
+                        f"   Actual files found: {actual_tools} tools\n"
+                        f"   → Update capability_index.md header"
+                    )
+
+                if agent_diff > claimed_agents * 0.1:
+                    warnings.append(
+                        f"⚠️ AGENT COUNT MISMATCH:\n"
+                        f"   capability_index.md claims: {claimed_agents} agents\n"
+                        f"   Actual files found: {actual_agents} agents\n"
+                        f"   → Update capability_index.md header"
+                    )
+
+        return (len(warnings) == 0, warnings)
+
+    def check_protocol_changes(self, analysis: ChangeAnalysis) -> Tuple[bool, List[str]]:
+        """
+        Check if protocol/hook changes require CLAUDE.md update.
+
+        Returns:
+            (passes, list of warnings)
+        """
+        warnings = []
+
+        # Files that affect CLAUDE.md working principles
+        protocol_files = [
+            'claude/hooks/',
+            'claude/commands/',
+            'claude/context/core/',
+            '.claude/commands/',
+        ]
+
+        protocol_changed = any(
+            any(f.startswith(prefix) for prefix in protocol_files)
+            for f in analysis.modified_files
+        )
+
+        # If protocol files changed but CLAUDE.md not updated, warn
+        if protocol_changed and not analysis.claude_md_modified:
+            changed_protocols = [
+                f for f in analysis.modified_files
+                if any(f.startswith(prefix) for prefix in protocol_files)
+            ]
+            warnings.append(
+                f"⚠️ PROTOCOL FILES CHANGED but CLAUDE.md not updated:\n"
+                f"   Changed: {', '.join(changed_protocols[:3])}{'...' if len(changed_protocols) > 3 else ''}\n"
+                f"   → Review if CLAUDE.md working principles need updating"
+            )
+
+        return (len(warnings) == 0, warnings)
+
+    def verify_documentation_completeness(self, analysis: ChangeAnalysis) -> Tuple[bool, List[str]]:
+        """
+        Verify all significant changes are documented somewhere.
+
+        Returns:
+            (passes, list of issues)
+        """
+        issues = []
+
+        # Check if any new files are not in capability_index
+        if analysis.new_tools:
+            cap_index = self.maia_root / "claude" / "context" / "core" / "capability_index.md"
+            if cap_index.exists():
+                content = cap_index.read_text()
+                undocumented = []
+                for tool in analysis.new_tools:
+                    tool_name = Path(tool).stem
+                    if tool_name not in content and f'`{tool_name}`' not in content:
+                        undocumented.append(tool)
+
+                if undocumented and analysis.capability_index_modified:
+                    # Modified but still missing entries
+                    issues.append(
+                        f"⚠️ NEW TOOLS NOT IN capability_index.md:\n"
+                        f"   {', '.join(undocumented[:5])}\n"
+                        f"   → Add entries for these tools"
+                    )
+
+        return (len(issues) == 0, issues)
+
     def sync_capabilities_db(self) -> Tuple[bool, str]:
         """
         Sync capabilities.db with current tools/agents.
@@ -369,6 +493,32 @@ class SaveState:
         else:
             print("   ✅ All required documentation updated")
             print()
+
+        # 2b. Comprehensive verification (warnings, non-blocking)
+        print("🔍 Running comprehensive verification...")
+        all_warnings = []
+
+        # Capability count verification
+        count_ok, count_warnings = self.verify_capability_counts()
+        all_warnings.extend(count_warnings)
+
+        # Protocol changes check
+        protocol_ok, protocol_warnings = self.check_protocol_changes(analysis)
+        all_warnings.extend(protocol_warnings)
+
+        # Documentation completeness
+        doc_ok, doc_warnings = self.verify_documentation_completeness(analysis)
+        all_warnings.extend(doc_warnings)
+
+        if all_warnings:
+            print()
+            for warning in all_warnings:
+                print(warning)
+                print()
+            print("   ⚠️ Review warnings above (non-blocking)")
+        else:
+            print("   ✅ All verifications passed")
+        print()
 
         if check_only:
             print("ℹ️ Check only mode - not committing")
