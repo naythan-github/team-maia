@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # MAIA - My AI Agent v2.0
 
 ## Quick Start
@@ -6,6 +10,58 @@
 /init [agent]   → UFC + specific agent
 /close-session  → End agent session + learning capture
 ```
+
+---
+
+## Development Commands
+
+```bash
+# Setup (first time)
+./setup.sh                          # Installs deps, sets MAIA_ROOT
+
+# Testing
+pytest tests/ -v --tb=short         # Run all tests
+pytest tests/test_foo.py -v         # Run single test file
+pytest tests/test_foo.py::test_bar  # Run specific test function
+pytest tests/ -k "keyword"          # Run tests matching keyword
+
+# Linting
+ruff check claude/tools --select=E,F,W --ignore=E501
+
+# Verify installation
+python3 -c "from claude.tools.core.paths import MAIA_ROOT; print(MAIA_ROOT)"
+```
+
+---
+
+## Architecture
+
+```
+maia/
+├── claude/                    # Core system
+│   ├── agents/               # 90+ specialist agents (markdown prompts)
+│   ├── commands/             # Slash commands (markdown definitions)
+│   ├── context/              # UFC system + context loading
+│   │   └── core/             # Identity, protocols, capability index
+│   ├── data/                 # Databases, user prefs, logs
+│   │   └── databases/        # SQLite DBs (intelligence/system/user)
+│   ├── hooks/                # Pre-commit, enforcement, auto-loaders
+│   └── tools/                # Python tools organized by domain
+│       ├── core/             # Paths, base utilities
+│       ├── sre/              # SRE tools (smart_context_loader, save_state)
+│       ├── learning/         # PAI v2 learning system
+│       └── [domain]/         # Other domains (security, pmp, etc.)
+├── tests/                    # Pytest tests mirroring tools structure
+├── scripts/                  # Shell scripts
+└── SYSTEM_STATE.md          # Phase history (use DB queries, not direct reads)
+```
+
+**Key architectural patterns:**
+- **Agents** (markdown) orchestrate **Tools** (Python) - agents define behavior, tools execute
+- **UFC System** (`claude/context/ufc_system.md`) must load before any response
+- **Session persistence** via `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json`
+- **Smart context loading** reduces token usage (5-30K vs 42K+ full file)
+- **DB-first queries** for SYSTEM_STATE (500-2500x faster than markdown parsing)
 
 ---
 
