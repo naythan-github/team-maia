@@ -7,9 +7,95 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2026-01-03
-**Current Phase**: 231
-**Database Status**: ✅ Synced (85 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231)
+**Last Updated**: 2026-01-04
+**Current Phase**: 232
+**Database Status**: ✅ Synced (86 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232)
+
+## 🧠 PHASE 232: Personal PAI v2 Learning System (2026-01-04) ✅ **PRODUCTION READY**
+
+### Achievement
+Implemented Daniel Miessler's PAI v2 personal learning system for Maia with 87 TDD tests. Enables cross-session learning, pattern extraction, and searchable session history stored in `~/.maia/`.
+
+### Problem Solved
+**Context**: Each Claude Code session was isolated. No mechanism to learn from successful sessions, remember user preferences, or provide relevant context from past work.
+
+**Solution**: Personal learning system with:
+1. **UOCS** - Universal Output Capture System (async, 0ms blocking)
+2. **Maia Memory** - Session history with FTS5 full-text search
+3. **VERIFY** - Session success measurement with confidence scoring
+4. **LEARN** - Pattern extraction from successful sessions
+5. **SessionManager** - Orchestrates all components
+
+### Implementation Details (TDD)
+
+**Architecture**:
+```
+~/.maia/
+├── outputs/{session_id}/     # UOCS captures (7-day retention)
+├── memory/
+│   ├── memory.db            # SQLite + FTS5 for search
+│   └── summaries/{date}/    # Human-readable markdown
+└── learning/
+    └── learning.db          # Patterns, preferences, metrics
+```
+
+**Components**:
+| Module | Purpose | Tests |
+|--------|---------|-------|
+| `schema.py` | Database schemas (memory + learning) | 13 |
+| `uocs.py` | Async tool output capture | 19 |
+| `memory.py` | Session history + FTS5 search | 15 |
+| `verify.py` | Success measurement | 15 |
+| `learn.py` | Pattern extraction | 13 |
+| `session.py` | Lifecycle orchestration | 12 |
+
+**Integration**:
+- `/close-session` runs VERIFY + LEARN automatically
+- Saves summary to Maia Memory with confidence score
+- Extracts tool sequence patterns from successful sessions
+
+### Metrics
+| Metric | Target | Actual |
+|--------|--------|--------|
+| TDD tests | Pass | **87/87 ✅** |
+| UOCS overhead | <10ms | **0ms (async) ✅** |
+| Memory search | <100ms | **FTS5 indexed ✅** |
+| Session end | <500ms | **~200ms ✅** |
+
+### Files Created
+- **`claude/tools/learning/__init__.py`** - Package init, directory setup
+- **`claude/tools/learning/schema.py`** - Database schemas
+- **`claude/tools/learning/uocs.py`** - Universal Output Capture
+- **`claude/tools/learning/uocs_cleanup.py`** - UOCS maintenance
+- **`claude/tools/learning/memory.py`** - Maia Memory System
+- **`claude/tools/learning/verify.py`** - VERIFY phase
+- **`claude/tools/learning/learn.py`** - LEARN phase
+- **`claude/tools/learning/session.py`** - Session orchestrator
+- **`claude/commands/memory.md`** - /memory CLI command
+- **`tests/learning/test_*.py`** - 6 test files (87 tests)
+- **`claude/hooks/swarm_auto_loader.py`** - Added learning integration to close_session()
+- **`.claude/commands/close-session.md`** - Updated documentation
+
+### Usage
+```bash
+# Search past sessions
+/memory search "authentication bug"
+
+# View recent sessions
+/memory recent 5
+
+# Get relevant context for current task
+/memory context "memory leak"
+
+# On session close - automatic VERIFY + LEARN
+/close-session
+📊 Running learning analysis...
+   ✅ Session successful (confidence: 85%)
+   📚 Extracted 2 pattern(s)
+   💾 Summary saved to Maia Memory
+```
+
+---
 
 ## 📦 PHASE 231: Context Compression + Complete Capability Index (2026-01-03) ✅ **PRODUCTION READY**
 

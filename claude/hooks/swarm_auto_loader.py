@@ -6,6 +6,7 @@ Phase 134.3 - Per-Context Isolation (Multi-Context Concurrency Fix)
 Phase 176 - Default Agent Loading + Recovery Protocol
 Phase 228 - Threshold Optimization (60% confidence, capability gap detection)
 Phase 229 - Agent Mandate Injection (mandatory agent loading)
+Phase 232 - PAI v2 Learning System Integration (session start + VERIFY/LEARN on close)
 
 Purpose:
 - Invoke SwarmOrchestrator when routing confidence >=60% and complexity >=3
@@ -15,6 +16,7 @@ Purpose:
 - Recovery protocol integration (checkpoint + git context)
 - Agent mandate injection (injects actual agent .md content into Claude's context)
 - Capability gap detection and agent recommendation
+- PAI v2 learning session lifecycle (start on session create, VERIFY+LEARN on close)
 - Graceful degradation for all error scenarios
 - Background logging integration with Phase 125
 
@@ -869,6 +871,51 @@ def format_tdd_context_for_session(tdd_context: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def _start_learning_session(context_id: str, query: str, agent: str, domain: str) -> Optional[str]:
+    """
+    Start a PAI v2 learning session for tool output capture.
+
+    Phase 232: Integrates with Personal PAI v2 Learning System.
+    Called when a new session state is created.
+
+    Args:
+        context_id: Claude Code window context ID
+        query: Initial user query
+        agent: Agent being loaded
+        domain: Agent's domain
+
+    Returns:
+        Session ID if started, None otherwise
+
+    Performance: <10ms
+    Graceful: Never raises, returns None on any error
+    """
+    try:
+        from claude.tools.learning.session import get_session_manager
+
+        manager = get_session_manager()
+
+        # Only start if no active session (prevent duplicates)
+        if manager.active_session_id:
+            return manager.active_session_id
+
+        session_id = manager.start_session(
+            context_id=context_id,
+            initial_query=query[:500],  # Truncate for storage
+            agent_used=agent,
+            domain=domain
+        )
+
+        return session_id
+
+    except ImportError:
+        # PAI v2 learning system not installed
+        return None
+    except Exception:
+        # Graceful degradation - learning session start is non-critical
+        return None
+
+
 def create_session_state(
     agent: str,
     domain: str,
@@ -879,6 +926,8 @@ def create_session_state(
     Create session state file for Maia agent context loading (Phase 5 - with handoff support).
 
     File: ~/.maia/sessions/swarm_session_{context_id}.json (Phase 230: multi-user)
+    Phase 232: Also starts PAI v2 learning session for tool output capture.
+
     Format:
     {
         "current_agent": "security_specialist_agent",
@@ -959,6 +1008,10 @@ def create_session_state(
 
         # Set secure permissions (600 - user only)
         SESSION_STATE_FILE.chmod(0o600)
+
+        # Phase 232: Start PAI v2 learning session (non-blocking)
+        context_id = get_context_id()
+        _start_learning_session(context_id, query, agent, domain)
 
         return True
 

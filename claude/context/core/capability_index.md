@@ -1,7 +1,7 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 494 tools, 94 agents | **Updated**: 2025-01-04
+**Total**: 501 tools, 94 agents | **Updated**: 2026-01-04
 
 ---
 
@@ -546,6 +546,18 @@
 | `syntax_validator.py` | (utility) |
 | `unified_contact_system.py` | (utility) |
 
+### LEARNING (`claude/tools/learning/`) - 7 tools ⭐ NEW - Phase 232
+
+| Tool | Purpose |
+|------|---------|
+| `schema.py` | Database schema definitions for PAI v2 learning system - sessions, patterns, preferences tables |
+| `uocs.py` | Universal Output Capture System - async non-blocking tool output capture (0ms overhead) |
+| `uocs_cleanup.py` | UOCS cleanup utilities - session cleanup, buffer management, resource recovery |
+| `memory.py` | Maia Memory - session history with SQLite FTS5 full-text search for context retrieval |
+| `verify.py` | VERIFY phase - session success measurement with confidence scoring (0.0-1.0) |
+| `learn.py` | LEARN phase - pattern extraction from successful sessions (workflows, tool sequences, preferences) |
+| `session.py` | SessionManager - orchestrates UOCS, Memory, VERIFY, LEARN for complete session lifecycle |
+
 ---
 
 ## Agents (`claude/agents/`)
@@ -698,7 +710,10 @@
 | Context loading | `smart_context_loader` |
 | Phase history | `system_state_queries` |
 | Health monitoring | `automated_health_monitor` |
+| Session learning | `session.py`, `/memory` command |
+| Tool output capture | `uocs.py` (async, non-blocking) |
+| Pattern extraction | `learn.py`, `verify.py` |
 
 ---
 
-*v3.0 | Complete registry (487 tools + 94 agents) | Database-synced*
+*v3.1 | Complete registry (501 tools + 94 agents) | Database-synced | Phase 232: PAI v2 Learning*
