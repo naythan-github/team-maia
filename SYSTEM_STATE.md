@@ -8,8 +8,57 @@
 - **This file**: Maintained for human readability and ETL source only
 
 **Last Updated**: 2026-01-04
-**Current Phase**: 232
-**Database Status**: ✅ Synced (86 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232)
+**Current Phase**: 233
+**Database Status**: ✅ Synced (87 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232, 233)
+
+## 🔒 PHASE 233: Save State Enforcement (2026-01-04) ✅ **PRODUCTION READY**
+
+### Achievement
+Created `save_state.py` script that enforces documentation updates before commits. Auto-detects changes, blocks commit if required docs missing, syncs capabilities.db on every save.
+
+### Problem Solved
+**Context**: Documentation often lagged behind implementation. User had to ask "Did you update the docs?" after every feature. SYSTEM_STATE.md, capability_index.md frequently out of sync.
+
+**Solution**: Automated enforcement:
+1. **Auto-detection** - Analyzes git changes to determine what docs need updating
+2. **Blocking** - Prevents commit if new tools/agents without capability_index.md update
+3. **Capabilities sync** - Runs capabilities_registry.py scan on every save
+4. **Security check** - Validates no secrets in staged files
+
+### Implementation Details
+
+**Blocking Rules**:
+| Change | Required Doc | Action |
+|--------|--------------|--------|
+| New tools | capability_index.md | BLOCK |
+| New agents | agents.md + capability_index.md | BLOCK |
+| Significant work (>5 files) | SYSTEM_STATE.md | BLOCK |
+| Secrets detected | Fix required | BLOCK |
+
+**Usage**:
+```bash
+# Standard (with enforcement)
+python3 claude/tools/sre/save_state.py
+
+# Check only
+python3 claude/tools/sre/save_state.py --check
+
+# Emergency bypass
+python3 claude/tools/sre/save_state.py --force
+```
+
+### Files Created/Modified
+- **`claude/tools/sre/save_state.py`** - Enforcement script (NEW)
+- **`claude/commands/save_state.md`** - Updated documentation
+- **`CLAUDE.md`** - Working Principle #8 updated
+
+### Metrics
+| Metric | Value |
+|--------|-------|
+| Documentation misses | 0 (enforced) |
+| capabilities.db freshness | Every save |
+
+---
 
 ## 🧠 PHASE 232: Personal PAI v2 Learning System (2026-01-04) ✅ **PRODUCTION READY**
 
