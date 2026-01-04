@@ -65,6 +65,7 @@ class TestWorkingPrinciples:
         ("Agent Persistence", "agent session management"),
         ("Local LLM", "cost savings with local models"),
         ("Experimental First", "experimental workflow"),
+        ("integration", "integration testing requirement"),
     ]
 
     @pytest.mark.parametrize("principle,description", CRITICAL_PRINCIPLES)
@@ -88,6 +89,7 @@ class TestKeyPaths:
         "claude/data/databases/",
         "user_preferences.json",
         "capability_index.md",
+        "capabilities.db",  # DB-first principle
     ]
 
     @pytest.mark.parametrize("path", CRITICAL_PATHS)

@@ -37,7 +37,7 @@
 | 7 | **Save State** | `python3 claude/tools/sre/save_state.py` on request | Phase 233 |
 | 8 | **UI Agent** | Use for dashboards/interfaces | `ui_systems_agent.md` |
 | 9 | **Implementation-Ready** | Agents provide exact specs, not just guidance | - |
-| 10 | **Test Before Production** | Nothing complete until tested | - |
+| 10 | **Test Before Production** | Unit + integration tests required before complete | - |
 | 11 | **Local LLMs** | `/codellama`, `/starcoder`, `/local` for cost savings | 99.3% savings |
 | 12 | **Experimental First** | New features → `claude/tools/experimental/` → graduate | `development_workflow_protocol.md` |
 | 13 | **No Token Shortcuts** | Complete work properly, tokens renew 5hr | - |
@@ -71,7 +71,8 @@
 | Databases | `claude/data/databases/{intelligence,system,user}/` |
 | Sessions | `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json` |
 | User Prefs | `claude/data/user_preferences.json` |
-| Capabilities | `claude/context/core/capability_index.md` |
+| Capabilities DB | `claude/data/databases/system/capabilities.db` |
+| Capabilities (human) | `claude/context/core/capability_index.md` |
 
 ---
 
