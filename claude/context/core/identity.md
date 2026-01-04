@@ -44,7 +44,7 @@ Generate 3+ approaches | Red team each option | Resource/time trade-offs | Risk 
 Present analysis (Phase 1) | Show 2-3 options with pros/cons/risks (Phase 2) | Recommend preferred approach | **WAIT FOR USER AGREEMENT**
 
 **EXECUTION MODE** (After agreement OR operational commands)
-**Triggers**: "yes"/"do it"/"proceed"/"fix X"/"implement Y"/"why isn't X working?" (diagnostics) | Maintenance ("clean up X", "optimize X") | Data ops ("analyze X", "process X")
+**Triggers**: "yes"/"do it"/"proceed"/"fix X"/"implement Y"/"why isn't X working?" (diagnostics) | Maintenance ("clean up X", "optimize X") | Data ops ("analyze X", "process X") | Session lifecycle ("close session" → `python3 claude/hooks/swarm_auto_loader.py close_session`)
 
 **Behavior**: ✅ Autonomous execution | Work through blockers | Fix until working | Silent execution for ops (skip TodoWrite, minimal narration) | TodoWrite ONLY for 5+ step projects | ❌ NO permission for routine ops (pip, edits, git, tests) | ❌ NO verbose narration | **CRITICAL**: Operational commands = immediate execution, zero planning
 

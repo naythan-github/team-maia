@@ -998,6 +998,14 @@ def create_session_state(
             "user_preferences": ltm_context.get("preferences", []) if ltm_context else []
         }
 
+        # Phase 232: Start PAI v2 learning session BEFORE writing (to capture session_id)
+        context_id = get_context_id()
+        learning_session_id = _start_learning_session(context_id, query, agent, domain)
+
+        # Phase 233.3: Store learning session ID for close_session to use
+        if learning_session_id:
+            session_data["learning_session_id"] = learning_session_id
+
         # Atomic write (tmp file + rename for consistency)
         tmp_file = SESSION_STATE_FILE.with_suffix(".tmp")
         with open(tmp_file, 'w') as f:
@@ -1008,10 +1016,6 @@ def create_session_state(
 
         # Set secure permissions (600 - user only)
         SESSION_STATE_FILE.chmod(0o600)
-
-        # Phase 232: Start PAI v2 learning session (non-blocking)
-        context_id = get_context_id()
-        _start_learning_session(context_id, query, agent, domain)
 
         return True
 
@@ -1512,9 +1516,35 @@ def close_session():
         print("✅ All checks passed - clean state\n")
 
     # Check 6: PAI v2 Learning System - VERIFY + LEARN
+    # Phase 233.3: Read learning_session_id from swarm_session file
     try:
         from claude.tools.learning.session import get_session_manager
         manager = get_session_manager()
+
+        # Try to load session from file if not in memory
+        learning_session_id = None
+        session_file = get_session_file_path()
+        if session_file.exists():
+            try:
+                with open(session_file, 'r') as f:
+                    session_data = json.load(f)
+                    learning_session_id = session_data.get('learning_session_id')
+                    # Load session data for VERIFY/LEARN
+                    if learning_session_id and not manager.active_session_id:
+                        manager.load_session(
+                            session_id=learning_session_id,
+                            session_data={
+                                'session_id': learning_session_id,
+                                'context_id': str(get_context_id()),
+                                'initial_query': session_data.get('query', ''),
+                                'agent_used': session_data.get('current_agent'),
+                                'domain': session_data.get('domain'),
+                                'started_at': session_data.get('session_start')
+                            }
+                        )
+            except (json.JSONDecodeError, IOError):
+                pass
+
         if manager.active_session_id:
             print("📊 Running learning analysis...")
             learning_result = manager.end_session()
@@ -1533,6 +1563,8 @@ def close_session():
 
             print(f"   💾 Summary saved to Maia Memory")
             print()
+        elif learning_session_id:
+            print(f"ℹ️  Learning session {learning_session_id[:12]}... found but could not load")
     except ImportError:
         pass  # PAI v2 learning system not installed
     except Exception as e:

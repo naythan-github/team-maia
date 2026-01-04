@@ -168,6 +168,16 @@ class SessionManager:
         """Get relevant context from Maia Memory for a new query."""
         return self.memory.get_context_for_query(query)
 
+    def load_session(self, session_id: str, session_data: Dict[str, Any]):
+        """
+        Load a session from stored data (Phase 233.3).
+
+        Called from close_session to resume session from swarm_session file.
+        This enables VERIFY + LEARN to run even in a new process.
+        """
+        self._active_session = session_id
+        self._session_data = session_data
+
     @property
     def active_session_id(self) -> Optional[str]:
         return self._active_session
