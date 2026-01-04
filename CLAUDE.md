@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Repository
+**GitHub**: https://github.com/naythan-orro/maia
+
+## Requirements
+- **Python 3.11+** (required)
+- **pip** (Python package manager)
+- **Ollama** (optional, for local LLM features - `/codellama`, `/starcoder`, `/local`)
+
+---
+
 # MAIA - My AI Agent v2.0
 
 ## Quick Start
@@ -31,6 +41,9 @@ ruff check claude/tools --select=E,F,W --ignore=E501
 # Verify installation
 python3 -c "from claude.tools.core.paths import MAIA_ROOT; print(MAIA_ROOT)"
 ```
+
+### Pre-commit Hooks
+TDD pre-commit hook blocks commits when features are failing. Bypass with `git commit --no-verify` (requires justification in `claude/data/TDD_EXEMPTIONS.md`).
 
 ---
 
