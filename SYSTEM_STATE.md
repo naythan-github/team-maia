@@ -67926,3 +67926,48 @@ Or with warnings:
 
    ⚠️ Review warnings above (non-blocking)
 ```
+
+
+## Phase 233.2: Close-Session Direct Integration
+
+**Date**: 2026-01-04
+**Type**: Enhancement
+**Status**: ✅ Complete
+
+### Problem Statement
+
+When close-session detected uncommitted changes and user said "yes" to save_state, it would:
+```
+⚠️  Please run 'save state' in the main Claude conversation
+   Then run /close-session again
+```
+
+This forced users to manually run save_state and then re-run close-session.
+
+### Solution
+
+Updated close_session() to call `save_state.py` directly via subprocess:
+
+```python
+result = subprocess.run(
+    ["python3", str(save_state_script)],
+    cwd=MAIA_ROOT,
+    capture_output=False  # Show output in real-time
+)
+if result.returncode != 0:
+    print("⚠️  save_state blocked - fix issues above")
+    sys.exit(1)
+```
+
+### New Flow
+
+```
+close_session → finds issues → user says "yes" → runs save_state.py → continues → closes
+```
+
+If save_state blocks (missing docs), close_session exits with instructions to fix.
+
+### Files Modified
+
+- `claude/hooks/swarm_auto_loader.py` (close_session function)
+- `.claude/commands/close-session.md` (documentation)

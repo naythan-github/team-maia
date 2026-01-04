@@ -1487,15 +1487,23 @@ def close_session():
         if response.lower() in ['y', 'yes']:
             print("\n🔄 Running save_state workflow...\n")
             try:
-                save_state_cmd = MAIA_ROOT / "claude" / "commands" / "save_state.md"
-                if save_state_cmd.exists():
-                    print("⚠️  Please run 'save state' in the main Claude conversation")
-                    print("   Then run /close-session again")
-                    print()
+                save_state_script = MAIA_ROOT / "claude" / "tools" / "sre" / "save_state.py"
+                if save_state_script.exists():
+                    result = subprocess.run(
+                        ["python3", str(save_state_script)],
+                        cwd=MAIA_ROOT,
+                        capture_output=False  # Show output in real-time
+                    )
+                    if result.returncode != 0:
+                        print("\n⚠️  save_state blocked - fix issues above, then run /close-session again")
+                        sys.exit(1)
+                    print()  # Add spacing after save_state output
+                else:
+                    print("⚠️  save_state.py not found - please run 'save state' manually")
                     sys.exit(0)
             except Exception as e:
-                print(f"⚠️  Could not run save_state automatically: {e}")
-                print("   Please run 'save state' manually, then /close-session")
+                print(f"⚠️  Could not run save_state: {e}")
+                print("   Please run 'python3 claude/tools/sre/save_state.py' manually")
                 sys.exit(0)
         else:
             print("\n⏭️  Skipping save_state (you can run it manually later)")

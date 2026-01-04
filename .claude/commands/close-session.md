@@ -2,6 +2,7 @@
 
 **Purpose**: Clean shutdown verification before closing Claude Code window
 **Command**: `/close-session` | "close session" | "shutdown prep"
+**Status**: ✅ Production | **Phase 233.2**: Direct save_state.py integration
 
 ---
 
@@ -26,7 +27,7 @@ python3 claude/hooks/swarm_auto_loader.py close_session
 ## Outcomes
 
 **Clean**: All pass → "Safe to close Claude Code window"
-**Issues**: Shows warnings → Prompts save_state → User decides
+**Issues**: Shows warnings → User says "yes" → Runs `save_state.py` directly → Continues cleanup
 
 ## Technical
 
