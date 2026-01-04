@@ -1,7 +1,7 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 594 tools, 95 agents | **Updated**: 2026-01-04
+**Total**: 569 tools, 95 agents | **Updated**: 2026-01-04
 
 ---
 
