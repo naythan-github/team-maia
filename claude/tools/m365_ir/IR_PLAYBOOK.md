@@ -4,7 +4,7 @@
 
 This playbook captures cumulative learnings from M365 incident response investigations. It serves as a reference for forensic analysis, PIR writing, and avoiding past mistakes.
 
-**Last Updated**: 2026-01-05 (PIR-FYNA-2025-12-08)
+**Last Updated**: 2026-01-06 (PIR-OCULUS-2025-01 - Phase 230 zip workflow lessons)
 
 ---
 
@@ -104,6 +104,7 @@ Attack Flow (confirmed via Fyna investigation):
 
 | Issue | Root Cause | Prevention |
 |-------|-----------|------------|
+| Manual extraction workflow | Manually unzipped files, created exports/ folder, left zips in Downloads | **CRITICAL**: Use CLI `import` command with zip path. Never manually extract. Breaks audit trail and prevents re-import |
 | Missing data from subdirectories | Importer didn't recurse | Fixed in Phase 229 - now uses `rglob('*.csv')` |
 | Duplicate records | Multiple imports | UNIQUE constraints handle deduplication |
 | Wrong file type detected | Ambiguous filename | Check LOG_FILE_PATTERNS matching |
@@ -220,7 +221,16 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --outpu
 ### Log Import
 
 ```bash
-# Import all logs from directory (recursive)
+# ⭐ RECOMMENDED: Import from zip files (CLI handles case creation + file management)
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export.zip --customer "Customer Name"
+# Automatically: creates case, moves zip to source-files/, imports logs
+
+# Multiple zips for same incident
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-1.zip --customer "Customer"
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-2.zip --case-id PIR-CUSTOMER-2025-XX-XX
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-3.zip --case-id PIR-CUSTOMER-2025-XX-XX
+
+# Legacy: Programmatic import (if you need custom logic)
 python3 -c "
 from claude.tools.m365_ir.log_database import IRLogDatabase
 from claude.tools.m365_ir.log_importer import LogImporter
@@ -230,6 +240,8 @@ importer = LogImporter(db)
 results = importer.import_all('/path/to/exports')
 "
 ```
+
+**⚠️ CRITICAL**: Never manually extract zips to case folders. Use CLI import - it maintains audit trail and enables re-import.
 
 ### IR Knowledge Base Query
 

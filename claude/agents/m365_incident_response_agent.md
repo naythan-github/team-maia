@@ -81,7 +81,21 @@ from ioc_extractor import IOCExtractor         # Extract IOCs, map MITRE ATT&CK
 Store parsed logs in per-case SQLite for follow-up queries during investigations:
 
 ```bash
-# Import logs into case database
+# ⭐ PROPER WORKFLOW: Import from zip files (RECOMMENDED)
+# Import creates case, moves zip to source-files/, imports directly from zip
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export.zip --customer "Acme Corp"
+# Creates: ~/work_projects/ir_cases/PIR-ACME-CORP-2025-12-15/
+#          ├── source-files/Export.zip (moved from Downloads)
+#          ├── reports/
+#          └── PIR-ACME-CORP-2025-12-15_logs.db
+
+# Multiple zips for same case (additional exports from same incident)
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-1.zip --customer "Acme Corp"
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-2.zip --case-id PIR-ACME-CORP-2025-12-15
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-3.zip --case-id PIR-ACME-CORP-2025-12-15
+# Each zip moved to source-files/, all imported into same database
+
+# Import from directory of CSVs (if already extracted - NOT RECOMMENDED)
 python3 claude/tools/m365_ir/m365_ir_cli.py import /path/to/exports --case-id PIR-ACME-2025-001
 
 # Query by IP, user, or suspicious operations
@@ -96,6 +110,11 @@ python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-ACME-2025-001 --sql "SELEC
 python3 claude/tools/m365_ir/m365_ir_cli.py stats PIR-ACME-2025-001
 python3 claude/tools/m365_ir/m365_ir_cli.py list
 ```
+
+**⚠️ CRITICAL: Avoid Manual Extraction**
+- ❌ **DON'T**: Manually unzip files in Downloads, copy CSVs to case folder
+- ✅ **DO**: Use `import` command with zip path - it handles extraction AND moves zip to case folder
+- **Why**: Maintains audit trail (original zips in source-files/), enables re-import if needed, follows proper chain of custody
 
 ```python
 # Programmatic access
@@ -122,6 +141,7 @@ query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-Inbox
 | Pattern | Guidance |
 |---------|----------|
 | Case Naming | Use `PIR-{CUSTOMER}-{YEAR}-{SEQ}`. Year from first export date, not import date |
+| Zip Import Workflow | **CRITICAL**: Import directly from zip files using `import ~/Downloads/Export.zip --customer "Name"`. Never manually extract to case folder - breaks audit trail and prevents re-import. For multiple zips: first with `--customer`, rest with `--case-id` |
 | Deduplication | UNIQUE constraints + INSERT OR IGNORE. Real exports have 35-45% duplicates |
 | Export Quirks | M365 has varying date formats (ISO/US), column names. Handle all variations |
 | Per-Case Isolation | One SQLite per case at `~/work_projects/ir_cases/{CASE_ID}/` |
@@ -219,6 +239,90 @@ query.entra_audit_summary()                        # Stats by activity type
 - Detect unauthorized role assignments (privilege escalation)
 - Identify external admin actions during compromise
 - Track service principal creation for persistence
+
+### Phase 230: Account Validator - Hard Enforcement of Timeline Validation ⭐ CRITICAL
+
+**Purpose**: Prevents assumption-based analytical errors by enforcing timestamp validation and timeline sanity checks.
+
+**Background**: PIR-OCULUS-2025-01 error - IR agent assumed ben@oculus.info was "stale disabled account from 2020" without checking entra_audit_log for actual disable timestamp. Account was actually ACTIVE with 1,998-day-old password, disabled during remediation Dec 3, 2025.
+
+**⚠️ MANDATORY USAGE**: Before finalizing ANY findings about compromised accounts, run account validator to verify timeline assumptions.
+
+```bash
+# Validate single account (use during deep-dive analysis)
+python3 claude/tools/m365_ir/m365_ir_cli.py validate-account PIR-CASE-ID user@example.com
+
+# Validate all compromised accounts (use before PIR finalization)
+python3 claude/tools/m365_ir/m365_ir_cli.py validate-all PIR-CASE-ID
+```
+
+**What It Checks** (FR-1 through FR-5):
+1. **Account Lifecycle** (FR-1):
+   - Creation date from password_status (cannot assume)
+   - Password age calculated from actual last_password_change
+   - **Status changes from entra_audit_log** (CRITICAL - where we failed)
+   - If currently disabled: MUST have disable timestamp OR raises ValidationError
+
+2. **Compromise Evidence** (FR-2):
+   - Foreign login timeline (first/last timestamps from sign_in_logs)
+   - SMTP abuse events count
+   - All from actual queries, no assumptions
+
+3. **Timeline Sanity Checks** (FR-3 - AUTOMATIC):
+   - Activity after account disabled? (logic error unless re-enabled)
+   - Old password (>365 days) + compromise? (password policy failure)
+   - Disabled during attack window? (remediation vs pre-existing)
+
+4. **Assumption Logging** (FR-4):
+   - Tracks all inferences made during investigation
+   - Validates assumptions against source data
+   - Blocks report if disproven assumptions exist
+
+5. **Report Generation** (FR-5):
+   - Cannot generate findings without passing validation
+   - All findings cite database sources
+   - Validation timestamp and sources included
+
+**Example Output**:
+```
+ben@oculus.info:
+  ⚠️  Status: Enabled
+  ⚠️  Foreign logins: 64
+  ⚠️  Password age: 1,998 days
+  ⚠️  Root cause: PASSWORD_POLICY_FAILURE
+  ⚠️  Warnings: 1
+     - [PASSWORD_POLICY] Password 1,998 days old (5.5 years) and account compromised
+```
+
+**When ValidationError is Raised**:
+```
+❌ ValidationError: Account ben@oculus.info is currently DISABLED but no
+disable event found in entra_audit_log.
+
+Cannot determine when account was disabled.
+
+Action required:
+- If predates logs: Document as 'disable date unknown (predates retention)'
+- If manual change: Check AD directly for disable date
+- If query error: Verify entra_audit_log contains data for incident period
+```
+
+**Integration with IR Workflow**:
+```
+STEP 1: Import logs → database
+STEP 2: Identify compromised accounts (foreign logins)
+STEP 3: Deep dive analysis (timeline, IOCs, impact)
+STEP 4: ⭐ VALIDATE ACCOUNTS ⭐ (catch assumption errors)
+STEP 5: Generate PIR with validated findings
+```
+
+**Error Prevention**:
+- ❌ Cannot skip validation steps (raises exceptions)
+- ❌ Cannot assume timestamps (requires actual query results)
+- ❌ Cannot ignore timeline logic errors (automatic checks)
+- ✅ Impossible to repeat ben@oculus.info mistake
+
+**Test Coverage**: 8/8 tests passing, validated on actual PIR-OCULUS-2025-01 database
 
 ### PIR Document Generation (`claude/tools/document_conversion/`)
 
