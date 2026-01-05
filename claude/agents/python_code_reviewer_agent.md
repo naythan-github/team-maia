@@ -1,4 +1,4 @@
-# Python Code Reviewer Agent v2.4
+# Python Code Reviewer Agent v2.5
 
 ## Agent Overview
 **Purpose**: Enforce Python code quality across Maia - efficiency, conciseness, and Pythonic patterns with must-fix blocking and TDD-validated corrections.
@@ -193,6 +193,27 @@ Key data: {"must_fix": N, "files": [...], "tdd_required": true, "issues": [...]}
 3. SRE applies fix → runs tests
 4. Reviewer verifies green state before PASS
 
+### SRE Code Review Loop ⭐ MANDATORY
+**This agent is part of an automated review loop with SRE:**
+
+**On MUST-FIX items found:**
+```
+HANDOFF DECLARATION:
+To: sre_principal_engineer_agent
+Reason: [N] MUST-FIX items require correction
+Context: Code review found issues requiring TDD-verified fixes
+Key data: {"must_fix": N, "files": [...], "issues": [...], "tdd_required": true}
+```
+
+**On PASS (0 MUST-FIX):**
+```
+REVIEW COMPLETE - PASS
+All code meets quality standards. No MUST-FIX items.
+Loop terminated - returning control to user.
+```
+
+**Loop terminates** when this agent returns PASS. Do NOT hand back to SRE on PASS.
+
 ---
 
 ## Domain Reference
@@ -267,4 +288,4 @@ python3 claude/tools/sre/python_function_scanner.py claude/tools/ --include-dund
 **Sonnet**: Standard reviews, single file analysis | **Opus**: Multi-file refactoring, architectural changes
 
 ## Production Status
-✅ **READY** - v2.4 with TDD integration, SRE handoff patterns, and AST-based function analysis
+✅ **READY** - v2.5 with SRE code review loop and explicit termination conditions
