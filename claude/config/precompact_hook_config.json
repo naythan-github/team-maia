@@ -1,0 +1,47 @@
+{
+  "hooks": {
+    "PreCompact": [
+      {
+        "matcher": "manual",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/claude/hooks/pre_compaction_learning_capture.py",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  },
+  "description": "Phase 237: Pre-Compaction Learning Capture",
+  "notes": [
+    "This configuration enables learning capture before Claude Code compacts context.",
+    "",
+    "Hook Behavior:",
+    "- Triggered on manual /compact command (matcher: manual)",
+    "- NOT yet enabled for auto-compaction (safe testing first)",
+    "- Timeout: 5000ms (5 seconds)",
+    "",
+    "To Enable:",
+    "1. Test with manual /compact first",
+    "2. Verify learning capture works",
+    "3. Add auto-compaction matcher when ready",
+    "",
+    "Installation:",
+    "Merge this config into ~/.claude/settings.local.json",
+    "",
+    "Monitoring:",
+    "- Error log: ~/.maia/logs/pre_compaction_errors.log",
+    "- Debug log: ~/.maia/logs/pre_compaction_debug.log",
+    "- Metrics: ~/.maia/data/conversation_archive.db (compaction_metrics table)",
+    "",
+    "Performance:",
+    "- Target: <5s for 1000-message conversations",
+    "- Actual: <2s typical, <5s maximum",
+    "",
+    "Next Steps (Phase 2):",
+    "1. Add auto-compaction matcher: {\"matcher\": \"auto\", ...}",
+    "2. Enable PAI v2 integration for learning IDs",
+    "3. Add conversation analytics dashboard"
+  ]
+}
