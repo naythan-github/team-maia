@@ -1,4 +1,4 @@
-# M365 Incident Response Agent v2.7
+# M365 Incident Response Agent v2.8
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
@@ -97,7 +97,7 @@ query.suspicious_operations()                 # Inbox rules, forwarding, etc.
 query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-InboxRule",))
 ```
 
-**Database Tables**: `sign_in_logs`, `unified_audit_log`, `mailbox_audit_log`, `oauth_consents`, `inbox_rules`, `legacy_auth_logs`, `password_status`, `import_metadata`
+**Database Tables**: `sign_in_logs`, `unified_audit_log`, `mailbox_audit_log`, `oauth_consents`, `inbox_rules`, `legacy_auth_logs`, `password_status`, `entra_audit_log`, `import_metadata`
 
 **Benefits**: Follow-up questions without re-parsing CSVs, SQL queries for complex analysis, case isolation for chain of custody.
 
@@ -149,6 +149,59 @@ query.stale_passwords(days=90, enabled_only=True) # Find old passwords
 - Verify remediation: Was password reset after breach?
 - Identify MFA bypass vectors: Which accounts use legacy auth?
 - Security hygiene: Find accounts with stale passwords (>90 days)
+
+### Phase 228: Entra ID Audit Log Parser (`claude/tools/m365_ir/`)
+
+Parse Azure AD directory-level events for password changes, role assignments, and administrative actions:
+
+```bash
+# Import Entra ID audit logs (auto-detected from *AuditLogs.csv files)
+python3 claude/tools/m365_ir/m365_ir_cli.py import /path/to/exports --case-id PIR-CASE-ID
+
+# Query Entra audit events
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --entra-audit
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --entra-audit --user victim@example.com
+
+# Query password changes (critical for remediation verification)
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --password-changes
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --password-changes --user victim@example.com
+
+# Query role changes (privilege escalation detection)
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --role-changes
+```
+
+```python
+# Programmatic access
+from claude.tools.m365_ir import LogQuery
+
+query = LogQuery(db)
+query.entra_audit_by_user("victim@example.com")    # All Entra events for user
+query.entra_audit_by_activity("password")          # Find password-related events
+query.password_changes("victim@example.com")       # Password reset/change events
+query.role_changes()                               # All role assignments
+query.entra_audit_summary()                        # Stats by activity type
+```
+
+**Source Files Supported**:
+- `*AuditLogs.csv` - Entra ID (Azure AD) Audit Logs
+
+**Date Format**: Australian DD/MM/YYYY H:MM:SS AM/PM (auto-detected)
+
+**Security-Relevant Operations**:
+| Activity | MITRE ATT&CK | Investigation Focus |
+|----------|--------------|---------------------|
+| Change password (self-service) | T1098 | Was this during attack window? |
+| Reset password (by admin) | T1098 | Who initiated? External admin? |
+| Add member to role | T1078.004 | Privilege escalation check |
+| Update user | T1098 | Account manipulation |
+| Add service principal | T1136.003 | Persistence mechanism |
+| Consent to application | T1550.001 | OAuth consent phishing |
+
+**Use Cases**:
+- Verify password reset timing vs breach timeline
+- Detect unauthorized role assignments (privilege escalation)
+- Identify external admin actions during compromise
+- Track service principal creation for persistence
 
 ### Phase 224: IR Knowledge Base (`claude/tools/ir/`)
 ```bash
@@ -660,9 +713,10 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --outpu
 **Sonnet**: All IR operations, log analysis, timeline building | **Opus**: Major breach (>$100K impact), legal/regulatory implications
 
 ## Production Status
-**READY** - v2.7 with Phase 224/225/226/227 tool integration + hybrid PIR report template
+**READY** - v2.8 with Phase 224/225/226/227/228 tool integration + hybrid PIR report template
 - Phase 224: IR Knowledge Base (46 tests) - cumulative learning across investigations
 - Phase 225: M365 IR Pipeline (88 tests) - automated log parsing, anomaly detection, MITRE mapping
 - Phase 226: IR Log Database (92 tests) - per-case SQLite storage, SQL queries, follow-up investigation support
 - Phase 227: Legacy Auth & Password Status (39 tests) - remediation verification, MFA bypass detection, stale password auditing
+- Phase 228: Entra ID Audit Log Parser (27 tests) - Azure AD directory events, password changes, role assignments, admin actions
 - Hybrid PIR Template: Full report structure matching Oculus/Fyna/SGS format standards
