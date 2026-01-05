@@ -98,7 +98,7 @@ maia/
 | # | Principle | Action | Reference |
 |---|-----------|--------|-----------|
 | 1 | **Read Context First** | Hydrate before acting | - |
-| 2 | **Use Existing Tools** | Check before creating | `capability_index.md` |
+| 2 | **Use Existing Tools** | Check before creating | `find_capability.py` (DB query) |
 | 3 | **Solve Once** | Turn solutions into modules | - |
 | 4 | **Fix Forward** | No Band-Aid solutions, complete fixes | - |
 | 5 | **Execution State Machine** | DISCOVERY → user approval → EXECUTION (no re-asking) | `identity.md` |
@@ -141,7 +141,7 @@ maia/
 | Sessions | `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json` |
 | User Prefs | `claude/data/user_preferences.json` |
 | Capabilities DB | `claude/data/databases/system/capabilities.db` |
-| Capabilities (human) | `claude/context/core/capability_index.md` |
+| Capabilities (human-readable) | `claude/context/core/capability_index.md` (reference only - use DB for queries) |
 
 ---
 

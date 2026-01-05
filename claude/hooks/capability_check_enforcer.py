@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Capability Check Enforcer (Phase 127 - Cached Version)
+Capability Check Enforcer (Phase 127 - Cached Version, Phase 235 - DB-First)
 
 Automated Phase 0 capability check to prevent building duplicate tools/agents.
 Integrated with user-prompt-submit hook to run before every request.
 
-Performance: <10ms per check (uses cached capability_checker)
+Performance: <10ms per check (uses DB queries instead of 68KB markdown file)
 
 Usage:
     python3 capability_check_enforcer.py "user message here"
@@ -18,13 +18,15 @@ Exit codes:
 Author: Maia (Phase 119 - Capability Amnesia Fix, Phase 127 - Cached Optimization)
 Created: 2025-10-15
 Updated: 2025-10-17 (Phase 127 - Cache optimization)
+Updated: 2026-01-05 (Phase 235 - DB-first to fix context bloat)
 """
 
 import sys
 import re
 import subprocess
+import sqlite3
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 
 class CapabilityEnforcer:
@@ -52,6 +54,9 @@ class CapabilityEnforcer:
         self.maia_root = maia_root or Path.cwd()
         # Use cached version for 99.99% performance improvement (0.1ms vs 920ms)
         self.capability_checker = self.maia_root / 'claude' / 'tools' / 'capability_checker_cached.py'
+        # Phase 235: Use DB instead of 68KB markdown file
+        self.capabilities_db = self.maia_root / 'claude' / 'data' / 'databases' / 'system' / 'capabilities.db'
+        # Deprecated: Only used as fallback if DB unavailable
         self.capability_index = self.maia_root / 'claude' / 'context' / 'core' / 'capability_index.md'
 
     def detect_build_request(self, user_input: str) -> bool:
@@ -68,11 +73,67 @@ class CapabilityEnforcer:
 
         return False
 
+    def search_capability_db(self, user_input: str) -> Optional[Dict]:
+        """
+        Search capabilities.db for potential matches (Phase 235 - DB-First).
+
+        Uses SQLite database instead of reading 68KB markdown file.
+        Reduces context overhead from ~17K tokens to ~200 tokens.
+
+        Args:
+            user_input: User's message to search for keywords
+
+        Returns:
+            Dict with 'name', 'path', 'keyword_matches' if found, None otherwise
+        """
+        if not self.capabilities_db.exists():
+            return None
+
+        try:
+            # Extract keywords from user input (4+ char words, excluding common build terms)
+            words = re.findall(r'\b\w{4,}\b', user_input.lower())
+            words = [w for w in words if w not in [
+                'build', 'create', 'make', 'tool', 'agent', 'write',
+                'implement', 'develop', 'generate', 'construct'
+            ]]
+
+            if not words:
+                return None
+
+            conn = sqlite3.connect(self.capabilities_db)
+            conn.row_factory = sqlite3.Row
+
+            # Search for each keyword (limit to first 3 for performance)
+            for word in words[:3]:
+                result = conn.execute(
+                    """SELECT name, path, keywords FROM capabilities
+                       WHERE LOWER(name) LIKE ? OR LOWER(keywords) LIKE ?
+                       LIMIT 1""",
+                    (f'%{word}%', f'%{word}%')
+                ).fetchone()
+
+                if result:
+                    conn.close()
+                    return {
+                        'name': result['name'],
+                        'path': result['path'],
+                        'keyword_matches': 1
+                    }
+
+            conn.close()
+            return None
+
+        except Exception:
+            return None
+
     def search_capability_index(self, user_input: str) -> Optional[Dict]:
         """
-        Search capability_index.md for potential matches.
+        DEPRECATED: Use search_capability_db() instead.
 
-        Fast keyword-based search before running full capability_checker.
+        This method reads the full 68KB capability_index.md file which causes
+        context bloat (~17K tokens). Kept for backward compatibility only.
+
+        Phase 235: Replaced by search_capability_db() for DB-first queries.
         """
         if not self.capability_index.exists():
             return None
@@ -195,20 +256,20 @@ class CapabilityEnforcer:
                 'message': '✅ Not a build request - no capability check needed'
             }
 
-        # Step 2: Quick search in capability_index.md
-        index_match = self.search_capability_index(user_input)
-        if index_match:
-            # Found potential match in index
+        # Step 2: Quick search in capabilities database (Phase 235 - DB-First)
+        db_match = self.search_capability_db(user_input)
+        if db_match:
+            # Found potential match in DB
             return {
                 'should_warn': True,
-                'existing_capability': index_match['name'],
-                'confidence': 75.0,  # Heuristic confidence for index matches
-                'location': 'capability_index.md',
+                'existing_capability': db_match['name'],
+                'confidence': 75.0,  # Heuristic confidence for DB matches
+                'location': db_match.get('path', 'capabilities.db'),
                 'message': self._format_warning(
-                    index_match['name'],
+                    db_match['name'],
                     75.0,
-                    'capability_index.md',
-                    'Quick index search'
+                    db_match.get('path', 'capabilities.db'),
+                    'DB capability search'
                 )
             }
 
