@@ -12,12 +12,27 @@ End-to-end pipeline for M365 log analysis:
 - Map to MITRE ATT&CK
 - Generate PIR report
 
+Phase 226 additions:
+- import: Import logs into per-case SQLite database
+- query: Query database by IP, user, or raw SQL
+- stats: Show database statistics
+- list: List all case databases
+
 Usage:
+    # Analysis (original)
     python3 m365_ir_cli.py analyze /path/to/exports --customer "CustomerName"
-    python3 m365_ir_cli.py analyze /export1 /export2 /export3 --customer "Oculus"
+
+    # Database operations (Phase 226)
+    python3 m365_ir_cli.py import /path/to/exports --case-id PIR-ACME-2025-001
+    python3 m365_ir_cli.py query PIR-ACME-2025-001 --ip 185.234.100.50
+    python3 m365_ir_cli.py query PIR-ACME-2025-001 --user victim@example.com
+    python3 m365_ir_cli.py query PIR-ACME-2025-001 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
+    python3 m365_ir_cli.py stats PIR-ACME-2025-001
+    python3 m365_ir_cli.py list
 
 Author: Maia System
 Created: 2025-12-18 (Phase 225)
+Updated: 2025-01-05 (Phase 226 - Database commands)
 """
 
 import argparse
@@ -36,6 +51,11 @@ from claude.tools.m365_ir.anomaly_detector import AnomalyDetector
 from claude.tools.m365_ir.timeline_builder import TimelineBuilder
 from claude.tools.m365_ir.ioc_extractor import IOCExtractor, MitreMapper
 from claude.tools.m365_ir.remediation_detector import RemediationDetector, IncidentTimeline
+
+# Phase 226 - Database modules
+from claude.tools.m365_ir.log_database import IRLogDatabase, DEFAULT_BASE_PATH
+from claude.tools.m365_ir.log_importer import LogImporter
+from claude.tools.m365_ir.log_query import LogQuery
 
 
 class M365IRAnalyzer:
@@ -315,25 +335,227 @@ class M365IRAnalyzer:
         print(f"Exported summary to {output_dir / 'analysis_summary.json'}")
 
 
+def cmd_import(args):
+    """Handle import command - import logs into case database."""
+    print(f"\n{'='*60}")
+    print(f"M365 IR DATABASE IMPORT")
+    print(f"{'='*60}")
+
+    # Generate case ID if not provided
+    case_id = args.case_id
+    if not case_id:
+        customer_slug = args.customer.lower().replace(' ', '-')[:10] if args.customer else 'case'
+        case_id = f"PIR-{customer_slug.upper()}-{datetime.now().strftime('%Y-%m%d')}"
+        print(f"Generated case ID: {case_id}")
+
+    # Create database
+    db = IRLogDatabase(case_id=case_id, base_path=args.base_path)
+    db_path = db.create()
+    print(f"Database: {db_path}")
+
+    # Import logs
+    importer = LogImporter(db)
+    print(f"\nImporting from: {args.exports}")
+
+    results = importer.import_all(args.exports)
+
+    print(f"\nImport Results:")
+    total_imported = 0
+    total_failed = 0
+    for log_type, result in results.items():
+        print(f"  {log_type}: {result.records_imported} imported, {result.records_failed} failed")
+        total_imported += result.records_imported
+        total_failed += result.records_failed
+        if result.errors:
+            for error in result.errors[:3]:
+                print(f"    - {error}")
+            if len(result.errors) > 3:
+                print(f"    ... and {len(result.errors) - 3} more errors")
+
+    print(f"\nTotal: {total_imported} records imported, {total_failed} failed")
+    print(f"\nQuery with: python3 m365_ir_cli.py query {case_id} --ip <ip>")
+
+
+def cmd_query(args):
+    """Handle query command - query case database."""
+    # Open database
+    db = IRLogDatabase(case_id=args.case_id, base_path=args.base_path)
+    if not db.exists:
+        print(f"Error: Case database not found: {args.case_id}")
+        print(f"Run 'import' first to create the database.")
+        sys.exit(1)
+
+    query = LogQuery(db)
+
+    # Determine query type
+    if args.ip:
+        print(f"Activity for IP: {args.ip}")
+        print("-" * 60)
+        results = query.activity_by_ip(args.ip)
+    elif args.user:
+        print(f"Activity for user: {args.user}")
+        print("-" * 60)
+        results = query.activity_by_user(args.user)
+    elif args.suspicious:
+        print("Suspicious operations:")
+        print("-" * 60)
+        results = query.suspicious_operations()
+    elif args.sql:
+        print(f"SQL: {args.sql}")
+        print("-" * 60)
+        results = query.execute(args.sql)
+    else:
+        print("Error: Specify --ip, --user, --suspicious, or --sql")
+        sys.exit(1)
+
+    # Output results
+    if not results:
+        print("No results found.")
+        return
+
+    if args.format == 'json':
+        print(json.dumps(results, indent=2, default=str))
+    else:
+        # Table format
+        for r in results[:args.limit]:
+            ts = r.get('timestamp', 'N/A')
+            source = r.get('source', r.get('log_type', 'N/A'))
+            user = r.get('user', r.get('user_principal_name', 'N/A'))
+            op = r.get('operation', 'N/A')
+            ip = r.get('ip_address', r.get('client_ip', 'N/A'))
+            print(f"{ts} | {source:20} | {user:30} | {op:25} | {ip}")
+
+        if len(results) > args.limit:
+            print(f"\n... and {len(results) - args.limit} more results (use --limit to show more)")
+
+    print(f"\nTotal: {len(results)} results")
+
+
+def cmd_stats(args):
+    """Handle stats command - show database statistics."""
+    db = IRLogDatabase(case_id=args.case_id, base_path=args.base_path)
+    if not db.exists:
+        print(f"Error: Case database not found: {args.case_id}")
+        sys.exit(1)
+
+    print(f"Case: {args.case_id}")
+    print(f"Database: {db.db_path}")
+    print("-" * 40)
+
+    stats = db.get_stats()
+    total = 0
+    for table, count in stats.items():
+        print(f"  {table:25} {count:>8}")
+        total += count
+
+    print("-" * 40)
+    print(f"  {'TOTAL':25} {total:>8}")
+
+
+def cmd_list(args):
+    """Handle list command - list all case databases."""
+    base_path = Path(args.base_path)
+
+    if not base_path.exists():
+        print(f"No cases found in {base_path}")
+        return
+
+    print(f"Cases in {base_path}:")
+    print("-" * 60)
+
+    cases = []
+    for case_dir in sorted(base_path.iterdir()):
+        if not case_dir.is_dir():
+            continue
+
+        db_file = case_dir / f"{case_dir.name}_logs.db"
+        if db_file.exists():
+            # Get file stats
+            stat = db_file.stat()
+            size_mb = stat.st_size / (1024 * 1024)
+            modified = datetime.fromtimestamp(stat.st_mtime).strftime('%Y-%m-%d %H:%M')
+
+            # Get record counts
+            db = IRLogDatabase(case_id=case_dir.name, base_path=str(base_path))
+            stats = db.get_stats()
+            total_records = sum(stats.values())
+
+            cases.append({
+                'case_id': case_dir.name,
+                'size_mb': size_mb,
+                'modified': modified,
+                'records': total_records
+            })
+
+    if not cases:
+        print("No case databases found.")
+        return
+
+    for case in cases:
+        print(f"  {case['case_id']:30} {case['records']:>8} records  {case['size_mb']:>6.2f} MB  {case['modified']}")
+
+    print(f"\nTotal: {len(cases)} cases")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="M365 Incident Response Analyzer",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Analysis (original Phase 225)
   %(prog)s analyze /path/to/export --customer "Acme Corp"
   %(prog)s analyze /export1 /export2 /export3 --customer "Oculus" --output ./results
+
+  # Database operations (Phase 226)
+  %(prog)s import /path/to/exports --case-id PIR-ACME-2025-001 --customer "Acme Corp"
+  %(prog)s query PIR-ACME-2025-001 --ip 185.234.100.50
+  %(prog)s query PIR-ACME-2025-001 --user victim@example.com
+  %(prog)s query PIR-ACME-2025-001 --suspicious
+  %(prog)s query PIR-ACME-2025-001 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
+  %(prog)s stats PIR-ACME-2025-001
+  %(prog)s list
         """
     )
 
     subparsers = parser.add_subparsers(dest="command", help="Commands")
 
-    # Analyze command
-    analyze_parser = subparsers.add_parser("analyze", help="Analyze M365 exports")
+    # Common arguments for database commands
+    db_base_path = DEFAULT_BASE_PATH
+
+    # Analyze command (original)
+    analyze_parser = subparsers.add_parser("analyze", help="Analyze M365 exports (original pipeline)")
     analyze_parser.add_argument("exports", nargs="+", type=Path, help="Export directories")
     analyze_parser.add_argument("--customer", "-c", required=True, help="Customer name")
     analyze_parser.add_argument("--home-country", default="AU", help="Home country code (default: AU)")
     analyze_parser.add_argument("--output", "-o", type=Path, help="Output directory for results")
+
+    # Import command (Phase 226)
+    import_parser = subparsers.add_parser("import", help="Import logs into case database")
+    import_parser.add_argument("exports", type=Path, help="Export directory to import")
+    import_parser.add_argument("--case-id", help="Case identifier (auto-generated if not provided)")
+    import_parser.add_argument("--customer", "-c", help="Customer name (used for auto-generated case ID)")
+    import_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases (default: {db_base_path})")
+
+    # Query command (Phase 226)
+    query_parser = subparsers.add_parser("query", help="Query case database")
+    query_parser.add_argument("case_id", help="Case identifier")
+    query_parser.add_argument("--ip", help="Query by IP address")
+    query_parser.add_argument("--user", help="Query by user email/UPN")
+    query_parser.add_argument("--suspicious", action="store_true", help="Show suspicious operations")
+    query_parser.add_argument("--sql", help="Execute raw SQL query")
+    query_parser.add_argument("--format", choices=['table', 'json'], default='table', help="Output format")
+    query_parser.add_argument("--limit", type=int, default=50, help="Limit results (default: 50)")
+    query_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
+
+    # Stats command (Phase 226)
+    stats_parser = subparsers.add_parser("stats", help="Show database statistics")
+    stats_parser.add_argument("case_id", help="Case identifier")
+    stats_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
+
+    # List command (Phase 226)
+    list_parser = subparsers.add_parser("list", help="List all case databases")
+    list_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
 
     args = parser.parse_args()
 
@@ -355,6 +577,18 @@ Examples:
         # Export if output specified
         if args.output:
             analyzer.export_results(args.output)
+
+    elif args.command == "import":
+        cmd_import(args)
+
+    elif args.command == "query":
+        cmd_query(args)
+
+    elif args.command == "stats":
+        cmd_stats(args)
+
+    elif args.command == "list":
+        cmd_list(args)
 
     else:
         parser.print_help()

@@ -1,4 +1,4 @@
-# M365 Incident Response Agent v2.4
+# M365 Incident Response Agent v2.5
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
@@ -58,6 +58,48 @@ from anomaly_detector import AnomalyDetector   # Impossible travel, legacy auth,
 from timeline_builder import TimelineBuilder   # Correlate events, detect attack phases
 from ioc_extractor import IOCExtractor         # Extract IOCs, map MITRE ATT&CK
 ```
+
+### Phase 226: Per-Investigation SQLite Database (`claude/tools/m365_ir/`)
+
+Store parsed logs in per-case SQLite for follow-up queries during investigations:
+
+```bash
+# Import logs into case database
+python3 claude/tools/m365_ir/m365_ir_cli.py import /path/to/exports --case-id PIR-ACME-2025-001
+
+# Query by IP, user, or suspicious operations
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-ACME-2025-001 --ip 185.234.100.50
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-ACME-2025-001 --user victim@example.com
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-ACME-2025-001 --suspicious
+
+# Raw SQL for complex queries
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-ACME-2025-001 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
+
+# View stats and list cases
+python3 claude/tools/m365_ir/m365_ir_cli.py stats PIR-ACME-2025-001
+python3 claude/tools/m365_ir/m365_ir_cli.py list
+```
+
+```python
+# Programmatic access
+from claude.tools.m365_ir import IRLogDatabase, LogImporter, LogQuery
+
+db = IRLogDatabase(case_id="PIR-ACME-2025-001")
+db.create()
+
+importer = LogImporter(db)
+results = importer.import_all("/path/to/exports")  # Auto-detects log types
+
+query = LogQuery(db)
+query.activity_by_ip("185.234.100.50")      # All activity from suspicious IP
+query.activity_by_user("victim@example.com") # Full user timeline
+query.suspicious_operations()                 # Inbox rules, forwarding, etc.
+query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-InboxRule",))
+```
+
+**Database Tables**: `sign_in_logs`, `unified_audit_log`, `mailbox_audit_log`, `oauth_consents`, `inbox_rules`, `import_metadata`
+
+**Benefits**: Follow-up questions without re-parsing CSVs, SQL queries for complex analysis, case isolation for chain of custody.
 
 ### Phase 224: IR Knowledge Base (`claude/tools/ir/`)
 ```bash
@@ -309,10 +351,48 @@ Get-FileHash -Algorithm SHA256 -Path *.csv | Export-Csv -Path Evidence_Hashes.cs
 
 ---
 
+## Report Generation Guidelines
+
+### Markdown Formatting for DOCX Conversion
+
+When generating IR reports that will be converted to DOCX (Orro format), follow these Pandoc-friendly formatting rules:
+
+**Bullet Lists** - Add blank line between each bullet for proper rendering:
+```markdown
+- First item
+
+- Second item
+
+- Third item
+```
+
+**Nested Bullets Under Numbered Lists** - Add blank line after parent and between children:
+```markdown
+1. **Parent item**
+
+   - Child item one
+
+   - Child item two
+
+   - Child item three
+
+2. **Next parent**
+```
+
+**Why**: Pandoc collapses consecutive bullets without blank lines into single paragraphs in DOCX output.
+
+**Conversion Command**:
+```bash
+python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --output report.docx
+```
+
+---
+
 ## Model Selection
 **Sonnet**: All IR operations, log analysis, timeline building | **Opus**: Major breach (>$100K impact), legal/regulatory implications
 
 ## Production Status
-**READY** - v2.4 with Phase 224/225 tool integration
+**READY** - v2.5 with Phase 224/225/226 tool integration + report formatting guidelines
 - Phase 224: IR Knowledge Base (46 tests) - cumulative learning across investigations
 - Phase 225: M365 IR Pipeline (88 tests) - automated log parsing, anomaly detection, MITRE mapping
+- Phase 226: IR Log Database (92 tests) - per-case SQLite storage, SQL queries, follow-up investigation support
