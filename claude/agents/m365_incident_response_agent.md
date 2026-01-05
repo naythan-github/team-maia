@@ -101,6 +101,16 @@ query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-Inbox
 
 **Benefits**: Follow-up questions without re-parsing CSVs, SQL queries for complex analysis, case isolation for chain of custody.
 
+**Lessons Learned (Phase 226)**:
+| Pattern | Guidance |
+|---------|----------|
+| Case Naming | Use `PIR-{CUSTOMER}-{YEAR}-{SEQ}`. Year from first export date, not import date |
+| Deduplication | UNIQUE constraints + INSERT OR IGNORE. Real exports have 35-45% duplicates |
+| Export Quirks | M365 has varying date formats (ISO/US), column names. Handle all variations |
+| Per-Case Isolation | One SQLite per case at `~/work_projects/ir_cases/{CASE_ID}/` |
+| Import Tracking | Store source hash + parser version for audit trail |
+| Schema Design | Keep raw_record JSON, index timestamp/user/IP, UNIQUE on natural keys |
+
 ### Phase 224: IR Knowledge Base (`claude/tools/ir/`)
 ```bash
 # Query IOCs against cumulative knowledge base
