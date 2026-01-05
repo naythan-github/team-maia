@@ -673,6 +673,25 @@ pytest --cov=claude/tools/learning --cov-report=term-missing --cov-fail-under=90
 - **Status**: Day 1 Foundation - Archive complete
 - **Next**: Build learning extraction engine with TDD
 
+### 2026-01-06 11:35 - Extraction Engine Complete ✅
+- **Commit**: ed3ed26 (820 lines: extraction.py + 20 tests)
+- Pattern-based learning identification (5 categories)
+- UOC taxonomy: decisions, solutions, outcomes, handoffs, checkpoints
+- Metadata extraction: tools, agents, errors
+- **Performance**: 0.05s for 1000 messages (100x faster than target!)
+- **Tests**: 20/20 passing (100%)
+- **Running total**: 36/36 tests passing
+
+### 2026-01-06 11:40 - Retrieval Tools Complete ✅
+- **Commit**: 4a8e252 (620 lines: retrieval.py + 21 tests)
+- Full API: get, search, history, export, stats
+- Export formats: markdown, JSON, text
+- FTS5 full-text search integration
+- **Tests**: 21/21 passing (100%)
+- **Running total**: 57/57 tests passing ✅
+- **Status**: Day 1 Foundation - 75% complete
+- **Next**: Create pre-compaction hook script (ties it all together)
+
 ---
 
 ## Checkpoints (Updated Live)
