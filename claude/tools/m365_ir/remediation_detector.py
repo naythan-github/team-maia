@@ -92,6 +92,11 @@ class IncidentTimeline:
     attack_start_date: Optional[date]
     attack_start_user: Optional[str]
     attack_start_country: Optional[str]
+    attack_start_confidence: str  # HIGH, MEDIUM, LOW
+    attack_start_note: str  # Human-readable explanation
+    log_window_start: Optional[date]  # Earliest date in log data
+    log_window_end: Optional[date]  # Latest date in log data
+    clean_baseline_days: int  # Days of clean activity before first breach indicator
     first_remediation_date: Optional[date]
     detection_date: Optional[date]  # Bulk remediation date
     dwell_time_days: Optional[int]
@@ -101,8 +106,12 @@ class IncidentTimeline:
     def get_summary(self) -> str:
         """Generate human-readable timeline summary"""
         lines = []
+        if self.log_window_start and self.log_window_end:
+            lines.append(f"Log Window: {self.log_window_start} to {self.log_window_end}")
         if self.attack_start_date:
             lines.append(f"Attack Start: {self.attack_start_date} ({self.attack_start_user} from {self.attack_start_country})")
+            lines.append(f"  Confidence: {self.attack_start_confidence} ({self.attack_start_note})")
+            lines.append(f"  Clean Baseline: {self.clean_baseline_days} days")
         if self.first_remediation_date:
             lines.append(f"First Remediation: {self.first_remediation_date}")
         if self.detection_date:
@@ -276,6 +285,14 @@ class RemediationDetector:
         # Get remediation summary
         remediation_summary = self.get_remediation_summary(audit_entries)
 
+        # Calculate log window from sign-in entries
+        log_window_start = None
+        log_window_end = None
+        if signin_entries:
+            sorted_entries = sorted(signin_entries, key=lambda x: x.created_datetime)
+            log_window_start = sorted_entries[0].created_datetime.date()
+            log_window_end = sorted_entries[-1].created_datetime.date()
+
         # Detect attack start
         attack_start = self.detect_attack_start(signin_entries, home_country)
 
@@ -288,6 +305,25 @@ class RemediationDetector:
                     attack_start_user = e.user_principal_name
                     attack_start_country = e.country
                     break
+
+        # Calculate clean baseline days and confidence
+        clean_baseline_days = 0
+        attack_start_confidence = "UNKNOWN"
+        attack_start_note = "No attack indicators detected"
+
+        if attack_start and log_window_start:
+            clean_baseline_days = (attack_start.date() - log_window_start).days
+
+            # Determine confidence based on clean baseline
+            if clean_baseline_days <= 1:
+                attack_start_confidence = "LOW"
+                attack_start_note = "Attack predates available logs - actual compromise may be earlier"
+            elif clean_baseline_days >= 3:
+                attack_start_confidence = "HIGH"
+                attack_start_note = f"Confirmed - {clean_baseline_days} days of clean baseline before first indicator"
+            else:
+                attack_start_confidence = "MEDIUM"
+                attack_start_note = f"Limited baseline ({clean_baseline_days} days) - moderate confidence"
 
         # Calculate dwell time
         dwell_time_days = None
@@ -306,6 +342,11 @@ class RemediationDetector:
             attack_start_date=attack_start.date() if attack_start else None,
             attack_start_user=attack_start_user,
             attack_start_country=attack_start_country,
+            attack_start_confidence=attack_start_confidence,
+            attack_start_note=attack_start_note,
+            log_window_start=log_window_start,
+            log_window_end=log_window_end,
+            clean_baseline_days=clean_baseline_days,
             first_remediation_date=remediation_summary.first_remediation_date,
             detection_date=remediation_summary.remediation_date,
             dwell_time_days=dwell_time_days,
@@ -319,6 +360,13 @@ class RemediationDetector:
             "attack_start_date": timeline.attack_start_date.isoformat() if timeline.attack_start_date else None,
             "attack_start_user": timeline.attack_start_user,
             "attack_start_country": timeline.attack_start_country,
+            "attack_start_confidence": timeline.attack_start_confidence,
+            "attack_start_note": timeline.attack_start_note,
+            "log_window": {
+                "start": timeline.log_window_start.isoformat() if timeline.log_window_start else None,
+                "end": timeline.log_window_end.isoformat() if timeline.log_window_end else None,
+            },
+            "clean_baseline_days": timeline.clean_baseline_days,
             "detection_date": timeline.detection_date.isoformat() if timeline.detection_date else None,
             "dwell_time_days": timeline.dwell_time_days,
             "phases": [p.value for p in timeline.phases],

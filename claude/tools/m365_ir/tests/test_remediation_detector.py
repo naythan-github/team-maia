@@ -447,5 +447,106 @@ class TestEdgeCases:
         assert summary.remediation_date == datetime(2025, 12, 3).date()
 
 
+class TestAttackStartConfidence:
+    """Test attack start date confidence calculation based on log visibility window"""
+
+    @pytest.fixture
+    def detector(self):
+        return RemediationDetector()
+
+    def test_high_confidence_with_clean_baseline(self, detector):
+        """HIGH confidence when >=3 days of clean baseline before breach"""
+        # Log window: Nov 1-30, Attack: Nov 10 (9 days clean baseline)
+        signin_entries = [
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 1, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 5, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 8, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "DE", datetime(2025, 11, 10, 18, 0, 0)),  # Attack
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 30, 10, 0, 0)),
+        ]
+
+        timeline = detector.build_incident_timeline(signin_entries, [], home_country="AU")
+
+        assert timeline.attack_start_confidence == "HIGH"
+        assert timeline.clean_baseline_days == 9
+        assert "Confirmed" in timeline.attack_start_note
+        assert timeline.log_window_start == datetime(2025, 11, 1).date()
+        assert timeline.log_window_end == datetime(2025, 11, 30).date()
+
+    def test_low_confidence_breach_at_edge(self, detector):
+        """LOW confidence when breach at edge of log window (<=1 day baseline)"""
+        # Log window starts with attack - no clean baseline
+        signin_entries = [
+            create_signin_entry("user1@test.com", "DE", datetime(2025, 11, 1, 10, 0, 0)),  # Attack on Day 1
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 15, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 30, 10, 0, 0)),
+        ]
+
+        timeline = detector.build_incident_timeline(signin_entries, [], home_country="AU")
+
+        assert timeline.attack_start_confidence == "LOW"
+        assert timeline.clean_baseline_days == 0
+        assert "predates" in timeline.attack_start_note.lower()
+
+    def test_low_confidence_one_day_baseline(self, detector):
+        """LOW confidence when only 1 day of baseline"""
+        signin_entries = [
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 1, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "DE", datetime(2025, 11, 2, 10, 0, 0)),  # Attack Day 2
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 30, 10, 0, 0)),
+        ]
+
+        timeline = detector.build_incident_timeline(signin_entries, [], home_country="AU")
+
+        assert timeline.attack_start_confidence == "LOW"
+        assert timeline.clean_baseline_days == 1
+
+    def test_medium_confidence_limited_baseline(self, detector):
+        """MEDIUM confidence when 2 days of baseline"""
+        signin_entries = [
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 1, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 2, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "DE", datetime(2025, 11, 3, 10, 0, 0)),  # Attack Day 3
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 30, 10, 0, 0)),
+        ]
+
+        timeline = detector.build_incident_timeline(signin_entries, [], home_country="AU")
+
+        assert timeline.attack_start_confidence == "MEDIUM"
+        assert timeline.clean_baseline_days == 2
+        assert "Limited baseline" in timeline.attack_start_note
+
+    def test_unknown_confidence_no_attack(self, detector):
+        """UNKNOWN confidence when no attack detected"""
+        signin_entries = [
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 1, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 30, 10, 0, 0)),
+        ]
+
+        timeline = detector.build_incident_timeline(signin_entries, [], home_country="AU")
+
+        assert timeline.attack_start_confidence == "UNKNOWN"
+        assert timeline.attack_start_date is None
+
+    def test_get_summary_includes_confidence(self, detector):
+        """get_summary() should include confidence fields"""
+        signin_entries = [
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 1, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "AU", datetime(2025, 11, 8, 10, 0, 0)),
+            create_signin_entry("user1@test.com", "DE", datetime(2025, 11, 10, 18, 0, 0)),
+        ]
+
+        timeline = detector.build_incident_timeline(signin_entries, [], home_country="AU")
+        summary = detector.get_summary(timeline)
+
+        assert "attack_start_confidence" in summary
+        assert summary["attack_start_confidence"] == "HIGH"
+        assert "attack_start_note" in summary
+        assert "log_window" in summary
+        assert summary["log_window"]["start"] == "2025-11-01"
+        assert "clean_baseline_days" in summary
+        assert summary["clean_baseline_days"] == 9
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

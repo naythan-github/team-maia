@@ -108,8 +108,10 @@ query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-Inbox
 | Deduplication | UNIQUE constraints + INSERT OR IGNORE. Real exports have 35-45% duplicates |
 | Export Quirks | M365 has varying date formats (ISO/US), column names. Handle all variations |
 | Per-Case Isolation | One SQLite per case at `~/work_projects/ir_cases/{CASE_ID}/` |
+| Existing Customer Check | **ALWAYS** check if customer folder exists before creating new case. Ask user if new files relate to existing incident. Resolved incidents are moved to SharePoint, so only active incidents have local folders |
 | Import Tracking | Store source hash + parser version for audit trail |
 | Schema Design | Keep raw_record JSON, index timestamp/user/IP, UNIQUE on natural keys |
+| Attack Start Date | **CRITICAL**: If breach at edge of log window = LOW confidence (predates logs). Only claim specific start date if clean baseline exists before first indicator |
 
 ### Phase 224: IR Knowledge Base (`claude/tools/ir/`)
 ```bash
@@ -138,6 +140,55 @@ result = triage.analyze_sign_in(log_entry)  # Returns HIGH/MEDIUM/LOW with rule 
 | TIME-001 | Off-hours consent (00:00-05:59) | 80% |
 | OAUTH-001 | Excessive permissions (>50) | 90% |
 | OAUTH-002 | Legacy protocol (IMAP/POP) | 80% |
+
+---
+
+## Attack Start Date Interpretation ⭐ CRITICAL FORENSIC GUIDANCE
+
+### Log Visibility Window Principle
+
+M365 log exports have limited retention windows (typically 30 days for sign-in logs, 90 days for UAL). When determining attack start dates, you MUST consider whether breach indicators appear at the **edge** or **within** the available data window.
+
+| Scenario | Example | Attack Start Confidence | Report Language |
+|----------|---------|------------------------|-----------------|
+| **Breach at Edge of Data** | First breach indicator on Day 1 of 30-day export | **LOW** - Cannot determine | "Attack start **predates available logs** (earliest indicator: {date})" |
+| **Breach Within Data** | 8 days clean baseline, then breach indicators | **HIGH** - Can estimate | "Attack started approximately {date} based on first anomalous activity" |
+
+### Decision Logic
+
+```
+IF earliest_breach_indicator_date == earliest_log_date:
+    attack_start_confidence = "LOW"
+    attack_start_note = "Predates available logs - actual compromise may be earlier"
+ELSE IF clean_baseline_days >= 3:
+    attack_start_confidence = "HIGH"
+    attack_start_note = "Confirmed based on clean baseline before first indicator"
+ELSE:
+    attack_start_confidence = "MEDIUM"
+    attack_start_note = "Limited baseline data - moderate confidence"
+```
+
+### Reporting Requirements
+
+**ALWAYS include in PIR reports:**
+1. Date range of available logs (e.g., "Log data covers 2025-11-09 to 2025-12-08")
+2. Days of clean baseline before first breach indicator (if any)
+3. Attack start confidence level (HIGH/MEDIUM/LOW)
+4. Appropriate language based on confidence:
+   - HIGH: "Attack started on {date}"
+   - LOW: "Attack predates available logs; earliest indicator {date}"
+
+**Example - Fyna Case:**
+- Log data: 2025-11-09 to 2025-12-08 (30 days)
+- First breach indicator: 2025-11-17 (zacd@fyna.com.au from DE)
+- Clean baseline: 8 days of legitimate AU activity before breach
+- **Confidence: HIGH** - Can state attack started 2025-11-17
+
+**Example - Hypothetical Edge Case:**
+- Log data: 2025-11-17 to 2025-12-17 (30 days)
+- First breach indicator: 2025-11-17 (Day 1 of available data)
+- Clean baseline: 0 days
+- **Confidence: LOW** - Cannot claim specific start date; attack predates logs
 
 ---
 
@@ -377,10 +428,12 @@ All IR reports MUST follow this structure for consistency with Orro standards:
 | **Customer** | {Customer Name} ({domain}) |
 | **Severity** | HIGH |
 | **Date Range** | {attack_start} to {remediation_date} |
+| **Log Visibility** | {log_start_date} to {log_end_date} ({N} days) |
+| **Attack Start Confidence** | {HIGH/MEDIUM/LOW} |
 | **Report Date** | {today} |
-| **Prepared By** | Orro Security Operations |
+| **Prepared By** | Orro Cloud |
 | **Classification** | CONFIDENTIAL |
-| **Status** | FINAL |
+| **Status** | DRAFT |
 
 ---
 
@@ -442,8 +495,12 @@ All IR reports MUST follow this structure for consistency with Orro standards:
 ### True Root Cause
 **{Summary statement}**
 
-### Forensic Confidence Note
+### Forensic Confidence Note (Attack Start Date)
 **{HIGH/MEDIUM/LOW} CONFIDENCE**: {explanation}
+
+- **Log Data Window**: {log_start_date} to {log_end_date} ({N} days)
+- **Clean Baseline Before Breach**: {N} days (or "None - breach at edge of data")
+- **Interpretation**: {HIGH = "Attack started {date}" | LOW = "Attack predates available logs; earliest indicator {date}"}
 
 ---
 
