@@ -310,3 +310,5 @@ If implementing these changes, measure:
 | Date | Change |
 |------|--------|
 | 2026-01-05 | Initial research complete |
+| 2026-01-05 | Phase 235: DB-first capability checks (fixes context bloat) |
+| 2026-01-05 | Phase 236: Unconditional learning session start (fixes learning not capturing) |

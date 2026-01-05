@@ -12,6 +12,11 @@
 python3 claude/hooks/swarm_auto_loader.py close_session
 ```
 
+## How Learning Works (Phase 236)
+
+Learning sessions start **automatically** on every user prompt (Stage 0.05 in user-prompt-submit hook).
+No manual action needed - just use `/close-session` at end to capture insights.
+
 ## Checks Performed
 
 | Check | Detection | Action |
