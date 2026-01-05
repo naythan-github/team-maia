@@ -63,6 +63,9 @@ from claude.tools.m365_ir.log_importer import LogImporter
 from claude.tools.m365_ir.log_query import LogQuery
 from claude.tools.m365_ir.ir_case import IRCase
 
+# Phase 230 - Account Validator
+from claude.tools.m365_ir.account_validator import AccountValidator, ValidationError
+
 
 class M365IRAnalyzer:
     """
@@ -581,6 +584,182 @@ def cmd_list(args):
     print(f"\nTotal: {len(cases)} cases")
 
 
+def cmd_validate_account(args):
+    """
+    Handle validate-account command - validate single compromised account.
+
+    Phase 230: Account validation with hard enforcement of timestamp checks.
+    """
+    base_path = Path(args.base_path)
+    db = IRLogDatabase(case_id=args.case_id, base_path=str(base_path))
+
+    if not db.exists:
+        print(f"❌ Error: Case database not found: {args.case_id}")
+        print(f"   Expected: {db.db_path}")
+        return 1
+
+    print(f"Validating account: {args.account}")
+    print("-" * 80)
+
+    try:
+        validator = AccountValidator(str(db.db_path), args.account)
+        result = validator.validate()
+
+        # Print lifecycle info
+        lifecycle = result['lifecycle']
+        print(f"\n✅ VALIDATION PASSED")
+        print(f"\nAccount Lifecycle:")
+        print(f"  Created: {lifecycle['created_date']}")
+        print(f"  Status: {lifecycle['current_status']}")
+        print(f"  Password age: {lifecycle['password_age_days']:,} days ({lifecycle['password_age_days']/365:.1f} years)")
+
+        if lifecycle['disabled_date']:
+            print(f"  Disabled: {lifecycle['disabled_date']}")
+            print(f"  Disabled by: {lifecycle['disabled_by']}")
+            print(f"  Disable reason: {lifecycle.get('disable_reason', 'N/A')}")
+
+        if lifecycle['re_enabled']:
+            print(f"  Re-enabled: {lifecycle['re_enabled_date']}")
+
+        # Print compromise evidence
+        compromise = result['compromise']
+        foreign = compromise['foreign_logins']
+
+        print(f"\nCompromise Evidence:")
+        print(f"  Foreign logins: {foreign['total_foreign_logins']:,}")
+
+        if foreign['first_foreign_login']:
+            print(f"  First foreign login: {foreign['first_foreign_login']}")
+            print(f"  Last foreign login: {foreign['last_foreign_login']}")
+            print(f"  Countries: {', '.join(foreign['countries'][:5])}")
+
+        print(f"  SMTP abuse events: {compromise['smtp_abuse_count']}")
+
+        # Print warnings and errors
+        sanity = result['sanity_check']
+
+        if sanity['warnings']:
+            print(f"\n⚠️  WARNINGS ({len(sanity['warnings'])}):")
+            for w in sanity['warnings']:
+                print(f"  [{w['type']}] {w['message']}")
+                print(f"    Action required: {w['action_required']}")
+
+        if sanity['errors']:
+            print(f"\n❌ ERRORS ({len(sanity['errors'])}):")
+            for e in sanity['errors']:
+                print(f"  [{e['type']}] {e['message']}")
+                print(f"    Action required: {e['action_required']}")
+
+        # Print root cause
+        print(f"\nRoot Cause Category: {result['root_cause_category']}")
+
+        return 0
+
+    except ValidationError as e:
+        print(f"\n❌ VALIDATION FAILED")
+        print(f"\n{str(e)}")
+        return 1
+
+
+def cmd_validate_all(args):
+    """
+    Handle validate-all command - validate all compromised accounts.
+
+    Phase 230: Batch validation for all accounts with foreign login activity.
+    """
+    base_path = Path(args.base_path)
+    db = IRLogDatabase(case_id=args.case_id, base_path=str(base_path))
+
+    if not db.exists:
+        print(f"❌ Error: Case database not found: {args.case_id}")
+        print(f"   Expected: {db.db_path}")
+        return 1
+
+    # Get all accounts with foreign logins
+    import sqlite3
+    conn = sqlite3.connect(str(db.db_path))
+    cursor = conn.cursor()
+
+    print(f"Finding compromised accounts in {args.case_id}...")
+    print()
+
+    cursor.execute("""
+        SELECT DISTINCT user_principal_name
+        FROM sign_in_logs
+        WHERE location_country NOT IN ('AU', 'Australia')
+        ORDER BY user_principal_name
+    """)
+
+    accounts = [row[0] for row in cursor.fetchall()]
+    conn.close()
+
+    if not accounts:
+        print("No compromised accounts found (no foreign logins detected)")
+        return 0
+
+    print(f"Found {len(accounts)} compromised accounts. Validating...")
+    print("=" * 80)
+
+    results = []
+    failures = []
+
+    for account in accounts:
+        print(f"\n{account}:")
+
+        try:
+            validator = AccountValidator(str(db.db_path), account)
+            result = validator.validate()
+
+            # Summary output
+            lifecycle = result['lifecycle']
+            compromise = result['compromise']
+            sanity = result['sanity_check']
+
+            status_emoji = "✅"
+            if sanity['warnings']:
+                status_emoji = "⚠️ "
+            if sanity['errors']:
+                status_emoji = "❌"
+
+            print(f"  {status_emoji} Status: {lifecycle['current_status']}")
+            print(f"  {status_emoji} Foreign logins: {compromise['foreign_logins']['total_foreign_logins']:,}")
+            print(f"  {status_emoji} Password age: {lifecycle['password_age_days']:,} days")
+            print(f"  {status_emoji} Root cause: {result['root_cause_category']}")
+
+            if sanity['warnings']:
+                print(f"  {status_emoji} Warnings: {len(sanity['warnings'])}")
+                for w in sanity['warnings']:
+                    print(f"     - [{w['type']}] {w['severity']}")
+
+            if sanity['errors']:
+                print(f"  {status_emoji} Errors: {len(sanity['errors'])}")
+                for e in sanity['errors']:
+                    print(f"     - [{e['type']}] {e['severity']}")
+
+            results.append({'account': account, 'status': 'VALIDATED', 'result': result})
+
+        except ValidationError as e:
+            print(f"  ❌ VALIDATION FAILED")
+            print(f"     {str(e)[:100]}...")
+            failures.append({'account': account, 'error': str(e)})
+
+    # Summary
+    print("\n" + "=" * 80)
+    print("VALIDATION SUMMARY")
+    print("=" * 80)
+    print(f"Total accounts: {len(accounts)}")
+    print(f"Validated: {len(results)}")
+    print(f"Failed: {len(failures)}")
+
+    if failures:
+        print(f"\n❌ FAILED VALIDATIONS ({len(failures)}):")
+        for f in failures:
+            print(f"  - {f['account']}")
+            print(f"    {f['error'][:100]}...")
+
+    return 1 if failures else 0
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="M365 Incident Response Analyzer",
@@ -604,6 +783,10 @@ Examples:
   %(prog)s query PIR-ACME-2025-001 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
   %(prog)s stats PIR-ACME-2025-001
   %(prog)s list
+
+  # Account validation (Phase 230)
+  %(prog)s validate-account PIR-ACME-2025-001 ben@example.com      # Validate single account
+  %(prog)s validate-all PIR-ACME-2025-001                          # Validate all compromised accounts
         """
     )
 
@@ -649,6 +832,17 @@ Examples:
     list_parser = subparsers.add_parser("list", help="List all case databases")
     list_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
 
+    # Validate-account command (Phase 230)
+    validate_account_parser = subparsers.add_parser("validate-account", help="Validate single compromised account")
+    validate_account_parser.add_argument("case_id", help="Case identifier")
+    validate_account_parser.add_argument("account", help="User principal name (email) to validate")
+    validate_account_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
+
+    # Validate-all command (Phase 230)
+    validate_all_parser = subparsers.add_parser("validate-all", help="Validate all compromised accounts")
+    validate_all_parser.add_argument("case_id", help="Case identifier")
+    validate_all_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
+
     args = parser.parse_args()
 
     if args.command == "analyze":
@@ -681,6 +875,12 @@ Examples:
 
     elif args.command == "list":
         cmd_list(args)
+
+    elif args.command == "validate-account":
+        sys.exit(cmd_validate_account(args))
+
+    elif args.command == "validate-all":
+        sys.exit(cmd_validate_all(args))
 
     else:
         parser.print_help()
