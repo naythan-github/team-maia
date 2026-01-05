@@ -13,7 +13,7 @@ End-to-end pipeline for M365 log analysis:
 - Generate PIR report
 
 Phase 226 additions:
-- import: Import logs into per-case SQLite database
+- import: Import logs into per-case SQLite database (supports zip files directly)
 - query: Query database by IP, user, or raw SQL
 - stats: Show database statistics
 - list: List all case databases
@@ -22,12 +22,17 @@ Usage:
     # Analysis (original)
     python3 m365_ir_cli.py analyze /path/to/exports --customer "CustomerName"
 
-    # Database operations (Phase 226)
-    python3 m365_ir_cli.py import /path/to/exports --case-id PIR-ACME-2025-001
-    python3 m365_ir_cli.py query PIR-ACME-2025-001 --ip 185.234.100.50
-    python3 m365_ir_cli.py query PIR-ACME-2025-001 --user victim@example.com
-    python3 m365_ir_cli.py query PIR-ACME-2025-001 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
-    python3 m365_ir_cli.py stats PIR-ACME-2025-001
+    # Database operations (Phase 226.1) - auto-generates case ID from zip mtime
+    python3 m365_ir_cli.py import ~/Downloads/Export.zip --customer "Fyna Foods"
+    # Creates: ~/.maia/ir-cases/PIR-FYNA-FOODS-2025-12-15/
+    #          ├── source-files/Export.zip (moved here)
+    #          ├── reports/
+    #          └── PIR-FYNA-FOODS-2025-12-15_logs.db
+
+    # Query and analysis
+    python3 m365_ir_cli.py query PIR-FYNA-FOODS-2025-12-15 --ip 185.234.100.50
+    python3 m365_ir_cli.py query PIR-FYNA-FOODS-2025-12-15 --user victim@example.com
+    python3 m365_ir_cli.py stats PIR-FYNA-FOODS-2025-12-15
     python3 m365_ir_cli.py list
 
 Author: Maia System
@@ -56,6 +61,7 @@ from claude.tools.m365_ir.remediation_detector import RemediationDetector, Incid
 from claude.tools.m365_ir.log_database import IRLogDatabase, DEFAULT_BASE_PATH
 from claude.tools.m365_ir.log_importer import LogImporter
 from claude.tools.m365_ir.log_query import LogQuery
+from claude.tools.m365_ir.ir_case import IRCase
 
 
 class M365IRAnalyzer:
@@ -341,23 +347,70 @@ def cmd_import(args):
     print(f"M365 IR DATABASE IMPORT")
     print(f"{'='*60}")
 
-    # Generate case ID if not provided
-    case_id = args.case_id
-    if not case_id:
-        customer_slug = args.customer.lower().replace(' ', '-')[:10] if args.customer else 'case'
-        case_id = f"PIR-{customer_slug.upper()}-{datetime.now().strftime('%Y-%m%d')}"
-        print(f"Generated case ID: {case_id}")
+    source_path = args.exports
+    is_zip = source_path.is_file() and source_path.suffix.lower() == '.zip'
+
+    # Determine case setup based on whether case_id is provided
+    if args.case_id:
+        # Use existing case or explicit case ID
+        case = IRCase(case_id=args.case_id, base_path=args.base_path)
+        if not case.exists():
+            case.initialize()
+            print(f"Created case: {case.case_id}")
+        else:
+            print(f"Using existing case: {case.case_id}")
+    elif is_zip and args.customer:
+        # Create new case from zip file - use zip mtime for date
+        case = IRCase.from_zip(
+            zip_path=source_path,
+            customer=args.customer,
+            base_path=args.base_path
+        )
+        case.initialize()
+        print(f"Created case: {case.case_id}")
+        print(f"  (date from zip file: {source_path.name})")
+    elif source_path.is_dir() and args.customer:
+        # Create new case from directory - use earliest file mtime for date
+        case = IRCase.from_directory(
+            dir_path=source_path,
+            customer=args.customer,
+            base_path=args.base_path
+        )
+        case.initialize()
+        print(f"Created case: {case.case_id}")
+        print(f"  (date from export files)")
+    else:
+        # Fallback: require customer for new cases
+        if not args.customer:
+            print("Error: --customer required when creating new case without --case-id")
+            print("Usage: m365_ir_cli.py import exports.zip --customer 'Customer Name'")
+            sys.exit(1)
+        # Unknown source type - use current date as fallback
+        customer_slug = args.customer.upper().replace(' ', '-')[:20]
+        case_id = f"PIR-{customer_slug}-{datetime.now().strftime('%Y-%m-%d')}"
+        case = IRCase(case_id=case_id, base_path=args.base_path)
+        case.initialize()
+        print(f"Created case: {case.case_id}")
+
+    print(f"Case directory: {case.case_dir}")
+
+    # Move zip to source-files if importing from zip
+    import_source = source_path
+    if is_zip and source_path.exists():
+        moved_path = case.add_source_file(source_path)
+        print(f"Moved zip to: {moved_path}")
+        import_source = moved_path
 
     # Create database
-    db = IRLogDatabase(case_id=case_id, base_path=args.base_path)
+    db = case.get_database()
     db_path = db.create()
     print(f"Database: {db_path}")
 
     # Import logs
     importer = LogImporter(db)
-    print(f"\nImporting from: {args.exports}")
+    print(f"\nImporting from: {import_source}")
 
-    results = importer.import_all(args.exports)
+    results = importer.import_all(import_source)
 
     print(f"\nImport Results:")
     total_imported = 0
@@ -373,7 +426,8 @@ def cmd_import(args):
                 print(f"    ... and {len(result.errors) - 3} more errors")
 
     print(f"\nTotal: {total_imported} records imported, {total_failed} failed")
-    print(f"\nQuery with: python3 m365_ir_cli.py query {case_id} --ip <ip>")
+    print(f"Reports directory: {case.reports_dir}")
+    print(f"\nQuery with: python3 m365_ir_cli.py query {case.case_id} --ip <ip>")
 
 
 def cmd_query(args):
@@ -508,7 +562,8 @@ Examples:
   %(prog)s analyze /export1 /export2 /export3 --customer "Oculus" --output ./results
 
   # Database operations (Phase 226)
-  %(prog)s import /path/to/exports --case-id PIR-ACME-2025-001 --customer "Acme Corp"
+  %(prog)s import /path/to/exports.zip --case-id PIR-ACME-2025-001   # Direct zip import
+  %(prog)s import /path/to/extracted/ --case-id PIR-ACME-2025-001    # Directory import
   %(prog)s query PIR-ACME-2025-001 --ip 185.234.100.50
   %(prog)s query PIR-ACME-2025-001 --user victim@example.com
   %(prog)s query PIR-ACME-2025-001 --suspicious
@@ -531,8 +586,8 @@ Examples:
     analyze_parser.add_argument("--output", "-o", type=Path, help="Output directory for results")
 
     # Import command (Phase 226)
-    import_parser = subparsers.add_parser("import", help="Import logs into case database")
-    import_parser.add_argument("exports", type=Path, help="Export directory to import")
+    import_parser = subparsers.add_parser("import", help="Import logs into case database (supports zip files)")
+    import_parser.add_argument("exports", type=Path, help="Export directory or zip file to import")
     import_parser.add_argument("--case-id", help="Case identifier (auto-generated if not provided)")
     import_parser.add_argument("--customer", "-c", help="Customer name (used for auto-generated case ID)")
     import_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases (default: {db_base_path})")
