@@ -88,6 +88,9 @@ maia/
 | 2 | Get context ID | `python3 claude/hooks/swarm_auto_loader.py get_context_id` |
 | 3 | Check session | `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json` |
 | 4 | Load agent | Session agent OR `claude/data/user_preferences.json` → `default_agent` OR `sre_principal_engineer_agent` |
+| 5 | Start learning | `python3 -c "from claude.tools.learning.session import get_session_manager; m=get_session_manager(); m.start_session(context_id='ID', initial_query='QUERY', agent_used='AGENT')"` |
+
+**⚠️ All 5 steps are mandatory.** Skipping step 5 breaks learning capture.
 
 **Full protocol**: `claude/commands/init.md`
 

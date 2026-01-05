@@ -454,12 +454,42 @@ def cmd_query(args):
         print("Suspicious operations:")
         print("-" * 60)
         results = query.suspicious_operations()
+    elif args.legacy_auth:
+        # Legacy auth query with optional user filter
+        if args.legacy_auth == 'all' or args.legacy_auth == '':
+            print("Legacy authentication events (all):")
+            print("-" * 60)
+            summary = query.legacy_auth_summary()
+            print(f"Total events: {summary['total_events']}")
+            print(f"Unique users: {summary['unique_users']}")
+            print(f"By client app: {summary['by_client_app']}")
+            print(f"By country: {summary['by_country']}")
+            results = query.execute("SELECT * FROM legacy_auth_logs ORDER BY timestamp DESC")
+        else:
+            print(f"Legacy auth for user: {args.legacy_auth}")
+            print("-" * 60)
+            results = query.legacy_auth_by_user(args.legacy_auth)
+    elif args.password_status:
+        # Password status query with optional user filter
+        if args.password_status == 'all' or args.password_status == '':
+            print("Password status (all users):")
+            print("-" * 60)
+            results = query.password_status()
+        else:
+            print(f"Password status for user: {args.password_status}")
+            print("-" * 60)
+            results = query.password_status(user=args.password_status)
+    elif args.stale_passwords is not None:
+        days = args.stale_passwords if args.stale_passwords > 0 else 90
+        print(f"Accounts with passwords older than {days} days:")
+        print("-" * 60)
+        results = query.stale_passwords(days=days, enabled_only=True)
     elif args.sql:
         print(f"SQL: {args.sql}")
         print("-" * 60)
         results = query.execute(args.sql)
     else:
-        print("Error: Specify --ip, --user, --suspicious, or --sql")
+        print("Error: Specify --ip, --user, --suspicious, --legacy-auth, --password-status, --stale-passwords, or --sql")
         sys.exit(1)
 
     # Output results
@@ -470,14 +500,14 @@ def cmd_query(args):
     if args.format == 'json':
         print(json.dumps(results, indent=2, default=str))
     else:
-        # Table format
+        # Table format - adapt based on result type
         for r in results[:args.limit]:
-            ts = r.get('timestamp', 'N/A')
-            source = r.get('source', r.get('log_type', 'N/A'))
+            ts = r.get('timestamp', r.get('last_password_change', 'N/A'))
+            source = r.get('source', r.get('client_app_used', 'N/A'))
             user = r.get('user', r.get('user_principal_name', 'N/A'))
-            op = r.get('operation', 'N/A')
-            ip = r.get('ip_address', r.get('client_ip', 'N/A'))
-            print(f"{ts} | {source:20} | {user:30} | {op:25} | {ip}")
+            op = r.get('operation', r.get('days_since_change', 'N/A'))
+            ip = r.get('ip_address', r.get('client_ip', r.get('account_enabled', 'N/A')))
+            print(f"{ts} | {str(source):20} | {user:30} | {str(op):25} | {ip}")
 
         if len(results) > args.limit:
             print(f"\n... and {len(results) - args.limit} more results (use --limit to show more)")
@@ -567,6 +597,10 @@ Examples:
   %(prog)s query PIR-ACME-2025-001 --ip 185.234.100.50
   %(prog)s query PIR-ACME-2025-001 --user victim@example.com
   %(prog)s query PIR-ACME-2025-001 --suspicious
+  %(prog)s query PIR-ACME-2025-001 --legacy-auth                     # All legacy auth events
+  %(prog)s query PIR-ACME-2025-001 --legacy-auth user@example.com    # Legacy auth for user
+  %(prog)s query PIR-ACME-2025-001 --password-status                 # All password status
+  %(prog)s query PIR-ACME-2025-001 --stale-passwords 90              # Passwords older than 90 days
   %(prog)s query PIR-ACME-2025-001 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
   %(prog)s stats PIR-ACME-2025-001
   %(prog)s list
@@ -598,6 +632,9 @@ Examples:
     query_parser.add_argument("--ip", help="Query by IP address")
     query_parser.add_argument("--user", help="Query by user email/UPN")
     query_parser.add_argument("--suspicious", action="store_true", help="Show suspicious operations")
+    query_parser.add_argument("--legacy-auth", nargs='?', const='all', help="Query legacy auth (optionally filter by user)")
+    query_parser.add_argument("--password-status", nargs='?', const='all', help="Query password status (optionally filter by user)")
+    query_parser.add_argument("--stale-passwords", type=int, nargs='?', const=90, help="Find passwords older than N days (default: 90)")
     query_parser.add_argument("--sql", help="Execute raw SQL query")
     query_parser.add_argument("--format", choices=['table', 'json'], default='table', help="Output format")
     query_parser.add_argument("--limit", type=int, default=50, help="Limit results (default: 50)")

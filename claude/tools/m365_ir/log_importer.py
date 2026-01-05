@@ -702,6 +702,291 @@ class LogImporter:
             records_skipped=records_skipped
         )
 
+    def import_legacy_auth(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import legacy authentication sign-in logs from CSV.
+
+        Parses legacy auth logs (IMAP, POP3, SMTP) which bypass MFA.
+        Uses Australian date format (DD/MM/YYYY H:MM:SS AM/PM).
+
+        Args:
+            source: Path to legacy auth CSV file
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        # Check if already imported
+        if self._is_already_imported(source_hash, 'legacy_auth'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        with open(source, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            return self._import_legacy_auth_internal(
+                reader, str(source), source_hash, start_time
+            )
+
+    def _import_legacy_auth_internal(
+        self,
+        reader: csv.DictReader,
+        source_id: str,
+        source_hash: str,
+        start_time: float
+    ) -> ImportResult:
+        """
+        Internal method to import legacy auth logs from a CSV reader.
+
+        Shared implementation for both file-based and bytes-based imports.
+
+        Args:
+            reader: CSV DictReader (from file or StringIO)
+            source_id: Source identifier for tracking
+            source_hash: SHA256 hash of source
+            start_time: Import start time for duration calculation
+
+        Returns:
+            ImportResult with import statistics
+        """
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        # Record import start
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (source_id, source_hash, 'legacy_auth', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    # Parse datetime with AU format
+                    timestamp = parse_m365_datetime(
+                        row.get('CreatedDateTime', ''),
+                        self._detect_date_format(row.get('CreatedDateTime', ''))
+                    )
+
+                    # INSERT OR IGNORE for deduplication via UNIQUE constraint
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO legacy_auth_logs
+                        (timestamp, user_principal_name, user_display_name,
+                         client_app_used, app_display_name, ip_address, city,
+                         country, status, failure_reason, conditional_access_status,
+                         raw_record, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        timestamp.isoformat(),
+                        row.get('UserPrincipalName', ''),
+                        row.get('UserDisplayName', ''),
+                        row.get('ClientAppUsed', ''),
+                        row.get('AppDisplayName', ''),
+                        row.get('IPAddress', ''),
+                        row.get('City', ''),
+                        row.get('Country', ''),
+                        row.get('Status', ''),
+                        row.get('FailureReason', ''),
+                        row.get('ConditionalAccessStatus', ''),
+                        json.dumps(row),
+                        now
+                    ))
+                    if cursor.rowcount > 0:
+                        records_imported += 1
+                    else:
+                        records_skipped += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Row {row_num}: {str(e)}")
+                    logger.debug(f"Failed to import legacy auth row {row_num}: {e}")
+
+            # Update import metadata
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=source_id,
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def import_password_status(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import password last changed status from CSV.
+
+        Uses INSERT OR REPLACE for single record per user.
+        Uses Australian date format (DD/MM/YYYY H:MM:SS AM/PM).
+
+        Args:
+            source: Path to password status CSV file
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        # Note: We don't skip password_status imports because they're point-in-time
+        # snapshots that should be replaced with newer data
+
+        with open(source, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            return self._import_password_status_internal(
+                reader, str(source), source_hash, start_time
+            )
+
+    def _import_password_status_internal(
+        self,
+        reader: csv.DictReader,
+        source_id: str,
+        source_hash: str,
+        start_time: float
+    ) -> ImportResult:
+        """
+        Internal method to import password status from a CSV reader.
+
+        Shared implementation for both file-based and bytes-based imports.
+
+        Args:
+            reader: CSV DictReader (from file or StringIO)
+            source_id: Source identifier for tracking
+            source_hash: SHA256 hash of source
+            start_time: Import start time for duration calculation
+
+        Returns:
+            ImportResult with import statistics
+        """
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        # Record import start
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (source_id, source_hash, 'password_status', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    # Parse datetime with AU format
+                    last_change = None
+                    last_change_str = row.get('LastPasswordChangeDateTime', '')
+                    if last_change_str:
+                        last_change = parse_m365_datetime(
+                            last_change_str,
+                            self._detect_date_format(last_change_str)
+                        )
+
+                    created = None
+                    created_str = row.get('CreatedDateTime', '')
+                    if created_str:
+                        created = parse_m365_datetime(
+                            created_str,
+                            self._detect_date_format(created_str)
+                        )
+
+                    # Parse days_since_change as integer
+                    days_str = row.get('DaysSinceChange', '')
+                    days_since_change = int(days_str) if days_str.isdigit() else None
+
+                    # INSERT OR REPLACE for single record per user
+                    cursor.execute("""
+                        INSERT OR REPLACE INTO password_status
+                        (user_principal_name, display_name, last_password_change,
+                         days_since_change, password_policies, account_enabled,
+                         created_datetime, raw_record, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        row.get('UserPrincipalName', ''),
+                        row.get('DisplayName', ''),
+                        last_change.isoformat() if last_change else None,
+                        days_since_change,
+                        row.get('PasswordPolicies', ''),
+                        row.get('AccountEnabled', ''),
+                        created.isoformat() if created else None,
+                        json.dumps(row),
+                        now
+                    ))
+                    records_imported += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Row {row_num}: {str(e)}")
+                    logger.debug(f"Failed to import password status row {row_num}: {e}")
+
+            # Update import metadata
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=source_id,
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
     def import_all(self, source: Union[str, Path]) -> Dict[str, ImportResult]:
         """
         Auto-detect and import all log types from directory or zip file.
@@ -751,14 +1036,23 @@ class LogImporter:
                     try:
                         if log_type == LogType.SIGNIN:
                             results['sign_in'] = self.import_sign_in_logs(file)
-                        elif log_type in [LogType.FULL_AUDIT, LogType.AUDIT]:
+                        elif log_type == LogType.FULL_AUDIT:
                             results['ual'] = self.import_ual(file)
+                        elif log_type == LogType.ENTRA_AUDIT:
+                            results['entra_audit'] = self.import_entra_audit(file)
+                        elif log_type == LogType.AUDIT:
+                            # Deprecated: AUDIT now mapped to ENTRA_AUDIT
+                            results['entra_audit'] = self.import_entra_audit(file)
                         elif log_type == LogType.MAILBOX_AUDIT:
                             results['mailbox'] = self.import_mailbox_audit(file)
                         elif log_type == LogType.OAUTH_CONSENTS:
                             results['oauth'] = self.import_oauth_consents(file)
                         elif log_type == LogType.INBOX_RULES:
                             results['inbox_rules'] = self.import_inbox_rules(file)
+                        elif log_type == LogType.LEGACY_AUTH:
+                            results['legacy_auth'] = self.import_legacy_auth(file)
+                        elif log_type == LogType.PASSWORD_CHANGED:
+                            results['password_status'] = self.import_password_status(file)
                     except Exception as e:
                         logger.error(f"Failed to import {file.name}: {e}")
                     break
@@ -809,8 +1103,17 @@ class LogImporter:
                                 results['sign_in'] = self._import_sign_in_from_bytes(
                                     content, source_id, source_hash
                                 )
-                            elif log_type in [LogType.FULL_AUDIT, LogType.AUDIT]:
+                            elif log_type == LogType.FULL_AUDIT:
                                 results['ual'] = self._import_ual_from_bytes(
+                                    content, source_id, source_hash
+                                )
+                            elif log_type == LogType.ENTRA_AUDIT:
+                                results['entra_audit'] = self._import_entra_audit_from_bytes(
+                                    content, source_id, source_hash
+                                )
+                            elif log_type == LogType.AUDIT:
+                                # Deprecated: AUDIT now mapped to ENTRA_AUDIT
+                                results['entra_audit'] = self._import_entra_audit_from_bytes(
                                     content, source_id, source_hash
                                 )
                             elif log_type == LogType.MAILBOX_AUDIT:
@@ -823,6 +1126,14 @@ class LogImporter:
                                 )
                             elif log_type == LogType.INBOX_RULES:
                                 results['inbox_rules'] = self._import_inbox_rules_from_bytes(
+                                    content, source_id, source_hash
+                                )
+                            elif log_type == LogType.LEGACY_AUTH:
+                                results['legacy_auth'] = self._import_legacy_auth_from_bytes(
+                                    content, source_id, source_hash
+                                )
+                            elif log_type == LogType.PASSWORD_CHANGED:
+                                results['password_status'] = self._import_password_status_from_bytes(
                                     content, source_id, source_hash
                                 )
                         except Exception as e:
@@ -1340,6 +1651,202 @@ class LogImporter:
             duration_seconds=time.time() - start_time,
             records_skipped=records_skipped
         )
+
+    def _import_legacy_auth_from_bytes(
+        self, content: bytes, source_id: str, source_hash: str
+    ) -> ImportResult:
+        """
+        Import legacy auth logs from bytes content.
+
+        Delegates to _import_legacy_auth_internal after decoding bytes to CSV reader.
+        """
+        start_time = time.time()
+
+        if self._is_already_imported(source_hash, 'legacy_auth'):
+            return ImportResult(
+                source_file=source_id,
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        text_content = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text_content))
+        return self._import_legacy_auth_internal(reader, source_id, source_hash, start_time)
+
+    def _import_password_status_from_bytes(
+        self, content: bytes, source_id: str, source_hash: str
+    ) -> ImportResult:
+        """
+        Import password status from bytes content.
+
+        Delegates to _import_password_status_internal after decoding bytes to CSV reader.
+        """
+        start_time = time.time()
+        text_content = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text_content))
+        return self._import_password_status_internal(reader, source_id, source_hash, start_time)
+
+    def import_entra_audit(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import Entra ID (Azure AD) audit logs from CSV.
+
+        Parses directory-level audit events: password changes, role assignments,
+        app consents, conditional access changes, etc.
+        Uses Australian date format (DD/MM/YYYY H:MM:SS AM/PM).
+
+        Args:
+            source: Path to Entra audit CSV file
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        # Check if already imported
+        if self._is_already_imported(source_hash, 'entra_audit'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        with open(source, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            return self._import_entra_audit_internal(
+                reader, str(source), source_hash, start_time
+            )
+
+    def _import_entra_audit_internal(
+        self,
+        reader: csv.DictReader,
+        source_id: str,
+        source_hash: str,
+        start_time: float
+    ) -> ImportResult:
+        """
+        Internal method to import Entra audit logs from a CSV reader.
+
+        Args:
+            reader: CSV DictReader (from file or StringIO)
+            source_id: Source identifier for tracking
+            source_hash: SHA256 hash of source
+            start_time: Import start time for duration calculation
+
+        Returns:
+            ImportResult with import statistics
+        """
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        # Record import start
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (source_id, source_hash, 'entra_audit', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    # Parse datetime with AU format
+                    timestamp = parse_m365_datetime(
+                        row.get('ActivityDateTime', ''),
+                        self._detect_date_format(row.get('ActivityDateTime', ''))
+                    )
+
+                    # INSERT OR IGNORE for deduplication via UNIQUE constraint
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO entra_audit_log
+                        (timestamp, activity, initiated_by, target, result,
+                         result_reason, raw_record, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        timestamp.isoformat(),
+                        row.get('ActivityDisplayName', ''),
+                        row.get('InitiatedBy', ''),
+                        row.get('Target', ''),
+                        row.get('Result', ''),
+                        row.get('ResultReason', ''),
+                        json.dumps(row),
+                        now
+                    ))
+                    if cursor.rowcount > 0:
+                        records_imported += 1
+                    else:
+                        records_skipped += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Row {row_num}: {str(e)}")
+                    logger.debug(f"Failed to import Entra audit row {row_num}: {e}")
+
+            # Update import metadata
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=source_id,
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def _import_entra_audit_from_bytes(
+        self, content: bytes, source_id: str, source_hash: str
+    ) -> ImportResult:
+        """
+        Import Entra audit logs from bytes content.
+
+        Delegates to _import_entra_audit_internal after decoding bytes to CSV reader.
+        """
+        start_time = time.time()
+
+        if self._is_already_imported(source_hash, 'entra_audit'):
+            return ImportResult(
+                source_file=source_id,
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        text_content = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text_content))
+        return self._import_entra_audit_internal(reader, source_id, source_hash, start_time)
 
     def _calculate_hash(self, file_path: Path) -> str:
         """Calculate SHA256 hash of file."""

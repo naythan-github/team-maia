@@ -148,6 +148,9 @@ class IRLogDatabase:
             'mailbox_audit_log',
             'oauth_consents',
             'inbox_rules',
+            'legacy_auth_logs',
+            'password_status',
+            'entra_audit_log',
             'import_metadata'
         ]
 
@@ -297,6 +300,58 @@ class IRLogDatabase:
             )
         """)
 
+        # Legacy Auth Logs table (Phase 226.3)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS legacy_auth_logs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                user_principal_name TEXT NOT NULL,
+                user_display_name TEXT,
+                client_app_used TEXT,
+                app_display_name TEXT,
+                ip_address TEXT,
+                city TEXT,
+                country TEXT,
+                status TEXT,
+                failure_reason TEXT,
+                conditional_access_status TEXT,
+                raw_record TEXT,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Password Status table (Phase 226.3)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS password_status (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_principal_name TEXT NOT NULL,
+                display_name TEXT,
+                last_password_change TEXT,
+                days_since_change INTEGER,
+                password_policies TEXT,
+                account_enabled TEXT,
+                created_datetime TEXT,
+                raw_record TEXT,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Entra ID Audit Log table (Phase 228)
+        # Azure AD directory-level events: password changes, role assignments, etc.
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS entra_audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                activity TEXT NOT NULL,
+                initiated_by TEXT,
+                target TEXT,
+                result TEXT,
+                result_reason TEXT,
+                raw_record TEXT,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
     def _create_indexes(self, cursor: sqlite3.Cursor) -> None:
         """Create performance indexes on key columns."""
 
@@ -419,6 +474,77 @@ class IRLogDatabase:
         cursor.execute("""
             CREATE UNIQUE INDEX IF NOT EXISTS idx_rules_unique
             ON inbox_rules(user, rule_name)
+        """)
+
+        # ================================================================
+        # Legacy Auth Logs indexes (Phase 226.3)
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_legacy_auth_timestamp
+            ON legacy_auth_logs(timestamp)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_legacy_auth_user
+            ON legacy_auth_logs(user_principal_name)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_legacy_auth_ip
+            ON legacy_auth_logs(ip_address)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_legacy_auth_client_app
+            ON legacy_auth_logs(client_app_used)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_legacy_auth_country
+            ON legacy_auth_logs(country)
+        """)
+        # Unique constraint for deduplication
+        cursor.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_legacy_auth_unique
+            ON legacy_auth_logs(timestamp, user_principal_name, ip_address, client_app_used)
+        """)
+
+        # ================================================================
+        # Password Status indexes (Phase 226.3)
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_password_status_last_change
+            ON password_status(last_password_change)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_password_status_days
+            ON password_status(days_since_change)
+        """)
+        # Unique constraint - one record per user, REPLACE on reimport
+        cursor.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_password_status_unique
+            ON password_status(user_principal_name)
+        """)
+
+        # ================================================================
+        # Entra ID Audit Log indexes (Phase 228)
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_entra_audit_timestamp
+            ON entra_audit_log(timestamp)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_entra_audit_activity
+            ON entra_audit_log(activity)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_entra_audit_target
+            ON entra_audit_log(target)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_entra_audit_initiated_by
+            ON entra_audit_log(initiated_by)
+        """)
+        # Unique constraint for deduplication
+        cursor.execute("""
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_entra_audit_unique
+            ON entra_audit_log(timestamp, activity, target)
         """)
 
 

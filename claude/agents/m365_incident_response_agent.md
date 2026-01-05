@@ -1,4 +1,4 @@
-# M365 Incident Response Agent v2.6
+# M365 Incident Response Agent v2.7
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
@@ -97,7 +97,7 @@ query.suspicious_operations()                 # Inbox rules, forwarding, etc.
 query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-InboxRule",))
 ```
 
-**Database Tables**: `sign_in_logs`, `unified_audit_log`, `mailbox_audit_log`, `oauth_consents`, `inbox_rules`, `import_metadata`
+**Database Tables**: `sign_in_logs`, `unified_audit_log`, `mailbox_audit_log`, `oauth_consents`, `inbox_rules`, `legacy_auth_logs`, `password_status`, `import_metadata`
 
 **Benefits**: Follow-up questions without re-parsing CSVs, SQL queries for complex analysis, case isolation for chain of custody.
 
@@ -112,6 +112,43 @@ query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-Inbox
 | Import Tracking | Store source hash + parser version for audit trail |
 | Schema Design | Keep raw_record JSON, index timestamp/user/IP, UNIQUE on natural keys |
 | Attack Start Date | **CRITICAL**: If breach at edge of log window = LOW confidence (predates logs). Only claim specific start date if clean baseline exists before first indicator |
+
+### Phase 227: Legacy Auth & Password Status Parsers (`claude/tools/m365_ir/`)
+
+```bash
+# Query legacy authentication events (IMAP, POP3, SMTP - MFA bypass vectors)
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --legacy-auth
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --legacy-auth --user victim@example.com
+
+# Query password status and find stale passwords
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --password-status
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --password-status --user victim@example.com
+python3 claude/tools/m365_ir/m365_ir_cli.py query PIR-CASE-ID --stale-passwords 90
+```
+
+```python
+# Programmatic access
+from claude.tools.m365_ir import LogQuery
+
+query = LogQuery(db)
+query.legacy_auth_by_user("victim@example.com")  # Legacy auth for user
+query.legacy_auth_by_user("%@domain.com")        # LIKE pattern for domain
+query.legacy_auth_by_ip("1.2.3.4")               # Legacy auth from IP
+query.legacy_auth_summary()                       # Stats by client app/country
+query.password_status("victim@example.com")       # Password last changed
+query.stale_passwords(days=90, enabled_only=True) # Find old passwords
+```
+
+**Source Files Supported**:
+- `*LegacyAuthSignIns.csv` - Legacy authentication events
+- `*PasswordLastChanged.csv` - Password change timestamps
+
+**Date Format**: Australian DD/MM/YYYY H:MM:SS AM/PM (auto-detected)
+
+**Use Cases**:
+- Verify remediation: Was password reset after breach?
+- Identify MFA bypass vectors: Which accounts use legacy auth?
+- Security hygiene: Find accounts with stale passwords (>90 days)
 
 ### Phase 224: IR Knowledge Base (`claude/tools/ir/`)
 ```bash
@@ -623,8 +660,9 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --outpu
 **Sonnet**: All IR operations, log analysis, timeline building | **Opus**: Major breach (>$100K impact), legal/regulatory implications
 
 ## Production Status
-**READY** - v2.6 with Phase 224/225/226 tool integration + hybrid PIR report template
+**READY** - v2.7 with Phase 224/225/226/227 tool integration + hybrid PIR report template
 - Phase 224: IR Knowledge Base (46 tests) - cumulative learning across investigations
 - Phase 225: M365 IR Pipeline (88 tests) - automated log parsing, anomaly detection, MITRE mapping
 - Phase 226: IR Log Database (92 tests) - per-case SQLite storage, SQL queries, follow-up investigation support
+- Phase 227: Legacy Auth & Password Status (39 tests) - remediation verification, MFA bypass detection, stale password auditing
 - Hybrid PIR Template: Full report structure matching Oculus/Fyna/SGS format standards

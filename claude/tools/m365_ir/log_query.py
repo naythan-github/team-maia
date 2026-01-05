@@ -24,9 +24,12 @@ Created: 2025-01-05
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from .log_database import IRLogDatabase
+
+# Type alias for query results - common return type for all query methods
+QueryResult = List[Dict[str, Any]]
 
 
 # High-risk operations for suspicious_operations query
@@ -67,7 +70,7 @@ class LogQuery:
         """
         self._db = db
 
-    def activity_by_ip(self, ip: str) -> List[Dict]:
+    def activity_by_ip(self, ip: str) -> QueryResult:
         """
         Get all activity from a specific IP address across all log types.
 
@@ -129,7 +132,7 @@ class LogQuery:
         user: str,
         start: Optional[datetime] = None,
         end: Optional[datetime] = None
-    ) -> List[Dict]:
+    ) -> QueryResult:
         """
         Get all activity for a specific user across all log types.
 
@@ -204,7 +207,7 @@ class LogQuery:
 
         return results
 
-    def suspicious_operations(self) -> List[Dict]:
+    def suspicious_operations(self) -> QueryResult:
         """
         Get all high-risk operations from the database.
 
@@ -244,7 +247,7 @@ class LogQuery:
 
         return results
 
-    def inbox_rules_summary(self) -> List[Dict]:
+    def inbox_rules_summary(self) -> QueryResult:
         """
         Get summary of all inbox rule changes.
 
@@ -266,7 +269,7 @@ class LogQuery:
 
         return results
 
-    def oauth_consents_summary(self) -> List[Dict]:
+    def oauth_consents_summary(self) -> QueryResult:
         """
         Get summary of all OAuth app consents.
 
@@ -287,7 +290,354 @@ class LogQuery:
 
         return results
 
-    def execute(self, sql: str, params: Tuple = ()) -> List[Dict]:
+    def legacy_auth_by_user(self, user: str) -> QueryResult:
+        """
+        Get legacy auth attempts for user.
+
+        Supports SQL LIKE wildcard patterns for flexible matching:
+        - '%@domain.com' matches all users from domain.com
+        - 'john%' matches all users starting with 'john'
+        - '%admin%' matches users containing 'admin'
+
+        Args:
+            user: User email/UPN. Supports SQL LIKE wildcards (%) for pattern
+                  matching. If the string contains '%', a LIKE query is used;
+                  otherwise an exact match is performed.
+
+        Returns:
+            List of legacy auth records, sorted by timestamp descending
+
+        Examples:
+            # Exact match
+            query.legacy_auth_by_user('alice@example.com')
+
+            # All users from a domain
+            query.legacy_auth_by_user('%@example.com')
+
+            # Users with 'admin' in name
+            query.legacy_auth_by_user('%admin%')
+        """
+        conn = self._db.connect()
+
+        if '%' in user:
+            cursor = conn.execute("""
+                SELECT * FROM legacy_auth_logs
+                WHERE user_principal_name LIKE ?
+                ORDER BY timestamp DESC
+            """, (user,))
+        else:
+            cursor = conn.execute("""
+                SELECT * FROM legacy_auth_logs
+                WHERE user_principal_name = ?
+                ORDER BY timestamp DESC
+            """, (user,))
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def legacy_auth_by_ip(self, ip: str) -> QueryResult:
+        """
+        Get legacy auth attempts from IP address.
+
+        Args:
+            ip: IP address to search for
+
+        Returns:
+            List of legacy auth records
+        """
+        conn = self._db.connect()
+
+        cursor = conn.execute("""
+            SELECT * FROM legacy_auth_logs
+            WHERE ip_address = ?
+            ORDER BY timestamp DESC
+        """, (ip,))
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def legacy_auth_by_client_app(self, client_app: str) -> QueryResult:
+        """
+        Get legacy auth attempts by client app type.
+
+        Args:
+            client_app: Client app (e.g., 'Authenticated SMTP', 'IMAP4', 'POP3')
+
+        Returns:
+            List of legacy auth records
+        """
+        conn = self._db.connect()
+
+        cursor = conn.execute("""
+            SELECT * FROM legacy_auth_logs
+            WHERE client_app_used = ?
+            ORDER BY timestamp DESC
+        """, (client_app,))
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def legacy_auth_summary(self) -> Dict:
+        """
+        Get summary of legacy auth usage.
+
+        Returns:
+            Dict with summary statistics
+        """
+        conn = self._db.connect()
+
+        # Total events
+        cursor = conn.execute("SELECT COUNT(*) FROM legacy_auth_logs")
+        total_events = cursor.fetchone()[0]
+
+        # By client app
+        cursor = conn.execute("""
+            SELECT client_app_used, COUNT(*) as count
+            FROM legacy_auth_logs
+            GROUP BY client_app_used
+            ORDER BY count DESC
+        """)
+        by_client_app = {row[0]: row[1] for row in cursor.fetchall()}
+
+        # By country
+        cursor = conn.execute("""
+            SELECT country, COUNT(*) as count
+            FROM legacy_auth_logs
+            WHERE country != ''
+            GROUP BY country
+            ORDER BY count DESC
+        """)
+        by_country = {row[0]: row[1] for row in cursor.fetchall()}
+
+        # Unique users
+        cursor = conn.execute("SELECT COUNT(DISTINCT user_principal_name) FROM legacy_auth_logs")
+        unique_users = cursor.fetchone()[0]
+
+        conn.close()
+
+        return {
+            'total_events': total_events,
+            'by_client_app': by_client_app,
+            'by_country': by_country,
+            'unique_users': unique_users
+        }
+
+    def password_status(self, user: Optional[str] = None) -> QueryResult:
+        """
+        Get password status, optionally filtered by user.
+
+        Args:
+            user: Optional user email/UPN to filter by
+
+        Returns:
+            List of password status records
+        """
+        conn = self._db.connect()
+
+        if user:
+            cursor = conn.execute("""
+                SELECT * FROM password_status
+                WHERE user_principal_name = ?
+            """, (user,))
+        else:
+            cursor = conn.execute("""
+                SELECT * FROM password_status
+                ORDER BY days_since_change DESC
+            """)
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def stale_passwords(self, days: int = 90, enabled_only: bool = False) -> QueryResult:
+        """
+        Get accounts with passwords older than N days.
+
+        Args:
+            days: Threshold for stale passwords (default 90)
+            enabled_only: If True, only return enabled accounts
+
+        Returns:
+            List of password status records, sorted by age (oldest first)
+        """
+        conn = self._db.connect()
+
+        if enabled_only:
+            cursor = conn.execute("""
+                SELECT * FROM password_status
+                WHERE days_since_change > ?
+                  AND account_enabled = 'True'
+                ORDER BY days_since_change DESC
+            """, (days,))
+        else:
+            cursor = conn.execute("""
+                SELECT * FROM password_status
+                WHERE days_since_change > ?
+                ORDER BY days_since_change DESC
+            """, (days,))
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def entra_audit_by_user(self, user: str) -> QueryResult:
+        """
+        Get Entra ID audit events for a user (as target or initiator).
+
+        Args:
+            user: User email/UPN to search for
+
+        Returns:
+            List of Entra audit records, sorted by timestamp descending
+        """
+        conn = self._db.connect()
+
+        cursor = conn.execute("""
+            SELECT * FROM entra_audit_log
+            WHERE target = ? OR initiated_by = ?
+            ORDER BY timestamp DESC
+        """, (user, user))
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def entra_audit_by_activity(self, activity: str) -> QueryResult:
+        """
+        Get Entra audit events by activity type.
+
+        Supports SQL LIKE wildcard patterns for flexible matching.
+
+        Args:
+            activity: Activity name (e.g., 'Update device')
+                      Use % for LIKE matching (e.g., '%password%')
+
+        Returns:
+            List of Entra audit records, sorted by timestamp descending
+        """
+        conn = self._db.connect()
+
+        if '%' in activity:
+            cursor = conn.execute("""
+                SELECT * FROM entra_audit_log
+                WHERE activity LIKE ?
+                ORDER BY timestamp DESC
+            """, (activity,))
+        else:
+            cursor = conn.execute("""
+                SELECT * FROM entra_audit_log
+                WHERE activity = ?
+                ORDER BY timestamp DESC
+            """, (activity,))
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def password_changes(self, user: str = None) -> QueryResult:
+        """
+        Get password-related Entra audit events.
+
+        Args:
+            user: Optional user to filter by (as target or initiator)
+
+        Returns:
+            List of password change events, sorted by timestamp descending
+        """
+        conn = self._db.connect()
+
+        if user:
+            cursor = conn.execute("""
+                SELECT * FROM entra_audit_log
+                WHERE (activity LIKE '%password%' OR activity LIKE '%PasswordProfile%')
+                  AND (target = ? OR initiated_by = ?)
+                ORDER BY timestamp DESC
+            """, (user, user))
+        else:
+            cursor = conn.execute("""
+                SELECT * FROM entra_audit_log
+                WHERE activity LIKE '%password%' OR activity LIKE '%PasswordProfile%'
+                ORDER BY timestamp DESC
+            """)
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def role_changes(self, user: str = None) -> QueryResult:
+        """
+        Get role assignment Entra audit events.
+
+        Args:
+            user: Optional user to filter by (as target)
+
+        Returns:
+            List of role change events, sorted by timestamp descending
+        """
+        conn = self._db.connect()
+
+        if user:
+            cursor = conn.execute("""
+                SELECT * FROM entra_audit_log
+                WHERE activity LIKE '%role%'
+                  AND target = ?
+                ORDER BY timestamp DESC
+            """, (user,))
+        else:
+            cursor = conn.execute("""
+                SELECT * FROM entra_audit_log
+                WHERE activity LIKE '%role%'
+                ORDER BY timestamp DESC
+            """)
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def entra_audit_summary(self) -> Dict:
+        """
+        Get summary statistics for Entra audit log.
+
+        Returns:
+            Dict with summary statistics including total_events, by_activity, by_result
+        """
+        conn = self._db.connect()
+
+        # Total events
+        cursor = conn.execute("SELECT COUNT(*) FROM entra_audit_log")
+        total_events = cursor.fetchone()[0]
+
+        # By activity
+        cursor = conn.execute("""
+            SELECT activity, COUNT(*) as count
+            FROM entra_audit_log
+            GROUP BY activity
+            ORDER BY count DESC
+        """)
+        by_activity = {row[0]: row[1] for row in cursor.fetchall()}
+
+        # By result
+        cursor = conn.execute("""
+            SELECT result, COUNT(*) as count
+            FROM entra_audit_log
+            WHERE result != ''
+            GROUP BY result
+            ORDER BY count DESC
+        """)
+        by_result = {row[0]: row[1] for row in cursor.fetchall()}
+
+        conn.close()
+
+        return {
+            'total_events': total_events,
+            'by_activity': by_activity,
+            'by_result': by_result
+        }
+
+    def execute(self, sql: str, params: Tuple = ()) -> QueryResult:
         """
         Execute arbitrary SQL query with parameterization.
 
@@ -309,7 +659,7 @@ class LogQuery:
         tables: List[str],
         where: str,
         params: Tuple = ()
-    ) -> List[Dict]:
+    ) -> QueryResult:
         """
         Query across multiple tables with UNION.
 

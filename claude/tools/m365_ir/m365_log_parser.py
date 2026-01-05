@@ -39,12 +39,16 @@ class LogType(Enum):
     FULL_AUDIT = "full_audit"
     RISKY_USERS = "risky_users"
     PASSWORD_CHANGED = "password_changed"
+    ENTRA_AUDIT = "entra_audit"
 
 
 # File patterns for log discovery
+# Note: ENTRA_AUDIT (2_*AuditLogs.csv) is Entra ID/Azure AD directory audit,
+# distinct from FULL_AUDIT (7_*FullAuditLog.csv) which is the Unified Audit Log
 LOG_FILE_PATTERNS = {
     LogType.SIGNIN: r"1_.*SignInLogs\.csv$",
-    LogType.AUDIT: r"2_.*AuditLogs\.csv$",
+    LogType.ENTRA_AUDIT: r"2_.*AuditLogs\.csv$",
+    LogType.AUDIT: r"2_.*AuditLogs\.csv$",  # Deprecated: use ENTRA_AUDIT
     LogType.INBOX_RULES: r"3_.*InboxRules\.csv$",
     LogType.MAILBOX_AUDIT: r"4_.*MailboxAudit\.csv$",
     LogType.OAUTH_CONSENTS: r"5_.*OAuthConsents\.csv$",

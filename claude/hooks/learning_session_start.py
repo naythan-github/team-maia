@@ -167,6 +167,20 @@ class LearningSessionStarter:
             pass
 
 
+def _log_debug(message: str, error: bool = False):
+    """Log debug info to file (non-blocking, never fails)."""
+    try:
+        log_dir = Path.home() / ".maia" / "logs"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "learning_session_debug.log"
+        timestamp = datetime.now().isoformat()
+        level = "ERROR" if error else "DEBUG"
+        with open(log_file, 'a') as f:
+            f.write(f"{timestamp} [{level}] {message}\n")
+    except Exception:
+        pass  # Never fail on logging
+
+
 def main():
     """CLI entry point for hook integration."""
     # Get context ID from environment
@@ -178,8 +192,8 @@ def main():
             sys.path.insert(0, str(maia_root))
             from claude.hooks.swarm_auto_loader import get_context_id
             context_id = get_context_id()
-        except Exception:
-            # Can't determine context ID - exit silently
+        except Exception as e:
+            _log_debug(f"Failed to get context_id: {type(e).__name__}: {e}", error=True)
             sys.exit(0)
 
     # Get user message
@@ -188,15 +202,22 @@ def main():
         user_message = os.environ.get("CLAUDE_USER_MESSAGE", "")
 
     if not user_message:
-        # No message to process - exit silently
+        _log_debug(f"No user message provided (context_id={context_id})")
         sys.exit(0)
 
     # Start session if needed
-    starter = LearningSessionStarter()
-    result = starter.start_if_needed(
-        context_id=context_id,
-        user_message=user_message
-    )
+    try:
+        starter = LearningSessionStarter()
+        result = starter.start_if_needed(
+            context_id=context_id,
+            user_message=user_message
+        )
+        if result.get('started'):
+            _log_debug(f"Session started: {result.get('session_id')} (context={context_id})")
+        else:
+            _log_debug(f"Session skipped: {result.get('reason')} (context={context_id})")
+    except Exception as e:
+        _log_debug(f"Failed to start session: {type(e).__name__}: {e}", error=True)
 
     # Silent by default - no output
     sys.exit(0)
