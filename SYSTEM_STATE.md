@@ -88,30 +88,43 @@ Implemented Daniel Miessler's PAI v2 personal learning system for Maia with 87 T
     └── learning.db          # Patterns, preferences, metrics
 ```
 
-**Components**:
+**Components (Phase 232-234)**:
 | Module | Purpose | Tests |
 |--------|---------|-------|
 | `schema.py` | Database schemas (memory + learning) | 13 |
-| `uocs.py` | Async tool output capture | 19 |
+| `uocs.py` | Async tool output capture + files_touched | 19 |
 | `memory.py` | Session history + FTS5 search | 15 |
 | `verify.py` | Success measurement | 15 |
 | `learn.py` | Pattern extraction | 13 |
 | `session.py` | Lifecycle orchestration | 12 |
+| `context_injection.py` | Phase 234: Auto-inject prior sessions | 9 |
+| `cleanup_scheduler.py` | Phase 234: Launchd daily cleanup | 18 |
+| `llm_summarizer.py` | Phase 234: Ollama key decision extraction | 17 |
+| `preference_detection.py` | Phase 234: Correction/preference detection | 19 |
+| `self_modification.py` | Phase 234: Preference updates + prompt suggestions | 18 |
+
+**Hooks**:
+| Hook | Purpose | Tests |
+|------|---------|-------|
+| `tool_output_capture.py` | Phase 234: PostToolUse auto-capture | 16 |
 
 **Integration**:
 - `/close-session` runs VERIFY + LEARN automatically
 - Saves summary to Maia Memory with confidence score
 - Extracts tool sequence patterns from successful sessions
+- Phase 234: Files touched auto-extracted from UOCS
+- Phase 234: Context injection on session start (if relevant prior sessions exist)
+- Phase 234: Preference detection from user corrections
 
 ### Metrics
 | Metric | Target | Actual |
 |--------|--------|--------|
-| TDD tests | Pass | **87/87 ✅** |
+| TDD tests | Pass | **195/195 ✅** |
 | UOCS overhead | <10ms | **0ms (async) ✅** |
 | Memory search | <100ms | **FTS5 indexed ✅** |
 | Session end | <500ms | **~200ms ✅** |
 
-### Files Created
+### Files Created (Phase 232)
 - **`claude/tools/learning/__init__.py`** - Package init, directory setup
 - **`claude/tools/learning/schema.py`** - Database schemas
 - **`claude/tools/learning/uocs.py`** - Universal Output Capture
@@ -124,6 +137,15 @@ Implemented Daniel Miessler's PAI v2 personal learning system for Maia with 87 T
 - **`tests/learning/test_*.py`** - 6 test files (87 tests)
 - **`claude/hooks/swarm_auto_loader.py`** - Added learning integration to close_session()
 - **`.claude/commands/close-session.md`** - Updated documentation
+
+### Files Created (Phase 234)
+- **`claude/tools/learning/context_injection.py`** - Prior session context injection
+- **`claude/tools/learning/cleanup_scheduler.py`** - Launchd plist management
+- **`claude/tools/learning/llm_summarizer.py`** - Ollama-based summarization
+- **`claude/tools/learning/preference_detection.py`** - Correction/preference detection
+- **`claude/tools/learning/self_modification.py`** - Preference updates + prompt suggestions
+- **`claude/hooks/tool_output_capture.py`** - PostToolUse hook for UOCS
+- **`tests/learning/test_*.py`** - 6 more test files (+108 tests = 195 total)
 
 ### Usage
 ```bash

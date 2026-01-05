@@ -15,11 +15,15 @@ Retention: 7 days default (configurable)
 
 import json
 import hashlib
+import logging
 import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, asdict
+
+# Debug logger for UOCS (disabled by default, enable with DEBUG=1)
+_logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -154,9 +158,9 @@ class UOCS:
                 self.captures.append(captured)
                 self._write_manifest()
 
-        except Exception:
-            # Never fail - graceful degradation
-            pass
+        except Exception as e:
+            # Never fail - graceful degradation, but log for debugging
+            _logger.debug("UOCS capture failed for %s: %s", capture_id, e)
 
     def _truncate(self, content: str, max_size: int = None) -> str:
         """Truncate content to max size."""

@@ -871,11 +871,12 @@ def format_tdd_context_for_session(tdd_context: Dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _start_learning_session(context_id: str, query: str, agent: str, domain: str) -> Optional[str]:
+def _start_learning_session(context_id: str, query: str, agent: str, domain: str) -> tuple:
     """
     Start a PAI v2 learning session for tool output capture.
 
     Phase 232: Integrates with Personal PAI v2 Learning System.
+    Phase 234: Also injects relevant prior session context.
     Called when a new session state is created.
 
     Args:
@@ -885,19 +886,20 @@ def _start_learning_session(context_id: str, query: str, agent: str, domain: str
         domain: Agent's domain
 
     Returns:
-        Session ID if started, None otherwise
+        Tuple of (session_id, prior_context) if started, (None, "") otherwise
 
-    Performance: <10ms
-    Graceful: Never raises, returns None on any error
+    Performance: <50ms (includes context lookup)
+    Graceful: Never raises, returns (None, "") on any error
     """
     try:
         from claude.tools.learning.session import get_session_manager
+        from claude.tools.learning.context_injection import inject_context_on_session_start
 
         manager = get_session_manager()
 
         # Only start if no active session (prevent duplicates)
         if manager.active_session_id:
-            return manager.active_session_id
+            return (manager.active_session_id, "")
 
         session_id = manager.start_session(
             context_id=context_id,
@@ -906,14 +908,21 @@ def _start_learning_session(context_id: str, query: str, agent: str, domain: str
             domain=domain
         )
 
-        return session_id
+        # Phase 234: Inject relevant prior session context
+        prior_context = inject_context_on_session_start(
+            context_id=context_id,
+            initial_query=query,
+            agent_used=agent
+        )
+
+        return (session_id, prior_context)
 
     except ImportError:
         # PAI v2 learning system not installed
-        return None
+        return (None, "")
     except Exception:
         # Graceful degradation - learning session start is non-critical
-        return None
+        return (None, "")
 
 
 def create_session_state(
@@ -999,12 +1008,17 @@ def create_session_state(
         }
 
         # Phase 232: Start PAI v2 learning session BEFORE writing (to capture session_id)
+        # Phase 234: Also get prior session context for injection
         context_id = get_context_id()
-        learning_session_id = _start_learning_session(context_id, query, agent, domain)
+        learning_session_id, prior_context = _start_learning_session(context_id, query, agent, domain)
 
         # Phase 233.3: Store learning session ID for close_session to use
         if learning_session_id:
             session_data["learning_session_id"] = learning_session_id
+
+        # Phase 234: Store prior session context for Claude visibility
+        if prior_context:
+            session_data["prior_session_context"] = prior_context
 
         # Atomic write (tmp file + rename for consistency)
         tmp_file = SESSION_STATE_FILE.with_suffix(".tmp")

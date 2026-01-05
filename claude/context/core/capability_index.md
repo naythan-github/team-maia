@@ -546,17 +546,28 @@
 | `syntax_validator.py` | (utility) |
 | `unified_contact_system.py` | (utility) |
 
-### LEARNING (`claude/tools/learning/`) - 7 tools ⭐ NEW - Phase 232
+### LEARNING (`claude/tools/learning/`) - 13 tools ⭐ Phase 232-234
 
 | Tool | Purpose |
 |------|---------|
 | `schema.py` | Database schema definitions for PAI v2 learning system - sessions, patterns, preferences tables |
-| `uocs.py` | Universal Output Capture System - async non-blocking tool output capture (0ms overhead) |
+| `uocs.py` | Universal Output Capture System - async non-blocking tool output capture with files_touched extraction |
 | `uocs_cleanup.py` | UOCS cleanup utilities - session cleanup, buffer management, resource recovery |
 | `memory.py` | Maia Memory - session history with SQLite FTS5 full-text search for context retrieval |
 | `verify.py` | VERIFY phase - session success measurement with confidence scoring (0.0-1.0) |
 | `learn.py` | LEARN phase - pattern extraction from successful sessions (workflows, tool sequences, preferences) |
 | `session.py` | SessionManager - orchestrates UOCS, Memory, VERIFY, LEARN for complete session lifecycle |
+| `context_injection.py` | Phase 234: Auto-inject relevant prior sessions on session start via get_learning_context() |
+| `cleanup_scheduler.py` | Phase 234: Launchd plist generation for daily UOCS cleanup at 3AM (7-day retention) |
+| `llm_summarizer.py` | Phase 234: Ollama-based key decision extraction and session summary generation |
+| `preference_detection.py` | Phase 234: Detect corrections ("no", "wrong", "actually") and explicit preferences |
+| `self_modification.py` | Phase 234: Update preferences + suggest prompt edits with safety guardrails |
+
+### LEARNING HOOKS (`claude/hooks/`) - 1 hook
+
+| Hook | Purpose |
+|------|---------|
+| `tool_output_capture.py` | Phase 234: PostToolUse hook for automatic UOCS capture - add to .claude/settings.json |
 
 ---
 
