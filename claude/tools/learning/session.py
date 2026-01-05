@@ -122,7 +122,7 @@ class SessionManager:
             summary_text=summary_text,
             key_decisions=key_decisions,
             tools_used=uocs_summary.get('tools_used', {}),
-            files_touched=[],  # TODO: extract from UOCS
+            files_touched=uocs_summary.get('files_touched', []),
             verify_success=verify_result.success,
             verify_confidence=verify_result.confidence,
             verify_metrics=verify_result.metrics,

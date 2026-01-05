@@ -34,6 +34,7 @@ class CapturedOutput:
     success: bool
     latency_ms: int
     capture_mode: str
+    touched_file: Optional[str] = None  # File path from read/write/edit tools
 
 
 class UOCS:
@@ -132,6 +133,9 @@ class UOCS:
 
             # metadata mode: no content saved
 
+            # Extract file path from file-related tools
+            touched_file = self._extract_file_path(tool_name, tool_input)
+
             # Record capture
             captured = CapturedOutput(
                 capture_id=capture_id,
@@ -142,7 +146,8 @@ class UOCS:
                 output_size=output_size,
                 success=success,
                 latency_ms=latency_ms,
-                capture_mode=capture_mode
+                capture_mode=capture_mode,
+                touched_file=touched_file
             )
 
             with self._lock:
@@ -165,6 +170,28 @@ class UOCS:
         if 'old_string' in tool_input and 'new_string' in tool_input:
             return f"--- old\n+++ new\n-{tool_input['old_string']}\n+{tool_input['new_string']}"
         return None
+
+    def _extract_file_path(self, tool_name: str, tool_input: Dict) -> Optional[str]:
+        """Extract file path from file-related tool inputs."""
+        # Only extract from read/write/edit tools (actual file operations)
+        file_tools = {'read', 'write', 'edit'}
+        if tool_name.lower() not in file_tools:
+            return None
+
+        # Try common file path keys
+        return tool_input.get('file_path') or tool_input.get('path')
+
+    def get_files_touched(self) -> List[str]:
+        """
+        Get list of files touched during this session.
+
+        Returns deduplicated, sorted list of file paths from read/write/edit operations.
+        """
+        files = set()
+        for c in self.captures:
+            if c.touched_file:
+                files.add(c.touched_file)
+        return sorted(list(files))
 
     def _write_manifest(self):
         """Write manifest to disk."""
@@ -194,7 +221,8 @@ class UOCS:
             'tools_used': tools_used,
             'success_rate': success_count / max(len(self.captures), 1),
             'total_latency_ms': total_latency,
-            'total_size_bytes': sum(c.output_size for c in self.captures)
+            'total_size_bytes': sum(c.output_size for c in self.captures),
+            'files_touched': self.get_files_touched()
         }
 
     def finalize(self) -> Dict[str, Any]:
