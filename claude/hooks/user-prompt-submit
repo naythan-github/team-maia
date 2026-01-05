@@ -15,6 +15,17 @@ if [[ "$CLAUDE_USER_MESSAGE" =~ ^/ ]]; then
     exit 0  # Skip all validation for slash commands
 fi
 
+# Stage 0.05: Learning Session Start (Phase 236 - Unconditional Learning)
+# Starts PAI v2 learning session on EVERY user prompt, not just routed ones
+# This ensures all sessions capture learning data for VERIFY + LEARN phases
+# Performance SLA: <50ms, non-blocking, silent
+LEARNING_SESSION_START="$(dirname "$0")/learning_session_start.py"
+if [[ -f "$LEARNING_SESSION_START" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    # Export context ID for the script
+    export CLAUDE_CONTEXT_ID="${CLAUDE_CONTEXT_ID:-}"
+    python3 "$LEARNING_SESSION_START" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true
+fi
+
 # Stage 0.0: Prompt Injection Defense (Phase 224 - Security Integration)
 # Screens incoming messages for injection attempts before any processing
 HOOK_INTEGRATION="$MAIA_ROOT/claude/tools/security/hook_integration.py"
