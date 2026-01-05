@@ -338,3 +338,7 @@ Commands seamlessly integrate with Maia's specialized agents:
 - **Performance Monitoring**: Real-time metrics and optimization
 
 Commands represent the pinnacle of Maia's automation capabilities, transforming complex multi-step workflows into reliable, monitored, and continuously improving processes.
+
+## Acknowledgments
+
+MAIA's learning system and context architecture were inspired by [Daniel Miessler's PAI](https://github.com/danielmiessler/PAI) (Personal AI Infrastructure, MIT License).
