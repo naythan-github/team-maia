@@ -1204,6 +1204,133 @@ def _check_git_status() -> tuple:
         return (False, [])
 
 
+def update_session_files_touched(file_path: str) -> bool:
+    """
+    Add a file to the session's files_touched list.
+
+    Phase 234: Track files modified during session.
+    Called after Edit/Write operations to track which files were touched.
+
+    Args:
+        file_path: Path to file that was touched
+
+    Returns:
+        True if successfully updated, False otherwise
+    """
+    try:
+        session_file = get_session_file_path()
+        if not session_file.exists():
+            return False
+
+        with open(session_file, 'r') as f:
+            session_data = json.load(f)
+
+        # Get or create files_touched list
+        files_touched = session_data.get('files_touched', [])
+
+        # Normalize path (strip MAIA_ROOT if present)
+        normalized_path = file_path
+        if str(MAIA_ROOT) in file_path:
+            normalized_path = file_path.replace(str(MAIA_ROOT) + '/', '')
+
+        # Add if not already present
+        if normalized_path not in files_touched:
+            files_touched.append(normalized_path)
+            session_data['files_touched'] = files_touched
+
+            with open(session_file, 'w') as f:
+                json.dump(session_data, f, indent=2)
+
+        return True
+
+    except (json.JSONDecodeError, IOError):
+        return False
+
+
+def _get_session_files_touched() -> List[str]:
+    """
+    Get list of files touched in current session.
+
+    Phase 234: Smart uncommitted file detection.
+    Attempts to read files_touched from session file.
+    Falls back to empty list if not available.
+
+    Returns:
+        List of file paths touched in current session
+    """
+    try:
+        session_file = get_session_file_path()
+        if not session_file.exists():
+            return []
+
+        with open(session_file, 'r') as f:
+            session_data = json.load(f)
+
+        # Try to get files_touched directly from session
+        files_touched = session_data.get('files_touched', [])
+        if files_touched:
+            return files_touched
+
+        # Fallback: no files_touched tracked yet
+        return []
+
+    except (json.JSONDecodeError, IOError, KeyError):
+        return []
+
+
+def _categorize_uncommitted_files(
+    uncommitted_files: List[str],
+    files_touched: List[str]
+) -> Dict[str, List[str]]:
+    """
+    Categorize uncommitted files by whether they were touched in this session.
+
+    Phase 234: Smart uncommitted file detection.
+    Files touched in this session get warnings; other files are informational.
+
+    Args:
+        uncommitted_files: List of git status output lines (e.g., ' M file.py')
+        files_touched: List of file paths touched in current session
+
+    Returns:
+        Dict with 'this_session' and 'other_session' lists of file paths
+    """
+    result = {
+        'this_session': [],
+        'other_session': []
+    }
+
+    if not uncommitted_files:
+        return result
+
+    # Normalize files_touched to relative paths for comparison
+    normalized_touched = set()
+    for f in files_touched:
+        # Strip MAIA_ROOT prefix if present
+        if str(MAIA_ROOT) in f:
+            f = f.replace(str(MAIA_ROOT) + '/', '')
+        normalized_touched.add(f)
+
+    for line in uncommitted_files:
+        # Parse git status output: XY format where X=index, Y=working tree
+        # Examples: ' M file.py', 'M  file.py', '?? file.py', 'A  file.py'
+        # The path starts after the first 2 status chars + space(s)
+        if len(line) < 3:
+            continue
+
+        # Find where the actual path starts (after status chars and whitespace)
+        # Status is always first 2 chars, then variable whitespace, then path
+        file_path = line[2:].lstrip()  # Skip 2-char status, strip leading spaces
+
+        # Check if this file was touched in current session
+        if file_path in normalized_touched:
+            result['this_session'].append(file_path)
+        else:
+            result['other_session'].append(file_path)
+
+    return result
+
+
 def _check_docs_currency() -> tuple:
     """
     Check if documentation (SYSTEM_STATE.md) is older than recent code changes.
@@ -1413,16 +1540,32 @@ def close_session():
     issues_found = []
     response = ""  # Initialize for later reference
 
-    # Check 1: Git Status
+    # Check 1: Git Status with session-aware categorization (Phase 234)
     has_git_issues, git_files = _check_git_status()
     if has_git_issues:
-        issues_found.append("git")
-        print("⚠️  Uncommitted changes detected:")
-        for file in git_files[:10]:
-            print(f"   {file}")
-        if len(git_files) > 10:
-            print(f"   ... and {len(git_files) - 10} more")
-        print()
+        # Try to get files_touched from session for smart categorization
+        files_touched = _get_session_files_touched()
+        categorized = _categorize_uncommitted_files(git_files, files_touched)
+
+        this_session = categorized['this_session']
+        other_session = categorized['other_session']
+
+        if this_session:
+            issues_found.append("git")
+            print("⚠️  Uncommitted changes from THIS session:")
+            for file in this_session[:10]:
+                print(f"   {file}")
+            if len(this_session) > 10:
+                print(f"   ... and {len(this_session) - 10} more")
+            print()
+
+        if other_session:
+            print("ℹ️  Uncommitted changes from OTHER sessions (safe to ignore):")
+            for file in other_session[:5]:
+                print(f"   {file}")
+            if len(other_session) > 5:
+                print(f"   ... and {len(other_session) - 5} more")
+            print()
 
     # Check 2: Documentation Currency
     has_docs_issues, docs_message = _check_docs_currency()

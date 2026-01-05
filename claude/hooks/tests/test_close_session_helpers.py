@@ -311,3 +311,268 @@ class TestHelperFunctionsExist:
         """Verify _cleanup_session function exists."""
         from swarm_auto_loader import _cleanup_session
         assert callable(_cleanup_session)
+
+    def test_categorize_uncommitted_files_exists(self):
+        """Verify _categorize_uncommitted_files function exists."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+        assert callable(_categorize_uncommitted_files)
+
+    def test_get_session_files_touched_exists(self):
+        """Verify _get_session_files_touched function exists."""
+        from swarm_auto_loader import _get_session_files_touched
+        assert callable(_get_session_files_touched)
+
+    def test_update_session_files_touched_exists(self):
+        """Verify update_session_files_touched function exists."""
+        from swarm_auto_loader import update_session_files_touched
+        assert callable(update_session_files_touched)
+
+
+class TestCategorizeUncommittedFiles:
+    """Tests for _categorize_uncommitted_files() helper.
+
+    Phase 234: Smart uncommitted file detection.
+    Categorizes uncommitted files as 'this_session' vs 'other_session'
+    based on files_touched from current session.
+    """
+
+    def test_returns_dict_with_categories(self):
+        """Verify return type has both categories."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[],
+            files_touched=[]
+        )
+        assert isinstance(result, dict)
+        assert 'this_session' in result
+        assert 'other_session' in result
+        assert isinstance(result['this_session'], list)
+        assert isinstance(result['other_session'], list)
+
+    def test_file_in_session_goes_to_this_session(self):
+        """File touched in this session goes to 'this_session' category."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[' M claude/tools/foo.py'],
+            files_touched=['claude/tools/foo.py']
+        )
+        assert 'claude/tools/foo.py' in result['this_session']
+        assert len(result['other_session']) == 0
+
+    def test_file_not_in_session_goes_to_other_session(self):
+        """File NOT touched in this session goes to 'other_session' category."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[' M claude/tools/bar.py'],
+            files_touched=['claude/tools/foo.py']  # Different file
+        )
+        assert 'claude/tools/bar.py' in result['other_session']
+        assert len(result['this_session']) == 0
+
+    def test_mixed_files_categorized_correctly(self):
+        """Mixed files go to correct categories."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[
+                ' M claude/tools/touched.py',
+                ' M claude/tools/untouched.py',
+                '?? claude/tools/new_touched.py'
+            ],
+            files_touched=[
+                'claude/tools/touched.py',
+                'claude/tools/new_touched.py'
+            ]
+        )
+        assert 'claude/tools/touched.py' in result['this_session']
+        assert 'claude/tools/new_touched.py' in result['this_session']
+        assert 'claude/tools/untouched.py' in result['other_session']
+
+    def test_parses_git_status_prefixes(self):
+        """Correctly parses git status output with status prefixes."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[
+                ' M file1.py',    # Modified
+                'M  file2.py',    # Staged modified
+                '?? file3.py',    # Untracked
+                'A  file4.py',    # Added
+                ' D file5.py',    # Deleted
+            ],
+            files_touched=['file1.py', 'file3.py']
+        )
+        assert 'file1.py' in result['this_session']
+        assert 'file3.py' in result['this_session']
+        assert 'file2.py' in result['other_session']
+        assert 'file4.py' in result['other_session']
+        assert 'file5.py' in result['other_session']
+
+    def test_handles_absolute_paths(self):
+        """Handles absolute paths in files_touched."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[' M claude/tools/foo.py'],
+            files_touched=['/Users/naythandawe/maia/claude/tools/foo.py']
+        )
+        # Should match even with absolute path
+        assert 'claude/tools/foo.py' in result['this_session']
+
+    def test_empty_files_touched_all_go_to_other(self):
+        """When no files_touched, all uncommitted go to 'other_session'."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[' M file1.py', ' M file2.py'],
+            files_touched=[]
+        )
+        assert len(result['this_session']) == 0
+        assert len(result['other_session']) == 2
+
+    def test_empty_uncommitted_returns_empty_lists(self):
+        """When no uncommitted files, both categories are empty."""
+        from swarm_auto_loader import _categorize_uncommitted_files
+
+        result = _categorize_uncommitted_files(
+            uncommitted_files=[],
+            files_touched=['file1.py', 'file2.py']
+        )
+        assert len(result['this_session']) == 0
+        assert len(result['other_session']) == 0
+
+
+class TestGetSessionFilesTouched:
+    """Tests for _get_session_files_touched() helper.
+
+    Phase 234: Read files_touched from session file.
+    """
+
+    def test_returns_list(self):
+        """Verify return type is list."""
+        from swarm_auto_loader import _get_session_files_touched
+        result = _get_session_files_touched()
+        assert isinstance(result, list)
+
+    def test_reads_files_touched_from_session(self, tmp_path):
+        """Reads files_touched from session file."""
+        from swarm_auto_loader import _get_session_files_touched
+
+        session_file = tmp_path / "session.json"
+        session_file.write_text(json.dumps({
+            "current_agent": "sre",
+            "files_touched": ["file1.py", "file2.py"]
+        }))
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=session_file):
+            result = _get_session_files_touched()
+            assert result == ["file1.py", "file2.py"]
+
+    def test_returns_empty_when_no_session_file(self, tmp_path):
+        """Returns empty list when session file doesn't exist."""
+        from swarm_auto_loader import _get_session_files_touched
+
+        nonexistent = tmp_path / "nonexistent.json"
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=nonexistent):
+            result = _get_session_files_touched()
+            assert result == []
+
+    def test_returns_empty_when_no_files_touched_key(self, tmp_path):
+        """Returns empty list when files_touched key is missing."""
+        from swarm_auto_loader import _get_session_files_touched
+
+        session_file = tmp_path / "session.json"
+        session_file.write_text(json.dumps({
+            "current_agent": "sre"
+            # No files_touched key
+        }))
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=session_file):
+            result = _get_session_files_touched()
+            assert result == []
+
+    def test_handles_corrupt_json(self, tmp_path):
+        """Handles corrupt JSON gracefully."""
+        from swarm_auto_loader import _get_session_files_touched
+
+        session_file = tmp_path / "corrupt.json"
+        session_file.write_text("{invalid json")
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=session_file):
+            result = _get_session_files_touched()
+            assert result == []
+
+
+class TestUpdateSessionFilesTouched:
+    """Tests for update_session_files_touched() function.
+
+    Phase 234: Track files modified during session.
+    """
+
+    def test_adds_file_to_session(self, tmp_path):
+        """Successfully adds file to files_touched list."""
+        from swarm_auto_loader import update_session_files_touched
+
+        session_file = tmp_path / "session.json"
+        session_file.write_text(json.dumps({
+            "current_agent": "sre"
+        }))
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=session_file):
+            result = update_session_files_touched("claude/tools/foo.py")
+            assert result is True
+
+            # Verify file was written
+            with open(session_file) as f:
+                data = json.load(f)
+            assert "claude/tools/foo.py" in data['files_touched']
+
+    def test_does_not_duplicate_files(self, tmp_path):
+        """Does not add duplicate file paths."""
+        from swarm_auto_loader import update_session_files_touched
+
+        session_file = tmp_path / "session.json"
+        session_file.write_text(json.dumps({
+            "current_agent": "sre",
+            "files_touched": ["claude/tools/foo.py"]
+        }))
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=session_file):
+            result = update_session_files_touched("claude/tools/foo.py")
+            assert result is True
+
+            with open(session_file) as f:
+                data = json.load(f)
+            assert data['files_touched'].count("claude/tools/foo.py") == 1
+
+    def test_returns_false_when_no_session(self, tmp_path):
+        """Returns False when session file doesn't exist."""
+        from swarm_auto_loader import update_session_files_touched
+
+        nonexistent = tmp_path / "nonexistent.json"
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=nonexistent):
+            result = update_session_files_touched("claude/tools/foo.py")
+            assert result is False
+
+    def test_normalizes_absolute_paths(self, tmp_path):
+        """Strips MAIA_ROOT from absolute paths."""
+        from swarm_auto_loader import update_session_files_touched, MAIA_ROOT
+
+        session_file = tmp_path / "session.json"
+        session_file.write_text(json.dumps({
+            "current_agent": "sre"
+        }))
+
+        with patch('swarm_auto_loader.get_session_file_path', return_value=session_file):
+            abs_path = f"{MAIA_ROOT}/claude/tools/bar.py"
+            result = update_session_files_touched(abs_path)
+            assert result is True
+
+            with open(session_file) as f:
+                data = json.load(f)
+            assert "claude/tools/bar.py" in data['files_touched']
