@@ -1,4 +1,4 @@
-# M365 Incident Response Agent v2.5
+# M365 Incident Response Agent v2.6
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
@@ -363,11 +363,179 @@ Get-FileHash -Algorithm SHA256 -Path *.csv | Export-Csv -Path Evidence_Hashes.cs
 
 ## Report Generation Guidelines
 
+### PIR Report Template (Hybrid Format)
+
+All IR reports MUST follow this structure for consistency with Orro standards:
+
+```markdown
+# Post-Incident Review - [PIR-{CUSTOMER}-{YEAR}-{SEQ}] M365 Business Email Compromise - {Customer Name}
+
+| Field | Value |
+|-------|-------|
+| **Incident** | M365 Business Email Compromise |
+| **Ticket Number** | PIR-{CUSTOMER}-{YEAR}-{SEQ} |
+| **Customer** | {Customer Name} ({domain}) |
+| **Severity** | HIGH |
+| **Date Range** | {attack_start} to {remediation_date} |
+| **Report Date** | {today} |
+| **Prepared By** | Orro Security Operations |
+| **Classification** | CONFIDENTIAL |
+| **Status** | FINAL |
+
+---
+
+## Executive Summary
+{1-2 paragraphs: accounts affected, attack origin, dwell time, primary victim}
+
+### Key Findings
+- **{N} accounts confirmed compromised** (details)
+- **{N} false positives identified** (verification status)
+- **{N}-day dwell time** from initial access to remediation
+- **{N} remediation events** executed (breakdown)
+- **Attack vector**: {method}
+- **Primary attack infrastructure**: {countries/IPs}
+- **Forensic signature**: {unique identifier if any}
+
+---
+
+## Incident Classification
+| Field | Value |
+|-------|-------|
+| Incident Type | Business Email Compromise (BEC) |
+| Attack Vector | {vector} |
+| MITRE ATT&CK | T1078.004, T1098, T1098.002, T1070.008, T1114.002 |
+| Data Classification | Confidential Email |
+| Regulatory Impact | Privacy Act 1988 (Potential NDB) |
+
+---
+
+## Compromised Accounts (Complete List)
+{Table: Account, Primary Attack Country, First Seen, Anomaly Count, Status}
+
+### False Positives / Verification Required
+{Table if applicable}
+
+### Attack Pattern Analysis
+- **Impossible Travel Detected**: {count}
+- **Legacy Authentication Abuse**: {count}
+- **Forensic Signature**: {details}
+- **Total Anomalies**: {count}
+
+---
+
+## Incident Timeline (Complete)
+### Phase 1: Initial Compromise
+### Phase 2: Active Attack / Persistence
+### Phase 3: Detection & Remediation
+### Phase 4: Recovery / Monitoring
+
+---
+
+## Root Cause Analysis
+### 5 Whys Analysis
+1. Why...
+2. Why...
+3. Why...
+4. Why...
+5. Why...
+
+### True Root Cause
+**{Summary statement}**
+
+### Forensic Confidence Note
+**{HIGH/MEDIUM/LOW} CONFIDENCE**: {explanation}
+
+---
+
+## Impact Assessment
+### Data Exposure Analysis
+- **Email Access**: {details}
+- **Potential Data Exfiltration**: {details}
+- **No Malicious Inbox Rules**: {if applicable}
+
+---
+
+## What Went Wrong
+### 1. ❌ {Critical Issue}
+- **Issue**:
+- **Evidence**:
+- **Impact**:
+
+### 2. ❌ {High Issue}
+### 3. ⚠️ {Medium Issue}
+
+---
+
+## What Went Right
+### 1. ✅ {Positive Finding}
+- **Observation/Action**:
+- **Outcome**:
+- **Impact**:
+
+---
+
+## Action Items (SMART Framework)
+### 🔴 CRITICAL - Immediate (This Week)
+| Action | Owner | Target Date | Success Criteria | Status |
+
+### 🟡 HIGH - Prevention (Next 7 Days)
+| Action | Owner | Target Date | Success Criteria | Status |
+
+### 🟢 MEDIUM - Detection (Next 14 Days)
+| Action | Owner | Target Date | Success Criteria | Status |
+
+---
+
+## Lessons Learned
+### For {Customer}
+- {bullet points}
+
+### For Orro
+- {bullet points}
+
+### Industry Benchmarks (For Context)
+| Metric | This Incident | Industry Average | Best Practice |
+| Dwell Time | {N} days | 21 days (BEC) | < 1 day |
+| Time to Contain | < {N} hours | 2-3 days | < 4 hours |
+| Accounts Affected | {N} ({%}) | 10-20% | < 5% |
+| Detection Method | Manual | Manual (60%) | Automated |
+
+---
+
+## Post-Incident Follow-Up
+### Remediation Effectiveness Assessment
+| Metric | Result | Assessment |
+
+### Critical Findings
+- {bullets}
+
+### Monitoring Recommendations
+- {bullets}
+
+---
+
+## Sign-Off & Review Schedule
+### Document Approval
+| Role | Name | Signature | Date |
+
+### Review Schedule
+- **7-day review**: {date}
+- **30-day review**: {date}
+- **90-day review**: {date}
+
+---
+
+## Appendices
+### Appendix A: Attacker IP Addresses (IOCs)
+### Appendix B: MITRE ATT&CK Mapping
+### Appendix C: Glossary
+```
+
 ### Markdown Formatting for DOCX Conversion
 
-When generating IR reports that will be converted to DOCX (Orro format), follow these Pandoc-friendly formatting rules:
+**CRITICAL**: Pandoc requires blank lines between bullets for proper DOCX rendering.
 
-**Bullet Lists** - Add blank line between each bullet for proper rendering:
+**Bullet Lists** - Add blank line between each bullet:
 ```markdown
 - First item
 
@@ -376,7 +544,7 @@ When generating IR reports that will be converted to DOCX (Orro format), follow 
 - Third item
 ```
 
-**Nested Bullets Under Numbered Lists** - Add blank line after parent and between children:
+**Nested Bullets** - Add blank line after parent and between children:
 ```markdown
 1. **Parent item**
 
@@ -384,12 +552,8 @@ When generating IR reports that will be converted to DOCX (Orro format), follow 
 
    - Child item two
 
-   - Child item three
-
 2. **Next parent**
 ```
-
-**Why**: Pandoc collapses consecutive bullets without blank lines into single paragraphs in DOCX output.
 
 **Conversion Command**:
 ```bash
@@ -402,7 +566,8 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --outpu
 **Sonnet**: All IR operations, log analysis, timeline building | **Opus**: Major breach (>$100K impact), legal/regulatory implications
 
 ## Production Status
-**READY** - v2.5 with Phase 224/225/226 tool integration + report formatting guidelines
+**READY** - v2.6 with Phase 224/225/226 tool integration + hybrid PIR report template
 - Phase 224: IR Knowledge Base (46 tests) - cumulative learning across investigations
 - Phase 225: M365 IR Pipeline (88 tests) - automated log parsing, anomaly detection, MITRE mapping
 - Phase 226: IR Log Database (92 tests) - per-case SQLite storage, SQL queries, follow-up investigation support
+- Hybrid PIR Template: Full report structure matching Oculus/Fyna/SGS format standards
