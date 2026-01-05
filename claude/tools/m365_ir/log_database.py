@@ -29,7 +29,9 @@ import os
 DEFAULT_BASE_PATH = os.path.expanduser("~/work_projects/ir_cases")
 
 # Schema version for migrations
-SCHEMA_VERSION = 1
+# v1: Initial schema (Phase 226)
+# v2: Compression - raw_record and audit_data stored as BLOB (Phase 229)
+SCHEMA_VERSION = 2
 
 
 class IRLogDatabase:
@@ -203,7 +205,7 @@ class IRLogDatabase:
                 risk_detail TEXT,
                 resource_display_name TEXT,
                 correlation_id TEXT,
-                raw_record TEXT,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)
@@ -222,8 +224,8 @@ class IRLogDatabase:
                 user_agent TEXT,
                 object_id TEXT,
                 item_type TEXT,
-                audit_data TEXT,
-                raw_record TEXT,
+                audit_data BLOB,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)
@@ -242,7 +244,7 @@ class IRLogDatabase:
                 folder_path TEXT,
                 subject TEXT,
                 result TEXT,
-                raw_record TEXT,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)
@@ -259,7 +261,7 @@ class IRLogDatabase:
                 consent_type TEXT,
                 client_ip TEXT,
                 risk_score REAL,
-                raw_record TEXT,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)
@@ -280,7 +282,7 @@ class IRLogDatabase:
                 move_to_folder TEXT,
                 conditions TEXT,
                 client_ip TEXT,
-                raw_record TEXT,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)
@@ -315,7 +317,7 @@ class IRLogDatabase:
                 status TEXT,
                 failure_reason TEXT,
                 conditional_access_status TEXT,
-                raw_record TEXT,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)
@@ -331,7 +333,7 @@ class IRLogDatabase:
                 password_policies TEXT,
                 account_enabled TEXT,
                 created_datetime TEXT,
-                raw_record TEXT,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)
@@ -347,7 +349,7 @@ class IRLogDatabase:
                 target TEXT,
                 result TEXT,
                 result_reason TEXT,
-                raw_record TEXT,
+                raw_record BLOB,
                 imported_at TEXT NOT NULL
             )
         """)

@@ -26,6 +26,7 @@ Created: 2025-01-05
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+from .compression import decompress_json
 from .log_database import IRLogDatabase
 
 # Type alias for query results - common return type for all query methods
@@ -61,6 +62,9 @@ class LogQuery:
     All queries use parameterized statements for SQL injection prevention.
     """
 
+    # Columns that need decompression (stored as BLOB)
+    _COMPRESSED_COLUMNS = ('raw_record', 'audit_data')
+
     def __init__(self, db: IRLogDatabase):
         """
         Initialize query interface with database.
@@ -69,6 +73,24 @@ class LogQuery:
             db: IRLogDatabase instance (must exist)
         """
         self._db = db
+
+    def _decompress_row(self, row) -> Dict[str, Any]:
+        """
+        Convert sqlite3.Row to dict with decompressed fields.
+
+        Handles backwards compatibility with uncompressed TEXT data.
+
+        Args:
+            row: sqlite3.Row object
+
+        Returns:
+            Dict with raw_record and audit_data decompressed to JSON strings
+        """
+        result = dict(row)
+        for col in self._COMPRESSED_COLUMNS:
+            if col in result and result[col] is not None:
+                result[col] = decompress_json(result[col])
+        return result
 
     def activity_by_ip(self, ip: str) -> QueryResult:
         """
@@ -91,7 +113,7 @@ class LogQuery:
             FROM sign_in_logs WHERE ip_address = ?
         """, (ip,))
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         # UAL
         cursor = conn.execute("""
@@ -100,7 +122,7 @@ class LogQuery:
             FROM unified_audit_log WHERE client_ip = ?
         """, (ip,))
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         # Mailbox audit
         cursor = conn.execute("""
@@ -109,7 +131,7 @@ class LogQuery:
             FROM mailbox_audit_log WHERE client_ip = ?
         """, (ip,))
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         # Inbox rules
         cursor = conn.execute("""
@@ -118,7 +140,7 @@ class LogQuery:
             FROM inbox_rules WHERE client_ip = ?
         """, (ip,))
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         conn.close()
 
@@ -165,7 +187,7 @@ class LogQuery:
             FROM sign_in_logs WHERE user_principal_name = ? {time_filter}
         """, params)
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         # UAL - reset params for user field name difference
         params_ual = [user]
@@ -180,7 +202,7 @@ class LogQuery:
             FROM unified_audit_log WHERE user_id = ? {time_filter}
         """, params_ual)
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         # Mailbox audit
         cursor = conn.execute(f"""
@@ -189,7 +211,7 @@ class LogQuery:
             FROM mailbox_audit_log WHERE user = ? {time_filter}
         """, params_ual)
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         # Inbox rules
         cursor = conn.execute(f"""
@@ -198,7 +220,7 @@ class LogQuery:
             FROM inbox_rules WHERE user = ? {time_filter}
         """, params_ual)
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         conn.close()
 
@@ -228,7 +250,7 @@ class LogQuery:
             ORDER BY timestamp
         """, SUSPICIOUS_OPERATIONS)
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         # Inbox rules (all are suspicious by nature)
         cursor = conn.execute("""
@@ -238,7 +260,7 @@ class LogQuery:
             ORDER BY timestamp
         """)
         for row in cursor.fetchall():
-            results.append(dict(row))
+            results.append(self._decompress_row(row))
 
         conn.close()
 
@@ -264,7 +286,7 @@ class LogQuery:
             ORDER BY timestamp
         """)
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
 
         return results
@@ -285,7 +307,7 @@ class LogQuery:
             ORDER BY timestamp
         """)
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
 
         return results
@@ -332,7 +354,7 @@ class LogQuery:
                 ORDER BY timestamp DESC
             """, (user,))
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -354,7 +376,7 @@ class LogQuery:
             ORDER BY timestamp DESC
         """, (ip,))
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -376,7 +398,7 @@ class LogQuery:
             ORDER BY timestamp DESC
         """, (client_app,))
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -448,7 +470,7 @@ class LogQuery:
                 ORDER BY days_since_change DESC
             """)
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -479,7 +501,7 @@ class LogQuery:
                 ORDER BY days_since_change DESC
             """, (days,))
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -501,7 +523,7 @@ class LogQuery:
             ORDER BY timestamp DESC
         """, (user, user))
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -533,7 +555,7 @@ class LogQuery:
                 ORDER BY timestamp DESC
             """, (activity,))
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -563,7 +585,7 @@ class LogQuery:
                 ORDER BY timestamp DESC
             """)
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -593,7 +615,7 @@ class LogQuery:
                 ORDER BY timestamp DESC
             """)
 
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -650,7 +672,7 @@ class LogQuery:
         """
         conn = self._db.connect()
         cursor = conn.execute(sql, params)
-        results = [dict(row) for row in cursor.fetchall()]
+        results = [self._decompress_row(row) for row in cursor.fetchall()]
         conn.close()
         return results
 
@@ -719,7 +741,7 @@ class LogQuery:
             try:
                 cursor = conn.execute(query, params)
                 for row in cursor.fetchall():
-                    results.append(dict(row))
+                    results.append(self._decompress_row(row))
             except Exception as e:
                 # Skip tables that don't match the WHERE clause columns
                 pass

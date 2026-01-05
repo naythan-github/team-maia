@@ -21,10 +21,12 @@ from dataclasses import dataclass
 try:
     from claude.tools.m365_ir.log_database import IRLogDatabase
     from claude.tools.m365_ir.log_importer import LogImporter, ImportResult
+    from claude.tools.m365_ir.compression import decompress_json
 except ImportError:
     IRLogDatabase = None
     LogImporter = None
     ImportResult = None
+    decompress_json = None
 
 
 @pytest.fixture
@@ -278,7 +280,7 @@ class TestImportUAL:
         assert row['client_ip'] == '185.234.100.50'
 
     def test_import_ual_preserves_audit_data(self, importer, db, sample_ual_csv):
-        """Should preserve full AuditData JSON."""
+        """Should preserve full AuditData JSON (compressed in Phase 229)."""
         importer.import_ual(sample_ual_csv)
 
         conn = db.connect()
@@ -286,7 +288,9 @@ class TestImportUAL:
         row = cursor.fetchone()
         conn.close()
 
-        audit_data = json.loads(row['audit_data'])
+        # Phase 229: audit_data is now compressed, decompress before parsing
+        audit_data_str = decompress_json(row['audit_data'])
+        audit_data = json.loads(audit_data_str)
         assert audit_data['ForwardTo'] == 'attacker@evil.com'
 
 

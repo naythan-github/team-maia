@@ -33,6 +33,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union, BinaryIO
 
+from .compression import compress_json
 from .log_database import IRLogDatabase
 from .m365_log_parser import (
     M365LogParser,
@@ -171,7 +172,7 @@ class LogImporter:
                             row.get('RiskLevelDuringSignIn', ''),
                             row.get('RiskState', ''),
                             row.get('CorrelationId', ''),
-                            json.dumps(row),
+                            compress_json(row),
                             now
                         ))
                         # Check if row was actually inserted (rowcount=0 means duplicate)
@@ -300,8 +301,8 @@ class LogImporter:
                             row.get('ResultStatus', ''),
                             client_ip,
                             object_id,
-                            audit_data,
-                            json.dumps(row),
+                            compress_json(audit_data),
+                            compress_json(row),
                             now
                         ))
                         if cursor.rowcount > 0:
@@ -426,7 +427,7 @@ class LogImporter:
                             row.get('Operation', row.get('Operations', '')),
                             client_ip,
                             item_id,
-                            json.dumps(row),
+                            compress_json(row),
                             now
                         ))
                         if cursor.rowcount > 0:
@@ -539,7 +540,7 @@ class LogImporter:
                             row.get('ConsentType', ''),
                             '',  # client_ip not in export
                             None,  # risk_score
-                            json.dumps(row),
+                            compress_json(row),
                             now
                         ))
                         if cursor.rowcount > 0:
@@ -664,7 +665,7 @@ class LogImporter:
                             row.get('MoveToFolder', ''),
                             '',  # conditions not in export
                             '',  # client_ip not in export
-                            json.dumps(row),
+                            compress_json(row),
                             now
                         ))
                         if cursor.rowcount > 0:
@@ -807,7 +808,7 @@ class LogImporter:
                         row.get('Status', ''),
                         row.get('FailureReason', ''),
                         row.get('ConditionalAccessStatus', ''),
-                        json.dumps(row),
+                        compress_json(row),
                         now
                     ))
                     if cursor.rowcount > 0:
@@ -952,7 +953,7 @@ class LogImporter:
                         row.get('PasswordPolicies', ''),
                         row.get('AccountEnabled', ''),
                         created.isoformat() if created else None,
-                        json.dumps(row),
+                        compress_json(row),
                         now
                     ))
                     records_imported += 1
@@ -1024,35 +1025,85 @@ class LogImporter:
             raise FileNotFoundError(f"Source must be a directory or zip file: {source}")
 
     def _import_from_directory(self, exports_dir: Path) -> Dict[str, ImportResult]:
-        """Import from extracted directory (original behavior)."""
+        """
+        Import from extracted directory with recursive subdirectory scanning.
+
+        CRITICAL: Recursively scans all subdirectories to ensure no export
+        folders are missed. This prevents data loss when multiple export
+        folders exist (e.g., Fyna/, TenantWide_Investigation/).
+
+        Results are merged - if multiple files of the same type exist,
+        all are imported (deduplication handled by UNIQUE constraints).
+        """
         results: Dict[str, ImportResult] = {}
 
-        for file in exports_dir.iterdir():
-            if not file.is_file() or not file.suffix.lower() == '.csv':
+        # Recursively find all CSV files in directory and subdirectories
+        all_csv_files = list(exports_dir.rglob('*.csv'))
+
+        # Log discovery for audit trail
+        if all_csv_files:
+            subdirs = set(f.parent.relative_to(exports_dir) for f in all_csv_files if f.parent != exports_dir)
+            if subdirs:
+                logger.info(f"Found CSV files in {len(subdirs) + 1} directories: {exports_dir}, {subdirs}")
+
+        for file in all_csv_files:
+            # Skip macOS metadata files
+            if '__MACOSX' in str(file) or file.name.startswith('.'):
                 continue
 
             for log_type, pattern in LOG_FILE_PATTERNS.items():
                 if re.match(pattern, file.name):
                     try:
+                        result_key = None
+                        import_result = None
+
                         if log_type == LogType.SIGNIN:
-                            results['sign_in'] = self.import_sign_in_logs(file)
+                            result_key = 'sign_in'
+                            import_result = self.import_sign_in_logs(file)
                         elif log_type == LogType.FULL_AUDIT:
-                            results['ual'] = self.import_ual(file)
+                            result_key = 'ual'
+                            import_result = self.import_ual(file)
                         elif log_type == LogType.ENTRA_AUDIT:
-                            results['entra_audit'] = self.import_entra_audit(file)
+                            result_key = 'entra_audit'
+                            import_result = self.import_entra_audit(file)
                         elif log_type == LogType.AUDIT:
                             # Deprecated: AUDIT now mapped to ENTRA_AUDIT
-                            results['entra_audit'] = self.import_entra_audit(file)
+                            result_key = 'entra_audit'
+                            import_result = self.import_entra_audit(file)
                         elif log_type == LogType.MAILBOX_AUDIT:
-                            results['mailbox'] = self.import_mailbox_audit(file)
+                            result_key = 'mailbox'
+                            import_result = self.import_mailbox_audit(file)
                         elif log_type == LogType.OAUTH_CONSENTS:
-                            results['oauth'] = self.import_oauth_consents(file)
+                            result_key = 'oauth'
+                            import_result = self.import_oauth_consents(file)
                         elif log_type == LogType.INBOX_RULES:
-                            results['inbox_rules'] = self.import_inbox_rules(file)
+                            result_key = 'inbox_rules'
+                            import_result = self.import_inbox_rules(file)
                         elif log_type == LogType.LEGACY_AUTH:
-                            results['legacy_auth'] = self.import_legacy_auth(file)
+                            result_key = 'legacy_auth'
+                            import_result = self.import_legacy_auth(file)
                         elif log_type == LogType.PASSWORD_CHANGED:
-                            results['password_status'] = self.import_password_status(file)
+                            result_key = 'password_status'
+                            import_result = self.import_password_status(file)
+
+                        # Merge results if multiple files of same type
+                        if result_key and import_result:
+                            if result_key in results:
+                                # Merge: accumulate counts from multiple files
+                                existing = results[result_key]
+                                results[result_key] = ImportResult(
+                                    source_file=f"{existing.source_file}; {import_result.source_file}",
+                                    source_hash=f"{existing.source_hash}; {import_result.source_hash}",
+                                    records_imported=existing.records_imported + import_result.records_imported,
+                                    records_failed=existing.records_failed + import_result.records_failed,
+                                    errors=existing.errors + import_result.errors,
+                                    duration_seconds=existing.duration_seconds + import_result.duration_seconds,
+                                    records_skipped=existing.records_skipped + import_result.records_skipped
+                                )
+                                logger.info(f"Merged {result_key} from {file}: +{import_result.records_imported} records")
+                            else:
+                                results[result_key] = import_result
+
                     except Exception as e:
                         logger.error(f"Failed to import {file.name}: {e}")
                     break
@@ -1214,7 +1265,7 @@ class LogImporter:
                         row.get('RiskLevelDuringSignIn', ''),
                         row.get('RiskState', ''),
                         row.get('CorrelationId', ''),
-                        json.dumps(row),
+                        compress_json(row),
                         now
                     ))
                     if cursor.rowcount > 0:
@@ -1322,8 +1373,8 @@ class LogImporter:
                         row.get('ResultStatus', ''),
                         client_ip,
                         object_id,
-                        audit_data,
-                        json.dumps(row),
+                        compress_json(audit_data),
+                        compress_json(row),
                         now
                     ))
                     if cursor.rowcount > 0:
@@ -1428,7 +1479,7 @@ class LogImporter:
                         row.get('Operation', row.get('Operations', '')),
                         client_ip,
                         item_id,
-                        json.dumps(row),
+                        compress_json(row),
                         now
                     ))
                     if cursor.rowcount > 0:
@@ -1518,7 +1569,7 @@ class LogImporter:
                         row.get('ConsentType', ''),
                         '',
                         None,
-                        json.dumps(row),
+                        compress_json(row),
                         now
                     ))
                     if cursor.rowcount > 0:
@@ -1616,7 +1667,7 @@ class LogImporter:
                         row.get('MoveToFolder', ''),
                         '',
                         '',
-                        json.dumps(row),
+                        compress_json(row),
                         now
                     ))
                     if cursor.rowcount > 0:
@@ -1786,7 +1837,7 @@ class LogImporter:
                         row.get('Target', ''),
                         row.get('Result', ''),
                         row.get('ResultReason', ''),
-                        json.dumps(row),
+                        compress_json(row),
                         now
                     ))
                     if cursor.rowcount > 0:

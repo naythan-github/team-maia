@@ -42,6 +42,23 @@ Before completing: Evidence preserved? Timeline complete? All IOCs extracted? Re
 
 ---
 
+## IR Playbook (Cumulative Learnings)
+
+**IMPORTANT**: Before starting any investigation, review the IR Playbook for attack signatures, confidence levels, and known data quality issues.
+
+**Location**: `claude/tools/m365_ir/IR_PLAYBOOK.md`
+
+**Key sections**:
+- Attack Signatures (Safari on Windows = AitM, etc.)
+- Forensic Confidence Levels (CONFIRMED vs HIGH vs MEDIUM vs LOW)
+- Known Data Quality Issues (PowerShell export bugs, log retention)
+- PIR Writing Standards (how to qualify claims)
+- Lessons Learned Log (mistakes to avoid)
+
+**Update after each investigation** with new learnings.
+
+---
+
 ## Implemented Tools ⭐ PRODUCTION READY
 
 ### Phase 225: M365 IR Pipeline (`claude/tools/m365_ir/`)
@@ -202,6 +219,27 @@ query.entra_audit_summary()                        # Stats by activity type
 - Detect unauthorized role assignments (privilege escalation)
 - Identify external admin actions during compromise
 - Track service principal creation for persistence
+
+### PIR Document Generation (`claude/tools/document_conversion/`)
+
+**ALWAYS use this tool for markdown → docx conversion** (not raw pandoc):
+
+```bash
+# Convert PIR markdown to Orro-styled docx
+python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --output report.docx
+```
+
+**Full Pipeline Applied**:
+1. Pandoc conversion with Orro reference template
+2. PIR Normalizer: Explicit RGB borders, content-aware column widths, Aptos font
+3. Orro purple headings: RGB(112, 48, 160)
+
+**Output**:
+- Tables styled with Orro purple borders (#7030A0)
+- Headings in Orro purple
+- Aptos 8pt font in tables
+- Content-aware column widths
+- 1.0" margins
 
 ### Phase 224: IR Knowledge Base (`claude/tools/ir/`)
 ```bash
