@@ -120,6 +120,7 @@ maia/
 | 18 | **DB-First Queries** | Capabilities → `find_capability.py`, state → `system_state_queries.py` | - |
 | 19 | **Checkpoints** | Auto every 10 tools, manual via save state | - |
 | 20 | **PAI v2 Learning** | Auto-capture on session, VERIFY+LEARN on close | `claude/tools/learning/` |
+| 21 | **Completeness Review** | Pause after tests pass: verify docs updated, integration complete, holistic review (P6.5) | `tdd_development_protocol.md` v2.4 |
 
 ---
 
@@ -143,8 +144,8 @@ maia/
 | Databases | `claude/data/databases/{intelligence,system,user}/` |
 | Sessions | `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json` |
 | User Prefs | `claude/data/user_preferences.json` |
-| Capabilities DB | `claude/data/databases/system/capabilities.db` |
-| Capabilities (human-readable) | `claude/context/core/capability_index.md` (reference only - use DB for queries) |
+| Capabilities DB (PRIMARY) | `claude/data/databases/system/capabilities.db` - Use for all capability queries |
+| Capabilities Markdown (FALLBACK) | `claude/context/core/capability_index.md` - Auto-fallback if DB unavailable |
 
 ---
 
@@ -186,6 +187,11 @@ python3 claude/tools/core/find_capability.py --list-categories  # Show categorie
 sqlite3 claude/data/databases/system/capabilities.db "SELECT name, path FROM capabilities WHERE keywords LIKE '%trello%'"
 sqlite3 claude/data/databases/system/capabilities.db "SELECT * FROM v_tools WHERE category='sre'"
 ```
+
+**Automatic DB-First Loading**:
+- `dynamic_context_loader.py` - Hook automatically uses DB for domain-specific capability context (93-98% token savings vs markdown)
+- `smart_context_loader.py` - Intent-based loading with DB queries
+- `capability_check_enforcer.py` - Pre-commit hook uses DB for Phase 0 checking
 
 ---
 

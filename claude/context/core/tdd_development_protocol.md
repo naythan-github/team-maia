@@ -1,4 +1,4 @@
-# TDD Protocol v2.3 (Compressed Template)
+# TDD Protocol v2.4
 
 ## Enforcement
 **STATUS**: MANDATORY | **HOOK**: Pre-commit blocks violations (Phase 217)
@@ -10,10 +10,10 @@
 ## Workflow State Machine
 
 ```
-P0:Architecture → P1:Requirements → P2:Documentation → P3:Tests → P3.5:Integration → P4:Implementation → P5:Execution → P6:Validation
-     ↓ GATE           ↓ GATE            ↓ GATE          ↓ GATE       ↓ GATE            ↓ GATE           ↓ GATE         ↓ GATE
-  Read ARCH.md    "requirements     Approval of      All tests    Integration      All tests        DBs synced     SRE sign-off
-  + ADRs          complete"         requirements.md   written      plan approved    passing          + registered
+P0:Architecture → P1:Requirements → P2:Documentation → P3:Tests → P3.5:Integration → P4:Implementation → P5:Execution → P6:Validation → P6.5:Completeness
+     ↓ GATE           ↓ GATE            ↓ GATE          ↓ GATE       ↓ GATE            ↓ GATE           ↓ GATE         ↓ GATE            ↓ GATE
+  Read ARCH.md    "requirements     Approval of      All tests    Integration      All tests        DBs synced     SRE sign-off      All docs
+  + ADRs          complete"         requirements.md   written      plan approved    passing          + registered                     updated
 ```
 
 ---
@@ -33,8 +33,24 @@ P0:Architecture → P1:Requirements → P2:Documentation → P3:Tests → P3.5:I
 **OUTPUT**: `requirements.md` with acceptance criteria + examples
 **GATE**: Approval before test design
 
-### P3: Test Design
-**ACTIONS**: Framework setup | `test_requirements.py` | Failing tests for EACH requirement
+### P3: Test Design - Real Failure Data Priority ⭐ NEW v2.4
+
+**PRIORITY ORDER**:
+1. **Production Failure Data First** - Check for existing bug reports, production incidents, PIRs
+2. **Exact Failure Reproduction** - Test 1 uses EXACT data from real failure (not hypothetical)
+3. **Edge Cases Second** - Hypothetical scenarios = Test 2+
+
+**RATIONALE** (Phase 230 Learning):
+- Real failures > hypothetical edge cases
+- Example: PIR-OCULUS-2025-01 ben@oculus.info error → Test 1 with exact data → 8/8 tests passing
+- **Key Insight**: Testing against actual production errors prevents assumption-based bugs
+
+**ACTIONS**:
+- Framework setup
+- Check incident database/PIRs for real failure data
+- `test_requirements.py` with Test 1 = real failure (if available)
+- Failing tests for EACH requirement
+
 **GATE**: No implementation until all tests written
 
 ### P3.5: Integration Test Design
@@ -62,6 +78,62 @@ python3 claude/tools/sre/system_state_etl.py --recent 10
 **SMOKE**: E2E happy path, health checks, critical journeys
 **CONTRACT** (if API): Schema validation, backward compat
 **GATE**: All categories passing → SRE production sign-off
+
+### P6.5: Completeness Review ⭐ NEW v2.4
+
+**PURPOSE**: Pause after technical validation to ensure holistic completeness before declaring "done"
+
+**CHECKLIST** (ALL required):
+1. **Documentation Updated**:
+   - ✅ `CLAUDE.md` reflects new capabilities
+   - ✅ `capability_index.md` includes new entries
+   - ✅ `SYSTEM_STATE.md` phase documented (if significant work)
+   - ✅ `requirements.md` reflects final implementation
+   - ✅ Domain-specific docs updated (IR_PLAYBOOK.md, etc.)
+
+2. **Integration Tests Complete**:
+   - ✅ P3.5 integration tests ran successfully
+   - ✅ Cross-component interactions validated
+   - ✅ External dependencies tested (DBs, APIs, file I/O)
+
+3. **Holistic Review**:
+   - ✅ Does the solution solve the original problem?
+   - ✅ Any missed edge cases or failure modes?
+   - ✅ Clean design with no over-engineering?
+   - ✅ Code follows established patterns?
+
+4. **Capabilities DB Synced**:
+   - ✅ `capabilities_registry.py scan` completed
+   - ✅ `system_state_etl.py` ran if phase work
+   - ✅ New tools/agents discoverable via find_capability.py
+
+**GATE**: All 4 checklist items complete → Task can be declared "done"
+
+---
+
+## Post-Incident TDD Workflow ⭐ NEW v2.4
+
+**USE WHEN**: Fixing production bugs, addressing PIR findings, or resolving user-reported issues
+
+**WORKFLOW**:
+```
+Incident Report → P0: Get EXACT failure data → P1: Reproduce failure → P2: Write test with exact data → P3: Verify test FAILS → P4: Implement fix → P5: Verify test PASSES → P6: Validate + Document
+```
+
+**EXAMPLE** (Phase 230 - Account Validator):
+1. **Incident**: PIR-OCULUS-2025-01 - ben@oculus.info incorrectly flagged as compromised
+2. **Exact Data**: Password policy failure on 2025-12-19, sign-in from US (not AU)
+3. **Test 1**:
+```python
+def test_password_policy_failure_not_compromise():
+    # EXACT data from PIR-OCULUS-2025-01
+    account = {"email": "ben@oculus.info", "password_status": "PASSWORD_POLICY_FAILURE", ...}
+    result = validate_account(account)
+    assert result.status == "NOT_COMPROMISED"
+```
+4. **Outcome**: Test fails → Fix validator → Test passes → 8/8 tests passing
+
+**KEY PRINCIPLE**: Real failure data beats hypothetical scenarios - always use exact production data for Test 1
 
 ---
 
@@ -113,10 +185,11 @@ python3 claude/tools/sre/tool.py --help  # or --dashboard
 - P1: Define reliability reqs (logging, circuit breakers, SLOs)
 - P2-4: Review failure modes, validate error handling
 - P5-6: Production readiness, performance, security
+- P6.5: Completeness review, documentation verification
 
 ---
 
-## Quality Gates (12 Total)
+## Quality Gates (13 Total) ⭐ +1 NEW v2.4
 
 | # | Gate | Blocks |
 |---|------|--------|
@@ -132,11 +205,18 @@ python3 claude/tools/sre/tool.py --help  # or --dashboard
 | 10 | Integration Execution Gate | Production until integration tests pass |
 | 11 | Production Readiness Gate | Deploy until P6 validation pass |
 | 12 | Refactoring Smoke Test Gate | Complete until smoke tests pass |
+| 13 | Completeness Gate | "Done" until docs/integration/holistic review complete |
 
 ---
 
-## Feature Tracker CLI
+## Feature Tracker CLI - Structural Enforcement ⭐ EXPANDED v2.4
 
+**WHY STRUCTURAL ENFORCEMENT?**
+- **Problem**: Documentation-based TDD easily ignored, state lost during context compaction
+- **Solution**: JSON feature lists persist through compaction, provide objective progress tracking
+- **Benefit**: Can't be ignored (pre-commit blocks), survives context loss, prevents infinite retry loops
+
+**COMMANDS**:
 ```bash
 # Structural TDD enforcement (Phase 221)
 python3 claude/tools/sre/feature_tracker.py init <project>
@@ -148,6 +228,11 @@ python3 claude/tools/sre/feature_tracker.py reset <project> F001  # After fixing
 ```
 
 **CIRCUIT BREAKER**: 5 failed attempts → feature blocked → requires `reset` after fix
+
+**INTEGRATION**:
+- `swarm_auto_loader.py` injects TDD context into session state
+- `tdd_precommit_hook.py` blocks commits when features failing
+- JSON persists in `claude/data/project_status/active/{PROJECT}_features.json`
 
 ---
 
@@ -185,4 +270,25 @@ claude/data/project_status/active/
 
 ---
 
-*v2.3 | 595→~200 lines (~66% reduction) | All 12 gates preserved*
+## v2.4 Changelog (2026-01-06)
+
+**ADDED**:
+- P3: Real Failure Data Priority (Phase 230 learning - production failures > hypothetical)
+- Post-Incident TDD Workflow (exact failure reproduction pattern)
+- P6.5: Completeness Review phase (pause before "done" declaration)
+- Gate 13: Completeness Gate (docs/integration/holistic review)
+- Feature Tracker: Expanded rationale with structural enforcement explanation
+
+**ENHANCED**:
+- Workflow state machine updated with P6.5 and Gate 13
+- SRE Lifecycle includes P6.5 completeness review
+- Feature Tracker section explains WHY structural > documentation
+
+**METRICS**:
+- Gates: 12 → 13 (+1)
+- Phases: 7 → 8 (+P6.5)
+- Lines: ~200 → ~260 (+30% for critical learnings, acceptable decompression)
+
+---
+
+*v2.4 | ~260 lines | 13 gates | Real failure data + Completeness review integrated*
