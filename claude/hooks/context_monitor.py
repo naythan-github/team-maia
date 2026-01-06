@@ -130,7 +130,8 @@ class ContextMonitor:
 
         try:
             # Count messages in transcript
-            message_count = sum(1 for _ in open(transcript_path))
+            with open(transcript_path) as f:
+                message_count = sum(1 for _ in f)
 
             # Estimate tokens
             estimated_tokens = message_count * self.tokens_per_message
