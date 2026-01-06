@@ -1,7 +1,7 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 569 tools, 95 agents | **Updated**: 2026-01-04
+**Total**: 571 tools, 95 agents | **Updated**: 2026-01-06 (Phase 237.4)
 
 ---
 
@@ -546,7 +546,7 @@
 | `syntax_validator.py` | (utility) |
 | `unified_contact_system.py` | (utility) |
 
-### LEARNING (`claude/tools/learning/`) - 16 tools ⭐ Phase 232-234 + Phase 237
+### LEARNING (`claude/tools/learning/`) - 17 tools ⭐ Phase 232-234 + Phase 237
 
 | Tool | Purpose |
 |------|---------|
@@ -566,13 +566,15 @@
 | `archive.py` | **Phase 237**: Conversation archive system - SQLite + FTS5 full-text search for pre-compaction snapshots |
 | `retrieval.py` | **Phase 237**: Conversation retrieval API - get, search, export (markdown/JSON), compaction history |
 | `pai_v2_bridge.py` | **Phase 237**: PAI v2 bridge - converts extracted learnings to PAI v2 patterns with learning ID tracking |
+| `context_monitor_installer.py` | **Phase 237.4**: LaunchAgent installer for context monitor - install/uninstall/status with configurable threshold and check interval |
 
-### LEARNING HOOKS (`claude/hooks/`) - 2 hooks
+### LEARNING HOOKS (`claude/hooks/`) - 3 hooks
 
 | Hook | Purpose |
 |------|---------|
 | `tool_output_capture.py` | Phase 234: PostToolUse hook for automatic UOCS capture - add to .claude/settings.json |
 | `pre_compaction_learning_capture.py` | **Phase 237**: PreCompact hook - extracts learnings and archives full conversation before Claude Code compaction (3-retry logic, graceful degradation, <5s performance) |
+| `context_monitor.py` | **Phase 237.4**: Background daemon - monitors Claude Code context usage every 5min, triggers proactive learning capture at 70% threshold (PID file, signal handling, multi-project support) |
 
 ---
 
