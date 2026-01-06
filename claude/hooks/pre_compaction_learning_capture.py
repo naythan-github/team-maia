@@ -58,6 +58,7 @@ _setup_paths()
 
 from claude.tools.learning.extraction import get_extractor
 from claude.tools.learning.archive import get_archive
+from claude.tools.learning.pai_v2_bridge import get_pai_v2_bridge
 
 
 class PreCompactionHook:
@@ -77,6 +78,7 @@ class PreCompactionHook:
 
         self.extractor = get_extractor()
         self.archive = get_archive()
+        self.pai_v2_bridge = get_pai_v2_bridge()
 
     def process(
         self,
@@ -215,10 +217,23 @@ class PreCompactionHook:
         learnings = extraction_result['learnings']
         metadata = extraction_result['metadata']
 
+        # Save learnings to PAI v2 patterns database
+        try:
+            pattern_ids = self.pai_v2_bridge.save_learnings_as_patterns(
+                learnings=learnings,
+                context_id=context_id,
+                session_id=None,  # Session ID not available in hook context
+                domain=None  # Could be inferred from agent_used if available
+            )
+        except Exception as e:
+            # Don't fail hook on PAI v2 error - log and continue
+            self._log_error(f"PAI v2 integration failed: {e}")
+            pattern_ids = []
+
         # Prepare archive metadata
         archive_metadata = {
             'learning_count': len(learnings),
-            'learning_ids': [],  # Will be populated when PAI v2 integration added
+            'learning_ids': pattern_ids,  # PAI v2 pattern IDs for cross-reference
             'tool_usage': metadata['tool_usage'],
             'agents_used': metadata['agents_used'],
             'error_count': metadata['error_count'],
