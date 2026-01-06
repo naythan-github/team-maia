@@ -4,7 +4,137 @@
 
 This playbook captures cumulative learnings from M365 incident response investigations. It serves as a reference for forensic analysis, PIR writing, and avoiding past mistakes.
 
-**Last Updated**: 2026-01-06 (PIR-OCULUS-2025-01 - Phase 230 zip workflow lessons)
+**Last Updated**: 2026-01-06 (PIR-OCULUS-2025-12-19 - Critical forensic analysis error corrections)
+
+---
+
+## 0. CRITICAL: Forensic Analysis Verification Protocol
+
+### ⚠️ MANDATORY CHECKS Before Making Authentication Claims
+
+**NEVER assume field names = success. ALWAYS verify with status codes.**
+
+#### Step 1: Verify Success vs Failure
+```sql
+-- Check status field distribution
+SELECT status, COUNT(*) as events,
+       CASE
+           WHEN status = '0' OR status = 'Success' THEN 'SUCCESS'
+           ELSE 'FAILED'
+       END as interpretation
+FROM legacy_auth_logs  -- or sign_in_logs, unified_audit_log
+GROUP BY status;
+```
+
+**Red Flags:**
+- ❌ Field name "Authenticated SMTP" does NOT mean authentication succeeded
+- ❌ Presence in `legacy_auth_logs` does NOT mean successful authentication
+- ✅ ONLY `status` field determines success vs failure
+
+**M365 Status Codes:**
+| Code | Meaning | Interpretation |
+|------|---------|----------------|
+| 0 | Success | Authentication succeeded |
+| 50126 | Invalid credentials | **FAILED** - Wrong password or account disabled |
+| 50053 | Malicious IP / Account locked | **FAILED** - Blocked by security |
+| 50055 | Expired password | **FAILED** |
+| 50057 | Account disabled | **FAILED** |
+
+#### Step 2: Baseline Queries (Run EVERY Time)
+```sql
+-- 1. Total events vs successful events
+SELECT
+    COUNT(*) as total_events,
+    COUNT(CASE WHEN status = '0' THEN 1 END) as successful,
+    COUNT(CASE WHEN status != '0' THEN 1 END) as failed,
+    ROUND(100.0 * COUNT(CASE WHEN status = '0' THEN 1 END) / COUNT(*), 2) as success_rate_pct
+FROM legacy_auth_logs;
+
+-- 2. Success rate by account
+SELECT
+    user_principal_name,
+    COUNT(*) as attempts,
+    COUNT(CASE WHEN status = '0' THEN 1 END) as successes,
+    COUNT(CASE WHEN status != '0' THEN 1 END) as failures
+FROM legacy_auth_logs
+GROUP BY user_principal_name
+HAVING COUNT(*) > 0
+ORDER BY successes DESC;
+
+-- 3. Timeline analysis (pre vs post remediation)
+SELECT
+    DATE(timestamp) as date,
+    COUNT(*) as attempts,
+    COUNT(CASE WHEN status = '0' THEN 1 END) as successes
+FROM legacy_auth_logs
+WHERE user_principal_name = '[target_account]'
+GROUP BY DATE(timestamp)
+ORDER BY date;
+```
+
+#### Step 3: Check Schema First
+```bash
+# ALWAYS check available fields before querying
+sqlite3 [database] "PRAGMA table_info(legacy_auth_logs)"
+
+# Look for these fields:
+# - status, result_status, error_code (indicates success/failure)
+# - failure_reason, error_message (explains why it failed)
+# - is_success, succeeded (boolean indicators)
+```
+
+#### Step 4: Challenge Your Interpretation
+Before claiming "Account disable was bypassed":
+
+**Ask:**
+- Did I check the status field? (success vs failure)
+- What is the success rate? (100% should be suspicious)
+- Are there failure_reason fields explaining errors?
+- Does timeline correlation support my theory?
+
+**Verify:**
+```sql
+-- Check if account disable actually blocked authentication
+SELECT
+    timestamp,
+    status,
+    failure_reason,
+    CASE
+        WHEN status = '0' THEN '✅ SUCCESS'
+        WHEN status = '50126' THEN '❌ FAILED (invalid creds)'
+        WHEN status = '50053' THEN '❌ BLOCKED (security)'
+        ELSE '❌ FAILED (other)'
+    END as result
+FROM legacy_auth_logs
+WHERE user_principal_name = '[account]'
+AND timestamp >= '[account_disable_time]'
+ORDER BY timestamp;
+```
+
+### Case Study: PIR-OCULUS-2025-12-19 Error
+
+**What Was Claimed:**
+> "ben@oculus.info had 37 SMTP authentication events while disabled, proving legacy SMTP bypasses account disable status"
+
+**What Was Actually True:**
+- 37 SMTP authentication **ATTEMPTS** (not successes)
+- ALL 37 had status code 50126 (authentication **FAILED**)
+- Account disable **DID work** - 100% rejection rate post-disable
+- Field name "Authenticated SMTP" meant "SMTP auth was attempted", not "succeeded"
+
+**Root Cause of Error:**
+1. Assumed "Authenticated SMTP" = successful authentication
+2. Never checked the `status` field to verify success vs failure
+3. Built narrative ("legacy auth bypasses disable") before verifying data
+4. Confirmation bias - looked for evidence supporting theory instead of testing it
+
+**Impact:**
+- Incorrect PIR report delivered to customer
+- False claim of M365 security control failure
+- Recommended unnecessary remediation actions
+
+**Lesson:**
+> **PRIMARY EVIDENCE (status codes) > FIELD NAMES > DOCUMENTATION > ASSUMPTIONS**
 
 ---
 

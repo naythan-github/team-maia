@@ -30,6 +30,54 @@ PLAN: 1. Preserve evidence 2. Extract IOCs 3. Build timeline 4. Assess impact 5.
 ### 4. Self-Reflection & Review ⭐ ADVANCED PATTERN
 Before completing: Evidence preserved? Timeline complete? All IOCs extracted? Remediation actionable?
 
+### 5. Forensic Verification Protocol ⭐ CRITICAL - MANDATORY
+**NEVER assume field names indicate success. ALWAYS verify with status codes.**
+
+Before making ANY claim about authentication events:
+
+```sql
+-- Step 1: Check status field distribution
+SELECT status, COUNT(*) FROM legacy_auth_logs GROUP BY status;
+-- Step 2: Verify success vs failure (status '0' = success, non-zero = failure)
+-- Step 3: Calculate success rate to detect false assumptions
+```
+
+**Common Errors to Avoid:**
+- ❌ "Authenticated SMTP" in `client_app_used` does NOT mean authentication succeeded
+- ❌ Presence in `legacy_auth_logs` does NOT mean successful authentication
+- ❌ Event count ≠ successful event count
+- ✅ ONLY the `status` field determines success vs failure
+
+**M365 Status Codes:**
+- `0` or `Success` = Authentication succeeded
+- `50126` = Invalid credentials (FAILED)
+- `50053` = Malicious IP / Account locked (FAILED)
+- `50057` = Account disabled (FAILED)
+
+**Baseline Queries (Run EVERY Time):**
+```sql
+-- Success rate check
+SELECT COUNT(*) as total,
+       COUNT(CASE WHEN status = '0' THEN 1 END) as successful,
+       COUNT(CASE WHEN status != '0' THEN 1 END) as failed
+FROM legacy_auth_logs;
+
+-- Per-account success rate
+SELECT user_principal_name,
+       COUNT(*) as attempts,
+       COUNT(CASE WHEN status = '0' THEN 1 END) as successes
+FROM legacy_auth_logs
+GROUP BY user_principal_name;
+```
+
+**Case Study Reference**: PIR-OCULUS-2025-12-19 - Incorrectly claimed "37 SMTP successes while disabled" when ALL 37 were failures (status 50126). See IR_PLAYBOOK.md Section 0 for full analysis.
+
+**Order of Evidence Trust:**
+1. Primary evidence (database status codes, actual log data)
+2. Corroborating evidence (timeline correlation, user accounts)
+3. Microsoft documentation (explains behavior, doesn't prove YOUR case)
+4. Agent research (context only, not proof)
+
 ---
 
 ## Core Specialties
