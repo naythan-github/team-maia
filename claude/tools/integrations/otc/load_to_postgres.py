@@ -54,7 +54,8 @@ class OTCPostgresLoader:
         """Establish PostgreSQL connection."""
         if not self.conn:
             self.conn = psycopg2.connect(**self.pg_config)
-            logger.info("Connected to PostgreSQL")
+            self.conn.autocommit = True  # Auto-commit each statement
+            logger.info("Connected to PostgreSQL (autocommit mode)")
 
     def close(self):
         """Close PostgreSQL connection."""
@@ -148,7 +149,6 @@ class OTCPostgresLoader:
                     # Insert batch when full
                     if len(batch) >= batch_size:
                         self._insert_batch(cursor, insert_sql, update_sql, batch)
-                        self.conn.commit()  # Commit after each batch
                         batch = []
 
                 except Exception as e:
@@ -158,7 +158,6 @@ class OTCPostgresLoader:
             # Insert remaining batch
             if batch:
                 self._insert_batch(cursor, insert_sql, update_sql, batch)
-                self.conn.commit()  # Final commit
 
             cursor.close()
 
@@ -200,8 +199,7 @@ class OTCPostgresLoader:
                 self.stats['inserted'] += 1
 
             except psycopg2.IntegrityError:
-                # Duplicate key - update instead
-                self.conn.rollback()
+                # Duplicate key - update instead (autocommit handles rollback)
                 try:
                     # values: (comment_id, ticket_id, text, user_id, user_name, owner_type, created, visible, type, team)
                     # update needs: (text, visible, type, team, comment_id)
@@ -212,12 +210,10 @@ class OTCPostgresLoader:
                         self.stats['skipped'] += 1
                 except Exception as e:
                     logger.warning(f"Failed to update comment {values[0]}: {e}")
-                    self.conn.rollback()
                     self.stats['errors'] += 1
 
             except Exception as e:
                 logger.warning(f"Failed to insert comment {values[0]}: {e}")
-                self.conn.rollback()
                 self.stats['errors'] += 1
 
 
