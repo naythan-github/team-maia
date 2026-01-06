@@ -4,15 +4,17 @@ Save State - Enforced Documentation Protocol
 
 Phase 233: Automated save_state with blocking enforcement
 Phase 233.1: Comprehensive documentation verification
+Phase 233.2: Auto-sync both capabilities.db and system_state.db
 
 Ensures all documentation is updated before commits:
 1. Auto-detect what changed (new tools, agents, commands)
 2. Block commit if required docs not updated
 3. Sync capabilities.db on every save
-4. Require SYSTEM_STATE.md for significant work
-5. Verify capability counts match actual files
-6. Check CLAUDE.md if protocols/hooks changed
-7. Validate cross-references exist
+4. Sync system_state.db when SYSTEM_STATE.md modified
+5. Require SYSTEM_STATE.md for significant work
+6. Verify capability counts match actual files
+7. Check CLAUDE.md if protocols/hooks changed
+8. Validate cross-references exist
 
 Usage:
     python3 claude/tools/sre/save_state.py              # Interactive mode
@@ -76,6 +78,7 @@ class SaveState:
     Enforced save state protocol.
 
     Blocks commits when required documentation is missing.
+    Auto-syncs both capabilities.db and system_state.db.
     """
 
     def __init__(self, maia_root: Optional[Path] = None):
@@ -353,6 +356,42 @@ class SaveState:
         except Exception as e:
             return False, f"⚠️ Capabilities sync error: {e}"
 
+    def sync_system_state_db(self) -> Tuple[bool, str]:
+        """
+        Sync system_state.db with SYSTEM_STATE.md.
+
+        Runs system_state_etl.py to extract, transform, and load phase data
+        from markdown into SQLite database.
+
+        Returns:
+            (success, message)
+        """
+        etl_path = self.maia_root / "claude" / "tools" / "sre" / "system_state_etl.py"
+
+        if not etl_path.exists():
+            return False, "system_state_etl.py not found"
+
+        try:
+            result = subprocess.run(
+                ["python3", str(etl_path)],
+                cwd=self.maia_root,
+                capture_output=True,
+                text=True,
+                timeout=60  # ETL can be slower than capabilities scan
+            )
+
+            if result.returncode == 0:
+                # Extract phase count from output
+                output = result.stdout
+                return True, f"✅ System State DB synced\n{output.strip()}"
+            else:
+                return False, f"⚠️ System State sync warning: {result.stderr}"
+
+        except subprocess.TimeoutExpired:
+            return False, "⚠️ System State sync timed out"
+        except Exception as e:
+            return False, f"⚠️ System State sync error: {e}"
+
     def run_security_check(self) -> Tuple[bool, str]:
         """
         Run security check for secrets in staged files.
@@ -529,6 +568,13 @@ class SaveState:
         sync_ok, sync_msg = self.sync_capabilities_db()
         print(f"   {sync_msg}")
         print()
+
+        # 3b. Sync system state DB (if SYSTEM_STATE.md modified)
+        if analysis.system_state_modified:
+            print("🔄 Syncing system state database...")
+            state_sync_ok, state_sync_msg = self.sync_system_state_db()
+            print(f"   {state_sync_msg}")
+            print()
 
         # 4. Security check
         print("🔒 Running security check...")

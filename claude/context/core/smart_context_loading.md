@@ -54,12 +54,13 @@
      - Database: `${MAIA_ROOT}/claude/data/databases/system/system_state.db`
    - **Documentation**: See `claude/context/core/capability_index.md` (SYSTEM_STATE Query Interface section)
 
-7. **Smart Capability Loading** ⭐ **DATABASE-ACCELERATED - 73-98% TOKEN SAVINGS (Phase 168.1)**
+7. **Smart Capability Loading** ⭐ **DATABASE-ACCELERATED - 73-98% TOKEN SAVINGS (Phase 168.1, 237.4)**
    - **Primary Path** ⭐ **NEW**: Capabilities DB query (replaces 3K token capability_index.md)
      - **Tool**: `python3 claude/tools/sre/capabilities_registry.py [command]`
      - **Commands**: `find QUERY`, `list --category sre`, `summary`
      - **Coverage**: 589 capabilities (87 agents, 502 tools)
      - **Smart Loader Integration**: `loader.load_capability_context(query="security")`
+     - **Hook Integration** ⭐ **NEW (Phase 237.4)**: `dynamic_context_loader.py` auto-uses DB for domain capabilities
    - **Token Savings**:
      - Summary only: 98% savings (3,758 → 60 tokens)
      - Targeted query: 73-94% savings depending on query specificity

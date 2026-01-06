@@ -32,10 +32,12 @@ The script automatically detects what changed:
 
 | Change Detected | Required Documentation | Action if Missing |
 |-----------------|----------------------|-------------------|
-| New tools | capability_index.md | **BLOCK** |
-| New agents | agents.md + capability_index.md | **BLOCK** |
+| New tools | capability_index.md + capabilities.db sync | **BLOCK** |
+| New agents | agents.md + capability_index.md + capabilities.db sync | **BLOCK** |
 | Significant work | SYSTEM_STATE.md | **BLOCK** |
 | Security issues | Fix secrets | **BLOCK** |
+
+**Note**: capabilities.db auto-syncs via `capabilities_registry.py scan` when new tools/agents detected
 
 ### 3. Comprehensive Verification (Phase 233.1)
 After blocking checks pass, runs additional non-blocking verification:

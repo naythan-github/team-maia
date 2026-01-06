@@ -109,6 +109,27 @@ Attack Flow (confirmed via Fyna investigation):
 | Duplicate records | Multiple imports | UNIQUE constraints handle deduplication |
 | Wrong file type detected | Ambiguous filename | Check LOG_FILE_PATTERNS matching |
 
+### Supported Log Types (Phase 238)
+
+All M365 export file types are now fully supported. The importer auto-detects and processes:
+
+| File Pattern | LogType | Database Table | Status |
+|--------------|---------|----------------|--------|
+| `1_*SignInLogs.csv` | SIGNIN | sign_in_logs | Full support |
+| `2_*AuditLogs.csv` | ENTRA_AUDIT | entra_audit_log | Full support |
+| `3_*InboxRules.csv` | INBOX_RULES | inbox_rules | Full support |
+| `4_*MailboxAudit.csv` | MAILBOX_AUDIT | mailbox_audit_log | Full support |
+| `5_*OAuthConsents.csv` | OAUTH_CONSENTS | oauth_consents | Full support |
+| `6_*MFAChanges.csv` | MFA_CHANGES | mfa_changes | Added Phase 238 |
+| `7_*FullAuditLog.csv` | FULL_AUDIT | unified_audit_log | Full support |
+| `8_*RiskyUsers.csv` | RISKY_USERS | risky_users | Added Phase 238 |
+| `9_*PasswordLastChanged.csv` | PASSWORD_CHANGED | password_status | Full support |
+| `10_*LegacyAuth*.csv` | LEGACY_AUTH | legacy_auth_logs | Full support |
+
+**Warning System**: Files matching patterns without handlers now generate warnings (prevents silent data loss).
+
+**Test Coverage**: `test_all_patterns_have_handlers()` ensures all patterns have import methods (prevents future regressions).
+
 ---
 
 ## 4. PIR Writing Standards

@@ -17,7 +17,33 @@ class DynamicContextLoader:
     def __init__(self):
         self.maia_root = Path(str(Path(__file__).resolve().parents[4] if "claude/tools" in str(__file__) else Path.cwd()))
         self.context_dir = self.maia_root / "claude/context"
-        
+
+        # NEW: Database initialization (following smart_context_loader pattern - Phase 235)
+        self.capabilities_db_path = (
+            self.maia_root / "claude" / "data" / "databases" / "system" / "capabilities.db"
+        )
+        self.capability_index_path = (
+            self.maia_root / "claude" / "context" / "core" / "capability_index.md"
+        )
+
+        # Import CapabilitiesRegistry with graceful fallback
+        try:
+            from claude.tools.sre.capabilities_registry import CapabilitiesRegistry
+            CAPABILITIES_REGISTRY_AVAILABLE = True
+        except ImportError:
+            CAPABILITIES_REGISTRY_AVAILABLE = False
+
+        # Initialize registry
+        self.capabilities_registry = None
+        self.use_capabilities_db = False
+        if CAPABILITIES_REGISTRY_AVAILABLE and self.capabilities_db_path.exists():
+            try:
+                self.capabilities_registry = CapabilitiesRegistry(self.capabilities_db_path)
+                self.use_capabilities_db = True
+            except Exception:
+                # Graceful fallback if DB init fails
+                self.use_capabilities_db = False
+
         # Domain patterns for request classification
         self.domain_patterns = {
             "simple": [
@@ -81,8 +107,7 @@ class DynamicContextLoader:
                     "claude/context/ufc_system.md",
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
-                    "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md"
+                    "claude/context/core/model_selection_strategy.md"
                 ],
                 "savings": 62
             },
@@ -93,7 +118,6 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/systematic_tool_checking.md"
@@ -107,7 +131,6 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/systematic_tool_checking.md"
@@ -121,7 +144,6 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md",
                     "claude/context/personal/profile.md",
                     "claude/context/core/agents.md"
                 ],
@@ -134,7 +156,6 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md",
@@ -149,7 +170,6 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md",
@@ -164,7 +184,6 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md"
                 ],
@@ -177,7 +196,6 @@ class DynamicContextLoader:
                     "claude/context/core/identity.md",
                     "claude/context/core/systematic_thinking_protocol.md",
                     "claude/context/core/model_selection_strategy.md",
-                    "claude/context/core/capability_index.md",
                     "claude/context/tools/available.md",
                     "claude/context/core/agents.md",
                     "claude/context/core/command_orchestration.md",
@@ -241,14 +259,18 @@ class DynamicContextLoader:
         
         strategy_name = domain_mapping.get(domain, "full")
         strategy = self.loading_strategies[strategy_name].copy()
-        
+
+        # NEW: Load capability context using DB-first
+        capability_context = self._load_strategy_capabilities(strategy_name, domain)
+
         strategy.update({
             "detected_domain": domain,
             "confidence": confidence,
             "strategy_name": strategy_name,
+            "capability_context": capability_context,  # NEW
             "recommendation": self._generate_recommendation(domain, confidence, strategy_name)
         })
-        
+
         return strategy
         
     def _generate_recommendation(self, domain: str, confidence: float, strategy: str) -> str:
@@ -261,7 +283,96 @@ class DynamicContextLoader:
             confidence_desc = "Low confidence"
             
         return f"{confidence_desc} {domain} domain detected - using {strategy} loading strategy"
-        
+
+    def _get_categories_for_domain(self, domain: str) -> Optional[List[str]]:
+        """
+        Map domain to DB capability categories.
+
+        Args:
+            domain: Domain from request analysis (e.g., "technical", "security")
+
+        Returns:
+            List of DB categories to filter, or None for all
+        """
+        domain_category_map = {
+            "simple": None,  # No capabilities needed
+            "research": ["data", "general"],
+            "security": ["security"],
+            "personal": ["automation", "document"],
+            "technical": ["sre", "integration", "document"],
+            "cloud": ["sre", "integration"],
+            "design": ["general"],
+            "business": ["general"],
+            "full": None  # All categories
+        }
+        return domain_category_map.get(domain)
+
+    def _load_strategy_capabilities(self, strategy_name: str, domain: str) -> str:
+        """
+        Load capabilities for strategy using DB-first pattern.
+
+        Args:
+            strategy_name: Name of strategy (e.g., "technical")
+            domain: Domain for filtering
+
+        Returns:
+            Formatted markdown with capabilities (60-500 tokens)
+        """
+        # Minimal strategy doesn't need capabilities
+        if strategy_name == "minimal":
+            return ""
+
+        # Try DB-first (Phase 235 pattern)
+        if self.use_capabilities_db and self.capabilities_registry:
+            try:
+                categories = self._get_categories_for_domain(domain)
+
+                # Get summary for quick context
+                summary = self.capabilities_registry.get_summary()
+
+                if categories and len(categories) > 0:
+                    # Get category-specific capabilities
+                    category = categories[0]  # Use primary category
+                    results = self.capabilities_registry.list_by_category(
+                        category=category,
+                        cap_type=None
+                    )
+
+                    # Format as compact summary
+                    agents = [r for r in results if r['type'] == 'agent']
+                    tools = [r for r in results if r['type'] == 'tool']
+
+                    output = [f"# {category.title()} Capabilities"]
+                    output.append(f"**Available**: {len(agents)} agents, {len(tools)} tools")
+                    output.append(f"*Use `python3 claude/tools/core/find_capability.py` for full search*")
+                    return '\n'.join(output)
+                else:
+                    # General summary
+                    return f"# Capabilities\n**Total**: {summary['total']} ({summary['agents']} agents, {summary['tools']} tools)"
+
+            except Exception as e:
+                # Fallback to markdown excerpt
+                return self._load_capabilities_markdown_excerpt()
+
+        # Markdown fallback
+        return self._load_capabilities_markdown_excerpt()
+
+    def _load_capabilities_markdown_excerpt(self) -> str:
+        """
+        Load small excerpt from capability_index.md (fallback only).
+
+        Returns first 100 lines (~500 tokens) instead of full 741 lines.
+        """
+        if not self.capability_index_path.exists():
+            return "# Capabilities\n\n*capability_index.md not found*"
+
+        try:
+            lines = self.capability_index_path.read_text().splitlines()
+            excerpt = '\n'.join(lines[:100])
+            return excerpt + "\n\n*[Excerpt - use DB for full search]*"
+        except Exception:
+            return "# Capabilities\n\n*Error loading capabilities*"
+
     def generate_context_instructions(self, user_input: str) -> str:
         """
         Generate context loading instructions similar to PAI's hook output
@@ -277,7 +388,13 @@ class DynamicContextLoader:
         
         for file_path in strategy['files']:
             instructions.append(f"- {file_path}")
-            
+
+        # NEW: Include capability context from DB
+        if strategy.get('capability_context'):
+            instructions.append("")
+            instructions.append("🔧 AVAILABLE CAPABILITIES:")
+            instructions.append(strategy['capability_context'])
+
         instructions.append("")
         instructions.append("⚡ LOADING PROTOCOL:")
         instructions.append("1. Read all required context files listed above")

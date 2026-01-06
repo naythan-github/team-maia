@@ -324,6 +324,59 @@ STEP 5: Generate PIR with validated findings
 
 **Test Coverage**: 8/8 tests passing, validated on actual PIR-OCULUS-2025-01 database
 
+### Phase 238: MFA Changes & Risky Users Import (`claude/tools/m365_ir/`)
+
+**CRITICAL FIX**: Files matching LOG_FILE_PATTERNS but lacking import handlers were silently skipped (no warnings). Phase 238 adds missing handlers and warning system.
+
+```bash
+# MFA Changes & Risky Users now auto-imported with all other log types
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export.zip --customer "Customer"
+# Imports: sign-in, UAL, entra_audit, mailbox, oauth, inbox_rules, legacy_auth,
+#          password_status, mfa_changes, risky_users
+```
+
+```python
+# Programmatic access to new tables
+from claude.tools.m365_ir import LogQuery
+
+query = LogQuery(db)
+
+# MFA registration/modification events
+mfa_events = query.execute("""
+    SELECT timestamp, user, activity, result
+    FROM mfa_changes
+    WHERE user = ?
+    ORDER BY timestamp
+""", ("victim@example.com",))
+
+# Risky user detections (Microsoft Identity Protection)
+risky_users = query.execute("""
+    SELECT user, risk_level, risk_state, risk_detail, last_updated
+    FROM risky_users
+    WHERE risk_level IN ('high', 'medium')
+""")
+```
+
+**Warning System**: Files matching patterns without handlers now generate warnings:
+```
+WARNING: File 13_NewLogType.csv matched pattern but no import handler exists.
+         File will be SKIPPED. This may indicate missing forensic data.
+```
+
+**Prevention**: Unit test `test_all_patterns_have_handlers()` ensures all LOG_FILE_PATTERNS have corresponding import methods (prevents future silent failures).
+
+**Supported Log Types** (complete list in IR_PLAYBOOK.md):
+- 1_SignInLogs.csv → sign_in_logs
+- 2_AuditLogs.csv → entra_audit_log
+- 3_InboxRules.csv → inbox_rules
+- 4_MailboxAudit.csv → mailbox_audit_log
+- 5_OAuthConsents.csv → oauth_consents
+- **6_MFAChanges.csv → mfa_changes** (Phase 238)
+- 7_FullAuditLog.csv → unified_audit_log
+- **8_RiskyUsers.csv → risky_users** (Phase 238)
+- 9_PasswordLastChanged.csv → password_status
+- 10_LegacyAuth*.csv → legacy_auth_logs
+
 ### PIR Document Generation (`claude/tools/document_conversion/`)
 
 **ALWAYS use this tool for markdown → docx conversion** (not raw pandoc):
@@ -855,10 +908,12 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --outpu
 **Sonnet**: All IR operations, log analysis, timeline building | **Opus**: Major breach (>$100K impact), legal/regulatory implications
 
 ## Production Status
-**READY** - v2.8 with Phase 224/225/226/227/228 tool integration + hybrid PIR report template
+**READY** - v2.9 with Phase 224/225/226/227/228/230/231 tool integration + hybrid PIR report template
 - Phase 224: IR Knowledge Base (46 tests) - cumulative learning across investigations
 - Phase 225: M365 IR Pipeline (88 tests) - automated log parsing, anomaly detection, MITRE mapping
 - Phase 226: IR Log Database (92 tests) - per-case SQLite storage, SQL queries, follow-up investigation support
 - Phase 227: Legacy Auth & Password Status (39 tests) - remediation verification, MFA bypass detection, stale password auditing
 - Phase 228: Entra ID Audit Log Parser (27 tests) - Azure AD directory events, password changes, role assignments, admin actions
+- Phase 230: Account Validator (8 tests) - timeline validation, assumption tracking, prevents analytical errors (ben@oculus.info lesson learned)
+- Phase 238: MFA & Risky Users Import (6 tests) - complete log type coverage, warning system for silent failures, regression prevention
 - Hybrid PIR Template: Full report structure matching Oculus/Fyna/SGS format standards

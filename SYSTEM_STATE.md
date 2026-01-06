@@ -197,17 +197,20 @@ if result_key is None and import_result is None:
 
 ## 🔒 PHASE 233: Save State Enforcement (2026-01-04) ✅ **PRODUCTION READY**
 
+**Phase 233.2 (2026-01-06)**: Added automatic system_state.db sync when SYSTEM_STATE.md modified.
+
 ### Achievement
-Created `save_state.py` script that enforces documentation updates before commits. Auto-detects changes, blocks commit if required docs missing, syncs capabilities.db on every save.
+Created `save_state.py` script that enforces documentation updates before commits. Auto-detects changes, blocks commit if required docs missing, syncs BOTH capabilities.db and system_state.db on every save.
 
 ### Problem Solved
-**Context**: Documentation often lagged behind implementation. User had to ask "Did you update the docs?" after every feature. SYSTEM_STATE.md, capability_index.md frequently out of sync.
+**Context**: Documentation often lagged behind implementation. User had to ask "Did you update the docs?" after every feature. SYSTEM_STATE.md, capability_index.md frequently out of sync. Database syncs required manual intervention.
 
-**Solution**: Automated enforcement:
+**Solution**: Automated enforcement + database syncs:
 1. **Auto-detection** - Analyzes git changes to determine what docs need updating
 2. **Blocking** - Prevents commit if new tools/agents without capability_index.md update
 3. **Capabilities sync** - Runs capabilities_registry.py scan on every save
-4. **Security check** - Validates no secrets in staged files
+4. **System State sync** - Runs system_state_etl.py when SYSTEM_STATE.md modified (Phase 233.2)
+5. **Security check** - Validates no secrets in staged files
 
 ### Implementation Details
 
@@ -241,6 +244,31 @@ python3 claude/tools/sre/save_state.py --force
 |--------|-------|
 | Documentation misses | 0 (enforced) |
 | capabilities.db freshness | Every save |
+| system_state.db freshness | Auto-synced when SYSTEM_STATE.md modified |
+
+### Phase 233.2 Details (2026-01-06)
+
+**Problem**: save_state.py auto-synced capabilities.db but NOT system_state.db when SYSTEM_STATE.md was modified. This created an incomplete automation loop requiring manual `python3 claude/tools/sre/system_state_etl.py`.
+
+**Solution (TDD)**:
+1. Added `sync_system_state_db()` method following same pattern as `sync_capabilities_db()`
+2. Integrated into `run()` method with conditional check: `if analysis.system_state_modified`
+3. Non-blocking errors (matches capabilities sync behavior)
+4. 60-second timeout for ETL (vs 30s for capabilities scan)
+
+**Tests**: 8 passing tests in `tests/sre/test_save_state_system_state_sync.py`
+- Test 1: ETL runs when SYSTEM_STATE.md modified
+- Test 2: ETL skipped when SYSTEM_STATE.md unchanged (optimization)
+- Test 3: ETL failure is non-blocking (warning only)
+- Test 4: Both DBs sync in single run
+- Test 5: Missing ETL script handled gracefully
+- Test 6: Timeout handled gracefully
+- Test 7-8: Integration tests with run() method
+
+**Files Modified**:
+- `claude/tools/sre/save_state.py` - Added sync_system_state_db() + integration
+- `tests/sre/test_save_state_system_state_sync.py` - 8 TDD tests (NEW)
+- `SYSTEM_STATE.md` - This documentation update
 
 ---
 

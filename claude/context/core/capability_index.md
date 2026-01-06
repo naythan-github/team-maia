@@ -1,7 +1,7 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 571 tools, 95 agents | **Updated**: 2026-01-06 (Phase 237.4)
+**Total**: 590 tools, 95 agents | **Updated**: 2026-01-06 (Phase 238)
 
 ---
 
@@ -320,6 +320,27 @@
 | `web_content_sandbox.py` | Web Content Sandbox Sanitizes and analyzes web content for security before proce... |
 | `weekly_backlog_review.py` | Weekly Backlog Review - Surface backlog items and suggest prioritization |
 | `weekly_security_scan.py` | Weekly Security Scan - Maia Security Infrastructure ============================... |
+
+### M365_IR (`claude/tools/m365_ir/`) - 19 tools ⭐ Phase 238
+
+| Tool | Purpose |
+|------|---------|
+| `account_validator.py` | Account Validator - Phase 230 Timeline validation and assumption tracking to prevent analytical errors. Validates account compromise timelines, prevents ben@oculus.info mistakes (assuming compromise when password was 1,998 days old). |
+| `anomaly_detector.py` | M365 Anomaly Detector Detects anomalies in M365 sign-in logs: impossible travel, legacy auth abuse, high-risk countries. |
+| `assumption_logger.py` | Assumption Logger - Phase 230 Component Logs and validates analytical assumptions about account compromise to prevent errors. |
+| `compression.py` | M365 IR Log Compression Compresses large M365 exports for storage efficiency. |
+| `ioc_extractor.py` | IOC Extractor - MITRE ATT&CK Mapping Extracts Indicators of Compromise (IPs, countries, user agents) and maps to MITRE ATT&CK techniques. |
+| `ir_case.py` | IR Case Manager Manages M365 Incident Response case structure (case ID, customer, paths, metadata). |
+| `log_database.py` | IR Log Database - Phase 238 Per-case SQLite database for M365 IR logs. Supports 10 log types including mfa_changes and risky_users (Phase 238). |
+| `log_importer.py` | M365 IR Log Importer - Phase 238 Imports M365 export logs into SQLite database. Phase 238 adds mfa_changes/risky_users import + warning system for silent failures. |
+| `log_query.py` | Log Query Interface SQL query interface for M365 IR databases with common forensic queries. |
+| `m365_ir_cli.py` | M365 IR CLI Orchestrator Command-line interface for M365 incident response: import logs, analyze, query. |
+| `m365_log_parser.py` | M365 Log Parser Parses M365 export CSVs (sign-in, audit, mailbox, legacy auth). Auto-detects AU vs US date format. |
+| `remediation_detector.py` | Remediation Detector - Phase 225.1 Detects remediation events (token revokes, password resets, MFA resets) from audit logs. Calculates dwell time. |
+| `timeline_builder.py` | Timeline Builder Builds chronological attack timeline from M365 logs. Correlates events across log types. |
+| `user_baseliner.py` | User Baseliner Calculates user home country from login statistics. Identifies false positives (US-based employees). |
+| `validation_checks.py` | Validation Checks - Phase 230 Forensic validation checks for M365 IR investigations to prevent analytical errors. |
+| `IR_PLAYBOOK.md` | M365 Incident Response Playbook Cumulative learnings from M365 IR investigations. Attack signatures, forensic confidence, PIR writing standards. Phase 238: Complete log type coverage table. |
 
 ### DATA (`claude/tools/data/`) - 119 tools
 

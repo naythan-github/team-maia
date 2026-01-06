@@ -988,6 +988,267 @@ class LogImporter:
             records_skipped=records_skipped
         )
 
+    def import_mfa_changes(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import MFA registration/change events from CSV.
+
+        Expected columns: ActivityDateTime, ActivityDisplayName, User, Result
+
+        Args:
+            source: Path to MFA changes CSV file
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        # Check if already imported
+        if self._is_already_imported(source_hash, 'mfa_changes'):
+            logger.info(f"Skipping duplicate MFA changes import: {source}")
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=["Duplicate import skipped"],
+                duration_seconds=time.time() - start_time,
+                records_skipped=0
+            )
+
+        with open(source, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            return self._import_mfa_changes_internal(
+                reader, str(source), source_hash, start_time
+            )
+
+    def _import_mfa_changes_internal(
+        self,
+        reader: csv.DictReader,
+        source_id: str,
+        source_hash: str,
+        start_time: float
+    ) -> ImportResult:
+        """
+        Internal method to import MFA changes from a CSV reader.
+
+        Args:
+            reader: CSV DictReader
+            source_id: Source identifier for tracking
+            source_hash: SHA256 hash of source
+            start_time: Import start time for duration calculation
+
+        Returns:
+            ImportResult with import statistics
+        """
+        records_imported = 0
+        records_failed = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        # Record import start
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (source_id, source_hash, 'mfa_changes', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    # Parse timestamp
+                    timestamp_str = row.get('ActivityDateTime', '')
+                    timestamp = None
+                    if timestamp_str:
+                        timestamp = parse_m365_datetime(
+                            timestamp_str,
+                            self._detect_date_format(timestamp_str)
+                        )
+
+                    cursor.execute("""
+                        INSERT INTO mfa_changes
+                        (timestamp, activity_display_name, user, result, imported_at)
+                        VALUES (?, ?, ?, ?, ?)
+                    """, (
+                        timestamp.isoformat() if timestamp else None,
+                        row.get('ActivityDisplayName', ''),
+                        row.get('User', ''),
+                        row.get('Result', ''),
+                        now
+                    ))
+                    records_imported += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Row {row_num}: {str(e)}")
+                    logger.debug(f"Failed to import MFA changes row {row_num}: {e}")
+
+            # Update import metadata
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=source_id,
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=0
+        )
+
+    def import_risky_users(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import risky user detections from CSV.
+
+        Expected columns vary but may include: UserPrincipalName, RiskLevel,
+        RiskState, RiskDetail, RiskLastUpdatedDateTime
+
+        Args:
+            source: Path to risky users CSV file
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        # Check if already imported
+        if self._is_already_imported(source_hash, 'risky_users'):
+            logger.info(f"Skipping duplicate risky users import: {source}")
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=["Duplicate import skipped"],
+                duration_seconds=time.time() - start_time,
+                records_skipped=0
+            )
+
+        with open(source, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            return self._import_risky_users_internal(
+                reader, str(source), source_hash, start_time
+            )
+
+    def _import_risky_users_internal(
+        self,
+        reader: csv.DictReader,
+        source_id: str,
+        source_hash: str,
+        start_time: float
+    ) -> ImportResult:
+        """
+        Internal method to import risky users from a CSV reader.
+
+        Args:
+            reader: CSV DictReader
+            source_id: Source identifier for tracking
+            source_hash: SHA256 hash of source
+            start_time: Import start time for duration calculation
+
+        Returns:
+            ImportResult with import statistics
+        """
+        records_imported = 0
+        records_failed = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        # Record import start
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (source_id, source_hash, 'risky_users', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    # Parse risk last updated timestamp
+                    risk_updated_str = row.get('RiskLastUpdatedDateTime', '')
+                    risk_updated = None
+                    if risk_updated_str:
+                        risk_updated = parse_m365_datetime(
+                            risk_updated_str,
+                            self._detect_date_format(risk_updated_str)
+                        )
+
+                    cursor.execute("""
+                        INSERT INTO risky_users
+                        (user_principal_name, risk_level, risk_state, risk_detail,
+                         risk_last_updated, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    """, (
+                        row.get('UserPrincipalName', ''),
+                        row.get('RiskLevel', ''),
+                        row.get('RiskState', ''),
+                        row.get('RiskDetail', ''),
+                        risk_updated.isoformat() if risk_updated else None,
+                        now
+                    ))
+                    records_imported += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Row {row_num}: {str(e)}")
+                    logger.debug(f"Failed to import risky user row {row_num}: {e}")
+
+            # Update import metadata
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=source_id,
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=0
+        )
+
     def import_all(self, source: Union[str, Path]) -> Dict[str, ImportResult]:
         """
         Auto-detect and import all log types from directory or zip file.
@@ -1085,6 +1346,19 @@ class LogImporter:
                         elif log_type == LogType.PASSWORD_CHANGED:
                             result_key = 'password_status'
                             import_result = self.import_password_status(file)
+                        elif log_type == LogType.MFA_CHANGES:
+                            result_key = 'mfa_changes'
+                            import_result = self.import_mfa_changes(file)
+                        elif log_type == LogType.RISKY_USERS:
+                            result_key = 'risky_users'
+                            import_result = self.import_risky_users(file)
+
+                        # WARNING: File matched pattern but no handler exists (Phase 231)
+                        if result_key is None and import_result is None:
+                            logger.warning(
+                                f"File {file.name} matched pattern for {log_type} but no import handler exists. "
+                                f"File will be SKIPPED. This may indicate missing forensic data."
+                            )
 
                         # Merge results if multiple files of same type
                         if result_key and import_result:
@@ -1186,6 +1460,20 @@ class LogImporter:
                             elif log_type == LogType.PASSWORD_CHANGED:
                                 results['password_status'] = self._import_password_status_from_bytes(
                                     content, source_id, source_hash
+                                )
+                            elif log_type == LogType.MFA_CHANGES:
+                                results['mfa_changes'] = self._import_mfa_changes_from_bytes(
+                                    content, source_id, source_hash
+                                )
+                            elif log_type == LogType.RISKY_USERS:
+                                results['risky_users'] = self._import_risky_users_from_bytes(
+                                    content, source_id, source_hash
+                                )
+                            else:
+                                # WARNING: Pattern matched but no handler (Phase 231)
+                                logger.warning(
+                                    f"File {filename} in zip matched pattern for {log_type} "
+                                    f"but no import handler exists. File will be SKIPPED."
                                 )
                         except Exception as e:
                             logger.error(f"Failed to import {member_name} from zip: {e}")
@@ -1739,6 +2027,32 @@ class LogImporter:
         text_content = content.decode('utf-8-sig')
         reader = csv.DictReader(io.StringIO(text_content))
         return self._import_password_status_internal(reader, source_id, source_hash, start_time)
+
+    def _import_mfa_changes_from_bytes(
+        self, content: bytes, source_id: str, source_hash: str
+    ) -> ImportResult:
+        """
+        Import MFA changes from bytes content.
+
+        Delegates to _import_mfa_changes_internal after decoding bytes to CSV reader.
+        """
+        start_time = time.time()
+        text_content = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text_content))
+        return self._import_mfa_changes_internal(reader, source_id, source_hash, start_time)
+
+    def _import_risky_users_from_bytes(
+        self, content: bytes, source_id: str, source_hash: str
+    ) -> ImportResult:
+        """
+        Import risky users from bytes content.
+
+        Delegates to _import_risky_users_internal after decoding bytes to CSV reader.
+        """
+        start_time = time.time()
+        text_content = content.decode('utf-8-sig')
+        reader = csv.DictReader(io.StringIO(text_content))
+        return self._import_risky_users_internal(reader, source_id, source_hash, start_time)
 
     def import_entra_audit(self, source: Union[str, Path]) -> ImportResult:
         """

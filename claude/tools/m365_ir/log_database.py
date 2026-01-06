@@ -354,6 +354,33 @@ class IRLogDatabase:
             )
         """)
 
+        # MFA Changes table (Phase 231)
+        # MFA registration and modification events
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mfa_changes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                activity_display_name TEXT NOT NULL,
+                user TEXT NOT NULL,
+                result TEXT,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Risky Users table (Phase 231)
+        # Microsoft Identity Protection risky user detections
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS risky_users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_principal_name TEXT NOT NULL,
+                risk_level TEXT,
+                risk_state TEXT,
+                risk_detail TEXT,
+                risk_last_updated TEXT,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
     def _create_indexes(self, cursor: sqlite3.Cursor) -> None:
         """Create performance indexes on key columns."""
 
@@ -547,6 +574,34 @@ class IRLogDatabase:
         cursor.execute("""
             CREATE UNIQUE INDEX IF NOT EXISTS idx_entra_audit_unique
             ON entra_audit_log(timestamp, activity, target)
+        """)
+
+        # MFA Changes indexes (Phase 231)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_mfa_timestamp
+            ON mfa_changes(timestamp)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_mfa_user
+            ON mfa_changes(user)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_mfa_activity
+            ON mfa_changes(activity_display_name)
+        """)
+
+        # Risky Users indexes (Phase 231)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_risky_user
+            ON risky_users(user_principal_name)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_risky_level
+            ON risky_users(risk_level)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_risky_state
+            ON risky_users(risk_state)
         """)
 
 

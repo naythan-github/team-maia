@@ -920,3 +920,40 @@ class TestRecordDeduplication:
         assert count == 3  # 2 from first file + 1 new from second
         assert result2.records_imported == 1  # Only 1 new record
         assert result2.records_skipped == 1  # 1 duplicate skipped
+
+
+def test_all_patterns_have_handlers(importer):
+    """
+    Test that all LOG_FILE_PATTERNS have corresponding import handlers.
+
+    Prevents silent data loss from patterns without handlers (Phase 231).
+    """
+    from claude.tools.m365_ir.m365_log_parser import LOG_FILE_PATTERNS, LogType
+
+    # Map of LogType to handler method names
+    expected_handlers = {
+        LogType.SIGNIN: 'import_sign_in_logs',
+        LogType.FULL_AUDIT: 'import_ual',
+        LogType.ENTRA_AUDIT: 'import_entra_audit',
+        LogType.AUDIT: 'import_entra_audit',  # Deprecated, uses ENTRA_AUDIT handler
+        LogType.MAILBOX_AUDIT: 'import_mailbox_audit',
+        LogType.OAUTH_CONSENTS: 'import_oauth_consents',
+        LogType.INBOX_RULES: 'import_inbox_rules',
+        LogType.LEGACY_AUTH: 'import_legacy_auth',
+        LogType.PASSWORD_CHANGED: 'import_password_status',
+        LogType.MFA_CHANGES: 'import_mfa_changes',
+        LogType.RISKY_USERS: 'import_risky_users',
+    }
+
+    # Verify all patterns have handlers
+    for log_type in LOG_FILE_PATTERNS.keys():
+        assert log_type in expected_handlers, (
+            f"Pattern defined for {log_type} but no handler mapping exists. "
+            f"Add handler to expected_handlers dict in this test."
+        )
+
+        handler_name = expected_handlers[log_type]
+        assert hasattr(importer, handler_name), (
+            f"Pattern defined for {log_type} but handler method '{handler_name}' "
+            f"does not exist on LogImporter. This will cause silent data loss!"
+        )
