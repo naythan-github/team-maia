@@ -546,7 +546,7 @@
 | `syntax_validator.py` | (utility) |
 | `unified_contact_system.py` | (utility) |
 
-### LEARNING (`claude/tools/learning/`) - 13 tools ⭐ Phase 232-234
+### LEARNING (`claude/tools/learning/`) - 16 tools ⭐ Phase 232-234 + Phase 237
 
 | Tool | Purpose |
 |------|---------|
@@ -562,12 +562,17 @@
 | `llm_summarizer.py` | Phase 234: Ollama-based key decision extraction and session summary generation |
 | `preference_detection.py` | Phase 234: Detect corrections ("no", "wrong", "actually") and explicit preferences |
 | `self_modification.py` | Phase 234: Update preferences + suggest prompt edits with safety guardrails |
+| `extraction.py` | **Phase 237**: Pre-compaction learning extraction - 12 pattern types (decision, solution, outcome, handoff, checkpoint, refactoring, error_recovery, optimization, learning, breakthrough, test, security) |
+| `archive.py` | **Phase 237**: Conversation archive system - SQLite + FTS5 full-text search for pre-compaction snapshots |
+| `retrieval.py` | **Phase 237**: Conversation retrieval API - get, search, export (markdown/JSON), compaction history |
+| `pai_v2_bridge.py` | **Phase 237**: PAI v2 bridge - converts extracted learnings to PAI v2 patterns with learning ID tracking |
 
-### LEARNING HOOKS (`claude/hooks/`) - 1 hook
+### LEARNING HOOKS (`claude/hooks/`) - 2 hooks
 
 | Hook | Purpose |
 |------|---------|
 | `tool_output_capture.py` | Phase 234: PostToolUse hook for automatic UOCS capture - add to .claude/settings.json |
+| `pre_compaction_learning_capture.py` | **Phase 237**: PreCompact hook - extracts learnings and archives full conversation before Claude Code compaction (3-retry logic, graceful degradation, <5s performance) |
 
 ---
 
@@ -725,7 +730,10 @@
 | Session learning | `session.py`, `/memory` command |
 | Tool output capture | `uocs.py` (async, non-blocking) |
 | Pattern extraction | `learn.py`, `verify.py` |
+| Pre-compaction capture | `extraction.py` (12 patterns), `archive.py` (FTS5 search) |
+| Learning ID tracking | `pai_v2_bridge.py` (archive ↔ PAI v2 cross-reference) |
+| Conversation retrieval | `retrieval.py` (get/search archived conversations) |
 
 ---
 
-*v3.1 | Complete registry (501 tools + 94 agents) | Database-synced | Phase 232: PAI v2 Learning*
+*v3.2 | Complete registry (505 tools + 95 agents) | Database-synced | Phase 237: Pre-Compaction Learning Capture*
