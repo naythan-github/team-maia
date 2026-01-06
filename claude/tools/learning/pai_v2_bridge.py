@@ -17,11 +17,20 @@ from typing import List, Dict, Any, Optional
 
 # Map extraction learning types to PAI v2 pattern types
 LEARNING_TYPE_MAPPING = {
+    # Original 5 types (Phase 237.1)
     'decision': 'workflow',        # Decision patterns → workflow patterns
     'solution': 'tool_sequence',   # Solution approaches → tool sequences
     'outcome': 'workflow',         # Outcomes → workflow patterns
     'handoff': 'workflow',         # Agent handoffs → workflow patterns
     'checkpoint': 'workflow',      # Checkpoints → workflow patterns
+    # Enhanced 7 types (Phase 237.3)
+    'refactoring': 'workflow',     # Code refactoring → workflow patterns
+    'error_recovery': 'tool_sequence',  # Error fixes → tool sequences
+    'optimization': 'tool_sequence',    # Performance improvements → tool sequences
+    'learning': 'workflow',        # Explicit insights → workflow patterns
+    'breakthrough': 'workflow',    # Major discoveries → workflow patterns
+    'test': 'tool_sequence',       # Testing patterns → tool sequences
+    'security': 'tool_sequence',   # Security fixes → tool sequences
 }
 
 
@@ -148,13 +157,22 @@ class PAIv2Bridge:
             'context': learning.get('context', {})
         }
 
-        # Default confidence based on learning type
+        # Default confidence based on learning type (Phase 237.3 Enhanced)
         confidence_map = {
+            # Original types
             'decision': 0.8,    # High confidence in explicit decisions
             'solution': 0.9,    # Very high confidence in solutions
             'outcome': 0.7,     # Medium confidence in outcomes
             'handoff': 0.6,     # Medium confidence in handoffs
             'checkpoint': 0.5,  # Lower confidence in checkpoints
+            # Enhanced types (Phase 237.3)
+            'refactoring': 0.75,      # Good confidence in refactoring
+            'error_recovery': 0.85,   # High confidence in error fixes
+            'optimization': 0.80,     # High confidence in optimizations
+            'learning': 0.90,         # Very high - explicit learnings
+            'breakthrough': 0.95,     # Highest - major discoveries
+            'test': 0.70,             # Good confidence in test patterns
+            'security': 0.88,         # Very high - security is critical
         }
         confidence = confidence_map.get(learning_type, 0.5)
 

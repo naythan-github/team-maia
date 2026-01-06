@@ -9,15 +9,23 @@ Responsibilities:
 - Extract conversation metadata (tools, agents, errors)
 - Classify learnings using PAI v2 UOC taxonomy
 
-Learning Categories:
+Learning Categories (Phase 237.3 Enhanced):
 - Decisions: Choice made with reasoning
 - Solutions: Problem fixed with method
 - Outcomes: Result of action (success/failure)
 - Handoffs: Agent transitions
 - Checkpoints: Save state, commits, deploys
+- Refactoring: Code quality improvements
+- Error Recovery: Error → fix sequences
+- Optimization: Performance improvements
+- Learning: Explicit insights
+- Breakthrough: Major discoveries
+- Test: Testing-related learnings
+- Security: Security fixes, vulnerabilities
 
 Author: Maia (Phase 237)
 Created: 2026-01-06
+Updated: 2026-01-06 (Phase 237.3)
 """
 
 import json
@@ -62,6 +70,55 @@ LEARNING_PATTERNS = {
         r'deployed to',
         r'git push',
         r'✅.*?committed',
+    ],
+    # Phase 237.3: Enhanced patterns for richer learning capture
+    'refactoring': [
+        r'refactor(?:ed|ing) (.*?)[\.\n]',
+        r'cleaned up (.*?)[\.\n]',
+        r'extracted (.*?) into (.*?)[\.\n]',
+        r'simplified (.*?)[\.\n]',
+        r'restructured (.*?)[\.\n]',
+    ],
+    'error_recovery': [
+        r'(?:encountered|caught) (.*?Error|.*?Exception)(.*?)[\.\n]',
+        r'handled (.*?) by (.*?)[\.\n]',
+        r'recovered from (.*?)[\.\n]',
+        r'exception (.*?) and (.*?)[\.\n]',
+    ],
+    'optimization': [
+        r'optimiz(?:ed|ing) (.*?)[\.\n]',
+        r'improved performance (.*?)[\.\n]',
+        r'reduc(?:ed|ing) (.*?) from (.*?) to (.*?)[\.\n]',
+        r'speed(?:ed)? up (.*?)[\.\n]',
+        r'increas(?:ed|ing) (.*?) by (.*?)[\.\n]',
+    ],
+    'learning': [
+        r'learned that (.*?)[\.\n]',
+        r'realized that (.*?)[\.\n]',
+        r'understood that (.*?)[\.\n]',
+        r'discovered (.*?) works (.*?)[\.\n]',
+        r'found that (.*?)[\.\n]',
+    ],
+    'breakthrough': [
+        r'breakthrough:? (.*?)[\.\n]',
+        r'key insight:? (.*?)[\.\n]',
+        r'discovered that (.*?)[\.\n]',
+        r'major finding:? (.*?)[\.\n]',
+        r'eureka:? (.*?)[\.\n]',
+    ],
+    'test': [
+        r'added (.*?) tests? (.*?)[\.\n]',
+        r'test(?:ed|ing) (.*?)[\.\n]',
+        r'(?:test )?coverage (.*?)[\.\n]',
+        r'wrote tests? for (.*?)[\.\n]',
+        r'verify(?:ied|ing) (.*?) works (.*?)[\.\n]',
+    ],
+    'security': [
+        r'(?:fixed|patched) (.*?)vulnerability (.*?)[\.\n]',
+        r'(?:SQL injection|XSS|CSRF|security) (.*?)[\.\n]',
+        r'sanitiz(?:ed|ing) (.*?)[\.\n]',
+        r'(?:identified|found) (.*?)vulnerability (.*?)[\.\n]',
+        r'security (fix|patch|update) (.*?)[\.\n]',
     ],
 }
 
@@ -326,6 +383,14 @@ class LearningExtractor:
             'outcome': 0.85,
             'handoff': 1.0,  # Very specific pattern
             'checkpoint': 0.9,
+            # Phase 237.3: Enhanced patterns
+            'refactoring': 0.88,
+            'error_recovery': 0.92,
+            'optimization': 0.90,
+            'learning': 0.95,  # Explicit learnings are high confidence
+            'breakthrough': 0.98,  # Very specific and important
+            'test': 0.87,
+            'security': 0.93,  # Security fixes are high importance
         }
 
         base_confidence = confidence_by_category.get(category, 0.8)
