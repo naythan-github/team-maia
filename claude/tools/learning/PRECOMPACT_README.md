@@ -40,8 +40,9 @@ Claude Code Proceeds with Compaction
 ### 1. Learning Extraction Engine
 **File**: `claude/tools/learning/extraction.py`
 
-Identifies 5 learning categories using regex patterns:
+**Pattern Library**: 12 learning categories (5 original + 7 enhanced)
 
+#### Original Patterns (Phase 237.1)
 | Category | Patterns | Example |
 |----------|----------|---------|
 | **Decision** | "decided to", "chose X over Y" | "Chose SQLite over Postgres because simpler" |
@@ -49,6 +50,19 @@ Identifies 5 learning categories using regex patterns:
 | **Outcome** | "✅ worked", "failed because" | "✅ All tests passed successfully" |
 | **Handoff** | "HANDOFF DECLARATION" | Agent transitions |
 | **Checkpoint** | "save state", "git commit" | Save points |
+
+#### Enhanced Patterns (Phase 237.3) 🆕
+| Category | Confidence | Example |
+|----------|------------|---------|
+| **Refactoring** | 0.88 | "Refactored auth module to use dependency injection" |
+| **Error Recovery** | 0.92 | "Caught FileNotFoundError and handled it by..." |
+| **Optimization** | 0.90 | "Reduced query time from 2s to 50ms" |
+| **Learning** | 0.95 | "Learned that connection pooling is critical" |
+| **Breakthrough** | 0.98 | "Key insight: The bottleneck was in serialization" |
+| **Test** | 0.87 | "Added integration tests for all endpoints" |
+| **Security** | 0.93 | "Fixed SQL injection by using parameterized queries" |
+
+📖 **Full Pattern Documentation**: [ENHANCED_PATTERNS_README.md](ENHANCED_PATTERNS_README.md)
 
 **Performance**: 0.05s for 1000 messages (100x faster than 5s target)
 
