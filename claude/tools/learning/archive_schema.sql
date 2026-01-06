@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS conversation_snapshots (
     context_id TEXT NOT NULL,
     session_id TEXT,
     snapshot_timestamp INTEGER NOT NULL,
-    trigger_type TEXT CHECK(trigger_type IN ('auto', 'manual')),
+    trigger_type TEXT CHECK(trigger_type IN ('auto', 'manual', 'proactive_monitor', 'skill')),
 
     -- Transcript data
     transcript_path TEXT,
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS compaction_metrics (
     metric_id INTEGER PRIMARY KEY AUTOINCREMENT,
     context_id TEXT NOT NULL,
     compaction_timestamp INTEGER NOT NULL,
-    trigger_type TEXT CHECK(trigger_type IN ('auto', 'manual')),
+    trigger_type TEXT CHECK(trigger_type IN ('auto', 'manual', 'proactive_monitor', 'skill')),
 
     -- Performance metrics
     execution_time_ms INTEGER,
