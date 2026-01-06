@@ -66,6 +66,12 @@ from claude.tools.m365_ir.ir_case import IRCase
 # Phase 230 - Account Validator
 from claude.tools.m365_ir.account_validator import AccountValidator, ValidationError
 
+# Phase 241 - Auth Verifier
+from claude.tools.m365_ir.auth_verifier import (
+    verify_auth_status,
+    STATUS_CODE_DESCRIPTIONS
+)
+
 
 class M365IRAnalyzer:
     """
@@ -661,6 +667,62 @@ def cmd_validate_account(args):
         return 1
 
 
+def cmd_verify_status(args):
+    """
+    Verify authentication status codes in case database (Phase 241).
+
+    Prevents forensic errors like PIR-OCULUS-2025-12-19 where field names
+    were misinterpreted as indicating successful authentication.
+    """
+    db = IRLogDatabase(case_id=args.case_id, base_path=args.base_path)
+
+    if not db.exists:
+        print(f"❌ Case not found: {args.case_id}")
+        print(f"   Expected: {args.base_path}/{args.case_id}")
+        return 1
+
+    conn = db.connect()
+
+    print(f"\n{'='*60}")
+    print(f"Authentication Status Verification")
+    print(f"Case: {args.case_id}")
+    print(f"{'='*60}\n")
+
+    # Determine which log types to verify
+    log_types = ['legacy_auth', 'sign_in'] if args.log_type == 'all' else [args.log_type]
+
+    for log_type in log_types:
+        try:
+            result = verify_auth_status(conn, log_type=log_type)
+
+            # Display header
+            print(f"{log_type.replace('_', ' ').title()} Events:")
+            print(f"  Total: {result.total_events}")
+            print(f"  Successful: {result.successful} ({result.success_rate:.1f}%)")
+            print(f"  Failed: {result.failed} ({100-result.success_rate:.1f}%)")
+
+            # Display status code breakdown
+            if result.status_codes and args.verbose:
+                print(f"\n  Status Code Breakdown:")
+                for code, count in sorted(result.status_codes.items(), key=lambda x: -x[1]):
+                    status_name = STATUS_CODE_DESCRIPTIONS.get(code, "Unknown")
+                    print(f"    {code} ({status_name}): {count} events")
+
+            # Display warnings
+            if result.warnings:
+                print(f"\n  Warnings:")
+                for warning in result.warnings:
+                    print(f"    {warning}")
+
+            print()
+
+        except ValueError as e:
+            print(f"  ⚠️  {str(e)}\n")
+
+    conn.close()
+    return 0
+
+
 def cmd_validate_all(args):
     """
     Handle validate-all command - validate all compromised accounts.
@@ -787,6 +849,11 @@ Examples:
   # Account validation (Phase 230)
   %(prog)s validate-account PIR-ACME-2025-001 ben@example.com      # Validate single account
   %(prog)s validate-all PIR-ACME-2025-001                          # Validate all compromised accounts
+
+  # Authentication verification (Phase 241)
+  %(prog)s verify-status PIR-ACME-2025-001                         # Verify all log types
+  %(prog)s verify-status PIR-ACME-2025-001 --log-type legacy_auth  # Verify specific log type
+  %(prog)s verify-status PIR-ACME-2025-001 --verbose               # Show detailed status code breakdown
         """
     )
 
@@ -843,6 +910,16 @@ Examples:
     validate_all_parser.add_argument("case_id", help="Case identifier")
     validate_all_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
 
+    # Verify-status command (Phase 241)
+    verify_status_parser = subparsers.add_parser("verify-status", help="Verify authentication status codes")
+    verify_status_parser.add_argument("case_id", help="Case identifier")
+    verify_status_parser.add_argument("--log-type", "-t", default="all",
+                                     choices=["all", "legacy_auth", "sign_in"],
+                                     help="Log type to verify (default: all)")
+    verify_status_parser.add_argument("--verbose", "-v", action="store_true",
+                                     help="Show detailed status code breakdown")
+    verify_status_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
+
     args = parser.parse_args()
 
     if args.command == "analyze":
@@ -881,6 +958,9 @@ Examples:
 
     elif args.command == "validate-all":
         sys.exit(cmd_validate_all(args))
+
+    elif args.command == "verify-status":
+        sys.exit(cmd_verify_status(args))
 
     else:
         parser.print_help()

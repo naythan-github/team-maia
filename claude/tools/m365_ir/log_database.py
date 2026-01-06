@@ -31,7 +31,8 @@ DEFAULT_BASE_PATH = os.path.expanduser("~/work_projects/ir_cases")
 # Schema version for migrations
 # v1: Initial schema (Phase 226)
 # v2: Compression - raw_record and audit_data stored as BLOB (Phase 229)
-SCHEMA_VERSION = 2
+# v3: Verification - verification_summary table (Phase 241)
+SCHEMA_VERSION = 3
 
 
 class IRLogDatabase:
@@ -153,7 +154,10 @@ class IRLogDatabase:
             'legacy_auth_logs',
             'password_status',
             'entra_audit_log',
-            'import_metadata'
+            'import_metadata',
+            'mfa_changes',
+            'risky_users',
+            'verification_summary'
         ]
 
         stats = {}
@@ -381,6 +385,23 @@ class IRLogDatabase:
             )
         """)
 
+        # Verification Summary table (Phase 241)
+        # Authentication status verification results
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS verification_summary (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                log_type TEXT NOT NULL,
+                total_events INTEGER NOT NULL,
+                successful INTEGER NOT NULL,
+                failed INTEGER NOT NULL,
+                success_rate REAL NOT NULL,
+                status_code_breakdown TEXT,
+                verified_at TEXT NOT NULL,
+                notes TEXT,
+                UNIQUE(log_type, verified_at)
+            )
+        """)
+
     def _create_indexes(self, cursor: sqlite3.Cursor) -> None:
         """Create performance indexes on key columns."""
 
@@ -602,6 +623,16 @@ class IRLogDatabase:
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_risky_state
             ON risky_users(risk_state)
+        """)
+
+        # Verification Summary indexes (Phase 241)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_verification_log_type
+            ON verification_summary(log_type)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_verification_verified_at
+            ON verification_summary(verified_at)
         """)
 
 

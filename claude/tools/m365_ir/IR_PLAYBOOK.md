@@ -136,6 +136,92 @@ ORDER BY timestamp;
 **Lesson:**
 > **PRIMARY EVIDENCE (status codes) > FIELD NAMES > DOCUMENTATION > ASSUMPTIONS**
 
+### Automated Verification (Phase 241)
+
+**RECOMMENDED**: Use automated tooling to prevent forensic errors.
+
+#### Auto-Verification During Import
+
+When importing logs, verification runs automatically:
+
+```bash
+python3 m365_ir_cli.py import /path/to/exports.zip --case-id PIR-ACME-2025-001
+```
+
+**Automatic Output:**
+```
+Imported 354 records from legacy_auth.csv
+
+✅ Auto-verification completed:
+   Total: 354 events
+   Successful: 0 (0.0%)
+   Failed: 354 (100.0%)
+   ✅ 0% success rate - all authentication attempts FAILED (attack was blocked)
+```
+
+#### Manual Verification Command
+
+Verify authentication status codes at any time:
+
+```bash
+# Verify all log types
+python3 m365_ir_cli.py verify-status PIR-ACME-2025-001
+
+# Verify specific log type
+python3 m365_ir_cli.py verify-status PIR-ACME-2025-001 --log-type legacy_auth
+
+# Show detailed status code breakdown
+python3 m365_ir_cli.py verify-status PIR-ACME-2025-001 --verbose
+```
+
+**Example Output:**
+```
+============================================================
+Authentication Status Verification
+Case: PIR-OCULUS-2025-12-19
+============================================================
+
+Legacy Auth Events:
+  Total: 354
+  Successful: 0 (0.0%)
+  Failed: 354 (100.0%)
+
+  Status Code Breakdown:
+    50126 (Invalid credentials (FAILED)): 232 events
+    50053 (Malicious IP / Account locked (FAILED)): 122 events
+
+  Warnings:
+    ✅ 0% success rate - all authentication attempts FAILED (attack was blocked)
+```
+
+#### Programmatic Verification
+
+For custom analysis scripts:
+
+```python
+from claude.tools.m365_ir.auth_verifier import verify_auth_status
+from claude.tools.m365_ir.log_database import IRLogDatabase
+
+db = IRLogDatabase(case_id='PIR-ACME-2025-001')
+conn = db.connect()
+
+result = verify_auth_status(conn, log_type='legacy_auth')
+
+print(f"Success rate: {result.success_rate:.1f}%")
+if result.success_rate == 0.0:
+    print("✅ All authentication attempts failed (attack was blocked)")
+elif result.success_rate == 100.0:
+    print("⚠️  All authentication attempts succeeded (verify expected)")
+
+conn.close()
+```
+
+**Key Benefits:**
+- **Prevents PIR-OCULUS-2025-12-19 errors**: Automatic detection of 0% success rate
+- **Audit trail**: Verification results stored in database for PIR evidence
+- **Warnings**: Alerts for suspicious patterns (100% success, unknown status codes)
+- **Fast**: <2 seconds for 10K+ events
+
 ---
 
 ## 1. Attack Signatures

@@ -830,6 +830,28 @@ class LogImporter:
 
             conn.commit()
 
+            # Phase 241: Auto-verify authentication status after import
+            if records_imported > 0:
+                try:
+                    from .auth_verifier import verify_auth_status, store_verification
+
+                    result = verify_auth_status(conn, log_type='legacy_auth')
+                    store_verification(conn, result)
+
+                    # Print verification summary
+                    print(f"\n✅ Auto-verification completed:")
+                    print(f"   Total: {result.total_events} events")
+                    print(f"   Successful: {result.successful} ({result.success_rate:.1f}%)")
+                    print(f"   Failed: {result.failed} ({100-result.success_rate:.1f}%)")
+
+                    if result.warnings:
+                        for warning in result.warnings:
+                            print(f"   {warning}")
+
+                except Exception as e:
+                    logger.warning(f"Auto-verification failed: {e}")
+                    # Don't fail import if verification fails
+
         except Exception as e:
             conn.rollback()
             raise
