@@ -115,7 +115,7 @@ Add to `~/.claude/settings.local.json`:
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/claude/hooks/pre_compaction_learning_capture.py",
+            "command": "python3 \"$MAIA_ROOT\"/claude/hooks/pre_compaction_learning_capture.py",
             "timeout": 5000
           }
         ]
@@ -273,9 +273,10 @@ sqlite3 ~/.maia/data/conversation_archive.db \
 
 **Solutions**:
 1. Verify hook configuration in `~/.claude/settings.local.json`
-2. Check `$CLAUDE_PROJECT_DIR` environment variable is set
-3. Restart Claude Code to reload hooks
-4. Test hook manually:
+2. Check `$MAIA_ROOT` environment variable is set (NOT `$CLAUDE_PROJECT_DIR`)
+3. If config uses `$CLAUDE_PROJECT_DIR`, update to `$MAIA_ROOT`
+4. Restart Claude Code to reload hooks
+5. Test hook manually:
    ```bash
    echo '{"session_id":"test","transcript_path":"~/test.jsonl","trigger":"manual"}' | \
      python3 claude/hooks/pre_compaction_learning_capture.py

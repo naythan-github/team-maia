@@ -141,8 +141,12 @@ Phase 237 Day 1 is **COMPLETE** when:
 
 1. **Verify environment variable**:
    ```bash
-   echo $CLAUDE_PROJECT_DIR
+   echo $MAIA_ROOT
    # Should output: /Users/naythandawe/maia
+
+   # If hook uses $CLAUDE_PROJECT_DIR, update to $MAIA_ROOT:
+   sed -i.bak 's/\$CLAUDE_PROJECT_DIR/\$MAIA_ROOT/g' ~/.claude/settings.local.json
+   # Then restart Claude Code
    ```
 
 2. **Test hook manually** (confirm it still works):

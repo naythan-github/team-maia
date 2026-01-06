@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"$CLAUDE_PROJECT_DIR\"/claude/hooks/pre_compaction_learning_capture.py",
+            "command": "python3 \"$MAIA_ROOT\"/claude/hooks/pre_compaction_learning_capture.py",
             "timeout": 5000
           }
         ]
@@ -29,6 +29,7 @@
     "",
     "Installation:",
     "Merge this config into ~/.claude/settings.local.json",
+    "IMPORTANT: Use $MAIA_ROOT environment variable (not $CLAUDE_PROJECT_DIR)",
     "",
     "Monitoring:",
     "- Error log: ~/.maia/logs/pre_compaction_errors.log",
