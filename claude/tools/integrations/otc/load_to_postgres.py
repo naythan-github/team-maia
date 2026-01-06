@@ -309,11 +309,11 @@ class OTCPostgresLoader:
 
             insert_sql = """
                 INSERT INTO servicedesk.timesheets (
-                    user, user_fullname, date, time_from, time_to, hours,
-                    category, sub_category, work_type, crm_id, description,
-                    account_name, billable, approved
+                    "TS-User Username", "TS-User Full Name", "TS-Date", "TS-Time From", "TS-Time To", "TS-Hours",
+                    "TS-Category", "TS-Sub Category", "TS-Type", "TS-Crm ID", "TS-Description",
+                    "TS-Account Name"
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             batch = []
@@ -323,7 +323,7 @@ class OTCPostgresLoader:
                     values = (
                         ts.user, ts.user_fullname, ts.date, ts.time_from, ts.time_to, ts.hours,
                         ts.category, ts.sub_category, ts.work_type, ts.crm_id, ts.description,
-                        ts.account_name, ts.billable, ts.approved
+                        ts.account_name
                     )
                     batch.append(values)
 
@@ -396,8 +396,9 @@ class OTCPostgresLoader:
 
             insert_sql = """
                 INSERT INTO servicedesk.tickets (
-                    id, summary, status, priority, category, assignee,
-                    created_time, modified_time, account_name, client_name
+                    "TKT-Ticket ID", "TKT-Title", "TKT-Status", "TKT-Severity", "TKT-Category",
+                    "TKT-Assigned To User", "TKT-Created Time", "TKT-Modified Time",
+                    "TKT-Account Name", "TKT-Client Name"
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
