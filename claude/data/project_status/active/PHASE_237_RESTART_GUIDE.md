@@ -16,7 +16,8 @@
 - Matcher: `"manual"` (triggers on `/compact` command)
 - Timeout: 5000ms
 
-⚠️ **Waiting on**: Hook configuration reload (requires Claude Code restart)
+⚠️ **BLOCKED**: Environment variable issue - `$MAIA_ROOT` not available in hook context
+✅ **FIXED**: Updated all hooks to use absolute paths (2026-01-06)
 
 ---
 
@@ -29,6 +30,24 @@
 5. **Verified hook works**: Manual test succeeded perfectly (1ms execution time)
 
 **Root cause**: Hooks are loaded at Claude Code startup. Adding PreCompact hook mid-session requires restart.
+
+---
+
+## Environment Variable Issue (2026-01-06)
+
+### Problem Discovered
+After restart, `/compact` succeeded but hook didn't execute. Diagnosis revealed:
+- Hook configuration used `$MAIA_ROOT` environment variable
+- Environment variables NOT available in Claude Code hook execution context
+- Resulted in invalid path: `/claude/hooks/...` instead of `/Users/naythandawe/maia/claude/hooks/...`
+
+### Fix Applied
+Updated `~/.claude/settings.local.json` to use **absolute paths** for all hooks:
+- PreCompact hook: `/Users/naythandawe/maia/claude/hooks/pre_compaction_learning_capture.py`
+- WebFetch security hooks: `/Users/naythandawe/maia/claude/tools/security/...`
+- Production config updated: `claude/config/precompact_hook_config.json`
+
+**IMPORTANT**: Claude Code restart required to load updated hook configuration.
 
 ---
 
@@ -48,7 +67,7 @@ Expected output:
     "hooks": [
       {
         "type": "command",
-        "command": "python3 \"$CLAUDE_PROJECT_DIR\"/claude/hooks/pre_compaction_learning_capture.py",
+        "command": "python3 /Users/naythandawe/maia/claude/hooks/pre_compaction_learning_capture.py",
         "timeout": 5000
       }
     ]
