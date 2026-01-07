@@ -525,6 +525,35 @@ def store_field_usage(
     conn.close()
 
 
+def query_historical_success_rate(
+    log_type: str,
+    field_name: str,
+    historical_db_path: str
+) -> float:
+    """
+    Query historical success rate for a specific field.
+
+    Public API wrapper around _calculate_historical_success_rate.
+
+    Args:
+        log_type: Log type (e.g., 'sign_in_logs', 'unified_audit_log', 'legacy_auth_logs')
+        field_name: Field name to query
+        historical_db_path: Path to historical learning database
+
+    Returns:
+        Historical success rate (0-1), defaults to 0.5 if no history
+
+    Example:
+        >>> rate = query_historical_success_rate(
+        ...     log_type='sign_in_logs',
+        ...     field_name='conditional_access_status',
+        ...     historical_db_path='~/.maia/data/databases/system/m365_ir_field_reliability_history.db'
+        ... )
+        >>> print(f"Historical success: {rate*100:.0f}%")
+    """
+    return _calculate_historical_success_rate(historical_db_path, log_type, field_name)
+
+
 # ==================== Phase 2.1.3: Auto-Discovery & Ranking ====================
 
 
