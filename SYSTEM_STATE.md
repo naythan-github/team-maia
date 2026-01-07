@@ -68260,3 +68260,57 @@ Refactored to DB-first architecture following `smart_context_loader.py` pattern 
 4. **TDD catches edge cases**: 23 tests ensured all 8 strategies work correctly
 5. **Verification is essential**: Manual testing confirmed DB queries execute (not just tests)
 
+## Phase 238: TDD Compaction Readiness Protocol
+
+**Date**: 2026-01-07
+**Type**: Process Enhancement
+**Status**: ✅ Complete
+
+### Problem Statement
+
+During long TDD sessions, context compaction could occur mid-phase, causing:
+- Loss of progress state
+- Incomplete documentation
+- Agent reload confusion about current step
+
+Existing `context_monitor.py` (70% threshold) and `pre_compaction_learning_capture.py` handled automated compaction, but the TDD protocol lacked explicit checkpointing guidance.
+
+### Solution
+
+Added "Compaction Readiness Protocol" to TDD v2.5 with:
+
+1. **Mandatory Checkpoints**: End of each TDD phase (P0-P6.5)
+2. **Token Warning Response**: Complete atomic op → Document state → Save progress → Inform user
+3. **Atomic Operation Definitions**: Clear boundaries for "finish current step"
+4. **System-wide Trait**: Added "Compaction-Ready" to identity.md
+
+### Changes
+
+| File | Change |
+|------|--------|
+| `claude/context/core/tdd_development_protocol.md` | Added Compaction Readiness Protocol section (v2.5) |
+| `claude/context/core/identity.md` | Added "Compaction-Ready" personality trait |
+| `CLAUDE.md` | Added Principle #22 (Compaction-Ready), updated v2.4→v2.5 refs |
+
+### Atomic Operation Definition
+
+| Context | Atomic Unit (Do NOT Interrupt) |
+|---------|-------------------------------|
+| File edit | Complete edit that compiles/parses |
+| Test case | Full test function (can pass/fail) |
+| Multi-file refactor | One logical change set (git-committable) |
+| Documentation | Complete section |
+| TDD cycle | Red → Green complete (not mid-cycle) |
+
+### Integration
+
+- Builds on existing `context_monitor.py` (70% threshold)
+- Works with `pre_compaction_learning_capture.py` for auto-learning
+- Uses `feature_tracker.py` JSON state (persists through compaction)
+
+### Key Learnings
+
+1. **Explicit checkpoints > implicit**: Documenting when to save prevents data loss
+2. **Atomic operations need definition**: "Finish current step" is ambiguous without specification
+3. **System-wide traits propagate behavior**: Adding to identity.md affects all agents
+

@@ -21,6 +21,7 @@ Personal AI infrastructure | Human augmentation | System design over raw intelli
 - **Fix-Forward**: No Band-Aid solutions - fix properly, test, keep going until it works
 - **Agent Persistence**: Maintain agent context until explicitly unloaded
 - **TDD-First**: MANDATORY for ALL development with Domain Specialist + SRE pairing
+- **Compaction-Ready**: At natural boundaries, checkpoint progress so context can compact without data loss. Self-monitor for ~65-70% token utilization.
 
 ---
 

@@ -270,6 +270,81 @@ claude/data/project_status/active/
 
 ---
 
+## Compaction Readiness Protocol ⭐ NEW v2.5
+
+### Purpose
+Ensure work is checkpointed and documented at natural boundaries, enabling clean context compaction without data loss.
+
+### Triggers
+1. **End of each TDD phase** (P0-P6.5) - MANDATORY checkpoint
+2. **Token warning awareness** (self-assessed ~65-70% context usage)
+3. **Long-running session** (>30 tool invocations)
+4. **Complex multi-file changes** (>5 files modified)
+
+### Checkpoint Actions (End of Each Phase)
+
+| Action | Command/Location |
+|--------|------------------|
+| Update progress | `{PROJECT}_progress.md` with exact resumption point |
+| Update feature tracker | `python3 claude/tools/sre/feature_tracker.py status <project>` |
+| Document state | What's done, what's next, any blockers |
+| Note agent + phase | For reload after compaction |
+
+### Token Warning Response Protocol
+
+When token warning detected OR context feels ~65% consumed:
+
+1. **COMPLETE** current atomic operation (do not interrupt mid-edit)
+2. **DOCUMENT** current state:
+   ```markdown
+   ## Compaction Checkpoint
+   - **Phase**: P4 (Implementation)
+   - **Current Task**: Implementing X
+   - **Tests Status**: 3/5 green
+   - **Next Action**: Complete function Y
+   - **Blockers**: None
+   - **Files Modified**: [list]
+   ```
+3. **SAVE** progress:
+   ```bash
+   python3 claude/tools/sre/feature_tracker.py status <project>
+   # Update {PROJECT}_progress.md
+   ```
+4. **INFORM USER**: "Ready for compaction - progress saved at [phase/step]"
+
+### Atomic Operation Definition
+
+| Context | Atomic Unit (Do NOT Interrupt) |
+|---------|-------------------------------|
+| File edit | Complete edit that compiles/parses |
+| Test case | Full test function (can pass/fail) |
+| Multi-file refactor | One logical change set (git-committable) |
+| Documentation | Complete section |
+| TDD cycle | Red → Green complete (not mid-cycle) |
+
+### Integration with Existing Infrastructure
+
+- `context_monitor.py` - Uses 70% threshold (`MAIA_CONTEXT_THRESHOLD`)
+- `pre_compaction_learning_capture.py` - Auto-captures learning before compaction
+- `feature_tracker.py` - JSON state persists through compaction
+
+---
+
+## v2.5 Changelog (2026-01-07)
+
+**ADDED**:
+- Compaction Readiness Protocol (Phase 238)
+- Token Warning Response Protocol
+- Atomic Operation Definition table
+- Checkpoint Actions at each phase gate
+
+**METRICS**:
+- Gates: 13 (unchanged)
+- Phases: 8 (unchanged)
+- Lines: ~260 → ~320 (+60 for compaction resilience)
+
+---
+
 ## v2.4 Changelog (2026-01-06)
 
 **ADDED**:
