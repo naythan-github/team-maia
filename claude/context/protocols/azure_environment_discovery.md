@@ -28,7 +28,7 @@ az account set --subscription "subscription-name-or-id"
 
 | Environment | Subscription Name | Subscription ID | Tenant | Purpose |
 |-------------|-------------------|-----------------|--------|---------|
-| **Sandbox/Dev** | Visual Studio Enterprise Subscription – MPN | 9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde | ORRO PTY LTD (Orrogroup.onmicrosoft.com) | Development, testing, script validation |
+| **Sandbox/Dev** | Visual Studio Enterprise Subscription – MPN | 9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde | ORRO PTY LTD (Orrogroup.onmicrosoft.com) | Development, testing, script validation ($150/month credits, default subscription) |
 | Resource Group | dev-rg | - | - | Primary sandbox resource group |
 
 ### Customer Environments
@@ -104,6 +104,8 @@ Proceed? (y/n)
 **Tenant**: ORRO PTY LTD (Orrogroup.onmicrosoft.com)
 **Tenant ID**: 7e0c3f88-faec-4a28-86ad-33bfe7c4b326
 **Resource Group**: dev-rg
+**Credits**: $150 USD/month (Azure credits for testing and development)
+**Status**: Default subscription (set via `az account set`)
 
 **Login**:
 ```bash
@@ -139,7 +141,8 @@ az account set --subscription "9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde"
 - **Purpose**: Script testing, validation, proof-of-concept
 - **Existing VMs**: win11-vscode (deallocated, Premium SSD)
 - **Auto-cleanup**: Enabled (auto-shutdown schedules)
-- **Cost**: ~$40/month
+- **Budget**: $150 USD/month Azure credits (current usage: ~$40/month)
+- **Available for testing**: ~$110/month remaining credit
 - **Safe for**: Breaking changes, Run Command testing, configuration experiments
 
 ### Customer Environments
