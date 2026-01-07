@@ -306,5 +306,78 @@ class TestImportPipelineQualityChecks:
             shutil.rmtree(tmpdir, ignore_errors=True)
 
 
+    def test_quality_check_runs_for_zip_import(self):
+        """
+        Test that quality checks run for zip file imports.
+
+        BUG FIX (PIR-OCULUS-2025-12-19): Zip imports were NOT running
+        quality checks, causing quality_check_summary to be empty.
+        """
+        from claude.tools.m365_ir.log_database import IRLogDatabase
+        from claude.tools.m365_ir.log_importer import LogImporter
+        import tempfile
+        import os
+        import zipfile
+
+        # Create test CSV with good quality data
+        csv_content = """CreatedDateTime,UserPrincipalName,IPAddress,Country,ConditionalAccessStatus
+2025-11-04T10:00:00Z,user1@test.com,203.0.113.1,AU,success
+2025-11-04T10:01:00Z,user2@test.com,203.0.113.2,AU,success
+2025-11-04T10:02:00Z,user3@test.com,203.0.113.3,AU,failure
+2025-11-04T10:03:00Z,user4@test.com,203.0.113.4,US,success
+2025-11-04T10:04:00Z,user5@test.com,203.0.113.5,AU,success
+2025-11-04T10:05:00Z,user6@test.com,203.0.113.6,AU,success
+2025-11-04T10:06:00Z,user7@test.com,203.0.113.7,AU,success
+2025-11-04T10:07:00Z,user8@test.com,203.0.113.8,US,failure
+2025-11-04T10:08:00Z,user9@test.com,203.0.113.9,AU,success
+2025-11-04T10:09:00Z,user10@test.com,203.0.113.10,AU,success"""
+
+        tmpdir = tempfile.mkdtemp()
+
+        try:
+            # Create a zip file containing the CSV
+            zip_path = os.path.join(tmpdir, 'test_export.zip')
+            with zipfile.ZipFile(zip_path, 'w') as zf:
+                zf.writestr('1_AllUsers_SignInLogs.csv', csv_content)
+
+            # Create database
+            db = IRLogDatabase(case_id="TEST-ZIP-QUALITY", base_path=tmpdir)
+            db.create()
+
+            importer = LogImporter(db)
+
+            # Import from zip
+            results = importer.import_all(zip_path)
+
+            # Verify import succeeded
+            assert 'sign_in' in results, "sign_in should be imported"
+            assert results['sign_in'].records_imported == 10, "All 10 records should be imported"
+
+            # Verify quality check results were stored
+            import sqlite3
+            conn = sqlite3.connect(db.db_path)
+            cursor = conn.cursor()
+
+            cursor.execute("""
+                SELECT overall_quality_score, check_passed, reliable_fields_count
+                FROM quality_check_summary
+                WHERE table_name = 'sign_in_logs'
+                ORDER BY created_at DESC
+                LIMIT 1
+            """)
+            quality_result = cursor.fetchone()
+            conn.close()
+
+            assert quality_result is not None, \
+                "quality_check_summary should have data after zip import"
+            quality_score, check_passed, reliable_fields = quality_result
+            assert quality_score > 0.5, "Good data should have quality score >0.5"
+            assert check_passed == 1, "Quality check should pass"
+
+        finally:
+            import shutil
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+
 # Mark all tests as Phase 1.2
 pytestmark = pytest.mark.phase_1_2

@@ -111,7 +111,14 @@ class AccountValidator:
 
         created_datetime = row['created_datetime']
         last_password_change = row['last_password_change']
-        account_enabled = bool(row['account_enabled'])
+        # BUG FIX (PIR-OCULUS-2025-12-19): Handle both INTEGER and TEXT formats
+        # Database may have 0/1 (INTEGER) or "True"/"False" (TEXT)
+        # bool("False") = True (bug!), must check string value explicitly
+        raw_enabled = row['account_enabled']
+        if isinstance(raw_enabled, str):
+            account_enabled = raw_enabled.lower() == 'true'
+        else:
+            account_enabled = bool(raw_enabled)
         password_age_days = row['days_since_change']
 
         # FR-1.3: Account Status Changes (CRITICAL - this is where failure occurred)

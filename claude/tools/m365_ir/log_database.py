@@ -306,20 +306,8 @@ class IRLogDatabase:
             )
         """)
 
-        # Verification Summary table (Phase 1.1 - Data Quality System)
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS verification_summary (
-                verification_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                log_type TEXT NOT NULL,
-                total_records INTEGER NOT NULL,
-                success_count INTEGER NOT NULL,
-                failure_count INTEGER NOT NULL,
-                success_rate REAL NOT NULL,
-                verification_status TEXT NOT NULL,
-                notes TEXT,
-                created_at TEXT NOT NULL
-            )
-        """)
+        # NOTE: verification_summary table defined below in Phase 241 section
+        # Removed duplicate Phase 1.1 definition that used incompatible column names
 
         # Quality Check Summary table (Phase 1.2 - Data Quality Checker)
         cursor.execute("""
@@ -683,14 +671,14 @@ class IRLogDatabase:
             ON risky_users(risk_state)
         """)
 
-        # Verification Summary indexes (Phase 1.1)
+        # Verification Summary indexes (Phase 241)
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_verification_log_type
             ON verification_summary(log_type)
         """)
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_verification_created_at
-            ON verification_summary(created_at)
+            CREATE INDEX IF NOT EXISTS idx_verification_verified_at
+            ON verification_summary(verified_at)
         """)
 
         # Quality Check Summary indexes (Phase 1.2)

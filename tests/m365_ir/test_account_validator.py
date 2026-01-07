@@ -457,3 +457,179 @@ def test_full_validation_workflow_prevents_report_without_validation(ben_oculus_
     assert report['validated'] == True
     assert 'validation_timestamp' in report
     assert 'sources_queried' in report
+
+
+# ============================================================================
+# TEST CASE: account_enabled as STRING (BUG FIX PIR-OCULUS-2025-12-19)
+# ============================================================================
+
+@pytest.fixture
+def string_account_enabled_db(temp_dir):
+    """
+    BUG FIX TEST: Account enabled field stored as string ("True"/"False").
+
+    Real PIR-OCULUS database has TEXT values, not INTEGER.
+    bool("False") returns True in Python - this is the bug!
+    """
+    db_path = temp_dir / "test_string_enabled.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Create tables with TEXT for account_enabled (matches real data)
+    cursor.execute("""
+        CREATE TABLE password_status (
+            user_principal_name TEXT PRIMARY KEY,
+            created_datetime TEXT,
+            last_password_change TEXT,
+            account_enabled TEXT,
+            days_since_change INTEGER
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE entra_audit_log (
+            timestamp TEXT,
+            activity TEXT,
+            target TEXT,
+            initiated_by TEXT,
+            result TEXT
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE sign_in_logs (
+            timestamp TEXT,
+            user_principal_name TEXT,
+            ip_address TEXT,
+            location_country TEXT,
+            status TEXT
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE legacy_auth_logs (
+            timestamp TEXT,
+            user_principal_name TEXT,
+            client_app_used TEXT,
+            ip_address TEXT,
+            country TEXT
+        )
+    """)
+
+    # Insert account with STRING "False" - should be detected as disabled
+    cursor.execute("""
+        INSERT INTO password_status VALUES (
+            'ben@oculus.info',
+            '2018-02-25 22:59:16',
+            '2020-06-28 20:33:36',
+            'False',
+            1998
+        )
+    """)
+
+    # No disable event = should raise ValidationError
+    conn.commit()
+    conn.close()
+
+    return str(db_path)
+
+
+def test_account_enabled_string_false_is_disabled(string_account_enabled_db):
+    """
+    BUG FIX: Validator must correctly parse "False" string as disabled.
+
+    Before fix: bool("False") = True (bug!)
+    After fix: "False" should be parsed as disabled (False)
+
+    This test would FAIL before the bug fix.
+    """
+    if AccountValidator is None:
+        pytest.skip("AccountValidator not yet implemented")
+
+    validator = AccountValidator(string_account_enabled_db, "ben@oculus.info")
+
+    # Should raise ValidationError because account is DISABLED but no disable event
+    with pytest.raises(ValidationError) as exc_info:
+        validator.validate()
+
+    # Error should mention "DISABLED" and "no disable event"
+    assert "DISABLED" in str(exc_info.value) or "disabled" in str(exc_info.value).lower()
+
+
+@pytest.fixture
+def string_account_enabled_true_db(temp_dir):
+    """Test account enabled as "True" string."""
+    db_path = temp_dir / "test_string_enabled_true.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE password_status (
+            user_principal_name TEXT PRIMARY KEY,
+            created_datetime TEXT,
+            last_password_change TEXT,
+            account_enabled TEXT,
+            days_since_change INTEGER
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE entra_audit_log (
+            timestamp TEXT,
+            activity TEXT,
+            target TEXT,
+            initiated_by TEXT,
+            result TEXT
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE sign_in_logs (
+            timestamp TEXT,
+            user_principal_name TEXT,
+            ip_address TEXT,
+            location_country TEXT,
+            status TEXT
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE legacy_auth_logs (
+            timestamp TEXT,
+            user_principal_name TEXT,
+            client_app_used TEXT,
+            ip_address TEXT,
+            country TEXT
+        )
+    """)
+
+    # Insert account with STRING "True" - should be detected as enabled
+    cursor.execute("""
+        INSERT INTO password_status VALUES (
+            'enabled@oculus.info',
+            '2018-02-25 22:59:16',
+            '2025-01-01 00:00:00',
+            'True',
+            7
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+    return str(db_path)
+
+
+def test_account_enabled_string_true_is_enabled(string_account_enabled_true_db):
+    """
+    Validator must correctly parse "True" string as enabled.
+    """
+    if AccountValidator is None:
+        pytest.skip("AccountValidator not yet implemented")
+
+    validator = AccountValidator(string_account_enabled_true_db, "enabled@oculus.info")
+
+    # Should NOT raise ValidationError (account is enabled, no disable check needed)
+    result = validator.validate()
+
+    assert result['lifecycle']['current_status'] == 'Enabled'

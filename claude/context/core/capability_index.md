@@ -1,7 +1,7 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 590 tools, 95 agents | **Updated**: 2026-01-06 (Phase 238)
+**Total**: 590 tools, 96 agents | **Updated**: 2026-01-07 (Phase 238+)
 
 ---
 
@@ -601,7 +601,7 @@
 
 ## Agents (`claude/agents/`)
 
-### SRE - 48 agents
+### SRE - 49 agents
 
 | Agent | Purpose |
 |-------|---------|
@@ -609,6 +609,7 @@
 | `asian_low_sodium_cooking_agent.md` | Asian culinary consultant specializing in sodium reduction while preserving auth... |
 | `autotask_psa_specialist_agent.md` | Autotask PSA workflow optimization, REST API integration, ticketing automation, ... |
 | `azure_architect_agent.md` | Enterprise Azure cloud architecture - Well-Architected Framework assessments, co... |
+| `azure_operations_engineer_agent.md` | Azure operational excellence - PowerShell automation, Azure CLI scripting, monitoring queries (KQL), and day-to-day resource management |
 | `azure_solutions_architect_agent.md` | Enterprise Azure solutions design - Well-Architected Framework, cost optimizatio... |
 | `cloud_security_v2.1_lean.md` | Strategic cloud security leadership providing zero-trust architecture, complianc... |
 | `cloud_security_v2.2_enhanced.md` | Strategic cloud security leadership providing zero-trust architecture, complianc... |

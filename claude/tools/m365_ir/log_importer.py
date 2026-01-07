@@ -1890,6 +1890,81 @@ class LogImporter:
                 WHERE id = ?
             """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
 
+            # Phase 1.2: Run quality checks for zip imports (BUG FIX)
+            # PIR-OCULUS-2025-12-19: Zip imports were NOT running quality checks
+            if records_imported > 0:
+                try:
+                    from .data_quality_checker import check_table_quality
+
+                    quality_report = check_table_quality(
+                        str(self._db.db_path),
+                        'sign_in_logs',
+                        conn=conn  # Pass existing connection to see uncommitted data
+                    )
+
+                    # Check if quality_check_summary table exists
+                    cursor.execute("""
+                        SELECT name FROM sqlite_master
+                        WHERE type='table' AND name='quality_check_summary'
+                    """)
+
+                    if cursor.fetchone():
+                        # Store quality check results
+                        cursor.execute("""
+                            INSERT INTO quality_check_summary
+                            (table_name, overall_quality_score, reliable_fields_count,
+                             unreliable_fields_count, check_passed, warnings, recommendations, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            'sign_in_logs',
+                            quality_report.overall_quality_score,
+                            len(quality_report.reliable_fields),
+                            len(quality_report.unreliable_fields),
+                            1 if quality_report.overall_quality_score >= 0.5 else 0,
+                            '; '.join(quality_report.warnings) if quality_report.warnings else None,
+                            '; '.join(quality_report.recommendations) if quality_report.recommendations else None,
+                            quality_report.created_at
+                        ))
+
+                    # Fail-fast: Raise error if quality score below threshold
+                    if quality_report.overall_quality_score < 0.5:
+                        error_msg = (
+                            f"Data quality check FAILED: Quality score {quality_report.overall_quality_score:.2f} "
+                            f"is below threshold (0.5). Import aborted.\n\n"
+                            f"Unreliable fields ({len(quality_report.unreliable_fields)}): "
+                            f"{', '.join(quality_report.unreliable_fields)}\n\n"
+                        )
+                        if quality_report.recommendations:
+                            error_msg += "Recommendations:\n"
+                            for rec in quality_report.recommendations:
+                                error_msg += f"  - {rec}\n"
+
+                        raise DataQualityError(
+                            error_msg,
+                            quality_score=quality_report.overall_quality_score,
+                            unreliable_fields=quality_report.unreliable_fields,
+                            recommendations=quality_report.recommendations
+                        )
+
+                    # Log quality warnings (even if check passed)
+                    if quality_report.warnings:
+                        print(f"\n⚠️  Data quality warnings:")
+                        for warning in quality_report.warnings:
+                            print(f"   - {warning}")
+
+                    logger.info(
+                        f"Quality check passed: Score {quality_report.overall_quality_score:.2f}, "
+                        f"{len(quality_report.reliable_fields)} reliable fields, "
+                        f"{len(quality_report.unreliable_fields)} unreliable fields"
+                    )
+
+                except DataQualityError:
+                    # Re-raise quality errors (will be caught by outer except and rolled back)
+                    raise
+                except Exception as e:
+                    # Quality check failed but don't block import
+                    logger.warning(f"Quality check failed (non-fatal): {e}")
+
             conn.commit()
 
         except Exception as e:

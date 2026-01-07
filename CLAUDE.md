@@ -176,6 +176,7 @@ maia/
 | User Prefs | `claude/data/user_preferences.json` |
 | Capabilities DB (PRIMARY) | `claude/data/databases/system/capabilities.db` - Use for all capability queries |
 | Capabilities Markdown (FALLBACK) | `claude/context/core/capability_index.md` - Auto-fallback if DB unavailable |
+| Azure Environment Discovery | `claude/context/protocols/azure_environment_discovery.md` - Multi-tenant Azure discovery protocol |
 
 ---
 

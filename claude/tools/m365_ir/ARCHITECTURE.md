@@ -1190,7 +1190,7 @@ CREATE INDEX idx_audit_user ON unified_audit_log(user_id);
 CREATE INDEX idx_audit_timestamp ON unified_audit_log(timestamp);
 
 CREATE INDEX idx_verification_log_type ON verification_summary(log_type);
-CREATE INDEX idx_verification_date ON verification_summary(created_at);
+CREATE INDEX idx_verification_verified_at ON verification_summary(verified_at);
 ```
 
 ### Query Optimization

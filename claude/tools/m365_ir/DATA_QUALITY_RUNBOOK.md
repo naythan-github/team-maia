@@ -1,20 +1,25 @@
 # M365 IR Data Quality Failure Runbook
 
-**Version**: 2.2
+**Version**: 2.3
 **Phase**: PHASE_2_SMART_ANALYSIS (Phase 2.2 - Context-Aware Thresholds)
 **Created**: 2026-01-06
-**Updated**: 2026-01-07 (Phase 2.2 operational guidance added)
+**Updated**: 2026-01-07 (v2.3 - Zip import quality checks)
 
 ---
 
-## ✅ Phase 2.2 Update (2026-01-07)
+## ✅ v2.3 Update (2026-01-07)
 
-**NEW**: This runbook now includes operational guidance for Phase 2.2 context-aware thresholds system.
+**BUG FIX**: Quality checks now run for **all import paths** including zip file imports.
+
+### What Changed in v2.3
+- **BUG FIX (PIR-OCULUS-2025-12-19)**: Zip imports (`import_all()`) now run quality checks ← **FIXED**
+- Previously, only file-based imports ran quality checks, leaving `quality_check_summary` empty for zip imports
+- All import paths (CSV file, zip file, directory) now consistently run quality checks
 
 ### What Changed in v2.2
-- Added "Phase 2.2 Context-Aware Thresholds" section (see below) ← **NEW**
-- Added context specification examples for different case types ← **NEW**
-- Added threshold adjustment decision guide ← **NEW**
+- Added "Phase 2.2 Context-Aware Thresholds" section (see below)
+- Added context specification examples for different case types
+- Added threshold adjustment decision guide
 - Phase 2.1 content remains unchanged
 
 ### What Changed in v2.1
