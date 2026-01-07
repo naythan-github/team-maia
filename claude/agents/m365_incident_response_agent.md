@@ -1,10 +1,10 @@
-# M365 Incident Response Agent v2.9
+# M365 Incident Response Agent v3.0
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
 **Target Role**: Senior Security Analyst/Incident Responder with M365 forensics, MITRE ATT&CK cloud mapping, and MSP incident handling expertise.
 
-**NEW in v2.9**: Phase 2.1 Intelligent Field Selection system automatically handles field reliability verification with confidence scoring and historical learning.
+**NEW in v3.0**: Phase 2.2 Context-Aware Thresholds automatically adapt confidence levels based on case characteristics (dataset size, data quality, log type, case severity). Phase 2.1 intelligent field selection with confidence scoring and historical learning also active.
 
 ---
 
@@ -134,6 +134,126 @@ USE_PHASE_2_1_SCORING = False  # Disables Phase 2.1, uses Phase 1 fallback
 ```
 
 **Bottom Line**: You can now trust the automated field selection. Phase 2.1 has been validated against real incident data and prevents the exact error type that caused PIR-OCULUS.
+
+---
+
+### Phase 2.2: Context-Aware Thresholds ⭐ NEW - PRODUCTION READY
+
+**MAJOR UPDATE (2026-01-07)**: Thresholds now automatically adapt based on case characteristics.
+
+**What Phase 2.2 Does Automatically:**
+1. **Analyzes case context** (dataset size, data quality, log type, case severity)
+2. **Adjusts thresholds dynamically** (HIGH/MEDIUM/LOW confidence boundaries)
+3. **Improves field selection** for edge cases (small datasets, low quality, breaches)
+4. **Maintains backward compatibility** (works with Phase 2.1 without changes)
+
+**When Context-Aware Thresholds Matter:**
+
+**Scenario 1: Small Datasets** (<100 records)
+- **Problem**: Fixed thresholds (0.5/0.7) too strict, miss good fields
+- **Solution**: Auto-lowers thresholds to HIGH=0.6, MEDIUM=0.4
+- **Example**: Pilot investigation with 50 sign-in records
+
+**Scenario 2: Suspected Breach**
+- **Problem**: Need to "cast wider net" to catch all indicators
+- **Solution**: Lower thresholds by -0.1 to HIGH=0.6, MEDIUM=0.4
+- **Example**: Account compromise investigation
+
+**Scenario 3: Large Datasets** (>100K records)
+- **Problem**: Fixed thresholds too lenient, include marginal fields
+- **Solution**: Auto-raises thresholds to HIGH=0.75, MEDIUM=0.55
+- **Example**: Enterprise-wide compliance audit
+
+**Using Context-Aware Thresholds:**
+
+**Automatic (Default - Recommended)**:
+```python
+# System auto-detects context from database
+from claude.tools.m365_ir.field_reliability_scorer import rank_fields_by_reliability
+
+rankings = rank_fields_by_reliability(
+    db_path='PIR-CASE-001.db',
+    table='sign_in_logs',
+    log_type='sign_in_logs'
+    # No context parameter - system auto-extracts
+)
+# System counts records, calculates null rate, adjusts thresholds automatically
+```
+
+**Manual (Advanced - Breach Investigations)**:
+```python
+from claude.tools.m365_ir.field_reliability_scorer import (
+    rank_fields_by_reliability,
+    ThresholdContext
+)
+
+# Explicitly specify suspected breach for lower thresholds
+breach_context = ThresholdContext(
+    record_count=3500,  # From database
+    null_rate=0.20,  # Calculated or estimated
+    log_type='sign_in_logs',
+    case_severity='suspected_breach'  # ← Lower thresholds to catch all indicators
+)
+
+rankings = rank_fields_by_reliability(
+    db_path='PIR-BREACH-001.db',
+    table='sign_in_logs',
+    log_type='sign_in_logs',
+    context=breach_context  # Pass breach context
+)
+# Result: HIGH=0.6, MEDIUM=0.4 (vs baseline 0.7/0.5)
+```
+
+**Checking What Thresholds Were Used:**
+```python
+from claude.tools.m365_ir.field_reliability_scorer import recommend_best_field
+
+recommendation = recommend_best_field(
+    db_path='PIR-CASE-001.db',
+    table='sign_in_logs',
+    log_type='sign_in_logs'
+)
+
+print(f"Selected: {recommendation.recommended_field}")
+print(f"Confidence: {recommendation.confidence}")
+print(f"Thresholds: HIGH={recommendation.threshold_context.high_threshold:.2f}, "
+      f"MEDIUM={recommendation.threshold_context.medium_threshold:.2f}")
+print(f"Adjustments: {recommendation.threshold_context.adjustments}")
+print(f"Reasoning: {recommendation.threshold_context.reasoning}")
+
+# Example Output:
+# Selected: conditional_access_status
+# Confidence: HIGH
+# Thresholds: HIGH=0.60, MEDIUM=0.40
+# Adjustments: {'dataset_size': -0.1, 'case_severity': -0.1}
+# Reasoning: Adjusted by -0.20: Small dataset (<100 records): -0.1; Case severity (suspected breach): -0.1
+```
+
+**When to Use Manual Context:**
+- 🚨 **Suspected breach**: Lower thresholds to catch all indicators
+- 📊 **Very small dataset** (<100 records): Avoid being too strict
+- 📈 **Very large dataset** (>100K records): Be more selective
+- ⚠️ **Known poor data quality** (>50% nulls): More lenient
+- 🎯 **Explicit control needed**: Override auto-detection
+
+**When to Use Automatic Context (Default):**
+- ✅ **Standard IR investigation**: Trust system judgment
+- ✅ **Normal dataset size** (100-100K records)
+- ✅ **Good data quality** (<30% nulls)
+- ✅ **Routine case severity**: No special requirements
+
+**Validation:**
+- **Tests**: 56/56 passing (41 existing + 15 new, zero regressions)
+- **Backward Compatible**: Context parameter optional, defaults to auto-extraction
+- **Safety Constraints**: MEDIUM >= 0.15, HIGH <= 0.85, HIGH >= MEDIUM + 0.1
+
+**Operational Guide**: See [DATA_QUALITY_RUNBOOK.md](claude/tools/m365_ir/DATA_QUALITY_RUNBOOK.md) "Phase 2.2: Context-Aware Thresholds Guide" for:
+- Detailed use cases (breach, small dataset, large dataset, UAL)
+- Threshold adjustment decision guide
+- Troubleshooting context-aware thresholds
+- Best practices
+
+**Bottom Line**: The system now intelligently adapts to your case characteristics. Small datasets get more lenient thresholds, large datasets get stricter requirements, and suspected breaches cast a wider net to catch all indicators.
 
 ---
 

@@ -1,26 +1,34 @@
 # M365 IR Data Quality Failure Runbook
 
-**Version**: 2.1
-**Phase**: PHASE_2_SMART_ANALYSIS (Phase 2.1 - Intelligent Field Selection)
+**Version**: 2.2
+**Phase**: PHASE_2_SMART_ANALYSIS (Phase 2.2 - Context-Aware Thresholds)
 **Created**: 2026-01-06
-**Updated**: 2026-01-07 (Phase 2.1 operational guidance added)
+**Updated**: 2026-01-07 (Phase 2.2 operational guidance added)
 
 ---
 
-## ✅ Phase 2.1 Update (2026-01-07)
+## ✅ Phase 2.2 Update (2026-01-07)
 
-**NEW**: This runbook now includes operational guidance for Phase 2.1 intelligent field selection system.
+**NEW**: This runbook now includes operational guidance for Phase 2.2 context-aware thresholds system.
 
-### What Changed
-- Added "Phase 2.1 Field Selection" section (see below)
+### What Changed in v2.2
+- Added "Phase 2.2 Context-Aware Thresholds" section (see below) ← **NEW**
+- Added context specification examples for different case types ← **NEW**
+- Added threshold adjustment decision guide ← **NEW**
+- Phase 2.1 content remains unchanged
+
+### What Changed in v2.1
+- Added "Phase 2.1 Field Selection" section
 - Added confidence score interpretation guide
 - Added historical learning troubleshooting
 - Original Phase 1 content remains unchanged
 
 ### Quick Links
-- [Phase 2.1 Field Selection Guide](#phase-21-intelligent-field-selection-guide) ← **NEW**
-- [Understanding Confidence Scores](#understanding-confidence-scores) ← **NEW**
-- [Historical Learning Troubleshooting](#historical-learning-troubleshooting) ← **NEW**
+- [Phase 2.2 Context-Aware Thresholds](#phase-22-context-aware-thresholds-guide) ← **NEW**
+- [When to Use Context Parameter](#when-to-use-context-parameter) ← **NEW**
+- [Phase 2.1 Field Selection Guide](#phase-21-intelligent-field-selection-guide)
+- [Understanding Confidence Scores](#understanding-confidence-scores)
+- [Historical Learning Troubleshooting](#historical-learning-troubleshooting)
 - [Original Phase 1 Runbook](#purpose) (starts below)
 
 ---
@@ -628,12 +636,395 @@ Database Result:
 
 ---
 
+## Phase 2.2: Context-Aware Thresholds Guide
+
+**NEW (Phase 2.2)**: The system now automatically adapts confidence thresholds (HIGH/MEDIUM/LOW) based on case characteristics.
+
+### How Context-Aware Thresholds Work
+
+Phase 2.2 adjusts thresholds based on **4 case characteristics**:
+
+1. **Dataset Size** (record count)
+2. **Data Quality** (null rate across fields)
+3. **Log Type** (sign_in_logs vs unified_audit_log)
+4. **Case Severity** (routine vs suspected breach)
+
+**Automatic vs Manual Context**:
+- **Automatic** (default): System extracts context from database automatically
+- **Manual** (advanced): You provide explicit context for special cases
+
+---
+
+## When to Use Context Parameter
+
+### Automatic Context (Default - Recommended)
+
+**Use Case**: Normal operations - let the system decide
+
+```python
+from claude.tools.m365_ir.field_reliability_scorer import rank_fields_by_reliability
+
+# System automatically extracts context from database
+rankings = rank_fields_by_reliability(
+    db_path='PIR-CASE-001.db',
+    table='sign_in_logs',
+    log_type='sign_in_logs'
+    # No context parameter - system auto-extracts
+)
+
+# System will:
+# 1. Count records in table
+# 2. Calculate null rate across fields
+# 3. Adjust thresholds based on these characteristics
+# 4. Apply appropriate HIGH/MEDIUM/LOW classification
+```
+
+**When to Use**:
+- ✅ Standard IR cases
+- ✅ When database has complete data
+- ✅ When you trust the system's judgment
+
+---
+
+### Manual Context (Advanced)
+
+**Use Case 1: Suspected Breach (Lower Thresholds)**
+
+When you suspect a breach, you want to "cast a wider net" and catch all potential indicators.
+
+```python
+from claude.tools.m365_ir.field_reliability_scorer import (
+    rank_fields_by_reliability,
+    ThresholdContext
+)
+
+# Explicitly specify this is a suspected breach
+context = ThresholdContext(
+    record_count=5000,  # From database query
+    null_rate=0.25,  # 25% null rate
+    log_type='sign_in_logs',
+    case_severity='suspected_breach'  # Lower thresholds by -0.1
+)
+
+rankings = rank_fields_by_reliability(
+    db_path='PIR-BREACH-001.db',
+    table='sign_in_logs',
+    log_type='sign_in_logs',
+    context=context  # Pass explicit context
+)
+
+# Result: HIGH=0.6, MEDIUM=0.4 (vs baseline 0.7/0.5)
+# Effect: Fields scoring 0.65 become HIGH (was MEDIUM)
+```
+
+**Use Case 2: Small Dataset (Lower Thresholds)**
+
+Small datasets need more lenient thresholds to avoid missing good fields.
+
+```python
+# Import from small pilot test (50 records)
+context = ThresholdContext(
+    record_count=50,  # Small dataset
+    null_rate=0.15,  # Good quality
+    log_type='sign_in_logs',
+    case_severity=None  # Routine case
+)
+
+rankings = rank_fields_by_reliability(
+    db_path='PIR-PILOT-001.db',
+    table='sign_in_logs',
+    log_type='sign_in_logs',
+    context=context
+)
+
+# Result: HIGH=0.6, MEDIUM=0.4
+# Effect: More lenient classification for small sample
+```
+
+**Use Case 3: Large Dataset (Stricter Thresholds)**
+
+Large datasets allow for higher confidence requirements.
+
+```python
+# Import from enterprise-wide audit (500K records)
+context = ThresholdContext(
+    record_count=500_000,  # Very large dataset
+    null_rate=0.05,  # Excellent quality
+    log_type='sign_in_logs',
+    case_severity=None
+)
+
+rankings = rank_fields_by_reliability(
+    db_path='PIR-ENTERPRISE-001.db',
+    table='sign_in_logs',
+    log_type='sign_in_logs',
+    context=context
+)
+
+# Result: HIGH=0.75, MEDIUM=0.55
+# Effect: Only the best fields get HIGH confidence
+```
+
+**Use Case 4: Unified Audit Log (Lower Thresholds)**
+
+Unified audit logs have less field uniformity than sign-in logs.
+
+```python
+context = ThresholdContext(
+    record_count=10_000,
+    null_rate=0.30,  # UAL has more null fields
+    log_type='unified_audit_log',  # Different baseline
+    case_severity=None
+)
+
+rankings = rank_fields_by_reliability(
+    db_path='PIR-UAL-001.db',
+    table='unified_audit_log',
+    log_type='unified_audit_log',
+    context=context
+)
+
+# Result: HIGH=0.65, MEDIUM=0.45 (log type adjustment -0.05)
+```
+
+---
+
+## Threshold Adjustment Decision Guide
+
+### Quick Reference Table
+
+| Case Type | Dataset Size | Quality | Severity | Context Needed? | Thresholds |
+|-----------|--------------|---------|----------|-----------------|------------|
+| **Standard IR** | 1K-100K | Good | Routine | No (auto) | 0.7/0.5 (baseline) |
+| **Small Pilot** | <100 | Good | Routine | Yes | 0.6/0.4 (-0.1) |
+| **Suspected Breach** | Any | Any | Suspected | Yes | 0.6/0.4 (-0.1) |
+| **Large Enterprise** | >100K | Excellent | Routine | Yes | 0.75/0.55 (+0.05) |
+| **Poor Data Quality** | Any | >50% null | Any | Yes | 0.6/0.4 (-0.1) |
+| **UAL Analysis** | Any | Any | Any | No (auto) | 0.65/0.45 (-0.05) |
+
+### Should I Use Manual Context?
+
+**Yes, specify context if**:
+- 🚨 Suspected breach (want to catch all indicators)
+- 📊 Very small dataset (<100 records)
+- 📈 Very large dataset (>100K records)
+- ⚠️ Known poor data quality (>50% nulls)
+- 🎯 Want explicit control over threshold sensitivity
+
+**No, use automatic if**:
+- ✅ Standard IR investigation
+- ✅ Normal dataset size (100-100K records)
+- ✅ Good data quality (<30% nulls)
+- ✅ Trust system judgment
+
+---
+
+## Example: Breach Investigation Workflow
+
+**Scenario**: PIR-ACME-2025-003 - Suspected account compromise
+
+```python
+from claude.tools.m365_ir.field_reliability_scorer import (
+    rank_fields_by_reliability,
+    recommend_best_field,
+    ThresholdContext
+)
+from claude.tools.m365_ir import IRLogDatabase, LogImporter
+
+# Step 1: Import logs (automatic context)
+db = IRLogDatabase(case_id="PIR-ACME-2025-003", base_path="~/ir_cases/")
+db.create()
+
+importer = LogImporter(db)
+importer.import_sign_in_logs("acme_signin.csv")
+
+# Step 2: Specify breach context for field selection
+breach_context = ThresholdContext(
+    record_count=3500,  # From CSV
+    null_rate=0.20,  # Estimated or from import stats
+    log_type='sign_in_logs',
+    case_severity='suspected_breach'  # ← Key parameter
+)
+
+# Step 3: Get field recommendation with breach context
+recommendation = recommend_best_field(
+    db_path=str(db.db_path),
+    table='sign_in_logs',
+    log_type='sign_in_logs',
+    context=breach_context  # Pass breach context
+)
+
+print(f"Selected Field: {recommendation.recommended_field}")
+print(f"Confidence: {recommendation.confidence}")
+print(f"Thresholds: HIGH={recommendation.threshold_context.high_threshold:.2f}, "
+      f"MEDIUM={recommendation.threshold_context.medium_threshold:.2f}")
+print(f"Reasoning: {recommendation.reasoning}")
+
+# Example Output:
+# Selected Field: conditional_access_status
+# Confidence: HIGH
+# Thresholds: HIGH=0.60, MEDIUM=0.40 (adjusted for suspected breach)
+# Reasoning: Selected 'conditional_access_status' (rank #1 of 3).
+#   Overall score: 0.72. Uniformity: 0.89. Population: 100.0%.
+#   Historical success: 95%. Preferred field (domain knowledge).
+#   Thresholds: HIGH=0.60, MEDIUM=0.40
+```
+
+---
+
+## Troubleshooting Context-Aware Thresholds
+
+### Issue: Field classified as MEDIUM instead of HIGH
+
+**Symptom**:
+```
+Field: conditional_access_status
+Score: 0.68
+Confidence: MEDIUM (expected HIGH)
+```
+
+**Cause**: Large dataset raised HIGH threshold to 0.75
+
+**Solution**:
+```python
+# Check what thresholds were used
+print(recommendation.threshold_context.high_threshold)  # 0.75
+print(recommendation.threshold_context.adjustments)  # {'dataset_size': 0.05}
+
+# If thresholds too strict for your case, use explicit context
+context = ThresholdContext(
+    record_count=50_000,  # Still large, but don't raise threshold
+    null_rate=0.10,
+    log_type='sign_in_logs',
+    case_severity=None
+)
+
+# OR: Accept MEDIUM confidence as appropriate for large dataset
+```
+
+---
+
+### Issue: All fields classified as LOW
+
+**Symptom**:
+```
+All candidate fields: LOW confidence
+```
+
+**Cause**: Poor data quality raised thresholds OR field scores are genuinely low
+
+**Solution**:
+```python
+# Check actual field scores and thresholds
+for ranking in rankings:
+    print(f"{ranking.field_name}: {ranking.reliability_score.overall_score:.2f} "
+          f"(confidence: {ranking.confidence})")
+
+# If scores are 0.30-0.45 and thresholds are normal (0.5/0.7):
+# → Fields are genuinely unreliable, data quality issue
+
+# If scores are 0.50-0.60 and thresholds are raised (0.6/0.75):
+# → Thresholds too strict, use explicit context with lower thresholds
+
+context = ThresholdContext(
+    record_count=100,  # Smaller dataset for more lenient thresholds
+    null_rate=0.60,  # High null rate triggers -0.1 adjustment
+    log_type='sign_in_logs',
+    case_severity=None
+)
+```
+
+---
+
+### Issue: Context not being used (always baseline 0.5/0.7)
+
+**Cause**: Not passing context parameter OR context is None
+
+**Solution**:
+```python
+# WRONG: Forgot to pass context
+rankings = rank_fields_by_reliability(
+    db_path=db.db_path,
+    table='sign_in_logs',
+    log_type='sign_in_logs'
+    # No context parameter
+)
+# Result: Uses auto-extracted context (should work)
+
+# If auto-extraction fails, pass explicit context:
+context = ThresholdContext(
+    record_count=5000,
+    null_rate=0.25,
+    log_type='sign_in_logs',
+    case_severity='suspected_breach'
+)
+
+rankings = rank_fields_by_reliability(
+    db_path=db.db_path,
+    table='sign_in_logs',
+    log_type='sign_in_logs',
+    context=context  # ← Add this
+)
+```
+
+---
+
+## Best Practices
+
+### 1. Let System Auto-Extract (Default Behavior)
+
+```python
+# ✅ GOOD: Let system decide
+rankings = rank_fields_by_reliability(db_path, table, log_type)
+```
+
+### 2. Use Explicit Context for Edge Cases
+
+```python
+# ✅ GOOD: Breach investigation needs lower thresholds
+context = ThresholdContext(..., case_severity='suspected_breach')
+rankings = rank_fields_by_reliability(db_path, table, log_type, context=context)
+```
+
+### 3. Check Threshold Context in Results
+
+```python
+# ✅ GOOD: Verify what thresholds were used
+recommendation = recommend_best_field(db_path, table, log_type)
+print(f"Thresholds used: HIGH={recommendation.threshold_context.high_threshold:.2f}")
+print(f"Adjustments: {recommendation.threshold_context.adjustments}")
+print(f"Reasoning: {recommendation.threshold_context.reasoning}")
+```
+
+### 4. Document Context Decisions
+
+```markdown
+## PIR-ACME-2025-003 - Field Selection Context
+
+**Context**: Suspected breach with small dataset
+**Thresholds**: HIGH=0.5, MEDIUM=0.3 (vs baseline 0.7/0.5)
+**Adjustments**:
+  - Dataset size (<100 records): -0.1
+  - Case severity (suspected breach): -0.1
+  - Total: -0.2
+
+**Justification**: Lower thresholds needed to catch all potential indicators
+in breach investigation with limited data sample.
+```
+
+---
+
+**Contact**: SRE Principal Engineer
+
+---
+
 ## Version History
 
 | Version | Date | Changes |
 |---------|------|---------|
 | 1.0 | 2026-01-06 | Initial runbook for Phase 1.2 |
 | 2.1 | 2026-01-07 | Added Phase 2.1 intelligent field selection guidance |
+| 2.2 | 2026-01-07 | Added Phase 2.2 context-aware thresholds operational guide |
 
 ---
 
