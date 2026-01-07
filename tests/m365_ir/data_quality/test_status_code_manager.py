@@ -248,6 +248,71 @@ class TestStatusCodeLookup:
 
 
 @pytest.mark.phase_1_3
+@pytest.mark.phase_2_1_6
+class TestPhase216StatusCodeMaintenance:
+    """
+    Phase 2.1.6: Status Code Maintenance - TDD Tests
+
+    Testing newly discovered status codes from real PIR-OCULUS datasets.
+    """
+
+    def test_lookup_status_code_1_from_oculus_validation(self):
+        """
+        Test that status code '1' is documented in reference table.
+
+        Context: Code '1' appeared 13,442 times across 3 PIR-OCULUS validation
+        datasets (100% of sign-in logs), with mixed conditional_access_status
+        (success/failure/notApplied). This suggests code '1' is a generic
+        placeholder or in-progress code used by Microsoft Entra ID.
+
+        Given: status_code_reference populated with populate_status_codes.py
+        When: lookup_status_code() called with code '1'
+        Then: Return StatusCodeInfo with known meaning and appropriate severity
+
+        TDD Phase: RED → GREEN → Refactor
+        Expected to FAIL initially until populate_status_codes.py updated.
+        """
+        from claude.tools.m365_ir.log_database import IRLogDatabase
+        from claude.tools.m365_ir.status_code_manager import StatusCodeManager
+        from claude.tools.m365_ir.populate_status_codes import populate_status_codes
+        import tempfile
+
+        tmpdir = tempfile.mkdtemp()
+
+        try:
+            # Create database and populate with known status codes
+            db = IRLogDatabase(case_id="TEST-CODE-1", base_path=tmpdir)
+            db.create()
+
+            # Populate status codes (this will fail until we add code '1')
+            populate_status_codes(str(db.db_path), replace_existing=False)
+
+            # Test lookup for code '1'
+            manager = StatusCodeManager(db.db_path)
+            result = manager.lookup_status_code(
+                log_type='sign_in_logs',
+                field_name='status_error_code',
+                code_value='1'
+            )
+
+            # Validate that code '1' is now documented
+            assert result.is_known is True, \
+                "Status code '1' should be documented (found in 13,442 real records)"
+            assert result.meaning != 'UNKNOWN', \
+                "Code '1' should have documented meaning from Microsoft docs"
+            assert result.severity in ['INFO', 'WARNING', 'CRITICAL'], \
+                "Code '1' should have valid severity level"
+
+            # Validate specific expectations based on research
+            # (These assertions will be refined after researching what code '1' means)
+            assert '1' in result.code_value, "Code value should be '1'"
+
+        finally:
+            import shutil
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+@pytest.mark.phase_1_3
 class TestUnknownCodeDetection:
     """Test unknown code detection and alerting."""
 
