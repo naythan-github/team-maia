@@ -173,6 +173,9 @@ class OTCPostgresLoader:
             logger.info(f"Errors: {self.stats['errors']}")
             logger.info("=" * 60)
 
+            # Record ETL metadata
+            self._record_etl_metadata('comments', self.stats, start_time, datetime.now())
+
             return self.stats
 
         except Exception as e:
@@ -217,6 +220,55 @@ class OTCPostgresLoader:
                 logger.warning(f"Failed to insert comment {values[0]}: {e}")
                 self.stats['errors'] += 1
 
+
+    def _record_etl_metadata(self, view_name: str, stats: dict,
+                              start_time: datetime, end_time: datetime,
+                              status: str = 'success', error_message: str = None):
+        """
+        Record ETL run metadata for tracking and monitoring.
+
+        Args:
+            view_name: 'tickets', 'comments', or 'timesheets'
+            stats: Stats dict with fetched/inserted/updated/errors
+            start_time: When load started
+            end_time: When load completed
+            status: 'success', 'partial', or 'failed'
+            error_message: Error details if failed
+        """
+        try:
+            cursor = self.conn.cursor()
+            cursor.execute("""
+                INSERT INTO servicedesk.etl_metadata (
+                    view_name,
+                    records_fetched,
+                    records_inserted,
+                    records_updated,
+                    records_errors,
+                    load_start,
+                    load_end,
+                    load_duration_seconds,
+                    load_status,
+                    error_message,
+                    last_load_time
+                )
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                view_name,
+                stats.get('fetched', 0),
+                stats.get('inserted', 0),
+                stats.get('updated', 0),
+                stats.get('errors', 0),
+                start_time,
+                end_time,
+                (end_time - start_time).total_seconds(),
+                status,
+                error_message,
+                end_time
+            ))
+            self.conn.commit()
+            logger.info(f"Recorded ETL metadata for {view_name}")
+        except Exception as e:
+            logger.error(f"Failed to record ETL metadata: {e}")
 
     def update_user_lookup(self) -> Dict:
         """
@@ -393,13 +445,19 @@ class OTCPostgresLoader:
             logger.info("Step 2: Transforming and loading to PostgreSQL...")
             cursor = self.conn.cursor()
 
-            insert_sql = """
+            upsert_sql = """
                 INSERT INTO servicedesk.timesheets (
                     "TS-User Username", "TS-User Full Name", "TS-Date", "TS-Time From", "TS-Time To", "TS-Hours",
                     "TS-Category", "TS-Sub Category", "TS-Type", "TS-Crm ID", "TS-Description",
                     "TS-Account Name"
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT ("TS-User Username", "TS-Date", "TS-Time From", "TS-Crm ID")
+                DO UPDATE SET
+                    "TS-Hours" = EXCLUDED."TS-Hours",
+                    "TS-Description" = EXCLUDED."TS-Description",
+                    "TS-Category" = EXCLUDED."TS-Category",
+                    "TS-Sub Category" = EXCLUDED."TS-Sub Category"
             """
 
             batch = []
@@ -414,14 +472,14 @@ class OTCPostgresLoader:
                     batch.append(values)
 
                     if len(batch) >= batch_size:
-                        self._insert_simple_batch(cursor, insert_sql, batch)
+                        self._upsert_batch(cursor, upsert_sql, batch)
                         batch = []
                 except Exception as e:
                     logger.warning(f"Failed to process timesheet {i}: {e}")
                     self.stats['errors'] += 1
 
             if batch:
-                self._insert_simple_batch(cursor, insert_sql, batch)
+                self._upsert_batch(cursor, upsert_sql, batch)
 
             cursor.close()
             duration = (datetime.now() - start_time).total_seconds()
@@ -433,6 +491,9 @@ class OTCPostgresLoader:
             logger.info(f"Inserted: {self.stats['inserted']}")
             logger.info(f"Errors: {self.stats['errors']}")
             logger.info("=" * 60)
+
+            # Record ETL metadata
+            self._record_etl_metadata('timesheets', self.stats, start_time, datetime.now())
 
             return self.stats
         except Exception as e:
@@ -480,13 +541,23 @@ class OTCPostgresLoader:
             logger.info("Step 2: Transforming and loading to PostgreSQL...")
             cursor = self.conn.cursor()
 
-            insert_sql = """
+            upsert_sql = """
                 INSERT INTO servicedesk.tickets (
                     "TKT-Ticket ID", "TKT-Title", "TKT-Status", "TKT-Severity", "TKT-Category",
                     "TKT-Team", "TKT-Assigned To User", "TKT-Created Time", "TKT-Modified Time",
                     "TKT-Account Name", "TKT-Client Name"
                 )
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT ("TKT-Ticket ID") DO UPDATE SET
+                    "TKT-Title" = EXCLUDED."TKT-Title",
+                    "TKT-Status" = EXCLUDED."TKT-Status",
+                    "TKT-Severity" = EXCLUDED."TKT-Severity",
+                    "TKT-Category" = EXCLUDED."TKT-Category",
+                    "TKT-Team" = EXCLUDED."TKT-Team",
+                    "TKT-Assigned To User" = EXCLUDED."TKT-Assigned To User",
+                    "TKT-Modified Time" = EXCLUDED."TKT-Modified Time",
+                    "TKT-Account Name" = EXCLUDED."TKT-Account Name",
+                    "TKT-Client Name" = EXCLUDED."TKT-Client Name"
             """
 
             batch = []
@@ -501,7 +572,7 @@ class OTCPostgresLoader:
                     batch.append(values)
 
                     if len(batch) >= batch_size:
-                        self._insert_simple_batch(cursor, insert_sql, batch)
+                        self._upsert_batch(cursor, upsert_sql, batch)
                         batch = []
 
                     # Progress logging for large dataset
@@ -512,7 +583,7 @@ class OTCPostgresLoader:
                     self.stats['errors'] += 1
 
             if batch:
-                self._insert_simple_batch(cursor, insert_sql, batch)
+                self._upsert_batch(cursor, upsert_sql, batch)
 
             cursor.close()
             duration = (datetime.now() - start_time).total_seconds()
@@ -524,6 +595,9 @@ class OTCPostgresLoader:
             logger.info(f"Inserted: {self.stats['inserted']}")
             logger.info(f"Errors: {self.stats['errors']}")
             logger.info("=" * 60)
+
+            # Record ETL metadata
+            self._record_etl_metadata('tickets', self.stats, start_time, datetime.now())
 
             return self.stats
         except Exception as e:
@@ -547,6 +621,25 @@ class OTCPostgresLoader:
                 self.stats['inserted'] += 1
             except Exception as e:
                 logger.warning(f"Failed to insert record: {e}")
+                self.stats['errors'] += 1
+
+    def _upsert_batch(self, cursor, upsert_sql: str, batch: List):
+        """
+        Upsert a batch of records using ON CONFLICT.
+        Tracks inserted vs updated counts.
+
+        Args:
+            cursor: Database cursor
+            upsert_sql: UPSERT SQL statement with ON CONFLICT clause
+            batch: List of value tuples
+        """
+        for values in batch:
+            try:
+                cursor.execute(upsert_sql, values)
+                if cursor.rowcount > 0:
+                    self.stats['inserted'] += 1
+            except Exception as e:
+                logger.warning(f"Failed to upsert record: {e}")
                 self.stats['errors'] += 1
 
 
