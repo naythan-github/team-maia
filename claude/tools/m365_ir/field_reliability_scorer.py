@@ -66,6 +66,26 @@ class FieldRecommendation:
     confidence: str
     all_candidates: List[FieldRanking]
     reasoning: str
+    threshold_context: Optional['DynamicThresholds'] = None  # Phase 2.2
+
+
+# Phase 2.2: Context-Aware Thresholds
+@dataclass
+class ThresholdContext:
+    """Context information for dynamic threshold calculation."""
+    record_count: int
+    null_rate: float  # Overall null rate (0-1)
+    log_type: str
+    case_severity: Optional[str] = None  # 'routine' | 'suspected_breach' | 'confirmed_breach'
+
+
+@dataclass
+class DynamicThresholds:
+    """Calculated thresholds for confidence classification."""
+    high_threshold: float  # Threshold for HIGH confidence
+    medium_threshold: float  # Threshold for MEDIUM confidence
+    reasoning: str  # Human-readable explanation
+    adjustments: dict  # Adjustment breakdown
 
 
 def calculate_reliability_score(
@@ -620,36 +640,319 @@ def discover_candidate_fields(
         conn.close()
 
 
+# Phase 2.2: Context-Aware Threshold Calculation
+
+def calculate_dynamic_thresholds(
+    context: ThresholdContext,
+    base_high: float = 0.7,
+    base_medium: float = 0.5
+) -> DynamicThresholds:
+    """
+    Calculate context-aware confidence thresholds.
+
+    Adjustments based on case characteristics:
+    1. Dataset Size:
+       - <100 records: -0.1 to both thresholds
+       - 100-1000: -0.05 to both thresholds
+       - 1000-10K: No adjustment (baseline)
+       - 10K-100K: +0.025 to both thresholds
+       - >100K: +0.05 to both thresholds
+
+    2. Data Quality (null rate):
+       - <10% null rate: +0.05 (high quality, can be stricter)
+       - 10-30% null rate: No adjustment
+       - 30-50% null rate: -0.05 (lower quality, be lenient)
+       - >50% null rate: -0.1 (very low quality, very lenient)
+
+    3. Log Type:
+       - sign_in_logs: No adjustment (validated baseline)
+       - unified_audit_log: -0.05 (less uniformity expected)
+       - legacy_auth_logs: -0.05 (simpler schema, fewer fields)
+
+    4. Case Severity:
+       - routine: No adjustment
+       - suspected_breach: -0.1 (lower threshold, catch all indicators)
+       - confirmed_breach: -0.05 (slightly lower, comprehensive analysis)
+
+    Args:
+        context: ThresholdContext with case characteristics
+        base_high: Baseline HIGH threshold (default: 0.7)
+        base_medium: Baseline MEDIUM threshold (default: 0.5)
+
+    Returns:
+        DynamicThresholds with adjusted high/medium thresholds
+
+    Safety Constraints:
+        - HIGH threshold >= MEDIUM threshold + 0.1
+        - MEDIUM threshold >= 0.15 (minimum useful threshold)
+        - HIGH threshold <= 0.85 (avoid unreachable thresholds)
+    """
+    adjustments = {}
+    reasoning_parts = []
+
+    # 1. Dataset Size Adjustment
+    if context.record_count < 100:
+        adjustments['dataset_size'] = -0.1
+        reasoning_parts.append("Small dataset (<100 records): -0.1")
+    elif context.record_count < 1000:
+        adjustments['dataset_size'] = -0.05
+        reasoning_parts.append("Small-medium dataset (100-1K records): -0.05")
+    elif context.record_count < 10000:
+        adjustments['dataset_size'] = 0.0
+        reasoning_parts.append("Medium dataset (1K-10K records): baseline")
+    elif context.record_count < 100000:
+        adjustments['dataset_size'] = 0.025
+        reasoning_parts.append("Large dataset (10K-100K records): +0.025")
+    else:
+        adjustments['dataset_size'] = 0.05
+        reasoning_parts.append(f"Very large dataset ({context.record_count:,} records): +0.05")
+
+    # 2. Data Quality Adjustment (null rate)
+    if context.null_rate < 0.10:
+        adjustments['data_quality'] = 0.05
+        reasoning_parts.append(f"High quality data ({context.null_rate:.0%} null): +0.05")
+    elif context.null_rate < 0.30:
+        adjustments['data_quality'] = 0.0
+        reasoning_parts.append(f"Good quality data ({context.null_rate:.0%} null): baseline")
+    elif context.null_rate < 0.50:
+        adjustments['data_quality'] = -0.05
+        reasoning_parts.append(f"Lower quality data ({context.null_rate:.0%} null): -0.05")
+    else:
+        adjustments['data_quality'] = -0.1
+        reasoning_parts.append(f"Low quality data ({context.null_rate:.0%} null): -0.1")
+
+    # 3. Log Type Adjustment
+    if context.log_type == 'sign_in_logs':
+        adjustments['log_type'] = 0.0
+        reasoning_parts.append("Log type (sign_in_logs): baseline")
+    elif context.log_type == 'unified_audit_log':
+        adjustments['log_type'] = -0.05
+        reasoning_parts.append("Log type (unified_audit_log): -0.05")
+    elif context.log_type == 'legacy_auth_logs':
+        adjustments['log_type'] = -0.05
+        reasoning_parts.append("Log type (legacy_auth_logs): -0.05")
+    else:
+        adjustments['log_type'] = 0.0
+        reasoning_parts.append(f"Log type ({context.log_type}): baseline")
+
+    # 4. Case Severity Adjustment
+    if context.case_severity == 'suspected_breach':
+        adjustments['case_severity'] = -0.1
+        reasoning_parts.append("Case severity (suspected breach): -0.1")
+    elif context.case_severity == 'confirmed_breach':
+        adjustments['case_severity'] = -0.05
+        reasoning_parts.append("Case severity (confirmed breach): -0.05")
+    else:
+        adjustments['case_severity'] = 0.0
+        if context.case_severity:
+            reasoning_parts.append(f"Case severity ({context.case_severity}): baseline")
+
+    # Calculate total adjustment
+    total_adjustment = sum(adjustments.values())
+
+    # Apply adjustments to base thresholds
+    high_threshold = base_high + total_adjustment
+    medium_threshold = base_medium + total_adjustment
+
+    # Apply safety constraints
+    # Minimum MEDIUM threshold
+    if medium_threshold < 0.15:
+        medium_threshold = 0.15
+        reasoning_parts.append("⚠️ Applied minimum MEDIUM threshold (0.15)")
+
+    # Maximum HIGH threshold
+    if high_threshold > 0.85:
+        high_threshold = 0.85
+        reasoning_parts.append("⚠️ Applied maximum HIGH threshold (0.85)")
+
+    # Ensure HIGH >= MEDIUM + 0.1
+    if high_threshold < medium_threshold + 0.1:
+        high_threshold = medium_threshold + 0.1
+        reasoning_parts.append(f"⚠️ Adjusted HIGH to maintain +0.1 gap above MEDIUM")
+
+    # Build final reasoning
+    if total_adjustment == 0:
+        reasoning = "Baseline thresholds (no adjustments needed)"
+    else:
+        reasoning = f"Adjusted by {total_adjustment:+.2f}: " + "; ".join(reasoning_parts)
+
+    return DynamicThresholds(
+        high_threshold=high_threshold,
+        medium_threshold=medium_threshold,
+        reasoning=reasoning,
+        adjustments=adjustments
+    )
+
+
+def extract_threshold_context(
+    db_path: str,
+    table: str,
+    log_type: str,
+    case_severity: Optional[str] = None
+) -> ThresholdContext:
+    """
+    Extract threshold context from database by analyzing table characteristics.
+
+    Calculates:
+    - record_count: Total rows in table
+    - null_rate: Overall null rate across all fields (excludes metadata fields)
+
+    Args:
+        db_path: Path to database
+        table: Table name to analyze
+        log_type: Log type (e.g., 'sign_in_logs')
+        case_severity: Optional case severity override
+
+    Returns:
+        ThresholdContext with extracted characteristics
+
+    Raises:
+        ValueError: If table doesn't exist
+        sqlite3.Error: If database query fails
+
+    Example:
+        >>> context = extract_threshold_context('case.db', 'sign_in_logs', 'sign_in_logs')
+        >>> print(f"Records: {context.record_count}, Null Rate: {context.null_rate:.1%}")
+        Records: 5000, Null Rate: 25.0%
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    try:
+        # Verify table exists
+        cursor.execute(
+            "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+            (table,)
+        )
+        if not cursor.fetchone():
+            raise ValueError(f"Table '{table}' does not exist in database")
+
+        # Get record count
+        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+        record_count = cursor.fetchone()[0]
+
+        # Get all column names (excluding metadata fields)
+        cursor.execute(f"PRAGMA table_info({table})")
+        all_columns = [row[1] for row in cursor.fetchall()]
+
+        # Exclude metadata fields from null rate calculation
+        metadata_fields = {'id', 'raw_record', 'imported_at', 'timestamp'}
+        data_columns = [col for col in all_columns if col not in metadata_fields]
+
+        # Calculate overall null rate across data columns
+        if not data_columns or record_count == 0:
+            null_rate = 0.0
+        else:
+            null_counts = []
+            for column in data_columns:
+                cursor.execute(f"""
+                    SELECT COUNT(*) FROM {table}
+                    WHERE {column} IS NULL OR {column} = ''
+                """)
+                null_count = cursor.fetchone()[0]
+                null_counts.append(null_count)
+
+            # Average null rate across all data columns
+            total_cells = record_count * len(data_columns)
+            total_nulls = sum(null_counts)
+            null_rate = total_nulls / total_cells if total_cells > 0 else 0.0
+
+        return ThresholdContext(
+            record_count=record_count,
+            null_rate=null_rate,
+            log_type=log_type,
+            case_severity=case_severity
+        )
+
+    finally:
+        conn.close()
+
+
+def rank_fields_by_reliability(
+    db_path: str,
+    table: str,
+    log_type: str,
+    historical_db_path: Optional[str] = None,
+    context: Optional[ThresholdContext] = None
+) -> List[FieldRanking]:
+    """
+    Auto-discover and rank fields by reliability using context-aware thresholds.
+
+    This is a convenience wrapper that:
+    1. Auto-discovers candidate fields from table schema
+    2. Extracts threshold context (if not provided)
+    3. Ranks fields using dynamic thresholds
+
+    Args:
+        db_path: Path to database
+        table: Table name
+        log_type: Log type (e.g., 'sign_in_logs')
+        historical_db_path: Optional path to historical learning database
+        context: Optional ThresholdContext (auto-extracted if not provided)
+
+    Returns:
+        List of FieldRanking sorted by score (descending)
+
+    Example:
+        >>> # With auto context extraction:
+        >>> rankings = rank_fields_by_reliability('case.db', 'sign_in_logs', 'sign_in_logs')
+
+        >>> # With explicit context:
+        >>> context = ThresholdContext(record_count=50, null_rate=0.2, log_type='sign_in_logs')
+        >>> rankings = rank_fields_by_reliability('case.db', 'sign_in_logs', 'sign_in_logs', context=context)
+    """
+    # Auto-discover candidate fields
+    candidate_fields = discover_candidate_fields(db_path, table, log_type)
+
+    # Extract context if not provided
+    if context is None:
+        context = extract_threshold_context(db_path, table, log_type)
+
+    # Rank candidates using context-aware thresholds
+    return rank_candidate_fields(
+        db_path=db_path,
+        table=table,
+        candidate_fields=candidate_fields,
+        historical_db_path=historical_db_path,
+        context=context
+    )
+
+
 def rank_candidate_fields(
     db_path: str,
     table: str,
     candidate_fields: List[str],
-    historical_db_path: Optional[str] = None
+    historical_db_path: Optional[str] = None,
+    context: Optional[ThresholdContext] = None
 ) -> List[FieldRanking]:
     """
-    Rank candidate fields by reliability score.
+    Rank candidate fields by reliability score using context-aware thresholds.
 
     Calculates reliability score for each field and sorts by overall_score
-    (descending). Assigns rank numbers and confidence levels.
+    (descending). Assigns rank numbers and confidence levels using dynamic
+    thresholds based on case context (Phase 2.2).
 
     Args:
         db_path: Path to database
         table: Table name
         candidate_fields: List of field names to rank
         historical_db_path: Optional path to historical learning database
+        context: Optional ThresholdContext for dynamic thresholds (Phase 2.2)
 
     Returns:
         List of FieldRanking sorted by score (descending)
 
-    Confidence Levels:
-        - HIGH: overall_score >= 0.7
-        - MEDIUM: overall_score >= 0.5
-        - LOW: overall_score < 0.5
+    Confidence Levels (Phase 2.2 - context-aware):
+        - If context provided: Uses calculate_dynamic_thresholds()
+        - If context is None: Uses baseline thresholds (0.7 HIGH, 0.5 MEDIUM)
 
     Example:
+        >>> # Baseline thresholds (backward compatibility):
         >>> rankings = rank_candidate_fields('case.db', 'sign_in_logs', ['field_a', 'field_b'])
-        >>> print(rankings[0].field_name, rankings[0].confidence)
-        field_a HIGH
+
+        >>> # Context-aware thresholds (Phase 2.2):
+        >>> context = ThresholdContext(record_count=50, null_rate=0.2, log_type='sign_in_logs')
+        >>> rankings = rank_candidate_fields('case.db', 'sign_in_logs', ['field_a', 'field_b'], context=context)
     """
     # Calculate scores for all candidates
     field_scores = []
@@ -669,13 +972,23 @@ def rank_candidate_fields(
     # Sort by overall_score (descending)
     field_scores.sort(key=lambda x: x[1].overall_score, reverse=True)
 
+    # Phase 2.2: Calculate dynamic thresholds if context provided
+    if context is not None:
+        thresholds = calculate_dynamic_thresholds(context)
+        high_threshold = thresholds.high_threshold
+        medium_threshold = thresholds.medium_threshold
+    else:
+        # Backward compatibility: Use baseline thresholds
+        high_threshold = 0.7
+        medium_threshold = 0.5
+
     # Create rankings with rank numbers and confidence levels
     rankings = []
     for rank, (field, score) in enumerate(field_scores, start=1):
-        # Determine confidence level
-        if score.overall_score >= 0.7:
+        # Determine confidence level using dynamic or baseline thresholds
+        if score.overall_score >= high_threshold:
             confidence = 'HIGH'
-        elif score.overall_score >= 0.5:
+        elif score.overall_score >= medium_threshold:
             confidence = 'MEDIUM'
         else:
             confidence = 'LOW'
@@ -694,29 +1007,35 @@ def recommend_best_field(
     db_path: str,
     table: str,
     log_type: str,
-    historical_db_path: Optional[str] = None
+    historical_db_path: Optional[str] = None,
+    context: Optional[ThresholdContext] = None
 ) -> FieldRecommendation:
     """
-    Recommend best field for verification with reasoning.
+    Recommend best field for verification with reasoning (Phase 2.2 context-aware).
 
-    Combines auto-discovery and ranking to recommend the highest-scoring field.
+    Combines auto-discovery and ranking to recommend the highest-scoring field
+    using context-aware thresholds.
 
     Args:
         db_path: Path to database
         table: Table name
         log_type: Log type (e.g., 'sign_in_logs')
         historical_db_path: Optional path to historical learning database
+        context: Optional ThresholdContext for dynamic thresholds (Phase 2.2)
 
     Returns:
-        FieldRecommendation with top field and reasoning
+        FieldRecommendation with top field, reasoning, and threshold context
 
     Raises:
         ValueError: If no candidate fields found
 
     Example:
+        >>> # Baseline thresholds:
         >>> rec = recommend_best_field('case.db', 'sign_in_logs', 'sign_in_logs')
-        >>> print(rec.recommended_field, rec.confidence)
-        conditional_access_status HIGH
+
+        >>> # Context-aware thresholds:
+        >>> context = ThresholdContext(record_count=50, null_rate=0.2, log_type='sign_in_logs')
+        >>> rec = recommend_best_field('case.db', 'sign_in_logs', 'sign_in_logs', context=context)
     """
     # Discover candidate fields
     candidate_fields = discover_candidate_fields(db_path, table, log_type)
@@ -727,12 +1046,17 @@ def recommend_best_field(
             f"Looking for fields with keywords: {', '.join(CANDIDATE_FIELD_KEYWORDS)}"
         )
 
-    # Rank all candidates
+    # Extract context if not provided (Phase 2.2)
+    if context is None:
+        context = extract_threshold_context(db_path, table, log_type)
+
+    # Rank all candidates with context-aware thresholds
     rankings = rank_candidate_fields(
         db_path,
         table,
         candidate_fields,
-        historical_db_path=historical_db_path
+        historical_db_path=historical_db_path,
+        context=context
     )
 
     if not rankings:
@@ -744,7 +1068,10 @@ def recommend_best_field(
     # Get top field
     best_ranking = rankings[0]
 
-    # Generate reasoning
+    # Phase 2.2: Calculate dynamic thresholds for reasoning
+    thresholds = calculate_dynamic_thresholds(context)
+
+    # Generate reasoning with threshold context
     reasoning_parts = [
         f"Selected '{best_ranking.field_name}' (rank #{best_ranking.rank} of {len(rankings)})",
         f"Overall score: {best_ranking.reliability_score.overall_score:.2f}",
@@ -763,11 +1090,17 @@ def recommend_best_field(
     if best_ranking.reliability_score.semantic_preference > 0:
         reasoning_parts.append("Preferred field (domain knowledge)")
 
+    # Phase 2.2: Add threshold context to reasoning
+    reasoning_parts.append(
+        f"Thresholds: HIGH={thresholds.high_threshold:.2f}, MEDIUM={thresholds.medium_threshold:.2f}"
+    )
+
     reasoning = ". ".join(reasoning_parts) + "."
 
     return FieldRecommendation(
         recommended_field=best_ranking.field_name,
         confidence=best_ranking.confidence,
         all_candidates=rankings,
-        reasoning=reasoning
+        reasoning=reasoning,
+        threshold_context=thresholds  # Phase 2.2
     )

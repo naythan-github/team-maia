@@ -1,9 +1,9 @@
 # M365 IR Data Quality System - Architecture
 
 **Project**: M365-DQ-2026-001
-**Version**: 2.1.6.4
+**Version**: 2.2
 **Last Updated**: 2026-01-07
-**SRE Review**: COMPLETE (Phase 2.1 + Phase 2.1.6.1 + Phase 2.1.6.2 + Phase 2.1.6.3 + Phase 2.1.6.4 validated)
+**SRE Review**: COMPLETE (Phase 2.1 + Phase 2.1.6.1-4 + Phase 2.2 validated)
 
 ---
 
@@ -39,7 +39,7 @@
 
 ## ✅ Phase 2.1.6 Enhancements (2026-01-07)
 
-**Status**: Phase 2.1.6.1 + Phase 2.1.6.2 + Phase 2.1.6.3 + Phase 2.1.6.4 COMPLETE ✅
+**Status**: Phase 2.1 + Phase 2.1.6.1-4 + Phase 2.2 COMPLETE ✅
 
 ### Phase 2.1.6.1: Status Code '1' Documentation
 
@@ -256,8 +256,171 @@
 - ✅ **Test coverage** ensures threshold changes can be validated empirically
 
 **Recommendation**:
-- **Threshold 0.5/0.7 are production-ready** - no changes needed
-- Future enhancements (e.g., Phase 2.2 Context-Aware Thresholds) should re-run these tests to validate new threshold values
+- **Threshold 0.5/0.7 are production-ready** - no changes needed for average cases
+- Phase 2.2 Context-Aware Thresholds builds on this validation by adapting thresholds based on case characteristics
+
+---
+
+## ✅ Phase 2.2: Context-Aware Thresholds (2026-01-07)
+
+**Status**: COMPLETE ✅ (15/15 tests passing, 56/56 total with zero regressions)
+
+**Problem**: Phase 2.1.6.4 validated that fixed thresholds (0.5 MEDIUM, 0.7 HIGH) are optimal **on average**, but different case types need different thresholds:
+- **Small datasets** (<100 records): Fixed thresholds too strict → miss good fields
+- **Large datasets** (>100K records): Fixed thresholds too lenient → include marginal fields
+- **Low quality data** (>50% null rate): Fixed thresholds exclude all fields → no usable selection
+- **Different log types**: sign_in_logs vs unified_audit_log have different reliability baselines
+- **Case severity**: Suspected breach needs lower thresholds (catch all indicators) vs routine analysis
+
+**Solution**: Dynamic threshold adjustment based on **ThresholdContext**:
+
+```python
+@dataclass
+class ThresholdContext:
+    record_count: int         # Dataset size
+    null_rate: float          # Overall data quality (0-1)
+    log_type: str             # sign_in_logs, unified_audit_log, legacy_auth_logs
+    case_severity: Optional[str]  # routine, suspected_breach, confirmed_breach
+```
+
+**Threshold Adjustment Algorithm**:
+
+| Factor | Condition | Adjustment | Rationale |
+|--------|-----------|------------|-----------|
+| **Dataset Size** | <100 records | -0.1 | Small sample → lower confidence needed |
+| | 100-1K records | -0.05 | Small-medium → slightly lower |
+| | 1K-10K records | 0.0 | Baseline (validated in Phase 2.1.6.4) |
+| | 10K-100K records | +0.025 | Large → higher confidence possible |
+| | >100K records | +0.05 | Very large → strictest thresholds |
+| **Data Quality** | <10% null rate | +0.05 | High quality → can be stricter |
+| | 10-30% null rate | 0.0 | Good quality (baseline) |
+| | 30-50% null rate | -0.05 | Lower quality → more lenient |
+| | >50% null rate | -0.1 | Low quality → very lenient |
+| **Log Type** | sign_in_logs | 0.0 | Validated baseline |
+| | unified_audit_log | -0.05 | Less uniformity expected |
+| | legacy_auth_logs | -0.05 | Simpler schema, fewer fields |
+| **Case Severity** | routine | 0.0 | Normal analysis |
+| | suspected_breach | -0.1 | Catch all indicators |
+| | confirmed_breach | -0.05 | Comprehensive analysis |
+
+**Safety Constraints**:
+- MEDIUM threshold >= 0.15 (minimum useful threshold)
+- HIGH threshold <= 0.85 (avoid unreachable thresholds)
+- HIGH >= MEDIUM + 0.1 (maintain gap between confidence levels)
+
+**Example Scenarios**:
+
+1. **Small dataset (50 records)**:
+   - Adjustment: -0.1 (dataset size)
+   - Thresholds: HIGH=0.6, MEDIUM=0.4
+   - Effect: Fields scoring 0.55 → MEDIUM (vs LOW with baseline 0.5)
+
+2. **Large dataset (250K records)**:
+   - Adjustment: +0.05 (dataset size)
+   - Thresholds: HIGH=0.75, MEDIUM=0.55
+   - Effect: Fields scoring 0.72 → MEDIUM (vs HIGH with baseline 0.7)
+
+3. **Suspected breach (any size)**:
+   - Adjustment: -0.1 (case severity)
+   - Thresholds: HIGH=0.6, MEDIUM=0.4
+   - Effect: Lower bar to catch all potential indicators
+
+4. **Cumulative (small + low quality + breach)**:
+   - Adjustments: -0.1 (dataset) + -0.1 (quality) + -0.1 (severity) = -0.3
+   - Thresholds: HIGH=0.4, MEDIUM=0.2 (with safety constraints applied)
+   - Effect: Very lenient thresholds for challenging cases
+
+**TDD Implementation**:
+- ✅ RED: 15 tests created, 14 failing as expected
+- ✅ GREEN: All 15 tests passing after implementation
+- ✅ No regressions: All 41 existing Phase 2.1 tests still pass (56/56 total)
+
+**Tests Created** (15 tests, 970 lines):
+
+1. **Threshold Calculation** (8 tests):
+   - Baseline thresholds with ideal context
+   - Small dataset lowers thresholds
+   - Large dataset raises thresholds
+   - Low quality data lowers thresholds
+   - unified_audit_log adjustment
+   - Suspected breach lowers thresholds
+   - Cumulative adjustments
+   - Safety constraints enforcement
+
+2. **Integration** (3 tests):
+   - rank_fields_by_reliability() uses dynamic thresholds for small dataset
+   - rank_fields_by_reliability() uses dynamic thresholds for large dataset
+   - recommend_best_field() includes threshold context
+
+3. **Context Extraction** (2 tests):
+   - extract_threshold_context() from sign_in_logs
+   - extract_threshold_context() handles multiple log types
+
+4. **Backward Compatibility** (2 tests):
+   - Phase 2.1 tests still pass (backward compatibility confirmed)
+   - Context parameter is optional (defaults to baseline)
+
+**Files Modified**:
+
+| File | Type | Lines | Purpose |
+|------|------|-------|---------|
+| `field_reliability_scorer.py` | Code | +308 | Added ThresholdContext, DynamicThresholds, calculate_dynamic_thresholds(), extract_threshold_context(), rank_fields_by_reliability() |
+| `test_phase_2_2_context_aware_thresholds.py` | Test | +970 | 15 new tests for context-aware thresholds |
+| `ARCHITECTURE.md` | Docs | +120 | Phase 2.2 documentation |
+
+**Total**: 3 files, +1,398 lines
+
+**Key Functions**:
+
+```python
+def calculate_dynamic_thresholds(
+    context: ThresholdContext,
+    base_high: float = 0.7,
+    base_medium: float = 0.5
+) -> DynamicThresholds:
+    """
+    Calculate context-aware confidence thresholds.
+    Returns DynamicThresholds with adjusted high/medium thresholds and reasoning.
+    """
+
+def extract_threshold_context(
+    db_path: str,
+    table: str,
+    log_type: str,
+    case_severity: Optional[str] = None
+) -> ThresholdContext:
+    """
+    Extract threshold context from database by analyzing table characteristics.
+    Calculates record_count and overall null_rate across data columns.
+    """
+
+def rank_fields_by_reliability(
+    db_path: str,
+    table: str,
+    log_type: str,
+    historical_db_path: Optional[str] = None,
+    context: Optional[ThresholdContext] = None
+) -> List[FieldRanking]:
+    """
+    Auto-discover and rank fields using context-aware thresholds.
+    If context not provided, automatically extracts from database.
+    """
+```
+
+**Integration with Phase 2.1**:
+- `rank_candidate_fields()` now accepts optional `context` parameter
+- `recommend_best_field()` now accepts optional `context` parameter and includes `threshold_context` in result
+- `FieldRecommendation` dataclass extended with `threshold_context` field
+- **Backward compatible**: Existing code without context parameter uses baseline thresholds (0.5/0.7)
+
+**Impact**:
+- ✅ Small datasets: More lenient thresholds prevent missing good fields
+- ✅ Large datasets: Stricter thresholds improve precision
+- ✅ Low quality data: Adaptive thresholds ensure usable field selection
+- ✅ Breach cases: Lower thresholds catch all potential indicators
+- ✅ Zero breaking changes: Fully backward compatible with Phase 2.1
+
+**Production Readiness**: ✅ READY (56/56 tests passing, zero regressions)
 
 ---
 
