@@ -1,9 +1,9 @@
 # M365 IR Data Quality System - Architecture
 
 **Project**: M365-DQ-2026-001
-**Version**: 2.1.6
+**Version**: 2.1.6.2
 **Last Updated**: 2026-01-07
-**SRE Review**: COMPLETE (Phase 2.1 + Phase 2.1.6.1 validated)
+**SRE Review**: COMPLETE (Phase 2.1 + Phase 2.1.6.1 + Phase 2.1.6.2 validated)
 
 ---
 
@@ -39,7 +39,7 @@
 
 ## ✅ Phase 2.1.6 Enhancements (2026-01-07)
 
-**Status**: Phase 2.1.6.1 (Status Code Maintenance) COMPLETE ✅
+**Status**: Phase 2.1.6.1 + Phase 2.1.6.2 COMPLETE ✅
 
 ### Phase 2.1.6.1: Status Code '1' Documentation
 
@@ -67,6 +67,42 @@
 - `tests/m365_ir/data_quality/test_status_code_manager.py` (added Phase 2.1.6 test)
 
 **Impact**: Eliminates unknown code warnings for synthetic error codes in future imports.
+
+### Phase 2.1.6.2: Extended Log Type Support Validation
+
+**Problem**: Phase 2.1 intelligent field selection needed validation across all M365 log types (unified_audit_log, legacy_auth_logs), not just sign_in_logs.
+
+**Discovery**: Phase 2.1 architecture ALREADY supports multi-log types:
+- `_calculate_historical_success_rate()` queries by `log_type` + `field_name` (isolated learning)
+- `PREFERRED_FIELDS` dict includes `unified_audit_log` entry
+- `discover_candidate_fields()` is table-agnostic (works for any log type)
+- **Conclusion**: No new functionality needed - Phase 2.1.6.2 is pure validation
+
+**TDD Implementation**:
+- ✅ RED: 5 tests created, all failing as expected
+- ✅ GREEN: Fixed test schemas to match actual database tables
+  - unified_audit_log: Added `imported_at` field
+  - legacy_auth_logs: Fixed column names (`user_principal_name`, `client_app_used`, `ip_address`, `status`)
+  - store_field_usage() calls: Added `history_db_path` as first parameter
+- ✅ No regressions (28/28 tests pass: 23 existing + 5 new)
+
+**Tests Created** (5 tests, 413 lines):
+1. `test_unified_audit_log_auto_field_selection` - Validates field selection for UAL
+2. `test_preferred_fields_bonus_for_unified_audit_log` - Validates semantic preference bonus
+3. `test_legacy_auth_auto_field_selection` - Validates field selection for legacy auth logs
+4. `test_historical_db_stores_different_log_types` - Validates cross-log-type learning storage
+5. `test_cross_log_type_learning_influences_scoring` - Validates log_type isolation (no bleeding)
+
+**Files Modified**:
+- `tests/m365_ir/data_quality/test_phase_2_1_6_2_extended_log_types.py` (NEW - 413 lines)
+
+**Validation Results**:
+- **Test Coverage**: 28/28 tests passing (23 existing Phase 2.1 + 5 new Phase 2.1.6.2)
+- **Zero Regressions**: All existing Phase 2.1 tests still pass
+- **Cross-Log-Type Learning**: Confirmed isolated by log_type (no data bleeding)
+- **Field Discovery**: Correctly discovers `result_status` for unified_audit_log, `status` for legacy_auth_logs
+
+**Impact**: Validates Phase 2.1 works correctly across all M365 log types with proper cross-log-type learning isolation.
 
 ---
 
