@@ -50,6 +50,59 @@ logger = logging.getLogger(__name__)
 PARSER_VERSION = "1.0.0"
 
 
+def _extract_case_id_from_db_path(db_path: Path) -> Optional[str]:
+    """
+    Extract case_id from database path.
+
+    Expected: ~/work_projects/ir_cases/{case_id}/{case_id}_logs.db
+
+    Example: PIR-OCULUS-2025-12-19_logs.db → PIR-OCULUS-2025-12-19
+
+    Args:
+        db_path: Path to database file
+
+    Returns:
+        Case ID string if extractable, None otherwise
+    """
+    try:
+        db_filename = db_path.name
+        if db_filename.endswith('_logs.db'):
+            return db_filename[:-8]  # Remove "_logs.db"
+    except Exception as e:
+        logger.warning(f"Failed to extract case_id from {db_path}: {e}")
+
+    return None
+
+
+class DataQualityError(Exception):
+    """
+    Raised when data quality checks fail during import.
+
+    This exception is raised when:
+    - Overall quality score < 0.5 (threshold)
+    - Too many unreliable fields detected
+    - Critical fields are 100% uniform
+
+    Attributes:
+        message: Error message with quality score and recommendations
+        quality_score: Overall quality score (0-1)
+        unreliable_fields: List of unreliable field names
+        recommendations: Suggested actions to fix quality issues
+    """
+
+    def __init__(
+        self,
+        message: str,
+        quality_score: float = 0.0,
+        unreliable_fields: List[str] = None,
+        recommendations: List[str] = None
+    ):
+        super().__init__(message)
+        self.quality_score = quality_score
+        self.unreliable_fields = unreliable_fields or []
+        self.recommendations = recommendations or []
+
+
 @dataclass
 class ImportResult:
     """Result of a log import operation."""
@@ -193,7 +246,210 @@ class LogImporter:
                 WHERE id = ?
             """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
 
+            # Phase 1.2: Run quality checks BEFORE commit (fail-fast mode)
+            if records_imported > 0:
+                try:
+                    from .data_quality_checker import check_table_quality
+
+                    quality_report = check_table_quality(
+                        str(self._db.db_path),
+                        'sign_in_logs',
+                        conn=conn  # Pass existing connection to see uncommitted data
+                    )
+
+                    # Check if quality_check_summary table exists
+                    cursor.execute("""
+                        SELECT name FROM sqlite_master
+                        WHERE type='table' AND name='quality_check_summary'
+                    """)
+
+                    if cursor.fetchone():
+                        # Store quality check results
+                        cursor.execute("""
+                            INSERT INTO quality_check_summary
+                            (table_name, overall_quality_score, reliable_fields_count,
+                             unreliable_fields_count, check_passed, warnings, recommendations, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            'sign_in_logs',
+                            quality_report.overall_quality_score,
+                            len(quality_report.reliable_fields),
+                            len(quality_report.unreliable_fields),
+                            1 if quality_report.overall_quality_score >= 0.5 else 0,
+                            '; '.join(quality_report.warnings) if quality_report.warnings else None,
+                            '; '.join(quality_report.recommendations) if quality_report.recommendations else None,
+                            quality_report.created_at
+                        ))
+
+                    # Fail-fast: Raise error if quality score below threshold
+                    if quality_report.overall_quality_score < 0.5:
+                        error_msg = (
+                            f"Data quality check FAILED: Quality score {quality_report.overall_quality_score:.2f} "
+                            f"is below threshold (0.5). Import aborted.\n\n"
+                            f"Unreliable fields ({len(quality_report.unreliable_fields)}): "
+                            f"{', '.join(quality_report.unreliable_fields)}\n\n"
+                        )
+                        if quality_report.recommendations:
+                            error_msg += "Recommendations:\n"
+                            for rec in quality_report.recommendations:
+                                error_msg += f"  - {rec}\n"
+
+                        raise DataQualityError(
+                            error_msg,
+                            quality_score=quality_report.overall_quality_score,
+                            unreliable_fields=quality_report.unreliable_fields,
+                            recommendations=quality_report.recommendations
+                        )
+
+                    # Log quality warnings (even if check passed)
+                    if quality_report.warnings:
+                        print(f"\n⚠️  Data quality warnings:")
+                        for warning in quality_report.warnings:
+                            print(f"   - {warning}")
+
+                    logger.info(
+                        f"Quality check passed: Score {quality_report.overall_quality_score:.2f}, "
+                        f"{len(quality_report.reliable_fields)} reliable fields, "
+                        f"{len(quality_report.unreliable_fields)} unreliable fields"
+                    )
+
+                except DataQualityError:
+                    # Re-raise quality errors (will be caught by outer except and rolled back)
+                    raise
+                except Exception as e:
+                    # Don't fail import if quality check itself fails
+                    logger.warning(f"Quality check failed to run: {e}")
+
             conn.commit()
+
+            # Phase 1.1: Auto-verify sign-in status after import
+            if records_imported > 0:
+                try:
+                    from .auth_verifier import verify_sign_in_status
+
+                    result = verify_sign_in_status(str(self._db.db_path))
+
+                    # Store verification results
+                    verification_status = 'BREACH_DETECTED' if result.breach_detected else 'OK'
+                    cursor.execute("""
+                        INSERT INTO verification_summary
+                        (log_type, total_records, success_count, failure_count,
+                         success_rate, verification_status, notes, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        'sign_in_logs',
+                        result.total_records,
+                        result.success_count,
+                        result.failure_count,
+                        result.success_rate,
+                        verification_status,
+                        f"Foreign success: {result.foreign_success_count} ({result.foreign_success_rate:.1f}%). "
+                        f"Field used: {result.status_field_used}. "
+                        f"Warnings: {'; '.join(result.warnings) if result.warnings else 'None'}",
+                        result.created_at
+                    ))
+                    conn.commit()
+
+                    # Phase 2.1.4: Store field usage outcome for learning
+                    try:
+                        from .auth_verifier import HISTORICAL_DB_PATH, USE_PHASE_2_1_SCORING
+                        from .field_reliability_scorer import store_field_usage
+
+                        if USE_PHASE_2_1_SCORING and hasattr(result, 'field_used') and result.field_used:
+                            case_id = _extract_case_id_from_db_path(self._db.db_path)
+
+                            if case_id:
+                                verification_successful = not any('CRITICAL' in w for w in result.warnings)
+
+                                store_field_usage(
+                                    history_db_path=str(HISTORICAL_DB_PATH),
+                                    case_id=case_id,
+                                    log_type='sign_in_logs',
+                                    field_name=result.field_used,
+                                    reliability_score=result.field_score or 0.5,
+                                    used_for_verification=True,
+                                    verification_successful=verification_successful,
+                                    breach_detected=result.breach_detected,
+                                    notes=f"Foreign success: {result.foreign_success_rate:.1f}%"
+                                )
+
+                                logger.info(f"Stored field usage: {result.field_used} (case: {case_id})")
+
+                    except Exception as e:
+                        logger.warning(f"Failed to store field usage: {e}")
+
+                    # Print verification summary
+                    print(f"\n✅ Sign-in logs auto-verification completed:")
+                    print(f"   Total: {result.total_records} records")
+                    print(f"   Successful: {result.success_count} ({result.success_rate:.1f}%)")
+                    print(f"   Failed: {result.failure_count} ({100-result.success_rate:.1f}%)")
+                    print(f"   Foreign success: {result.foreign_success_count} ({result.foreign_success_rate:.1f}%)")
+
+                    if result.breach_detected:
+                        print(f"   ⚠️  BREACH DETECTED: {result.alert_severity}")
+
+                    if result.warnings:
+                        for warning in result.warnings:
+                            print(f"   ⚠️  {warning}")
+
+                except Exception as e:
+                    logger.warning(f"Auto-verification failed: {e}")
+
+                    # Store failed verification in verification_summary
+                    try:
+                        total_records = cursor.execute(
+                            "SELECT COUNT(*) FROM sign_in_logs"
+                        ).fetchone()[0]
+
+                        cursor.execute("""
+                            INSERT INTO verification_summary
+                            (log_type, total_records, success_count, failure_count,
+                             success_rate, verification_status, notes, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            'sign_in_logs',
+                            total_records,
+                            0,
+                            0,
+                            0.0,
+                            'VERIFICATION_FAILED',
+                            f"Verification failed: {str(e)}",
+                            datetime.now().isoformat()
+                        ))
+                        conn.commit()
+                    except Exception as storage_error:
+                        logger.warning(f"Failed to store verification failure: {storage_error}")
+
+                    # Don't fail import if verification fails
+
+            # Phase 1.3: Scan for unknown status codes
+            if records_imported > 0:
+                try:
+                    from .status_code_manager import StatusCodeManager
+
+                    manager = StatusCodeManager(str(self._db.db_path))
+
+                    # Scan for unknown status_error_code values
+                    unknown_codes = manager.scan_for_unknown_codes(
+                        log_type='sign_in_logs',
+                        field_name='status_error_code'
+                    )
+
+                    if unknown_codes:
+                        print(f"\n⚠️  Unknown status codes detected:")
+                        for code_info in unknown_codes[:5]:  # Show first 5
+                            print(f"   - Code '{code_info['code_value']}' appears {code_info['count']} times")
+                        if len(unknown_codes) > 5:
+                            print(f"   - ... and {len(unknown_codes) - 5} more unknown codes")
+
+                        logger.warning(
+                            f"Found {len(unknown_codes)} unknown status code(s) in sign_in_logs. "
+                            f"Consider updating status_code_reference table."
+                        )
+
+                except Exception as e:
+                    logger.warning(f"Unknown code detection failed: {e}")
+                    # Don't fail import if code detection fails
 
         except Exception as e:
             conn.rollback()
@@ -323,6 +579,47 @@ class LogImporter:
             """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
 
             conn.commit()
+
+            # Phase 1.1: Auto-verify unified audit log after import
+            if records_imported > 0:
+                try:
+                    from .auth_verifier import verify_audit_log_operations
+
+                    result = verify_audit_log_operations(str(self._db.db_path))
+
+                    # Store verification results
+                    verification_status = 'EXFILTRATION_INDICATOR' if result.exfiltration_indicator else 'OK'
+                    cursor.execute("""
+                        INSERT INTO verification_summary
+                        (log_type, total_records, success_count, failure_count,
+                         success_rate, verification_status, notes, created_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        'unified_audit_log',
+                        result.total_records,
+                        0,  # N/A for audit logs
+                        0,  # N/A for audit logs
+                        0.0,  # N/A for audit logs
+                        verification_status,
+                        f"MailItemsAccessed: {result.mail_items_accessed}. "
+                        f"FileSyncDownloadedFull: {result.file_sync_downloaded}. "
+                        f"Exfiltration indicator: {result.exfiltration_indicator}",
+                        result.created_at
+                    ))
+                    conn.commit()
+
+                    # Print verification summary
+                    print(f"\n✅ Unified audit log auto-verification completed:")
+                    print(f"   Total: {result.total_records} records")
+                    print(f"   MailItemsAccessed: {result.mail_items_accessed}")
+                    print(f"   FileSyncDownloadedFull: {result.file_sync_downloaded}")
+
+                    if result.exfiltration_indicator:
+                        print(f"   ⚠️  EXFILTRATION INDICATOR DETECTED")
+
+                except Exception as e:
+                    logger.warning(f"Auto-verification failed: {e}")
+                    # Don't fail import if verification fails
 
         except Exception as e:
             conn.rollback()

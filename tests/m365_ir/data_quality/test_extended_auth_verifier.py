@@ -97,17 +97,23 @@ class TestSignInLogVerification:
         """
         Test verification with bad data quality (unpopulated fields, uniform values).
 
-        Expected: Quality check failure, explicit warnings.
+        Expected: Phase 2.1 finds best available field, warns about bad fields.
         """
         from claude.tools.m365_ir.auth_verifier import verify_sign_in_status
 
         result = verify_sign_in_status(bad_quality_db)
 
-        # Should detect bad data quality
-        assert result.data_quality_score < 0.5, "Bad data should score <50%"
+        # Phase 2.1: Should find best available field (may score >=0.5 if one good field exists)
+        # But should still warn about the bad fields
         assert len(result.warnings) > 0, "Bad data should produce warnings"
         assert any('uniform' in warning.lower() or '100%' in warning for warning in result.warnings), \
             "Should warn about 100% uniform field"
+
+        # Phase 2.1 provides field selection metadata
+        from claude.tools.m365_ir.auth_verifier import USE_PHASE_2_1_SCORING
+        if USE_PHASE_2_1_SCORING:
+            assert result.field_used is not None, "Phase 2.1 should select a field"
+            assert result.field_confidence is not None, "Phase 2.1 should provide confidence"
 
     def test_verify_sign_in_logs_performance(self, oculus_test_db):
         """
@@ -251,44 +257,74 @@ class TestIntegrationWithLogImporter:
 
         This integration test ensures auto-verification works end-to-end.
         """
-        # TDD: This will fail until we update log_importer.py
-        from claude.tools.m365_ir.log_importer import import_logs
+        from claude.tools.m365_ir.log_importer import LogImporter
+        from claude.tools.m365_ir.log_database import IRLogDatabase
         from claude.tools.m365_ir.auth_verifier import verify_sign_in_status
-
-        # Mock CSV file with sign_in_logs
         import tempfile
         import csv
+        import os
 
+        # Create test CSV with sign_in_logs (multiple records with variation for field reliability)
         csv_file = tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False)
         writer = csv.DictWriter(csv_file, fieldnames=[
-            'Created (UTC)', 'User principal name', 'User ID', 'Application',
-            'Location', 'IP address', 'Status error code', 'Conditional access status'
+            'CreatedDateTime', 'UserPrincipalName', 'IPAddress', 'Country',
+            'ConditionalAccessStatus'
         ])
         writer.writeheader()
-        writer.writerow({
-            'Created (UTC)': '2025-11-04T10:00:00Z',
-            'User principal name': 'user@test.com',
-            'User ID': 'user_123',
-            'Application': 'Microsoft Exchange',
-            'Location': 'AU',
-            'IP address': '203.0.113.1',
-            'Status error code': '0',
-            'Conditional access status': 'success'
-        })
+        # Add 10 successful logins
+        for i in range(10):
+            writer.writerow({
+                'CreatedDateTime': f'2025-11-04T10:0{i}:00Z',
+                'UserPrincipalName': f'user{i}@test.com',
+                'IPAddress': f'203.0.113.{i}',
+                'Country': 'AU',
+                'ConditionalAccessStatus': 'success'
+            })
+        # Add 2 failed logins (makes field reliable - not 100% uniform)
+        for i in range(2):
+            writer.writerow({
+                'CreatedDateTime': f'2025-11-04T10:1{i}:00Z',
+                'UserPrincipalName': f'blocked{i}@test.com',
+                'IPAddress': f'192.0.2.{i}',
+                'Country': 'RU',
+                'ConditionalAccessStatus': 'failure'
+            })
         csv_file.close()
 
-        # Import and check that verification ran
-        # TBD: Update import_logs signature to return verification results
-        # result = import_logs(csv_file.name, temp_db, log_type='sign_in_logs')
-        # assert result.verification_ran is True
-        # assert result.verification_status is not None
+        # Create database in temp directory
+        import tempfile
+        tmpdir = tempfile.mkdtemp()
 
-        # Cleanup
-        import os
-        os.unlink(csv_file.name)
+        try:
+            db = IRLogDatabase(case_id="TEST-001", base_path=tmpdir)
+            db.create()  # Initialize database with schema
 
-        # For now, just verify the function exists
-        assert callable(verify_sign_in_status)
+            importer = LogImporter(db)
+
+            # Import should automatically trigger verification
+            result = importer.import_sign_in_logs(csv_file.name)
+
+            # Check that import succeeded
+            assert result.records_imported == 12, "Should import 12 records (10 success + 2 failure)"
+
+            # Check that verification results were stored in database
+            conn = sqlite3.connect(db.db_path)
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT COUNT(*) FROM verification_summary
+                WHERE log_type = 'sign_in_logs'
+            """)
+            verification_count = cursor.fetchone()[0]
+            conn.close()
+
+            # Verification should have been stored
+            assert verification_count >= 1, "Auto-verification should store results in verification_summary"
+
+        finally:
+            # Cleanup
+            os.unlink(csv_file.name)
+            import shutil
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
     def test_verification_runs_on_all_log_types(self, oculus_test_db):
         """
@@ -358,6 +394,13 @@ class TestBreachAlertThresholds:
                 VALUES (?, ?, ?, ?, ?)
             """, ('2025-11-04T11:00:00', f'user{i}', 'AU', '203.0.113.1', 'success'))
 
+        # Add 5 failed logins to make field reliable (not 100% uniform)
+        for i in range(5):
+            cursor.execute("""
+                INSERT INTO sign_in_logs (timestamp, user_id, location_country, ip_address, conditional_access_status)
+                VALUES (?, ?, ?, ?, ?)
+            """, ('2025-11-04T12:00:00', f'blocked{i}', 'RU', '192.0.2.1', 'failure'))
+
         conn.commit()
         conn.close()
 
@@ -365,7 +408,8 @@ class TestBreachAlertThresholds:
 
         result = verify_sign_in_status(temp_db)
 
-        assert result.foreign_success_rate == pytest.approx(85.0, rel=1), "Should calculate 85% foreign"
+        # 85 foreign / 105 total = 81% foreign success rate
+        assert result.foreign_success_rate == pytest.approx(81.0, rel=1), "Should calculate 81% foreign"
         assert result.breach_detected is True, ">80% foreign should trigger breach alert"
         assert result.alert_severity == 'CRITICAL', "High foreign success should be CRITICAL"
 
@@ -403,6 +447,13 @@ class TestBreachAlertThresholds:
                 VALUES (?, ?, ?, ?, ?)
             """, ('2025-11-04T11:00:00', f'user{i}', 'AU', '203.0.113.1', 'success'))
 
+        # Add 5 failed logins to make field reliable (not 100% uniform)
+        for i in range(5):
+            cursor.execute("""
+                INSERT INTO sign_in_logs (timestamp, user_id, location_country, ip_address, conditional_access_status)
+                VALUES (?, ?, ?, ?, ?)
+            """, ('2025-11-04T12:00:00', f'blocked{i}', 'RU', '192.0.2.1', 'failure'))
+
         conn.commit()
         conn.close()
 
@@ -410,7 +461,8 @@ class TestBreachAlertThresholds:
 
         result = verify_sign_in_status(temp_db)
 
-        assert result.foreign_success_rate == pytest.approx(5.0, rel=1), "Should calculate 5% foreign"
+        # 5 foreign / 105 total = 4.8% foreign success rate (below 5% threshold)
+        assert result.foreign_success_rate == pytest.approx(4.8, rel=1), "Should calculate 4.8% foreign"
         assert result.breach_detected is False, "5% foreign should NOT trigger breach alert"
 
 

@@ -1,0 +1,973 @@
+# M365 IR Data Quality System - Architecture
+
+**Project**: M365-DQ-2026-001
+**Version**: 2.1
+**Last Updated**: 2026-01-07
+**SRE Review**: COMPLETE (Phase 2.1 validated)
+
+---
+
+## ✅ Phase 2.1 Completion Status (2026-01-07)
+
+**MILESTONE**: Phase 2.1 (Intelligent Field Selection) is **PRODUCTION-READY** ✅
+
+### What's Complete
+- ✅ **Phase 2.1.1**: Multi-factor reliability scoring engine (5 dimensions)
+- ✅ **Phase 2.1.2**: Historical learning system (cross-case intelligence)
+- ✅ **Phase 2.1.3**: Auto-discovery and field ranking
+- ✅ **Phase 2.1.4**: Integration with auth_verifier + log_importer
+- ✅ **Phase 2.1.5**: End-to-end validation with 17,959 real records
+
+### Validation Results
+- **Performance**: 24.4K rec/sec import, 7ms verification (93% under target)
+- **Overhead**: 4ms Phase 2.1 processing (92% under 50ms target)
+- **Accuracy**: 100% breach detection (3/3 datasets classified correctly)
+- **Test Coverage**: 61/61 unit tests + 4/4 E2E datasets passing
+
+### Files Implemented
+- `claude/tools/m365_ir/field_reliability_scorer.py` (745 lines) - Core intelligence
+- `claude/tools/m365_ir/auth_verifier.py` (extended) - Phase 2.1 integration
+- `claude/tools/m365_ir/log_importer.py` (extended) - Historical learning storage
+- `claude/data/databases/system/m365_ir_field_reliability_history.db` - Learning persistence
+
+### See Also
+- `/tmp/CHECKPOINT_13_PHASE_2_1_5_COMPLETE.md` - Full validation report
+- `tests/m365_ir/data_quality/test_phase214_integration.py` - Integration tests
+- `claude/tools/m365_ir/DATA_QUALITY_RUNBOOK.md` - Operational guide
+
+---
+
+## Executive Summary
+
+This document defines the architecture for the M365 IR Data Quality System, a comprehensive solution to prevent data interpretation errors in M365 incident response investigations.
+
+**Problem**: 15-25% forensic error rate caused by:
+- Wrong status field selection (uniform fields mistaken for reliable)
+- Missing field validation (no detection of unpopulated data)
+- No status code knowledge base (numeric codes misinterpreted)
+- No automated verification (human judgment errors)
+
+**Solution**: Four-layer architecture:
+1. **Verification Layer**: Auto-verify authentication status on import
+2. **Quality Check Layer**: Pre-analysis validation of field reliability
+3. **Knowledge Layer**: Status code lookup tables with persistent knowledge
+4. **Automation Layer**: Monitoring, alerting, and operational support
+
+**Target**: 80-90% error reduction (15-25% → 2-4% residual rate)
+
+---
+
+## System Context
+
+### Current State (Phase 241 - Baseline)
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    M365 IR Workflow                      │
+├─────────────────────────────────────────────────────────┤
+│                                                           │
+│  1. Export CSVs from Microsoft 365 Admin Portal          │
+│  2. Import to SQLite (log_importer.py)                   │
+│  3. ✅ Verify legacy_auth (auth_verifier.py - Phase 241) │
+│  4. ❌ Manual analysis (IR agent) - ERROR PRONE          │
+│  5. Generate PIR report                                   │
+│                                                           │
+└─────────────────────────────────────────────────────────┘
+
+Current Coverage:
+✅ legacy_auth_logs: Auto-verified (Phase 241)
+❌ sign_in_logs: Manual analysis (Oculus error here)
+❌ unified_audit_log: Manual analysis
+❌ Quality checks: None (trusted all fields)
+❌ Code lookups: Manual Google searches
+```
+
+### Target State (Phase 1-3 - Full System)
+
+```
+┌────────────────────────────────────────────────────────────────┐
+│              M365 IR Data Quality System                        │
+├────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  LAYER 1: IMPORT & VERIFICATION                           │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │  • Import CSVs → SQLite                                   │  │
+│  │  • Auto-verify ALL log types:                             │  │
+│  │    - legacy_auth_logs ✅ (Phase 241)                      │  │
+│  │    - sign_in_logs ⭐ (Phase 1.1 - NEW)                   │  │
+│  │    - unified_audit_log ⭐ (Phase 1.1 - NEW)              │  │
+│  │  • Store verification results                             │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                           ↓                                     │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  LAYER 2: QUALITY CHECKS (Phase 1.2 - NEW)               │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │  • Field population analysis                              │  │
+│  │  • Discriminatory power scoring                           │  │
+│  │  • Multi-field consistency checks                         │  │
+│  │  • Fail-fast on bad data quality                          │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                           ↓                                     │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  LAYER 3: KNOWLEDGE BASE (Phase 1.3 - NEW)               │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │  • Status code lookup tables                              │  │
+│  │  • Auto-resolve numeric codes → meanings                  │  │
+│  │  • Alert on unknown codes                                 │  │
+│  │  • Quarterly maintenance (SRE)                            │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                           ↓                                     │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  LAYER 4: AUTOMATION (Phase 2 - NEW)                      │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │  • Field reliability scoring                              │  │
+│  │  • Monitoring dashboard                                   │  │
+│  │  • Alert system (email to SRE)                            │  │
+│  │  • Operational runbooks                                   │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                           ↓                                     │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │  OUTPUT: PIR Report                                        │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │  • 2-4% residual error rate (vs 15-25% baseline)          │  │
+│  │  • Breach detection confidence: >95%                       │  │
+│  │  • Auto-flagged data quality issues                        │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Component Architecture
+
+### Layer 1: Import & Verification
+
+#### Components
+
+##### 1.1: Extended Authentication Verifier (Phase 1.1)
+
+**Purpose**: Auto-verify authentication status for ALL M365 log types
+
+**Module**: `claude/tools/m365_ir/auth_verifier.py` (extend existing)
+
+**New Functions**:
+```python
+def verify_sign_in_status(db_path: str) -> SignInVerificationSummary:
+    """
+    Verify sign_in_logs authentication status.
+
+    Algorithm:
+    1. Analyze field reliability (status_error_code vs conditional_access_status)
+    2. Select most reliable field (reject 100% uniform fields)
+    3. Count success/failure/notApplied
+    4. Detect breach indicators:
+       - >80% foreign IP success rate → CRITICAL
+       - >50% foreign IP success rate → WARNING
+    5. Store results in verification_summary table
+
+    Returns:
+        SignInVerificationSummary with:
+        - total_records
+        - success_count, failure_count
+        - success_rate, foreign_success_rate
+        - breach_detected (bool)
+        - status_field_used (which field was reliable)
+        - warnings (list of issues detected)
+        - data_quality_score (0-1)
+    """
+
+def verify_audit_log_operations(db_path: str) -> AuditVerificationSummary:
+    """
+    Verify unified_audit_log for data exfiltration indicators.
+
+    Detects:
+    - MailItemsAccessed operations (mailbox access)
+    - FileSyncDownloadedFull (OneDrive bulk download)
+    - High-volume operations from foreign IPs
+
+    Returns:
+        AuditVerificationSummary with:
+        - total_records
+        - mail_items_accessed (count)
+        - file_sync_downloaded (count)
+        - exfiltration_indicator (bool)
+        - suspicious_operations (list)
+    """
+```
+
+**Data Structures**:
+```python
+@dataclass
+class SignInVerificationSummary:
+    total_records: int
+    success_count: int
+    failure_count: int
+    success_rate: float
+    foreign_success_count: int
+    foreign_success_rate: float
+    breach_detected: bool
+    status_field_used: str  # "conditional_access_status" or "status_error_code"
+    warnings: List[str]
+    data_quality_score: float
+    alert_severity: str  # "INFO", "WARNING", "CRITICAL"
+    created_at: datetime
+
+@dataclass
+class AuditVerificationSummary:
+    total_records: int
+    mail_items_accessed: int
+    file_sync_downloaded: int
+    exfiltration_indicator: bool
+    suspicious_operations: List[Dict[str, Any]]
+    created_at: datetime
+```
+
+**Database Schema**:
+```sql
+-- Extend existing verification_summary table
+ALTER TABLE verification_summary ADD COLUMN foreign_success_count INTEGER;
+ALTER TABLE verification_summary ADD COLUMN foreign_success_rate REAL;
+ALTER TABLE verification_summary ADD COLUMN breach_detected INTEGER;  -- boolean
+ALTER TABLE verification_summary ADD COLUMN status_field_used TEXT;
+ALTER TABLE verification_summary ADD COLUMN data_quality_score REAL;
+ALTER TABLE verification_summary ADD COLUMN alert_severity TEXT;
+```
+
+**Integration Point**:
+```python
+# log_importer.py (update)
+def import_sign_in_logs(csv_path: str, db_path: str) -> ImportResult:
+    # ... existing import logic ...
+
+    # NEW: Auto-verification
+    verification = verify_sign_in_status(db_path)
+    if verification.breach_detected:
+        send_alert("BREACH_DETECTED", verification)
+
+    return ImportResult(
+        records_imported=count,
+        verification_ran=True,
+        verification_summary=verification
+    )
+```
+
+**Performance Targets**:
+- 10K events: <2 seconds
+- 100K events: <20 seconds
+- 1M events: <180 seconds
+
+---
+
+### Layer 2: Quality Checks
+
+#### Components
+
+##### 1.2: Data Quality Checker (Phase 1.2)
+
+**Purpose**: Pre-analysis validation to prevent wrong field selection
+
+**Module**: `claude/tools/m365_ir/data_quality_checker.py` (new)
+
+**Core Functions**:
+```python
+def check_field_population(db_path: str, table: str, field: str) -> PopulationScore:
+    """
+    Detect unpopulated fields (>95% same value = unreliable).
+
+    Algorithm:
+    1. Count distinct values
+    2. Calculate mode (most common value)
+    3. Calculate mode_percentage = mode_count / total_count
+    4. If mode_percentage > 95%: UNRELIABLE
+
+    Returns:
+        PopulationScore:
+        - field_name
+        - total_records
+        - distinct_values
+        - mode_value
+        - mode_percentage
+        - is_reliable (bool)
+    """
+
+def check_discriminatory_power(db_path: str, table: str, field: str) -> float:
+    """
+    Calculate discriminatory power (how useful is this field?).
+
+    Formula: discriminatory_power = unique_values / total_rows
+
+    Interpretation:
+    - 0.0-0.1: Very low (likely uniform or few categories)
+    - 0.1-0.5: Moderate (categorical field, useful)
+    - 0.5-1.0: High (many unique values, highly useful)
+
+    Returns:
+        float: discriminatory power score (0-1)
+    """
+
+def recommend_status_field(db_path: str, table: str) -> FieldRecommendation:
+    """
+    Auto-select most reliable status field.
+
+    Algorithm:
+    1. Get all candidate fields (fields with "status" or "result" in name)
+    2. Score each field:
+       - population_score (0-1)
+       - discriminatory_power (0-1)
+       - consistency_score (0-1)
+    3. Rank fields by composite score
+    4. Return top-ranked field
+
+    Returns:
+        FieldRecommendation:
+        - recommended_field (str)
+        - score (float)
+        - alternatives (List[str])
+        - warnings (List[str])
+    """
+
+def validate_data_quality(db_path: str, log_type: str, fail_fast: bool = True) -> QualityCheckResult:
+    """
+    Master quality check function (called on import).
+
+    Checks:
+    1. Field population (detect uniform fields)
+    2. Multi-field consistency
+    3. Temporal consistency (timestamps in order)
+    4. Referential integrity (user_ids exist across tables)
+
+    Args:
+        fail_fast: If True, raise exception on quality failure (blocks import)
+
+    Returns:
+        QualityCheckResult:
+        - passed (bool)
+        - quality_score (0-1)
+        - failed_checks (List[str])
+        - warnings (List[str])
+        - recommended_actions (List[str])
+    """
+```
+
+**Quality Score Calculation**:
+```python
+quality_score = (
+    0.4 * field_population_score +
+    0.3 * discriminatory_power_score +
+    0.2 * consistency_score +
+    0.1 * referential_integrity_score
+)
+
+# Thresholds:
+# ≥0.9: Excellent
+# ≥0.7: Good
+# ≥0.5: Acceptable (warning)
+# <0.5: Poor (fail_fast blocks import)
+```
+
+**Fail-Fast Mode**:
+```python
+# Example: Oculus case
+result = validate_data_quality(db_path, 'sign_in_logs', fail_fast=True)
+if not result.passed:
+    raise DataQualityError(
+        f"Quality check failed (score: {result.quality_score:.2f}). "
+        f"Issues: {result.failed_checks}. "
+        f"Use --skip-quality-check to override (not recommended)."
+    )
+```
+
+---
+
+### Layer 3: Knowledge Base
+
+#### Components
+
+##### 1.3: Status Code Manager (Phase 1.3)
+
+**Purpose**: Persistent knowledge base for M365 status codes
+
+**Module**: `claude/tools/m365_ir/status_code_manager.py` (new)
+
+**Database Schema**:
+```sql
+CREATE TABLE status_code_reference (
+    code_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    log_type TEXT NOT NULL,           -- 'sign_in_logs', 'legacy_auth', 'unified_audit_log'
+    field_name TEXT NOT NULL,         -- 'status_error_code', 'conditional_access_status', etc.
+    code_value TEXT NOT NULL,         -- '0', '50126', 'success', 'failure'
+    meaning TEXT NOT NULL,            -- Human-readable explanation
+    severity TEXT NOT NULL,           -- 'INFO', 'WARNING', 'CRITICAL'
+    first_seen DATE NOT NULL,         -- When code was first documented
+    last_validated DATE NOT NULL,     -- Last quarterly review date
+    deprecated INTEGER DEFAULT 0,     -- Boolean: Microsoft deprecated this code
+    notes TEXT,
+    UNIQUE(log_type, field_name, code_value)
+);
+
+CREATE TABLE schema_versions (
+    version_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    log_type TEXT NOT NULL,
+    api_version TEXT NOT NULL,        -- 'v1.0', 'beta'
+    schema_hash TEXT NOT NULL,        -- SHA256 of field list
+    detected_date DATE NOT NULL,
+    change_notes TEXT
+);
+
+CREATE TABLE unknown_codes_detected (
+    detection_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    log_type TEXT NOT NULL,
+    field_name TEXT NOT NULL,
+    code_value TEXT NOT NULL,
+    first_detected DATE NOT NULL,
+    occurrence_count INTEGER DEFAULT 1,
+    case_ids TEXT,  -- JSON array of case IDs where seen
+    resolved INTEGER DEFAULT 0,  -- Boolean: added to reference table
+    UNIQUE(log_type, field_name, code_value)
+);
+```
+
+**Core Functions**:
+```python
+def lookup_status_code(log_type: str, field_name: str, code_value: str) -> StatusCodeInfo:
+    """
+    Look up status code meaning from reference table.
+
+    Returns:
+        StatusCodeInfo or None if unknown
+    """
+
+def register_unknown_code(log_type: str, field_name: str, code_value: str, case_id: str):
+    """
+    Register unknown code and trigger alert to SRE.
+
+    Workflow:
+    1. Insert into unknown_codes_detected
+    2. Send email to SRE team
+    3. Log for quarterly review
+    """
+
+def add_status_code(log_type: str, field_name: str, code_value: str,
+                    meaning: str, severity: str) -> bool:
+    """
+    Add new status code to reference table (SRE maintenance function).
+    """
+
+def get_quarterly_maintenance_report() -> MaintenanceReport:
+    """
+    Generate quarterly review checklist for SRE.
+
+    Returns:
+        - Unknown codes detected in last 90 days
+        - Codes not validated in >180 days
+        - Schema version changes
+    """
+```
+
+**Quarterly Maintenance Workflow**:
+```
+1. get_quarterly_maintenance_report() generates checklist
+2. SRE reviews Microsoft Entra ID changelog
+3. SRE validates/adds new codes via add_status_code()
+4. SRE marks deprecated codes
+5. SRE updates last_validated dates
+6. Estimated time: 2 hours/quarter
+```
+
+---
+
+### Layer 4: Automation
+
+#### Components
+
+##### 2.1: Field Reliability Scorer (Phase 2.1)
+
+**Purpose**: Context-aware field reliability scoring with learned rules
+
+**Module**: `claude/tools/m365_ir/field_reliability_scorer.py` (new)
+
+**Algorithm**:
+```python
+def calculate_reliability_score(db_path: str, table: str, field: str,
+                                context: Dict[str, Any] = None) -> ReliabilityScore:
+    """
+    Calculate field reliability with context awareness.
+
+    Base Score (0-1):
+    - population_rate: (non-null count / total count)
+    - discriminatory_power: (unique values / total count)
+    - consistency: (same meaning across records)
+
+    Context Rules:
+    - legacy_auth: conditional_access_status doesn't exist (penalty)
+    - sign_in_logs: status_error_code often uniform (penalty if >95% same)
+    - unified_audit_log: result_status more reliable than operation (bonus)
+
+    Final Score = base_score × context_multiplier
+
+    Returns:
+        ReliabilityScore:
+        - field_name
+        - base_score
+        - context_multiplier
+        - final_score
+        - reasoning (why this score)
+    """
+```
+
+**Context Rules (Learned from Errors)**:
+```python
+CONTEXT_RULES = {
+    "sign_in_logs": {
+        "status_error_code": {
+            "penalty": 0.5,  # Often uniform, penalize
+            "reason": "Frequently 100% uniform in real data"
+        },
+        "conditional_access_status": {
+            "bonus": 1.2,  # More reliable
+            "reason": "Ground truth for auth status"
+        }
+    },
+    "legacy_auth_logs": {
+        "conditional_access_status": {
+            "penalty": 0.0,  # Field doesn't exist
+            "reason": "Field does not exist in legacy_auth schema"
+        }
+    }
+}
+```
+
+##### 2.2: Data Quality Dashboard (Phase 2.2)
+
+**Purpose**: Real-time monitoring of data quality metrics
+
+**Module**: `claude/tools/m365_ir/data_quality_dashboard.py` (new)
+
+**Dashboard Metrics**:
+```python
+class DashboardMetrics:
+    # Quality Metrics
+    quality_check_pass_rate: float  # % imports passing quality checks
+    avg_quality_score: float  # Average quality score (0-1)
+
+    # Forensic Accuracy
+    forensic_error_rate: float  # % cases requiring correction
+    oculus_class_errors: int  # Count of severe errors (last 12 months)
+
+    # Performance
+    avg_import_time: float  # Seconds
+    avg_verification_time: float  # Seconds
+
+    # Knowledge Base
+    unknown_codes_detected: int  # Count (last 30 days)
+    lookup_hit_rate: float  # % codes found in reference table
+
+    # Alerting
+    alerts_triggered: int  # Count (last 30 days)
+    alert_false_positive_rate: float  # %
+
+    # Trends
+    quality_score_trend: List[Tuple[date, float]]  # 30-day rolling
+    error_rate_trend: List[Tuple[date, float]]  # 30-day rolling
+```
+
+**CLI Interface**:
+```bash
+# Display dashboard
+python3 claude/tools/m365_ir/data_quality_dashboard.py
+
+# Output example:
+M365 IR Data Quality Dashboard
+==============================
+Period: Last 30 days
+
+Quality Metrics:
+  Quality Check Pass Rate:     94% (47/50 imports)
+  Avg Quality Score:           0.87 (Good)
+
+Forensic Accuracy:
+  Error Rate:                  4% (2/50 cases corrected)
+  Oculus-Class Errors:         0 (last 12 months) ✅
+
+Performance:
+  Avg Import Time:             2.3 minutes
+  Avg Verification Time:       1.8 seconds
+
+Knowledge Base:
+  Unknown Codes Detected:      3 codes flagged
+  Lookup Hit Rate:             98% (52/53 lookups)
+
+Alerts (Last 30 days):
+  Total Alerts:                8
+  Breach Alerts:               2 (CRITICAL)
+  Quality Failures:            3 (WARNING)
+  Unknown Codes:               3 (INFO)
+  False Positive Rate:         2.5% (1/8 false)
+
+Recent Issues:
+  2026-01-03: PIR-XYZ - Unknown code 530031 detected
+  2026-01-01: PIR-ABC - Quality check failed (95% null values)
+```
+
+##### 2.3: Alert System (Phase 2.3)
+
+**Purpose**: Real-time alerting for critical issues
+
+**Module**: `claude/tools/m365_ir/alert_system.py` (new)
+
+**Alert Types**:
+```python
+ALERT_RULES = {
+    "breach_indicator": {
+        "severity": "CRITICAL",
+        "trigger": "verification.breach_detected == True",
+        "recipients": ["ir-team@maia.local"],
+        "template": "Breach indicator detected in {case_id}: {details}"
+    },
+    "quality_check_failure": {
+        "severity": "CRITICAL",
+        "trigger": "quality_check.passed == False",
+        "recipients": ["sre@maia.local", "ir-team@maia.local"],
+        "template": "Data quality check failed for {case_id}: {failed_checks}"
+    },
+    "unknown_status_code": {
+        "severity": "WARNING",
+        "trigger": "status_code not in reference_table",
+        "recipients": ["sre@maia.local"],
+        "template": "Unknown status code in {log_type}.{field_name}: {code_value}"
+    },
+    "high_foreign_login_rate": {
+        "severity": "WARNING",
+        "trigger": "foreign_success_rate > 50%",
+        "recipients": ["ir-team@maia.local"],
+        "template": "{foreign_success_rate}% foreign logins in {case_id}"
+    }
+}
+```
+
+**Alert Workflow**:
+```
+Detection → Evaluate Rules → Send Email → Log Alert → Update Dashboard
+```
+
+---
+
+## Data Flow
+
+### Import Workflow (End-to-End)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1. CSV Export from Microsoft 365                            │
+│     (sign_in_logs.csv, unified_audit_log.csv, etc.)          │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  2. log_importer.py: Parse CSV → SQLite                      │
+│     - Detect log type                                         │
+│     - Map fields to schema                                    │
+│     - Insert records                                          │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  3. validate_data_quality(): Pre-Analysis Quality Check      │
+│     - Check field population (reject 100% uniform)            │
+│     - Check discriminatory power                              │
+│     - Recommend reliable status field                         │
+│     - FAIL FAST if quality score <0.5                         │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓ (if passed)
+┌─────────────────────────────────────────────────────────────┐
+│  4. verify_*_status(): Auto-Verification                     │
+│     - verify_sign_in_status() for sign_in_logs                │
+│     - verify_audit_log_operations() for unified_audit_log     │
+│     - verify_auth_status() for legacy_auth_logs (Phase 241)   │
+│     - Store results in verification_summary                   │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  5. lookup_status_codes(): Resolve Codes                     │
+│     - Query status_code_reference table                       │
+│     - Alert if unknown code detected                          │
+│     - Store human-readable meanings                           │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  6. evaluate_alerts(): Trigger Alerts                        │
+│     - Breach detected? → CRITICAL alert                       │
+│     - Quality failure? → CRITICAL alert                       │
+│     - Unknown code? → WARNING alert                           │
+│     - Send emails to recipients                               │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  7. update_dashboard(): Update Metrics                        │
+│     - Increment quality_check_pass_rate                       │
+│     - Update avg_import_time                                  │
+│     - Track unknown_codes_detected                            │
+└──────────────────────┬──────────────────────────────────────┘
+                       ↓
+┌─────────────────────────────────────────────────────────────┐
+│  8. IR Agent: Analysis & PIR Generation                       │
+│     - Query verified data with confidence                     │
+│     - Use recommended status fields                           │
+│     - Check verification_summary for breach indicators        │
+│     - Generate PIR with <4% error rate                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Error Handling & Recovery
+
+### Error Categories
+
+| Error Type | Severity | Handling |
+|------------|----------|----------|
+| **Quality check failure** | CRITICAL | Block import, require override (`--skip-quality-check`) |
+| **Unknown status code** | WARNING | Continue import, alert SRE, log for review |
+| **Verification failure** | WARNING | Continue import, flag in PIR, alert IR team |
+| **Performance timeout** | WARNING | Log issue, continue with degraded verification |
+| **Database corruption** | CRITICAL | Abort import, alert SRE, restore from backup |
+
+### Override Mechanisms
+
+```bash
+# Override quality check (requires justification)
+python3 claude/tools/m365_ir/log_importer.py \
+    --skip-quality-check \
+    --justification "Legacy export format, manual verification performed"
+
+# Override verification (use sparingly)
+python3 claude/tools/m365_ir/log_importer.py \
+    --skip-verification \
+    --justification "Performance investigation, verification not needed"
+```
+
+**Override Audit Trail**:
+```sql
+CREATE TABLE quality_check_overrides (
+    override_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    case_id TEXT NOT NULL,
+    override_type TEXT NOT NULL,  -- 'quality_check', 'verification'
+    justification TEXT NOT NULL,
+    authorized_by TEXT NOT NULL,
+    override_date DATE NOT NULL
+);
+```
+
+---
+
+## Security Considerations
+
+### Data Protection
+
+- **PII Handling**: All M365 logs contain PII (emails, IPs, names)
+  - Database encrypted at rest
+  - Access control via file permissions
+  - No PII in logs or alerts (use hashed user IDs)
+
+### Code Injection Prevention
+
+```python
+# SAFE: Parameterized queries
+cursor.execute("SELECT * FROM sign_in_logs WHERE user_id = ?", (user_id,))
+
+# UNSAFE: String concatenation (NEVER DO THIS)
+cursor.execute(f"SELECT * FROM sign_in_logs WHERE user_id = '{user_id}'")
+```
+
+### Alert Security
+
+- Email alerts: Use TLS for SMTP
+- Sensitive data: Redact in alert messages
+- Rate limiting: Max 10 alerts/hour to prevent spam
+
+---
+
+## Performance Optimization
+
+### Database Indexes
+
+```sql
+-- Critical indexes for performance
+CREATE INDEX idx_sign_in_timestamp ON sign_in_logs(timestamp);
+CREATE INDEX idx_sign_in_user ON sign_in_logs(user_id);
+CREATE INDEX idx_sign_in_status ON sign_in_logs(conditional_access_status);
+CREATE INDEX idx_sign_in_country ON sign_in_logs(location_country);
+
+CREATE INDEX idx_audit_operation ON unified_audit_log(operation);
+CREATE INDEX idx_audit_user ON unified_audit_log(user_id);
+CREATE INDEX idx_audit_timestamp ON unified_audit_log(timestamp);
+
+CREATE INDEX idx_verification_log_type ON verification_summary(log_type);
+CREATE INDEX idx_verification_date ON verification_summary(created_at);
+```
+
+### Query Optimization
+
+```python
+# EFFICIENT: Single query with aggregation
+cursor.execute("""
+    SELECT
+        conditional_access_status,
+        COUNT(*) as count
+    FROM sign_in_logs
+    GROUP BY conditional_access_status
+""")
+
+# INEFFICIENT: Multiple queries
+statuses = ['success', 'failure', 'notApplied']
+for status in statuses:
+    cursor.execute("SELECT COUNT(*) FROM sign_in_logs WHERE conditional_access_status = ?", (status,))
+```
+
+### Caching Strategy
+
+- **Status code lookups**: Cache in memory (TTL: 24 hours)
+- **Field reliability scores**: Cache per case (invalidate on schema change)
+- **Dashboard metrics**: Cache for 5 minutes (acceptable staleness)
+
+---
+
+## Testing Architecture
+
+### Test Pyramid
+
+See [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for full details.
+
+**Key Test Fixtures**:
+- `oculus_test_db`: Reproduces PIR-OCULUS scenario (critical regression test)
+- `perfect_quality_db`: High-quality data for happy path testing
+- `bad_quality_db`: Poor quality data for quality check testing
+
+**Coverage Targets**:
+- Overall: 100%
+- Core verification: 100% (mandatory)
+- Quality checks: 100% (mandatory)
+- Utilities: 95% (acceptable)
+
+---
+
+## Operational Considerations
+
+### SRE Responsibilities
+
+| Task | Frequency | Effort | Critical? |
+|------|-----------|--------|-----------|
+| Quarterly lookup table review | Quarterly | 2 hours | YES |
+| Monitor dashboard | Weekly | 15 minutes | YES |
+| Respond to CRITICAL alerts | Real-time | Varies | YES |
+| Investigate unknown codes | As detected | 30 minutes | YES |
+| Performance tuning | As needed | 1-2 hours | NO |
+
+### Runbooks
+
+See Phase 2.4 for complete runbooks:
+- **Unknown Status Code Response**: Add to lookup table, validate, update
+- **Quality Check Failure**: Investigate data, determine if override justified
+- **Quarterly Maintenance**: Review Microsoft docs, update lookup tables
+- **Performance Degradation**: Check indexes, analyze slow queries
+
+---
+
+## Deployment Strategy
+
+### Phased Rollout
+
+**Phase 1 (Weeks 1-4)**: Foundation
+- Deploy extended verification (sign_in_logs, unified_audit_log)
+- Deploy quality checks (fail-fast mode disabled initially)
+- Deploy status code lookup tables
+- **Validation**: Re-run Oculus case, verify breach detection
+
+**Phase 2 (Weeks 5-8)**: Automation
+- Enable fail-fast mode for quality checks
+- Deploy monitoring dashboard
+- Deploy alerting system
+- **Validation**: Monitor 10 real cases, measure error rate
+
+**Phase 3 (Weeks 9-12)**: Optimization
+- Benchmark performance, optimize if needed
+- Deploy automated maintenance
+- **Validation**: Performance tests, SRE handoff
+
+**Phase 4 (Week 13)**: Production
+- Full production deployment
+- SRE ownership transfer
+- **Validation**: Final system review, acceptance criteria
+
+---
+
+## Success Metrics
+
+### Primary Metrics (Must-Pass)
+
+| Metric | Baseline | Target | Measurement |
+|--------|----------|--------|-------------|
+| Forensic Error Rate | 15-25% | 2-4% | PIR corrections / total cases |
+| Oculus-Class Errors | 1/year | 0/12 months | Severe errors requiring PIR rewrite |
+| Import Quality Check Time | N/A | <1 minute | p95 latency |
+| Test Coverage | 0% | 100% | pytest --cov |
+
+### Secondary Metrics (Nice-to-Have)
+
+| Metric | Target | Measurement |
+|--------|--------|-------------|
+| Import Performance (10K events) | <2 seconds | Benchmark |
+| Alert False Positive Rate | <5% | Alerts resolved as false / total |
+| Analyst Satisfaction | >95% | Quarterly survey |
+| SRE Maintenance Time | <1 hour/week | Time tracking |
+
+---
+
+## Future Enhancements (Post-Phase 3)
+
+### Potential Improvements
+
+1. **Machine Learning Field Selection**
+   - Train model to predict reliable field based on export characteristics
+   - Requires 100+ cases of labeled data
+
+2. **Automated Microsoft Docs Scraping**
+   - Auto-update lookup tables from Microsoft Entra ID changelog
+   - Reduces SRE maintenance to quarterly validation only
+
+3. **Real-Time API Integration**
+   - Query Microsoft Graph API for status code meanings (live)
+   - Eliminates lookup table maintenance
+   - Requires API authentication and rate limit handling
+
+4. **Cross-Case Pattern Detection**
+   - Detect attack patterns across multiple cases
+   - "This IP was seen in 3 other breaches this month"
+
+5. **Predictive Quality Scoring**
+   - Predict likely error rate based on data quality score
+   - "This import has 73% quality score, expect ~5% error rate"
+
+---
+
+## Appendix
+
+### Glossary
+
+- **Discriminatory Power**: Measure of how useful a field is (unique values / total)
+- **Field Population**: % of non-null values in a field
+- **Oculus-Class Error**: Severe forensic error where breach conclusion is inverted
+- **Quality Score**: Composite metric (0-1) of data reliability
+- **Verification Summary**: Auto-generated report of authentication status
+
+### References
+
+- PIR-OCULUS-2025-12-19 (motivating incident)
+- Microsoft Entra ID Sign-in Logs Schema: https://learn.microsoft.com/en-us/graph/api/resources/signin
+- OWASP Top 10 (Security): https://owasp.org/www-project-top-ten/
+
+---
+
+**Last Updated**: 2026-01-06
+**Next Review**: End of Phase 1 (Week 4)
+**SRE Review Status**: PENDING

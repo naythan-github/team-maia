@@ -306,6 +306,64 @@ class IRLogDatabase:
             )
         """)
 
+        # Verification Summary table (Phase 1.1 - Data Quality System)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS verification_summary (
+                verification_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                log_type TEXT NOT NULL,
+                total_records INTEGER NOT NULL,
+                success_count INTEGER NOT NULL,
+                failure_count INTEGER NOT NULL,
+                success_rate REAL NOT NULL,
+                verification_status TEXT NOT NULL,
+                notes TEXT,
+                created_at TEXT NOT NULL
+            )
+        """)
+
+        # Quality Check Summary table (Phase 1.2 - Data Quality Checker)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS quality_check_summary (
+                check_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                table_name TEXT NOT NULL,
+                overall_quality_score REAL NOT NULL,
+                reliable_fields_count INTEGER NOT NULL,
+                unreliable_fields_count INTEGER NOT NULL,
+                check_passed INTEGER NOT NULL,
+                warnings TEXT,
+                recommendations TEXT,
+                created_at TEXT NOT NULL
+            )
+        """)
+
+        # Status Code Reference table (Phase 1.3 - Status Code Lookup Tables)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS status_code_reference (
+                code_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                log_type TEXT NOT NULL,
+                field_name TEXT NOT NULL,
+                code_value TEXT NOT NULL,
+                meaning TEXT NOT NULL,
+                severity TEXT NOT NULL,
+                first_seen TEXT NOT NULL,
+                last_validated TEXT NOT NULL,
+                deprecated INTEGER DEFAULT 0,
+                UNIQUE(log_type, field_name, code_value)
+            )
+        """)
+
+        # Schema Versions table (Phase 1.3 - Track Microsoft API changes)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS schema_versions (
+                version_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                log_type TEXT NOT NULL,
+                api_version TEXT NOT NULL,
+                schema_hash TEXT NOT NULL,
+                detected_date TEXT NOT NULL,
+                notes TEXT
+            )
+        """)
+
         # Legacy Auth Logs table (Phase 226.3)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS legacy_auth_logs (
@@ -625,14 +683,48 @@ class IRLogDatabase:
             ON risky_users(risk_state)
         """)
 
-        # Verification Summary indexes (Phase 241)
+        # Verification Summary indexes (Phase 1.1)
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_verification_log_type
             ON verification_summary(log_type)
         """)
         cursor.execute("""
-            CREATE INDEX IF NOT EXISTS idx_verification_verified_at
-            ON verification_summary(verified_at)
+            CREATE INDEX IF NOT EXISTS idx_verification_created_at
+            ON verification_summary(created_at)
+        """)
+
+        # Quality Check Summary indexes (Phase 1.2)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_quality_check_table_name
+            ON quality_check_summary(table_name)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_quality_check_created_at
+            ON quality_check_summary(created_at)
+        """)
+
+        # Status Code Reference indexes (Phase 1.3)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_status_code_log_type
+            ON status_code_reference(log_type)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_status_code_field_name
+            ON status_code_reference(field_name)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_status_code_lookup
+            ON status_code_reference(log_type, field_name, code_value)
+        """)
+
+        # Schema Versions indexes (Phase 1.3)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_schema_versions_log_type
+            ON schema_versions(log_type)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_schema_versions_detected_date
+            ON schema_versions(detected_date)
         """)
 
 

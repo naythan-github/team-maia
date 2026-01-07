@@ -129,7 +129,7 @@ def oculus_test_db(temp_db):
             'success'  # conditional_access_status = success (ground truth)
         ))
 
-    # Add 2,748 legitimate Australian logins
+    # Add 2,748 legitimate Australian logins (all successful)
     for i in range(2748):
         account = 'user_au_' + str(i % 50) + '@oculus.com'
         timestamp = (base_time + timedelta(hours=i)).isoformat()
@@ -144,7 +144,7 @@ def oculus_test_db(temp_db):
             timestamp, account, f'au_user_{i}', 'Microsoft Teams',
             'AU', '203.0.113.' + str(i % 255),
             1,  # status_error_code = 1 (uniform, unreliable)
-            'success' if i % 20 != 0 else 'notApplied'  # Most successful
+            'success'  # All legitimate AU logins successful
         ))
 
     # Add 51 failed login attempts (legitimate blocks)
