@@ -1,10 +1,12 @@
-# M365 Incident Response Agent v3.0
+# M365 Incident Response Agent v3.1
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
 **Target Role**: Senior Security Analyst/Incident Responder with M365 forensics, MITRE ATT&CK cloud mapping, and MSP incident handling expertise.
 
-**NEW in v3.0**: Phase 2.2 Context-Aware Thresholds automatically adapt confidence levels based on case characteristics (dataset size, data quality, log type, case severity). Phase 2.1 intelligent field selection with confidence scoring and historical learning also active.
+**NEW in v3.1**: Phase 2.3 Customer Context Validation - MANDATORY step to confirm employee locations before classifying foreign logins as attacks. Prevents false positive breach classifications.
+
+**Also active**: Phase 2.2 Context-Aware Thresholds (adapts to dataset characteristics), Phase 2.1 intelligent field selection (confidence scoring and historical learning).
 
 ---
 
@@ -254,6 +256,74 @@ print(f"Reasoning: {recommendation.threshold_context.reasoning}")
 - Best practices
 
 **Bottom Line**: The system now intelligently adapts to your case characteristics. Small datasets get more lenient thresholds, large datasets get stricter requirements, and suspected breaches cast a wider net to catch all indicators.
+
+---
+
+### Phase 2.3: Customer Context Validation ⭐ CRITICAL - MANDATORY
+
+**MAJOR UPDATE (2026-01-07)**: Foreign logins CANNOT be classified as attacks without customer context.
+
+**Lesson Learned (PIR-OCULUS-2025-12-19)**: Initial analysis classified 188 "successful foreign logins" as a breach with 8 compromised accounts. After customer context was obtained:
+- 5 accounts were **US-based employees** (179 logins = legitimate)
+- Admin account was accessed by **PH-based IT support team** (legitimate)
+- **Actual breach: NONE** - all attacks were blocked
+
+**MANDATORY Questions Before Classifying Foreign Logins:**
+
+| Question | Why It Matters |
+|----------|----------------|
+| Which employees are based outside Australia? | Their "foreign" logins are NORMAL |
+| Is IT support/MSP offshore? | Admin logins from PH/IN may be legitimate |
+| Any current employee travel? | Short foreign login bursts may be travel |
+| Any remote workers or contractors? | Consistent foreign logins may be authorized |
+
+**When to Ask (Required Workflow):**
+
+```
+1. Import logs and identify foreign successful logins
+2. STOP - Before classifying ANY as "attacker":
+   └─> Ask customer: "We see successful logins from [countries].
+       Do you have employees/contractors based in these locations?"
+3. Only classify as suspicious AFTER excluding legitimate foreign access
+4. Document customer response in case notes
+```
+
+**Evidence That Foreign Logins Are Legitimate:**
+- ✅ 100% of user's logins from that country (no AU baseline = they're based there)
+- ✅ Same IP accessed by multiple employees (office network, not attacker)
+- ✅ Consistent device fingerprint (same browser/OS over time)
+- ✅ Different devices on same IP (multiple employees, not one attacker)
+- ✅ Customer confirms employee location
+
+**Evidence That Foreign Logins Are Suspicious:**
+- ⚠️ User has AU baseline, then sudden foreign logins appear
+- ⚠️ Same IP accesses accounts with DIFFERENT home countries
+- ⚠️ Device fingerprint changes dramatically
+- ⚠️ Impossible travel (AU → US → AU in hours)
+- ⚠️ Foreign login immediately followed by malicious actions
+
+**Risk of Skipping Customer Context:**
+- ❌ False positive "breach" causing unnecessary panic
+- ❌ Wasted remediation effort (password resets for legitimate users)
+- ❌ Incorrect regulatory notifications (NDB assessment for non-breach)
+- ❌ Loss of customer trust due to inaccurate findings
+
+**Query to Establish User Baseline Location:**
+```sql
+-- Determine each user's "home" country from majority logins
+SELECT
+    user_principal_name,
+    location_country,
+    COUNT(*) as logins,
+    ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY user_principal_name), 1) as pct
+FROM sign_in_logs
+WHERE conditional_access_status = 'success'
+GROUP BY user_principal_name, location_country
+HAVING pct > 80  -- 80%+ logins from same country = likely home
+ORDER BY user_principal_name, logins DESC;
+```
+
+**Bottom Line**: Logs alone cannot distinguish "employee in foreign office" from "attacker using foreign VPS". Customer context is MANDATORY before any breach classification.
 
 ---
 
