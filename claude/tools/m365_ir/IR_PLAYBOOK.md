@@ -4,7 +4,7 @@
 
 This playbook captures cumulative learnings from M365 incident response investigations. It serves as a reference for forensic analysis, PIR writing, and avoiding past mistakes.
 
-**Last Updated**: 2026-01-06 (PIR-OCULUS-2025-12-19 - Critical forensic analysis error corrections)
+**Last Updated**: 2026-01-07 (PIR-OCULUS-2025-12-19 - Added Section 0.5 Pre-Classification Checklist)
 
 ---
 
@@ -221,6 +221,103 @@ conn.close()
 - **Audit trail**: Verification results stored in database for PIR evidence
 - **Warnings**: Alerts for suspicious patterns (100% success, unknown status codes)
 - **Fast**: <2 seconds for 10K+ events
+
+---
+
+## 0.5 MANDATORY: Pre-Classification Checklist (PIR-OCULUS Lessons)
+
+**⚠️ COMPLETE ALL ITEMS BEFORE classifying foreign logins as "attacker" or declaring a breach.**
+
+**Added**: 2026-01-07 (PIR-OCULUS-2025-12-19 - False positive prevention)
+
+### Checklist
+
+| # | Check | Query/Action | Why It Matters |
+|---|-------|--------------|----------------|
+| ☐ | **Customer Context** | Ask: "Do you have employees outside AU?" | 179 "suspicious" US logins were legitimate employees |
+| ☐ | **Log Coverage Gap** | Compare incident report date vs earliest log timestamp | Breach may have occurred BEFORE your logs start |
+| ☐ | **Ticket History** | Review ticketing system notes | Customer may have already remediated |
+| ☐ | **Legacy Auth Separate** | Query `legacy_auth_logs` independently | Not blocked by geo-CA policies |
+| ☐ | **Baseline Location** | Run baseline query below | 100% foreign logins = user based there |
+| ☐ | **Shared IP Analysis** | Check device fingerprints on shared IPs | Same IP + different devices = office network |
+
+### Required Queries
+
+**1. Log Coverage Check:**
+```sql
+SELECT
+    MIN(timestamp) as earliest_log,
+    MAX(timestamp) as latest_log,
+    julianday(MAX(timestamp)) - julianday(MIN(timestamp)) as days_coverage
+FROM sign_in_logs;
+-- Compare earliest_log to incident report date
+```
+
+**2. Baseline Location Analysis:**
+```sql
+SELECT user_principal_name, location_country, COUNT(*) as logins,
+       ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (PARTITION BY user_principal_name), 1) as pct
+FROM sign_in_logs
+WHERE conditional_access_status = 'success'
+GROUP BY user_principal_name, location_country
+HAVING pct > 80  -- 80%+ from same country = likely home location
+ORDER BY user_principal_name, logins DESC;
+```
+
+**3. Legacy Auth Status (Separate from CA):**
+```sql
+SELECT status_error_code, COUNT(*) as attempts,
+       CASE WHEN status_error_code = 0 THEN 'SUCCESS' ELSE 'FAILED' END as result
+FROM legacy_auth_logs
+GROUP BY status_error_code
+ORDER BY attempts DESC;
+```
+
+**4. Shared IP Device Analysis:**
+```sql
+SELECT ip_address, COUNT(DISTINCT user_principal_name) as users,
+       COUNT(DISTINCT browser || os) as device_fingerprints,
+       GROUP_CONCAT(DISTINCT user_principal_name) as accounts
+FROM sign_in_logs
+WHERE conditional_access_status = 'success'
+GROUP BY ip_address
+HAVING users > 1
+ORDER BY users DESC;
+-- Different users + different fingerprints = office network, not attacker
+```
+
+### Customer Context Questions (MANDATORY)
+
+Before classifying ANY foreign login as "attacker":
+
+| Question | Why |
+|----------|-----|
+| Which employees are based outside Australia? | Their "foreign" logins are NORMAL |
+| Is IT support/MSP offshore? | Admin logins from PH/IN may be legitimate |
+| Any current employee travel? | Short foreign login bursts may be travel |
+| Any remote workers or contractors? | Consistent foreign logins may be authorized |
+
+### Evidence Indicators
+
+**Legitimate Foreign Logins:**
+- ✅ 100% of user's logins from that country
+- ✅ Same IP accessed by multiple employees
+- ✅ Consistent device fingerprint over time
+- ✅ Customer confirms employee location
+
+**Suspicious Foreign Logins:**
+- ⚠️ User has AU baseline, then sudden foreign logins
+- ⚠️ Same IP accesses accounts with DIFFERENT home countries
+- ⚠️ Device fingerprint changes dramatically
+- ⚠️ Impossible travel patterns
+- ⚠️ Foreign login immediately followed by malicious actions
+
+### Future Enhancements (Planned)
+
+| Option | Description | Status |
+|--------|-------------|--------|
+| **B: Tooling Enforcement** | `pre_classification_checks.py` - Auto-runs all queries, blocks classification until complete | Planned |
+| **C: Database Workflow** | `ir_workflow_checklist` table tracks step completion, required for PIR generation | Planned |
 
 ---
 
