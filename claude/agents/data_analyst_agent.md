@@ -176,5 +176,95 @@ Key data: {"metrics": ["volume", "fcr", "resolution_time"], "audience": "executi
 ## Model Selection
 **Sonnet**: All analysis and reporting | **Opus**: Board-level strategic analysis
 
+---
+
+## OTC ServiceDesk Database ⭐ CRITICAL KNOWLEDGE
+
+### Database Connection
+```python
+import psycopg2
+conn = psycopg2.connect(
+    host='localhost', port=5432, database='servicedesk',
+    user='servicedesk_user', password='ServiceDesk2025!SecurePass'
+)
+```
+
+### ⚠️ CRITICAL FIELD DISTINCTION
+**MOST COMMON ERROR:** Confusing TKT-Team vs TKT-Category
+
+```sql
+-- ❌ WRONG - Queries ticket TYPES, not teams
+WHERE "TKT-Category" = 'Cloud - Infrastructure'
+
+-- ✅ CORRECT - Queries tickets assigned to Cloud Infrastructure TEAM
+WHERE "TKT-Team" = 'Cloud - Infrastructure'
+```
+
+**Remember:**
+- `TKT-Team` = **WHO is responsible** (Cloud - Infrastructure, NOC, AP BAU)
+- `TKT-Category` = **WHAT kind of ticket** (Alert, Incident, Service Request)
+
+### Quick Start Queries
+
+**Engineering team backlog:**
+```sql
+SELECT * FROM servicedesk.get_team_backlog('Cloud - Infrastructure');
+```
+
+**User workload:**
+```sql
+SELECT * FROM servicedesk.get_user_workload('Dion Jewell');
+```
+
+**30-day activity:**
+```sql
+SELECT * FROM servicedesk.v_user_activity ORDER BY total_hours DESC;
+```
+
+### Core Tables
+
+**servicedesk.tickets** (8,833 tickets)
+- `TKT-Ticket ID` (PK) - Unique identifier
+- `TKT-Team` - **Team responsible** ⚠️ USE THIS FOR TEAM QUERIES
+- `TKT-Category` - **Ticket type** ⚠️ NOT team name
+- `TKT-Status` - Use NOT IN ('Closed', 'Incident Resolved') for active
+- `TKT-Assigned To User` - Full name or ' PendingAssignment'
+
+**servicedesk.timesheets** (149,667 entries)
+- `TS-Crm ID` → `tickets.TKT-Ticket ID`
+- `TS-User Full Name` - Full name format
+- **97% orphaned** (API retention mismatch) - will improve after manual import
+
+**servicedesk.comments** (121,030 comments)
+- `user_name` - **Short username** (e.g., "djewell") ⚠️ Different from tickets!
+- Use `servicedesk.user_lookup` to translate
+
+**servicedesk.user_lookup** (350 users)
+- Maps short usernames ("djewell") ↔ full names ("Dion Jewell")
+
+### Engineering Team
+
+**Members:** Trevor Harte, Llewellyn Booth, Dion Jewell, Michael Villaflor, Olli Ojala, Abdallah Ziadeh, Alex Olver, Josh James, Taylor Barkle, Steve Daalmeyer, Daniel Dignadice
+
+**Teams:** Cloud - Infrastructure, Cloud - Security, Cloud - L3 Escalation
+
+### Standard Analysis Pattern
+
+```sql
+-- Team workload breakdown
+SELECT
+    "TKT-Team",
+    COUNT(*) FILTER (WHERE "TKT-Status" NOT IN ('Closed', 'Incident Resolved')) as open,
+    COUNT(*) FILTER (WHERE "TKT-Assigned To User" LIKE '%PendingAssignment%'
+                     AND "TKT-Status" NOT IN ('Closed', 'Incident Resolved')) as unassigned
+FROM servicedesk.tickets
+WHERE "TKT-Team" IN ('Cloud - Infrastructure', 'Cloud - Security', 'Cloud - L3 Escalation')
+GROUP BY "TKT-Team";
+```
+
+**Reference:** `claude/context/knowledge/servicedesk/otc_database_reference.md`
+
+---
+
 ## Production Status
-✅ **READY** - v2.3 Compressed with all 5 advanced patterns
+✅ **READY** - v2.4 with OTC ServiceDesk knowledge

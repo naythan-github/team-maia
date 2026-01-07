@@ -3,5 +3,37 @@
   "fallback_agent": "sre_principal_engineer_agent",
   "version": "1.0",
   "description": "User-specific preferences for Maia system behavior",
-  "updated": "2025-11-29T05:34:00Z"
+  "updated": "2026-01-06T17:10:00Z",
+  "analysis_preferences": {
+    "otc_servicedesk": {
+      "default_start_date": "2025-12-28",
+      "reason": "Data before this date is from historical imports and less reliable. Recent import coverage begins 2025-12-27.",
+      "apply_to": ["comments", "tickets", "timesheets"],
+      "override_allowed": true,
+      "default_team": "engineering",
+      "teams": {
+        "engineering": {
+          "members": [
+            {"name": "Trevor Harte", "email": "trevor.harte@orro.group"},
+            {"name": "Llewellyn Booth", "email": "llewellyn.booth@orro.group"},
+            {"name": "Dion Jewell", "email": "dion.jewell@orro.group"},
+            {"name": "Michael Villaflor", "email": "michael.villaflor@orro.group"},
+            {"name": "Olli Ojala", "email": "olli.ojala@orro.group"},
+            {"name": "Abdallah Ziadeh", "email": "abdallah.ziadeh@orro.group"},
+            {"name": "Alex Olver", "email": "alex.olver@orro.group"},
+            {"name": "Josh James", "email": "josh.james@orro.group"},
+            {"name": "Taylor Barkle", "email": "taylor.barkle@orro.group"},
+            {"name": "Steve Daalmeyer", "email": "steve.daalmeyer@orro.group"},
+            {"name": "Daniel Dignadice", "email": "daniel.dignadice@orro.group"}
+          ],
+          "team_assignments": [
+            "Cloud - Infrastructure",
+            "Cloud - Security",
+            "Cloud - L3 Escalation"
+          ],
+          "note": "team_assignments = TKT-Team field values (teams responsible), NOT TKT-Category (ticket types)"
+        }
+      }
+    }
+  }
 }

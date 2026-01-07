@@ -105,7 +105,8 @@ class OTCTicket(BaseModel):
     - TKT-Status → status
     - TKT-Assigned To User → assignee
     - TKT-Severity → priority
-    - TKT-Team → category
+    - TKT-Category → category (ticket type: Alert, Incident, etc.)
+    - TKT-Team → team (team responsible: Cloud - Infrastructure, etc.)
     """
     model_config = ConfigDict(populate_by_name=True, extra='allow')
 
@@ -117,7 +118,8 @@ class OTCTicket(BaseModel):
     # Status and classification
     status: Optional[str] = Field(None, alias='TKT-Status')
     priority: Optional[str] = Field(None, alias='TKT-Severity')
-    category: Optional[str] = Field(None, alias='TKT-Team')
+    category: Optional[str] = Field(None, alias='TKT-Category')
+    team: Optional[str] = Field(None, alias='TKT-Team')
     platform: Optional[str] = Field(None, alias='TKT-Platform')
     group: Optional[str] = Field(None, alias='TKT-Group')
 
@@ -190,6 +192,7 @@ class OTCTicket(BaseModel):
             'status': self.status,
             'priority': self.priority,
             'category': self.category,
+            'team': self.team,
             'platform': self.platform,
             'group': self.group,
             'assignee': self.assignee,

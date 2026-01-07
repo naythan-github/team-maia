@@ -218,6 +218,84 @@ class OTCPostgresLoader:
                 self.stats['errors'] += 1
 
 
+    def update_user_lookup(self) -> Dict:
+        """
+        Update user lookup table with username mappings from tickets and comments.
+
+        Auto-discovers mappings by matching last names between:
+        - Comment usernames (short: 'djewell')
+        - Ticket assigned users (full: 'Dion Jewell')
+
+        Returns:
+            Stats dict with mapping counts
+        """
+        logger.info("Updating user_lookup table...")
+
+        self.connect()
+        cursor = self.conn.cursor()
+
+        stats = {'new_mappings': 0, 'updated_mappings': 0}
+
+        try:
+            # Get full names from tickets
+            cursor.execute("""
+                SELECT DISTINCT "TKT-Assigned To User"
+                FROM servicedesk.tickets
+                WHERE "TKT-Assigned To User" IS NOT NULL
+                  AND "TKT-Assigned To User" != ' PendingAssignment'
+                  AND "TKT-Assigned To User" NOT LIKE ' %'
+            """)
+
+            full_names = [row[0] for row in cursor.fetchall()]
+
+            # Get short usernames from comments (table might not exist yet)
+            cursor.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables
+                    WHERE table_schema = 'servicedesk'
+                    AND table_name = 'comments'
+                )
+            """)
+
+            if cursor.fetchone()[0]:
+                cursor.execute("""
+                    SELECT DISTINCT user_name
+                    FROM servicedesk.comments
+                    WHERE user_name IS NOT NULL
+                """)
+
+                short_usernames = [row[0] for row in cursor.fetchall()]
+
+                # Match by last name
+                for full_name in full_names:
+                    if full_name and len(full_name.split()) >= 2:
+                        last_name = full_name.split()[-1].lower()
+
+                        for short_user in short_usernames:
+                            if last_name in str(short_user).lower():
+                                cursor.execute("""
+                                    INSERT INTO servicedesk.user_lookup (short_username, full_name, source)
+                                    VALUES (%s, %s, 'auto_etl')
+                                    ON CONFLICT (short_username)
+                                    DO UPDATE SET full_name = EXCLUDED.full_name, updated_at = NOW()
+                                    RETURNING (xmax = 0) AS inserted
+                                """, (short_user, full_name))
+
+                                result = cursor.fetchone()
+                                if result and result[0]:
+                                    stats['new_mappings'] += 1
+                                else:
+                                    stats['updated_mappings'] += 1
+
+                self.conn.commit()
+                logger.info(f"User lookup: {stats['new_mappings']} new, {stats['updated_mappings']} updated")
+
+        except Exception as e:
+            logger.error(f"Error updating user lookup: {e}")
+            stats['error'] = str(e)
+
+        return stats
+
     def load_all(self, batch_size: int = 500) -> Dict:
         """
         Load all OTC views (comments, tickets, timesheets) to PostgreSQL.
@@ -257,6 +335,14 @@ class OTCPostgresLoader:
         except Exception as e:
             print(f"   ❌ Tickets failed: {e}")
             all_stats['tickets'] = {'error': str(e)}
+
+        # Update user lookup table
+        print("\n4. Updating user lookup table...")
+        try:
+            all_stats['user_lookup'] = self.update_user_lookup()
+        except Exception as e:
+            print(f"   ❌ User lookup failed: {e}")
+            all_stats['user_lookup'] = {'error': str(e)}
 
         print("\n" + "=" * 60)
         print("ETL COMPLETE")
@@ -397,10 +483,10 @@ class OTCPostgresLoader:
             insert_sql = """
                 INSERT INTO servicedesk.tickets (
                     "TKT-Ticket ID", "TKT-Title", "TKT-Status", "TKT-Severity", "TKT-Category",
-                    "TKT-Assigned To User", "TKT-Created Time", "TKT-Modified Time",
+                    "TKT-Team", "TKT-Assigned To User", "TKT-Created Time", "TKT-Modified Time",
                     "TKT-Account Name", "TKT-Client Name"
                 )
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
 
             batch = []
@@ -409,7 +495,7 @@ class OTCPostgresLoader:
                     ticket = OTCTicket.model_validate(ticket_data)
                     values = (
                         ticket.id, ticket.summary, ticket.status, ticket.priority, ticket.category,
-                        ticket.assignee, ticket.created_time, ticket.modified_time,
+                        ticket.team, ticket.assignee, ticket.created_time, ticket.modified_time,
                         ticket.account_name, ticket.client_name
                     )
                     batch.append(values)
