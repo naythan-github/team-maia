@@ -19,6 +19,19 @@ See auth.py for setup instructions.
 from .client import OTCClient
 from .auth import get_credentials, set_credentials, delete_credentials
 from .views import OTCViews
+from .team_management_schema import create_team_management_schema, drop_team_management_schema, migrate_team_data
+from .team_management import (
+    get_connection,
+    get_team_members,
+    get_team_queues,
+    get_member_by_email,
+    get_member_workload,
+    add_team_member,
+    update_team_member,
+    assign_queue,
+    remove_queue_assignment,
+    export_teams_to_json,
+)
 from .exceptions import (
     OTCAPIError,
     OTCAuthError,
@@ -33,6 +46,19 @@ __all__ = [
     'get_credentials',
     'set_credentials',
     'delete_credentials',
+    'create_team_management_schema',
+    'drop_team_management_schema',
+    'migrate_team_data',
+    'get_connection',
+    'get_team_members',
+    'get_team_queues',
+    'get_member_by_email',
+    'get_member_workload',
+    'add_team_member',
+    'update_team_member',
+    'assign_queue',
+    'remove_queue_assignment',
+    'export_teams_to_json',
     'OTCAPIError',
     'OTCAuthError',
     'OTCRateLimitError',
