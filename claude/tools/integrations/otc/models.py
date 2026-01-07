@@ -13,6 +13,52 @@ from typing import Any, Optional
 from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
+# Shared datetime parsing utility
+DATETIME_FORMATS = [
+    '%Y-%m-%d %H:%M:%S',
+    '%Y-%m-%dT%H:%M:%S',
+    '%Y-%m-%d',
+    '%d/%m/%Y %H:%M:%S',
+    '%d/%m/%Y %H:%M',
+    '%d/%m/%Y',
+]
+
+
+def parse_datetime_value(v: Any) -> Optional[datetime]:
+    """
+    Parse datetime from various formats.
+
+    Handles:
+    - ISO 8601 format (with Z suffix)
+    - Common date/time formats
+    - Already parsed datetime objects
+    - None/empty values
+
+    Args:
+        v: Value to parse (str, datetime, or None)
+
+    Returns:
+        Parsed datetime or None
+    """
+    if v is None or v == '':
+        return None
+    if isinstance(v, datetime):
+        return v
+    if isinstance(v, str):
+        # Try ISO format first
+        try:
+            return datetime.fromisoformat(v.replace('Z', '+00:00'))
+        except ValueError:
+            pass
+        # Try common formats
+        for fmt in DATETIME_FORMATS:
+            try:
+                return datetime.strptime(v, fmt)
+            except ValueError:
+                continue
+    return None
+
+
 class OTCComment(BaseModel):
     """
     Comment/note on a ticket.
@@ -55,28 +101,7 @@ class OTCComment(BaseModel):
     @classmethod
     def parse_datetime(cls, v: Any) -> Optional[datetime]:
         """Handle various datetime formats."""
-        if v is None:
-            return None
-        if isinstance(v, datetime):
-            return v
-        if isinstance(v, str):
-            # Try ISO format first
-            try:
-                return datetime.fromisoformat(v.replace('Z', '+00:00'))
-            except ValueError:
-                pass
-            # Try common formats
-            for fmt in [
-                '%Y-%m-%d %H:%M:%S',
-                '%Y-%m-%dT%H:%M:%S',
-                '%d/%m/%Y %H:%M:%S',
-                '%d/%m/%Y %H:%M',
-            ]:
-                try:
-                    return datetime.strptime(v, fmt)
-                except ValueError:
-                    continue
-        return None
+        return parse_datetime_value(v)
 
     def to_db_dict(self) -> dict:
         """Convert to database column names."""
@@ -160,28 +185,7 @@ class OTCTicket(BaseModel):
     @classmethod
     def parse_datetime(cls, v: Any) -> Optional[datetime]:
         """Handle various datetime formats."""
-        if v is None or v == '':
-            return None
-        if isinstance(v, datetime):
-            return v
-        if isinstance(v, str):
-            # Try ISO format first
-            try:
-                return datetime.fromisoformat(v.replace('Z', '+00:00'))
-            except ValueError:
-                pass
-            # Try common formats
-            for fmt in [
-                '%Y-%m-%d %H:%M:%S',
-                '%Y-%m-%dT%H:%M:%S',
-                '%d/%m/%Y %H:%M:%S',
-                '%d/%m/%Y %H:%M',
-            ]:
-                try:
-                    return datetime.strptime(v, fmt)
-                except ValueError:
-                    continue
-        return None
+        return parse_datetime_value(v)
 
     def to_db_dict(self) -> dict:
         """Convert to database column names."""
@@ -285,29 +289,7 @@ class OTCTimesheet(BaseModel):
     @classmethod
     def parse_datetime(cls, v: Any) -> Optional[datetime]:
         """Handle various datetime formats."""
-        if v is None or v == '':
-            return None
-        if isinstance(v, datetime):
-            return v
-        if isinstance(v, str):
-            # Try ISO format first
-            try:
-                return datetime.fromisoformat(v.replace('Z', '+00:00'))
-            except ValueError:
-                pass
-            # Try common formats
-            for fmt in [
-                '%Y-%m-%d %H:%M:%S',
-                '%Y-%m-%dT%H:%M:%S',
-                '%Y-%m-%d',
-                '%d/%m/%Y %H:%M:%S',
-                '%d/%m/%Y',
-            ]:
-                try:
-                    return datetime.strptime(v, fmt)
-                except ValueError:
-                    continue
-        return None
+        return parse_datetime_value(v)
 
     @field_validator('billable', 'approved', mode='before')
     @classmethod

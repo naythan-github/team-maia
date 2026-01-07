@@ -336,5 +336,262 @@ class TestDataQuality:
         assert isinstance(result[1], int), "Count should be integer"
 
 
+class TestPhase2Performance:
+    """Test Phase 2 performance improvements."""
+
+    def test_batch_insert_uses_execute_batch(self, db_connection):
+        """Verify _upsert_batch_fast uses execute_batch for performance."""
+        from claude.tools.integrations.otc.load_to_postgres import OTCPostgresLoader
+        from unittest.mock import patch, MagicMock
+
+        loader = OTCPostgresLoader()
+        cursor = MagicMock()
+
+        # Mock execute_batch to verify it's called
+        with patch('claude.tools.integrations.otc.load_to_postgres.execute_batch') as mock_execute_batch:
+            test_sql = "INSERT INTO test VALUES (%s)"
+            test_batch = [('value1',), ('value2',), ('value3',)]
+
+            loader._upsert_batch_fast(cursor, test_sql, test_batch)
+
+            # Verify execute_batch was called with correct parameters
+            mock_execute_batch.assert_called_once()
+            assert mock_execute_batch.call_args[0][0] == cursor
+            assert mock_execute_batch.call_args[0][1] == test_sql
+            assert mock_execute_batch.call_args[0][2] == test_batch
+
+    def test_batch_insert_fallback_on_error(self, db_connection):
+        """Verify graceful fallback to row-by-row on batch error."""
+        from claude.tools.integrations.otc.load_to_postgres import OTCPostgresLoader
+        from unittest.mock import patch, MagicMock
+
+        loader = OTCPostgresLoader()
+        cursor = MagicMock()
+
+        # Mock execute_batch to raise an error
+        with patch('claude.tools.integrations.otc.load_to_postgres.execute_batch') as mock_execute_batch:
+            mock_execute_batch.side_effect = Exception("Batch failed")
+
+            test_sql = "INSERT INTO test VALUES (%s)"
+            test_batch = [('value1',), ('value2',)]
+
+            # Should not raise - should fall back to row-by-row
+            loader._upsert_batch_fast(cursor, test_sql, test_batch)
+
+            # Verify individual execute was called for each row
+            assert cursor.execute.call_count == 2
+
+    def test_environment_variable_password_loading(self):
+        """Verify password loaded from environment variable."""
+        from claude.tools.integrations.otc.load_to_postgres import get_pg_config
+        import os
+
+        # Set test password
+        os.environ['OTC_PG_PASSWORD'] = 'test_password_123'
+
+        try:
+            config = get_pg_config()
+            assert config['password'] == 'test_password_123'
+            assert config['host'] == 'localhost'  # default
+            assert config['port'] == 5432  # default
+            assert config['database'] == 'servicedesk'  # default
+        finally:
+            # Clean up
+            del os.environ['OTC_PG_PASSWORD']
+
+    def test_environment_variable_password_fallback(self):
+        """Verify fallback to hardcoded password if env var not set."""
+        from claude.tools.integrations.otc.load_to_postgres import get_pg_config
+        import os
+
+        # Ensure password not in environment
+        if 'OTC_PG_PASSWORD' in os.environ:
+            del os.environ['OTC_PG_PASSWORD']
+
+        # Should use fallback password (backward compatibility)
+        config = get_pg_config()
+        assert config['password'] is not None
+        assert len(config['password']) > 0
+
+
+class TestPhase3Reliability:
+    """Test Phase 3 reliability improvements."""
+
+    def test_transaction_rollback_on_failure(self, db_connection):
+        """Verify transaction rolls back when load fails."""
+        from claude.tools.integrations.otc.load_to_postgres import OTCPostgresLoader
+        from unittest.mock import patch
+
+        loader = OTCPostgresLoader()
+
+        # Mock the OTCClient class to raise an error during fetch
+        with patch('claude.tools.integrations.otc.load_to_postgres.OTCClient') as mock_client_class:
+            mock_client = mock_client_class.return_value
+            mock_client.fetch_tickets.side_effect = Exception("API failure")
+
+            # Attempt to load tickets (should fail and rollback)
+            try:
+                loader.load_tickets()
+                assert False, "Should have raised exception"
+            except Exception as e:
+                assert "API failure" in str(e)
+
+            # Verify connection was rolled back
+            # Connection should be None after close() in finally block
+            assert loader.conn is None
+
+    def test_transaction_commit_on_success(self, db_connection):
+        """Verify transaction commits when load succeeds."""
+        from claude.tools.integrations.otc.load_to_postgres import OTCPostgresLoader
+        from unittest.mock import patch
+
+        loader = OTCPostgresLoader()
+
+        # Mock the OTCClient class to return empty data (successful load)
+        with patch('claude.tools.integrations.otc.load_to_postgres.OTCClient') as mock_client_class:
+            mock_client = mock_client_class.return_value
+            # Return data in the expected format (list of tickets)
+            mock_client.fetch_tickets.return_value = []
+
+            # Load tickets (should succeed and commit)
+            stats = loader.load_tickets()
+
+            # Verify successful load
+            assert stats['fetched'] == 0  # Empty data
+            assert stats['errors'] == 0   # No errors
+            # Connection should be None after close() in finally block
+            assert loader.conn is None
+
+    def test_stats_reset_in_load_comments(self):
+        """Verify load_comments resets stats at start."""
+        from claude.tools.integrations.otc.load_to_postgres import OTCPostgresLoader
+        from unittest.mock import patch
+
+        loader = OTCPostgresLoader()
+
+        # Set dirty stats
+        loader.stats = {
+            'fetched': 100,
+            'inserted': 50,
+            'updated': 25,
+            'skipped': 10,
+            'errors': 5
+        }
+
+        # Mock the OTCClient class to return empty data
+        with patch('claude.tools.integrations.otc.load_to_postgres.OTCClient') as mock_client_class:
+            mock_client = mock_client_class.return_value
+            mock_client.fetch_comments.return_value = []
+
+            # Load comments (should reset stats)
+            stats = loader.load_comments()
+
+            # Verify stats were reset (not cumulative from previous values)
+            assert stats['fetched'] == 0, "Stats should be reset, not cumulative"
+            assert stats['inserted'] == 0
+            assert stats['errors'] == 0
+
+    def test_autocommit_disabled(self):
+        """Verify autocommit is disabled for transaction control."""
+        from claude.tools.integrations.otc.load_to_postgres import OTCPostgresLoader
+
+        loader = OTCPostgresLoader()
+        loader.connect()
+
+        # Verify autocommit is False
+        assert loader.conn.autocommit == False, "autocommit should be False for transaction control"
+
+        loader.close()
+
+
+class TestPhase4CodeQuality:
+    """Test Phase 4 code quality improvements."""
+
+    def test_parse_datetime_value_with_none(self):
+        """Verify parse_datetime_value handles None correctly."""
+        from claude.tools.integrations.otc.models import parse_datetime_value
+
+        result = parse_datetime_value(None)
+        assert result is None
+
+    def test_parse_datetime_value_with_empty_string(self):
+        """Verify parse_datetime_value handles empty string correctly."""
+        from claude.tools.integrations.otc.models import parse_datetime_value
+
+        result = parse_datetime_value('')
+        assert result is None
+
+    def test_parse_datetime_value_with_datetime_object(self):
+        """Verify parse_datetime_value passes through datetime objects."""
+        from claude.tools.integrations.otc.models import parse_datetime_value
+        from datetime import datetime
+
+        dt = datetime(2025, 1, 7, 12, 30, 45)
+        result = parse_datetime_value(dt)
+        assert result == dt
+        assert isinstance(result, datetime)
+
+    def test_parse_datetime_value_with_iso_format(self):
+        """Verify parse_datetime_value parses ISO format."""
+        from claude.tools.integrations.otc.models import parse_datetime_value
+        from datetime import datetime
+
+        result = parse_datetime_value('2025-01-07T12:30:45')
+        assert result == datetime(2025, 1, 7, 12, 30, 45)
+
+    def test_parse_datetime_value_with_iso_format_z_suffix(self):
+        """Verify parse_datetime_value handles ISO format with Z suffix."""
+        from claude.tools.integrations.otc.models import parse_datetime_value
+        from datetime import datetime, timezone
+
+        result = parse_datetime_value('2025-01-07T12:30:45Z')
+        assert result is not None
+        assert isinstance(result, datetime)
+
+    def test_parse_datetime_value_with_common_formats(self):
+        """Verify parse_datetime_value handles common datetime formats."""
+        from claude.tools.integrations.otc.models import parse_datetime_value
+        from datetime import datetime
+
+        test_cases = [
+            ('2025-01-07 12:30:45', datetime(2025, 1, 7, 12, 30, 45)),
+            ('2025-01-07', datetime(2025, 1, 7, 0, 0, 0)),
+            ('07/01/2025 12:30:45', datetime(2025, 1, 7, 12, 30, 45)),
+            ('07/01/2025 12:30', datetime(2025, 1, 7, 12, 30, 0)),
+            ('07/01/2025', datetime(2025, 1, 7, 0, 0, 0)),
+        ]
+
+        for input_str, expected in test_cases:
+            result = parse_datetime_value(input_str)
+            assert result == expected, f"Failed for input: {input_str}"
+
+    def test_parse_datetime_value_with_invalid_string(self):
+        """Verify parse_datetime_value returns None for invalid strings."""
+        from claude.tools.integrations.otc.models import parse_datetime_value
+
+        result = parse_datetime_value('invalid date')
+        assert result is None
+
+    def test_models_use_shared_parser(self):
+        """Verify all three models use the shared parse_datetime_value function."""
+        from claude.tools.integrations.otc.models import OTCComment, OTCTicket, OTCTimesheet
+        import inspect
+
+        # Get the parse_datetime method from each model
+        comment_validator = OTCComment.parse_datetime
+        ticket_validator = OTCTicket.parse_datetime
+        timesheet_validator = OTCTimesheet.parse_datetime
+
+        # Verify they all reference the shared parse_datetime_value function
+        # by checking their source code contains 'parse_datetime_value'
+        comment_source = inspect.getsource(comment_validator)
+        ticket_source = inspect.getsource(ticket_validator)
+        timesheet_source = inspect.getsource(timesheet_validator)
+
+        assert 'parse_datetime_value' in comment_source, "OTCComment should use shared parser"
+        assert 'parse_datetime_value' in ticket_source, "OTCTicket should use shared parser"
+        assert 'parse_datetime_value' in timesheet_source, "OTCTimesheet should use shared parser"
+
+
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
