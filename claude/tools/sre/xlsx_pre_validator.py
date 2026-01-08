@@ -63,11 +63,11 @@ class XLSXPreValidator:
     EXPECTED_SCHEMAS = {
         'comments': {
             'required_columns': [
-                'CT-TKT-ID', 'CT-COMMENT-ID', 'CT-COMMENT',
-                'CT-USERIDNAME', 'CT-DATEAMDTIME'
+                'TKTCT-TicketID', 'TKTCT-CommentID', 'TKTCT-Comment',
+                'TKTCT-Username', 'TKTCT-Created Time'
             ],
             'expected_column_count': 10,
-            'critical_fields': ['CT-VISIBLE-CUSTOMER'],
+            'critical_fields': ['TKTCT-VisibleCustomer'],
             'critical_threshold': 0.001  # >0.1% populated (actual reality, very sparse)
         },
         'tickets': {
@@ -378,11 +378,11 @@ class XLSXPreValidator:
         self._check_exact_column_count(df, report, schema['expected_column_count'])
         self._check_required_columns(df, report, schema['required_columns'])
 
-        # Field-specific checks
-        self._check_field_population(df, report, 'CT-VISIBLE-CUSTOMER', schema['critical_threshold'])
-        self._check_field_numeric(df, report, 'CT-TKT-ID')
-        self._check_field_dates(df, report, 'CT-DATEAMDTIME')
-        self._check_text_length(df, report, 'CT-COMMENT', min_avg_length=100)
+        # Field-specific checks (updated for TKTCT-* format Jan 2026)
+        self._check_field_population(df, report, 'TKTCT-VisibleCustomer', schema['critical_threshold'])
+        self._check_field_numeric(df, report, 'TKTCT-TicketID')
+        self._check_field_dates(df, report, 'TKTCT-Created Time')
+        self._check_text_length(df, report, 'TKTCT-Comment', min_avg_length=100)
 
         # Volume check
         self._check_row_count_threshold(report, threshold=100000, file_type='comments')

@@ -13,7 +13,20 @@ Phase: 127 Day 4 - Column Mapping Fix
 # XLSX → Database column mappings
 COLUMN_MAPPINGS = {
     'comments': {
-        # Source XLSX → Database schema
+        # Source XLSX → Database schema (NEW format as of Jan 2026)
+        'TKTCT-CommentID': 'comment_id',
+        'TKTCT-TicketID': 'ticket_id',
+        'TKTCT-Comment': 'comment_text',
+        'TKTCT-UserID': 'user_id',
+        'TKTCT-Username': 'user_name',
+        'TKTCT-OwnerType': 'owner_type',
+        'TKTCT-Created Time': 'created_time',
+        'TKTCT-VisibleCustomer': 'visible_to_customer',
+        'TKTCT-Type': 'comment_type',
+        'TKTCT-Team': 'team'
+    },
+    # Legacy comment mappings (pre-Jan 2026)
+    'comments_legacy': {
         'CT-COMMENT-ID': 'comment_id',
         'CT-TKT-ID': 'ticket_id',
         'CT-COMMENT': 'comment_text',
@@ -113,6 +126,15 @@ def rename_columns(df, entity_type: str, direction: str = 'to_db'):
 # Quick reference of required XLSX columns for validation
 REQUIRED_XLSX_COLUMNS = {
     'comments': [
+        'TKTCT-CommentID',
+        'TKTCT-TicketID',
+        'TKTCT-Created Time',
+        'TKTCT-Comment',
+        'TKTCT-Username',
+        'TKTCT-VisibleCustomer'
+    ],
+    # Legacy format (pre-Jan 2026)
+    'comments_legacy': [
         'CT-COMMENT-ID',
         'CT-TKT-ID',
         'CT-DATEAMDTIME',

@@ -1,7 +1,16 @@
 # ServiceDesk ETL Pipeline - Complete Usage Guide
 
+> ⚠️ **ARCHIVED**: This guide documents the SQLite-based ETL pipeline from Phase 127.
+> **Current Pipeline**: PostgreSQL-based import via `xlsx_to_postgres.py`
+> **See**: `claude/context/knowledge/servicedesk/otc_database_reference.md` for current instructions.
+>
+> **Key Changes (Jan 2026)**:
+> - Database: SQLite → PostgreSQL (Docker)
+> - Comments columns: `CT-*` → `TKTCT-*` format
+> - Import tool: `xlsx_to_postgres.py` (upsert with conflict handling)
+
 **Created**: 2025-10-17 (Phase 127)
-**Status**: ✅ Production Ready
+**Status**: ⚠️ ARCHIVED (Superseded by PostgreSQL pipeline)
 **Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
 
 ---

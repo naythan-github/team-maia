@@ -2,7 +2,7 @@
 
 **Database:** `servicedesk` (PostgreSQL)
 **Purpose:** Analytics and reporting for OTC (Orro Ticket Cloud) ServiceDesk data
-**Last Updated:** 2026-01-07
+**Last Updated:** 2026-01-08
 
 ---
 
@@ -42,7 +42,7 @@ SELECT * FROM servicedesk.v_user_activity;
 ## Core Tables
 
 ### servicedesk.tickets
-**Primary Table** - All ServiceDesk tickets (8,833 tickets, no duplicates)
+**Primary Table** - All ServiceDesk tickets (188,452 tickets as of Jan 2026)
 
 **Key Columns:**
 - `TKT-Ticket ID` (INTEGER, PRIMARY KEY) - Unique ticket identifier
@@ -81,7 +81,7 @@ WHERE "TKT-Team" = 'Cloud - Infrastructure'
 - `idx_tickets_created_time` - Age/creation date
 
 ### servicedesk.timesheets
-**Work logs** - Time tracking entries (149,667 entries)
+**Work logs** - Time tracking entries (850,727 entries as of Jan 2026)
 
 **Key Columns:**
 - `TS-Crm ID` (INTEGER) - References `tickets.TKT-Ticket ID`
@@ -104,7 +104,7 @@ WHERE "TKT-Team" = 'Cloud - Infrastructure'
 - Will improve after manual historical import
 
 ### servicedesk.comments
-**Ticket comments/notes** (121,030 comments)
+**Ticket comments/notes** (317,601 comments as of Jan 2026)
 
 **Key Columns:**
 - `comment_id` (INTEGER, PRIMARY KEY)
@@ -355,24 +355,40 @@ To get complete historical data:
 
 ## ETL & Data Loading
 
-**ETL Script:** `/Users/naythandawe/maia/claude/tools/integrations/otc/load_to_postgres.py`
+### Option 1: XLSX Import (Recommended for bulk loads)
+**Script:** `claude/tools/integrations/otc/xlsx_to_postgres.py`
 
-**Load all views:**
 ```bash
-python3 -m claude.tools.integrations.otc.load_to_postgres all
+# Load all three files
+python3 -m claude.tools.integrations.otc.xlsx_to_postgres \
+    --comments ~/Downloads/exports/Cloud-Ticket-Comments.xlsx \
+    --tickets ~/Downloads/exports/Tickets-All-6Months.xlsx \
+    --timesheets ~/Downloads/exports/Timesheet-18Months.xlsx
+
+# Load individual files
+python3 -m claude.tools.integrations.otc.xlsx_to_postgres \
+    --tickets ~/Downloads/exports/Tickets-All-6Months.xlsx
 ```
 
-**Load individual views:**
+**XLSX Column Format (Jan 2026+):**
+- Comments: `TKTCT-*` columns (e.g., `TKTCT-CommentID`, `TKTCT-TicketID`)
+- Tickets: `TKT-*` columns (unchanged)
+- Timesheets: `TS-*` columns (unchanged)
+
+### Option 2: API Import (Incremental updates)
+**Script:** `claude/tools/integrations/otc/load_to_postgres.py`
+
 ```bash
+python3 -m claude.tools.integrations.otc.load_to_postgres all
 python3 -m claude.tools.integrations.otc.load_to_postgres tickets
 python3 -m claude.tools.integrations.otc.load_to_postgres comments
 python3 -m claude.tools.integrations.otc.load_to_postgres timesheets
 ```
 
-**ETL Process:**
-1. Fetches data from OTC API
+**API Process:**
+1. Fetches data from OTC API (limited retention)
 2. Validates with Pydantic models
-3. Loads to PostgreSQL (conflict handling)
+3. Loads to PostgreSQL (upsert with conflict handling)
 4. Auto-updates user_lookup table
 
 ---

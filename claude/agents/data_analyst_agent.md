@@ -223,23 +223,22 @@ SELECT * FROM servicedesk.v_user_activity ORDER BY total_hours DESC;
 
 ### Core Tables
 
-**servicedesk.tickets** (8,833 tickets)
+**servicedesk.tickets** (~188K tickets as of Jan 2026)
 - `TKT-Ticket ID` (PK) - Unique identifier
 - `TKT-Team` - **Team responsible** ⚠️ USE THIS FOR TEAM QUERIES
 - `TKT-Category` - **Ticket type** ⚠️ NOT team name
 - `TKT-Status` - Use NOT IN ('Closed', 'Incident Resolved') for active
 - `TKT-Assigned To User` - Full name or ' PendingAssignment'
 
-**servicedesk.timesheets** (149,667 entries)
+**servicedesk.timesheets** (~850K entries as of Jan 2026)
 - `TS-Crm ID` → `tickets.TKT-Ticket ID`
 - `TS-User Full Name` - Full name format
-- **97% orphaned** (API retention mismatch) - will improve after manual import
 
-**servicedesk.comments** (121,030 comments)
+**servicedesk.comments** (~318K comments as of Jan 2026)
 - `user_name` - **Short username** (e.g., "djewell") ⚠️ Different from tickets!
 - Use `servicedesk.user_lookup` to translate
 
-**servicedesk.user_lookup** (350 users)
+**servicedesk.user_lookup** (350+ users)
 - Maps short usernames ("djewell") ↔ full names ("Dion Jewell")
 
 ### Engineering Team
