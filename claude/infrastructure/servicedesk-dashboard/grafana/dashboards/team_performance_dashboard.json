@@ -35,8 +35,9 @@
               "type": "postgres",
               "uid": "P6BECECF7273D15EE"
             },
-            "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Resolution Days\" FROM servicedesk.tickets WHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Status\" IN ('Closed', 'Resolved') AND \"TKT-Actual Resolution Date\" IS NOT NULL GROUP BY DATE_TRUNC('month', \"TKT-Created Time\") ORDER BY time;",
-            "refId": "A"
+            "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Resolution Days\" FROM servicedesk.tickets WHERE \"TKT-Status\" IN ('Closed', 'Resolved') AND \"TKT-Actual Resolution Date\" IS NOT NULL GROUP BY DATE_TRUNC('month', \"TKT-Created Time\") ORDER BY time;",
+            "refId": "A",
+            "format": "time_series"
           }
         ],
         "fieldConfig": {
@@ -91,8 +92,9 @@
               "type": "postgres",
               "uid": "P6BECECF7273D15EE"
             },
-            "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, COUNT(*) as \"Ticket Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}')\nGROUP BY 1\nORDER BY 1;",
-            "refId": "A"
+            "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, COUNT(*) as \"Ticket Count\" FROM servicedesk.tickets GROUP BY DATE_TRUNC('month', \"TKT-Created Time\") ORDER BY time;",
+            "refId": "A",
+            "format": "time_series"
           }
         ],
         "fieldConfig": {
@@ -134,8 +136,9 @@
               "type": "postgres",
               "uid": "P6BECECF7273D15EE"
             },
-            "rawSql": "WITH customer_facing_comments AS (\n  SELECT ticket_id, COUNT(*) as customer_comment_count\n  FROM servicedesk.comments\n  WHERE visible_to_customer = 'Yes'\n  GROUP BY ticket_id\n)\nSELECT\n  CASE\n    WHEN COALESCE(cfc.customer_comment_count, 0) = 0 THEN 'No Comments'\n    WHEN COALESCE(cfc.customer_comment_count, 0) = 1 THEN '1 Comment (FCR)'\n    WHEN COALESCE(cfc.customer_comment_count, 0) <= 3 THEN '2-3 Comments'\n    ELSE '4+ Comments'\n  END as \"Comment Count\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets t\nLEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id\nWHERE t.\"TKT-Team\" IN ('${team:raw}')\nGROUP BY 1\nORDER BY 2 DESC;",
-            "refId": "A"
+            "rawSql": "WITH customer_facing_comments AS (SELECT ticket_id, COUNT(*) as customer_comment_count FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id) SELECT CASE WHEN COALESCE(cfc.customer_comment_count, 0) = 0 THEN '0 comments (Auto-resolved)' WHEN cfc.customer_comment_count = 1 THEN '1 comment (FCR)' WHEN cfc.customer_comment_count BETWEEN 2 AND 3 THEN '2-3 comments' ELSE '4+ comments' END as \"Comment Range\", COUNT(*) as \"Tickets\" FROM servicedesk.tickets t LEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id WHERE t.\"TKT-Status\" IN ('Closed', 'Resolved') GROUP BY \"Comment Range\";",
+            "refId": "A",
+            "format": "table"
           }
         ],
         "options": {
@@ -219,7 +222,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "WITH customer_facing_comments AS (SELECT ticket_id, COUNT(*) as customer_comment_count FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id) SELECT t.\"TKT-Team\" as \"Team\", ROUND(100.0 * SUM(CASE WHEN cfc.customer_comment_count > 0 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Estimated FCR %\" FROM servicedesk.tickets t LEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id WHERE t.\"TKT-Status\" IN ('Closed', 'Resolved') GROUP BY t.\"TKT-Team\" HAVING COUNT(*) >= 50 ORDER BY \"Estimated FCR %\" DESC LIMIT 10;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "options": {
@@ -258,53 +262,7 @@
           }
         }
       }
-    ],
-    "templating": {
-      "list": [
-        {
-          "name": "team",
-          "label": "Team",
-          "type": "custom",
-          "query": "All,Cloud - Infrastructure,Cloud - Security,Cloud - L3 Escalation",
-          "current": {
-            "selected": true,
-            "text": [
-              "All"
-            ],
-            "value": [
-              "All"
-            ]
-          },
-          "options": [
-            {
-              "selected": true,
-              "text": "All",
-              "value": "All"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - Infrastructure",
-              "value": "Cloud - Infrastructure"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - Security",
-              "value": "Cloud - Security"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - L3 Escalation",
-              "value": "Cloud - L3 Escalation"
-            }
-          ],
-          "multi": true,
-          "includeAll": true,
-          "allValue": "Cloud - Infrastructure','Cloud - Security','Cloud - L3 Escalation",
-          "hide": 0,
-          "skipUrlSync": false
-        }
-      ]
-    }
+    ]
   },
   "overwrite": true
 }

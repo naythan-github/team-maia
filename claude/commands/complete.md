@@ -111,6 +111,41 @@ python3 -c "from claude.tools.learning.session import get_session_manager; m=get
 
 ---
 
+### 6. Integration Review (MANUAL - Must Answer)
+This is the holistic review step. Pause and explicitly consider:
+
+**Documentation Impact:**
+- Does CLAUDE.md need updating? (new principle, command, workflow change)
+- Do context files need updates? (`claude/context/core/*.md`)
+- Should this be added to capability_index.md? (DB fallback)
+- Are there README files that reference affected systems?
+
+**Integration Points:**
+- Are there dependent systems that need updating?
+- Does this change affect existing agents or tools?
+- Are there hooks that should know about this?
+- Does the swarm auto-loader need awareness?
+
+**Ripple Effects:**
+- What else in the codebase touches this area?
+- Could this break existing functionality?
+- Are there related features that should be updated for consistency?
+
+**Answer Format:**
+```
+Integration Review:
+- CLAUDE.md: [No change needed / Updated section X / NEEDS UPDATE]
+- Context files: [No change needed / Updated X / NEEDS UPDATE]
+- Dependent systems: [None / Listed and checked / NEEDS REVIEW]
+- Ripple effects: [None identified / Checked X, Y, Z]
+```
+
+**PASS**: All questions explicitly answered, no updates needed OR updates completed
+**WARN**: Updates identified but deferred (with justification)
+**FAIL**: Questions not considered, or required updates not done
+
+---
+
 ## Output Format
 
 ```
@@ -132,8 +167,14 @@ Testing                                 [FAIL]
 Learning Capture                        [PASS]
   Session 52335 active
 
+Integration Review                      [PASS]
+  - CLAUDE.md: No change needed
+  - Context files: No change needed
+  - Dependent systems: None
+  - Ripple effects: None identified
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Result: 3/5 PASS | 1 WARN | 1 FAIL
+Result: 4/6 PASS | 1 WARN | 1 FAIL
 
 Blockers (must fix):
 1. Create tests/new/test_feature.py
@@ -172,3 +213,4 @@ This command enforces CLAUDE.md Principle #21:
 - 0 FAIL items = Ready to declare complete
 - 0 FAIL + 0 WARN = Fully complete
 - Any FAIL = Not complete, must address blockers
+- Integration Review MUST be explicitly answered (not skipped)

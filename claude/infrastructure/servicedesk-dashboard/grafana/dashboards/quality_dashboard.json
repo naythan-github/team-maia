@@ -41,6 +41,7 @@
               "type": "postgres",
               "uid": "P6BECECF7273D15EE"
             },
+            "format": "table",
             "rawSql": "SELECT ROUND(AVG(quality_score)::numeric, 2) as \"Quality Score\" FROM servicedesk.comment_quality WHERE quality_score IS NOT NULL;",
             "refId": "A"
           }
@@ -93,7 +94,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "SELECT ROUND(AVG(professionalism_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "fieldConfig": {
@@ -142,7 +144,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "SELECT ROUND(AVG(clarity_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "fieldConfig": {
@@ -191,7 +194,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "SELECT ROUND(AVG(empathy_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "fieldConfig": {
@@ -240,7 +244,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "SELECT ROUND(AVG(actionability_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "fieldConfig": {
@@ -290,7 +295,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "SELECT ROUND(100.0 * COUNT(DISTINCT cq.comment_id) / (SELECT COUNT(*) FROM servicedesk.comments), 2) as \"Coverage %\" FROM servicedesk.comment_quality cq;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "fieldConfig": {
@@ -338,7 +344,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "SELECT quality_tier as \"Tier\", COUNT(*) as \"Count\" FROM servicedesk.comment_quality WHERE quality_tier IS NOT NULL GROUP BY quality_tier ORDER BY CASE quality_tier WHEN 'excellent' THEN 1 WHEN 'good' THEN 2 WHEN 'acceptable' THEN 3 WHEN 'poor' THEN 4 END;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "options": {
@@ -363,29 +370,81 @@
         },
         "fieldConfig": {
           "defaults": {
-            "mappings": [
-              {
-                "type": "value",
-                "value": "excellent",
-                "color": "dark-green"
-              },
-              {
-                "type": "value",
-                "value": "good",
-                "color": "green"
-              },
-              {
-                "type": "value",
-                "value": "acceptable",
-                "color": "yellow"
-              },
-              {
-                "type": "value",
-                "value": "poor",
-                "color": "red"
+            "unit": "short",
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "hideFrom": {
+                "tooltip": false,
+                "viz": false,
+                "legend": false
               }
-            ]
-          }
+            },
+            "mappings": []
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "excellent"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "dark-green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "good"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "acceptable"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "yellow",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            },
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "poor"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "red",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
         }
       },
       {
@@ -406,7 +465,8 @@
               "uid": "P6BECECF7273D15EE"
             },
             "rawSql": "SELECT 'Professionalism' as dimension, ROUND(AVG(professionalism_score)::numeric, 2) as score FROM servicedesk.comment_quality UNION ALL SELECT 'Clarity', ROUND(AVG(clarity_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Empathy', ROUND(AVG(empathy_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Actionability', ROUND(AVG(actionability_score)::numeric, 2) FROM servicedesk.comment_quality;",
-            "refId": "A"
+            "refId": "A",
+            "format": "table"
           }
         ],
         "options": {
@@ -439,53 +499,7 @@
           }
         }
       }
-    ],
-    "templating": {
-      "list": [
-        {
-          "name": "team",
-          "label": "Team",
-          "type": "custom",
-          "query": "All,Cloud - Infrastructure,Cloud - Security,Cloud - L3 Escalation",
-          "current": {
-            "selected": true,
-            "text": [
-              "All"
-            ],
-            "value": [
-              "All"
-            ]
-          },
-          "options": [
-            {
-              "selected": true,
-              "text": "All",
-              "value": "All"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - Infrastructure",
-              "value": "Cloud - Infrastructure"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - Security",
-              "value": "Cloud - Security"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - L3 Escalation",
-              "value": "Cloud - L3 Escalation"
-            }
-          ],
-          "multi": true,
-          "includeAll": true,
-          "allValue": "Cloud - Infrastructure','Cloud - Security','Cloud - L3 Escalation",
-          "hide": 0,
-          "skipUrlSync": false
-        }
-      ]
-    }
+    ]
   },
   "overwrite": true
 }

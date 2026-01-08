@@ -85,7 +85,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13';",
+            "rawSql": "SELECT COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13';",
             "refId": "A"
           }
         ],
@@ -138,7 +138,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT COUNT(*) as \"Automation Candidates\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n);",
+            "rawSql": "SELECT COUNT(*) as \"Automation Candidates\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n);",
             "refId": "A"
           }
         ],
@@ -199,7 +199,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  ROUND(100.0 * \n    SUM(CASE WHEN (\n      \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n      \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n      \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n      \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n      \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n      \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n      \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n      \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n      \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n      \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n    ) THEN 1 ELSE 0 END) / COUNT(*), 2\n  ) as \"Coverage %\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13';",
+            "rawSql": "SELECT \n  ROUND(100.0 * \n    SUM(CASE WHEN (\n      \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n      \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n      \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n      \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n      \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n      \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n      \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n      \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n      \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n      \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n    ) THEN 1 ELSE 0 END) / COUNT(*), 2\n  ) as \"Coverage %\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13';",
             "refId": "A"
           }
         ],
@@ -260,7 +260,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  '$' || ROUND(\n    COUNT(*) * 1.0 / 104 * 365 * 2.0 * 80 / 1000, 0\n  ) || 'K' as \"Annual Savings\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n);",
+            "rawSql": "SELECT \n  '$' || ROUND(\n    COUNT(*) * 1.0 / 104 * 365 * 2.0 * 80 / 1000, 0\n  ) || 'K' as \"Annual Savings\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n);",
             "refId": "A"
           }
         ],
@@ -313,7 +313,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT COUNT(*) as \"Motion/Sensor Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%');",
+            "rawSql": "SELECT COUNT(*) as \"Motion/Sensor Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%');",
             "refId": "A"
           }
         ],
@@ -419,7 +419,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -502,7 +502,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Automation Candidates\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n)\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Automation Candidates\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' OR\n  \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' OR\n  \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' OR\n  \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' OR\n  \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' OR\n  \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR\n  \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' OR\n  \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%unlock%' OR \"TKT-Title\" ILIKE '%reset%' OR\n  \"TKT-Title\" ILIKE '%license%' OR \"TKT-Title\" ILIKE '%subscription%' OR\n  \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%software%'\n)\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -585,7 +585,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' THEN 'Motion/Sensor Alerts'\n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Access/Permission Requests'\n    WHEN \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' THEN 'Azure Resource Health'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' THEN 'Patch Deployment Failures'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'Email/Mailbox Issues'\n  END as \"Pattern\",\n  COUNT(*) as \"Ticket Count\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 2.0 * 80 / 1000, 0) || 'K' as \"Est. Annual Savings\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%') OR\n  (\"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%') OR\n  (\"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%') OR\n  (\"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%') OR\n  (\"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%')\n)\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 5;",
+            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' THEN 'Motion/Sensor Alerts'\n    WHEN \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%' THEN 'Access/Permission Requests'\n    WHEN \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' THEN 'Azure Resource Health'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' THEN 'Patch Deployment Failures'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' THEN 'Email/Mailbox Issues'\n  END as \"Pattern\",\n  COUNT(*) as \"Ticket Count\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 2.0 * 80 / 1000, 0) || 'K' as \"Est. Annual Savings\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\n  (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%') OR\n  (\"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%permission%') OR\n  (\"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%') OR\n  (\"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%') OR\n  (\"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%')\n)\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 5;",
             "refId": "A"
           }
         ],
@@ -635,48 +635,6 @@
             "value": "ServiceDesk PostgreSQL",
             "text": "ServiceDesk PostgreSQL"
           }
-        },
-        {
-          "name": "team",
-          "label": "Team",
-          "type": "custom",
-          "query": "All,Cloud - Infrastructure,Cloud - Security,Cloud - L3 Escalation",
-          "current": {
-            "selected": true,
-            "text": [
-              "All"
-            ],
-            "value": [
-              "All"
-            ]
-          },
-          "options": [
-            {
-              "selected": true,
-              "text": "All",
-              "value": "All"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - Infrastructure",
-              "value": "Cloud - Infrastructure"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - Security",
-              "value": "Cloud - Security"
-            },
-            {
-              "selected": false,
-              "text": "Cloud - L3 Escalation",
-              "value": "Cloud - L3 Escalation"
-            }
-          ],
-          "multi": true,
-          "includeAll": true,
-          "allValue": "Cloud - Infrastructure','Cloud - Security','Cloud - L3 Escalation",
-          "hide": 0,
-          "skipUrlSync": false
         }
       ]
     }
