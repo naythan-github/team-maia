@@ -2583,6 +2583,840 @@ class LogImporter:
             records_skipped=records_skipped
         )
 
+    def import_transport_rules(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import Exchange Transport Rules from CSV.
+
+        CRITICAL for exfiltration detection - org-wide mail flow rules.
+        MITRE ATT&CK: T1114.003 (Email Collection: Email Forwarding Rule)
+
+        Maps columns:
+        - Name → name (rule identifier)
+        - State → state (Enabled/Disabled)
+        - Priority → priority
+        - Mode → mode (Enforce/Audit)
+        - BlindCopyTo → blind_copy_to (EXFILTRATION IOC)
+        - CopyTo → copy_to (EXFILTRATION IOC)
+        - RedirectMessageTo → redirect_message_to (EXFILTRATION IOC)
+        - DeleteMessage → delete_message (Evidence destruction)
+        - SetSCL → set_scl (-1 = whitelist/spam bypass)
+        - WhenChanged → when_changed
+
+        Note: This is a point-in-time config snapshot, not time-series events.
+
+        Args:
+            source: Path to TransportRules CSV file
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        # Check if already imported
+        if self._is_already_imported(source_hash, 'transport_rules'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        # Record import start
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'transport_rules', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            with open(source, 'r', encoding='utf-8-sig') as f:
+                reader = csv.DictReader(f)
+                for row_num, row in enumerate(reader, start=2):
+                    try:
+                        # Parse priority
+                        priority_str = row.get('Priority', '0')
+                        priority = int(priority_str) if priority_str else 0
+
+                        # Parse SetSCL (-1 = whitelist)
+                        scl_str = row.get('SetSCL', '')
+                        set_scl = int(scl_str) if scl_str and scl_str != '' else None
+
+                        # Parse DeleteMessage boolean
+                        delete_str = row.get('DeleteMessage', 'False')
+                        delete_message = 1 if delete_str.lower() == 'true' else 0
+
+                        # Parse WhenChanged datetime
+                        when_changed = row.get('WhenChanged', '')
+
+                        # INSERT OR REPLACE for deduplication via UNIQUE constraint on name
+                        cursor.execute("""
+                            INSERT OR REPLACE INTO transport_rules
+                            (name, state, priority, mode, from_scope, sent_to_scope,
+                             blind_copy_to, copy_to, redirect_message_to, delete_message,
+                             modify_subject, set_scl, conditions, exceptions, when_changed,
+                             comments, raw_record, imported_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            row.get('Name', ''),
+                            row.get('State', ''),
+                            priority,
+                            row.get('Mode', ''),
+                            row.get('FromScope', ''),
+                            row.get('SentToScope', ''),
+                            row.get('BlindCopyTo', ''),
+                            row.get('CopyTo', ''),
+                            row.get('RedirectMessageTo', ''),
+                            delete_message,
+                            row.get('ModifySubject', ''),
+                            set_scl,
+                            row.get('Conditions', ''),
+                            row.get('Exceptions', ''),
+                            when_changed,
+                            row.get('Comments', ''),
+                            compress_json(row),
+                            now
+                        ))
+                        if cursor.rowcount > 0:
+                            records_imported += 1
+                        else:
+                            records_skipped += 1
+
+                    except Exception as e:
+                        records_failed += 1
+                        errors.append(f"Row {row_num}: {str(e)}")
+                        logger.debug(f"Failed to import transport rule row {row_num}: {e}")
+
+            # Update import metadata
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def import_evidence_manifest(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import Evidence Manifest JSON file.
+
+        Contains chain of custody metadata and SHA256 hashes for all evidence files.
+        Note: File is typically UTF-16 LE encoded with BOM.
+
+        Args:
+            source: Path to _EVIDENCE_MANIFEST.json
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        # Check if already imported
+        if self._is_already_imported(source_hash, 'evidence_manifest'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        # Record import start
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'evidence_manifest', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            # Parse manifest using M365LogParser
+            parser = M365LogParser(date_format=self._date_format)
+            manifest = parser.parse_evidence_manifest(source)
+
+            # Extract case_id from database path
+            case_id = _extract_case_id_from_db_path(self._db.db_path) if self._db.db_path else None
+
+            # INSERT OR REPLACE for deduplication via UNIQUE constraint on investigation_id
+            cursor.execute("""
+                INSERT OR REPLACE INTO evidence_manifest
+                (case_id, investigation_id, collection_version, collected_at,
+                 collected_by, collected_on, date_range_start, date_range_end,
+                 days_back, files_manifest, raw_json, imported_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                case_id,
+                manifest.investigation_id,
+                manifest.collection_version,
+                manifest.collected_at,
+                manifest.collected_by,
+                manifest.collected_on,
+                manifest.date_range_start,
+                manifest.date_range_end,
+                manifest.days_back,
+                json.dumps(manifest.files),
+                compress_json({'raw': manifest.raw_json}),
+                now
+            ))
+            if cursor.rowcount > 0:
+                records_imported = 1
+
+            # Update import metadata
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            records_failed = 1
+            errors.append(str(e))
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time
+        )
+
+    def import_mailbox_delegations(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import Mailbox Delegations CSV file.
+
+        MITRE ATT&CK: T1098.002 (Account Manipulation: Exchange Email Delegate)
+
+        Args:
+            source: Path to MailboxDelegations CSV
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        if self._is_already_imported(source_hash, 'mailbox_delegations'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'mailbox_delegations', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            with open(source, 'r', encoding='utf-8-sig') as f:
+                reader = csv.DictReader(f)
+                for row_num, row in enumerate(reader, start=2):
+                    try:
+                        is_inherited = 1 if row.get('IsInherited', 'False').lower() == 'true' else 0
+
+                        cursor.execute("""
+                            INSERT OR IGNORE INTO mailbox_delegations
+                            (mailbox, permission_type, delegate, access_rights,
+                             is_inherited, raw_record, imported_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            row.get('Mailbox', ''),
+                            row.get('PermissionType', ''),
+                            row.get('Delegate', ''),
+                            row.get('AccessRights', ''),
+                            is_inherited,
+                            compress_json(row),
+                            now
+                        ))
+                        if cursor.rowcount > 0:
+                            records_imported += 1
+                        else:
+                            records_skipped += 1
+
+                    except Exception as e:
+                        records_failed += 1
+                        errors.append(f"Row {row_num}: {str(e)}")
+
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def import_admin_role_assignments(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import Admin Role Assignments CSV file.
+
+        MITRE ATT&CK: T1078.004 (Valid Accounts: Cloud), T1098 (Account Manipulation)
+
+        Args:
+            source: Path to AdminRoleAssignments CSV
+
+        Returns:
+            ImportResult with import statistics
+        """
+        source = Path(source)
+        if not source.exists():
+            raise FileNotFoundError(f"Source file not found: {source}")
+
+        start_time = time.time()
+        source_hash = self._calculate_hash(source)
+
+        if self._is_already_imported(source_hash, 'admin_role_assignments'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors: List[str] = []
+
+        conn = self._db.connect()
+        cursor = conn.cursor()
+        now = datetime.now().isoformat()
+
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed,
+             import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'admin_role_assignments', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            with open(source, 'r', encoding='utf-8-sig') as f:
+                reader = csv.DictReader(f)
+                for row_num, row in enumerate(reader, start=2):
+                    try:
+                        cursor.execute("""
+                            INSERT OR IGNORE INTO admin_role_assignments
+                            (role_name, role_id, role_description, member_display_name,
+                             member_upn, member_id, member_type, raw_record, imported_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, (
+                            row.get('RoleName', ''),
+                            row.get('RoleId', ''),
+                            row.get('RoleDescription', ''),
+                            row.get('MemberDisplayName', ''),
+                            row.get('MemberUPN', ''),
+                            row.get('MemberId', ''),
+                            row.get('MemberType', ''),
+                            compress_json(row),
+                            now
+                        ))
+                        if cursor.rowcount > 0:
+                            records_imported += 1
+                        else:
+                            records_skipped += 1
+
+                    except Exception as e:
+                        records_failed += 1
+                        errors.append(f"Row {row_num}: {str(e)}")
+
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def import_conditional_access_policies(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import Conditional Access Policies CSV.
+
+        MITRE ATT&CK: T1562.001 (Impair Defenses: Disable or Modify Tools)
+        """
+        start_time = time.time()
+        source = Path(source)
+
+        with open(source, 'rb') as f:
+            source_hash = hashlib.sha256(f.read()).hexdigest()
+
+        if self._is_already_imported(source_hash, 'conditional_access_policies'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors = []
+        now = datetime.now().isoformat()
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed, import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'conditional_access_policies', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            entries = parser.parse_conditional_access_policies(source)
+
+            for entry in entries:
+                try:
+                    created_dt = entry.created_datetime.isoformat() if entry.created_datetime else None
+                    modified_dt = entry.modified_datetime.isoformat() if entry.modified_datetime else None
+
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO conditional_access_policies
+                        (display_name, policy_id, state, created_datetime, modified_datetime,
+                         conditions, grant_controls, session_controls, raw_record, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        entry.display_name,
+                        entry.policy_id,
+                        entry.state,
+                        created_dt,
+                        modified_dt,
+                        entry.conditions,
+                        entry.grant_controls,
+                        entry.session_controls,
+                        compress_json(json.loads(entry.raw_record)) if entry.raw_record else None,
+                        now
+                    ))
+                    if cursor.rowcount > 0:
+                        records_imported += 1
+                    else:
+                        records_skipped += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Policy {entry.display_name}: {str(e)}")
+
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def import_named_locations(self, source: Union[str, Path]) -> ImportResult:
+        """Import Named Locations CSV."""
+        start_time = time.time()
+        source = Path(source)
+
+        with open(source, 'rb') as f:
+            source_hash = hashlib.sha256(f.read()).hexdigest()
+
+        if self._is_already_imported(source_hash, 'named_locations'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors = []
+        now = datetime.now().isoformat()
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed, import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'named_locations', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            entries = parser.parse_named_locations(source)
+
+            for entry in entries:
+                try:
+                    created_dt = entry.created_datetime.isoformat() if entry.created_datetime else None
+                    modified_dt = entry.modified_datetime.isoformat() if entry.modified_datetime else None
+
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO named_locations
+                        (display_name, location_id, created_datetime, modified_datetime,
+                         location_type, is_trusted, ip_ranges, countries_and_regions, raw_record, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        entry.display_name,
+                        entry.location_id,
+                        created_dt,
+                        modified_dt,
+                        entry.location_type,
+                        1 if entry.is_trusted else 0,
+                        entry.ip_ranges,
+                        entry.countries_and_regions,
+                        compress_json(json.loads(entry.raw_record)) if entry.raw_record else None,
+                        now
+                    ))
+                    if cursor.rowcount > 0:
+                        records_imported += 1
+                    else:
+                        records_skipped += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Location {entry.display_name}: {str(e)}")
+
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def import_application_registrations(self, source: Union[str, Path]) -> ImportResult:
+        """
+        Import Application Registrations CSV.
+
+        MITRE ATT&CK: T1098.001 (Account Manipulation: Additional Cloud Credentials)
+        """
+        start_time = time.time()
+        source = Path(source)
+
+        with open(source, 'rb') as f:
+            source_hash = hashlib.sha256(f.read()).hexdigest()
+
+        if self._is_already_imported(source_hash, 'application_registrations'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors = []
+        now = datetime.now().isoformat()
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed, import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'application_registrations', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            entries = parser.parse_application_registrations(source)
+
+            for entry in entries:
+                try:
+                    created_dt = entry.created_datetime.isoformat() if entry.created_datetime else None
+
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO application_registrations
+                        (display_name, app_id, object_id, created_datetime, sign_in_audience,
+                         publisher_domain, required_resource_access, password_credentials,
+                         key_credentials, web_redirect_uris, raw_record, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        entry.display_name,
+                        entry.app_id,
+                        entry.object_id,
+                        created_dt,
+                        entry.sign_in_audience,
+                        entry.publisher_domain,
+                        entry.required_resource_access,
+                        entry.password_credentials,
+                        entry.key_credentials,
+                        entry.web_redirect_uris,
+                        compress_json(json.loads(entry.raw_record)) if entry.raw_record else None,
+                        now
+                    ))
+                    if cursor.rowcount > 0:
+                        records_imported += 1
+                    else:
+                        records_skipped += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"App {entry.display_name}: {str(e)}")
+
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
+    def import_service_principals(self, source: Union[str, Path]) -> ImportResult:
+        """Import Service Principals CSV."""
+        start_time = time.time()
+        source = Path(source)
+
+        with open(source, 'rb') as f:
+            source_hash = hashlib.sha256(f.read()).hexdigest()
+
+        if self._is_already_imported(source_hash, 'service_principals'):
+            return ImportResult(
+                source_file=str(source),
+                source_hash=source_hash,
+                records_imported=0,
+                records_failed=0,
+                errors=[],
+                duration_seconds=time.time() - start_time
+            )
+
+        records_imported = 0
+        records_failed = 0
+        records_skipped = 0
+        errors = []
+        now = datetime.now().isoformat()
+
+        conn = self.db.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO import_metadata
+            (source_file, source_hash, log_type, records_imported, records_failed, import_started, parser_version)
+            VALUES (?, ?, ?, 0, 0, ?, ?)
+        """, (str(source), source_hash, 'service_principals', now, PARSER_VERSION))
+        import_id = cursor.lastrowid
+
+        try:
+            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            entries = parser.parse_service_principals(source)
+
+            for entry in entries:
+                try:
+                    created_dt = entry.created_datetime.isoformat() if entry.created_datetime else None
+
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO service_principals
+                        (display_name, app_id, object_id, service_principal_type, account_enabled,
+                         created_datetime, app_owner_organization_id, reply_urls, tags, raw_record, imported_at)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        entry.display_name,
+                        entry.app_id,
+                        entry.object_id,
+                        entry.service_principal_type,
+                        1 if entry.account_enabled else 0,
+                        created_dt,
+                        entry.app_owner_organization_id,
+                        entry.reply_urls,
+                        entry.tags,
+                        compress_json(json.loads(entry.raw_record)) if entry.raw_record else None,
+                        now
+                    ))
+                    if cursor.rowcount > 0:
+                        records_imported += 1
+                    else:
+                        records_skipped += 1
+
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"SP {entry.display_name}: {str(e)}")
+
+            cursor.execute("""
+                UPDATE import_metadata
+                SET records_imported = ?, records_failed = ?, import_completed = ?
+                WHERE id = ?
+            """, (records_imported, records_failed, datetime.now().isoformat(), import_id))
+
+            conn.commit()
+
+        except Exception as e:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return ImportResult(
+            source_file=str(source),
+            source_hash=source_hash,
+            records_imported=records_imported,
+            records_failed=records_failed,
+            errors=errors,
+            duration_seconds=time.time() - start_time,
+            records_skipped=records_skipped
+        )
+
     def _import_entra_audit_from_bytes(
         self, content: bytes, source_id: str, source_hash: str
     ) -> ImportResult:

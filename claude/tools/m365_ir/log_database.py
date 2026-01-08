@@ -448,6 +448,162 @@ class IRLogDatabase:
             )
         """)
 
+        # ================================================================
+        # New log type tables (Phase 249 - v2.1.0-Production export format)
+        # ================================================================
+
+        # Transport Rules table - CRITICAL for exfiltration detection
+        # MITRE ATT&CK: T1114.003 (Email Collection: Email Forwarding Rule)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS transport_rules (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL UNIQUE,
+                state TEXT,
+                priority INTEGER,
+                mode TEXT,
+                from_scope TEXT,
+                sent_to_scope TEXT,
+                blind_copy_to TEXT,
+                copy_to TEXT,
+                redirect_message_to TEXT,
+                delete_message INTEGER,
+                modify_subject TEXT,
+                set_scl INTEGER,
+                conditions TEXT,
+                exceptions TEXT,
+                when_changed TEXT,
+                comments TEXT,
+                raw_record BLOB,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Evidence Manifest table - Chain of custody metadata
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS evidence_manifest (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                case_id TEXT,
+                investigation_id TEXT UNIQUE,
+                collection_version TEXT,
+                collected_at TEXT,
+                collected_by TEXT,
+                collected_on TEXT,
+                date_range_start TEXT,
+                date_range_end TEXT,
+                days_back INTEGER,
+                files_manifest TEXT,
+                raw_json BLOB,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Mailbox Delegations table - Access permissions
+        # MITRE ATT&CK: T1098.002 (Account Manipulation: Exchange Email Delegate)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS mailbox_delegations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                mailbox TEXT NOT NULL,
+                permission_type TEXT NOT NULL,
+                delegate TEXT NOT NULL,
+                access_rights TEXT,
+                is_inherited INTEGER,
+                raw_record BLOB,
+                imported_at TEXT NOT NULL,
+                UNIQUE(mailbox, permission_type, delegate)
+            )
+        """)
+
+        # Admin Role Assignments table - Privileged access
+        # MITRE ATT&CK: T1078.004, T1098
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS admin_role_assignments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                role_name TEXT NOT NULL,
+                role_id TEXT NOT NULL,
+                role_description TEXT,
+                member_display_name TEXT,
+                member_upn TEXT,
+                member_id TEXT NOT NULL,
+                member_type TEXT,
+                raw_record BLOB,
+                imported_at TEXT NOT NULL,
+                UNIQUE(role_id, member_id)
+            )
+        """)
+
+        # Conditional Access Policies table
+        # MITRE ATT&CK: T1562.001 (Impair Defenses)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS conditional_access_policies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                display_name TEXT NOT NULL,
+                policy_id TEXT NOT NULL UNIQUE,
+                state TEXT,
+                created_datetime TEXT,
+                modified_datetime TEXT,
+                conditions TEXT,
+                grant_controls TEXT,
+                session_controls TEXT,
+                raw_record BLOB,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Named Locations table - Geographic/IP access control
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS named_locations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                display_name TEXT NOT NULL,
+                location_id TEXT NOT NULL UNIQUE,
+                created_datetime TEXT,
+                modified_datetime TEXT,
+                location_type TEXT,
+                is_trusted INTEGER,
+                ip_ranges TEXT,
+                countries_and_regions TEXT,
+                raw_record BLOB,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Application Registrations table
+        # MITRE ATT&CK: T1098.001 (Additional Cloud Credentials)
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS application_registrations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                display_name TEXT NOT NULL,
+                app_id TEXT NOT NULL UNIQUE,
+                object_id TEXT NOT NULL,
+                created_datetime TEXT,
+                sign_in_audience TEXT,
+                publisher_domain TEXT,
+                required_resource_access TEXT,
+                password_credentials TEXT,
+                key_credentials TEXT,
+                web_redirect_uris TEXT,
+                raw_record BLOB,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
+        # Service Principals table - Enterprise apps
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS service_principals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                display_name TEXT NOT NULL,
+                app_id TEXT NOT NULL,
+                object_id TEXT NOT NULL UNIQUE,
+                service_principal_type TEXT,
+                account_enabled INTEGER,
+                created_datetime TEXT,
+                app_owner_organization_id TEXT,
+                reply_urls TEXT,
+                tags TEXT,
+                raw_record BLOB,
+                imported_at TEXT NOT NULL
+            )
+        """)
+
     def _create_indexes(self, cursor: sqlite3.Cursor) -> None:
         """Create performance indexes on key columns."""
 
@@ -713,6 +869,75 @@ class IRLogDatabase:
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_schema_versions_detected_date
             ON schema_versions(detected_date)
+        """)
+
+        # ================================================================
+        # Transport Rules indexes (Phase 249)
+        # Critical for exfiltration detection queries
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transport_rules_state
+            ON transport_rules(state)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transport_rules_redirect
+            ON transport_rules(redirect_message_to)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transport_rules_bcc
+            ON transport_rules(blind_copy_to)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transport_rules_cc
+            ON transport_rules(copy_to)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transport_rules_scl
+            ON transport_rules(set_scl)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_transport_rules_when_changed
+            ON transport_rules(when_changed)
+        """)
+
+        # ================================================================
+        # Conditional Access Policies indexes (Phase 249)
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_ca_policies_state
+            ON conditional_access_policies(state)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_ca_policies_modified
+            ON conditional_access_policies(modified_datetime)
+        """)
+
+        # ================================================================
+        # Application Registrations indexes (Phase 249)
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_app_reg_app_id
+            ON application_registrations(app_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_app_reg_publisher
+            ON application_registrations(publisher_domain)
+        """)
+
+        # ================================================================
+        # Service Principals indexes (Phase 249)
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_svc_principal_app_id
+            ON service_principals(app_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_svc_principal_type
+            ON service_principals(service_principal_type)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_svc_principal_enabled
+            ON service_principals(account_enabled)
         """)
 
 

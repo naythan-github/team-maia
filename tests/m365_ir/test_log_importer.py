@@ -943,6 +943,15 @@ def test_all_patterns_have_handlers(importer):
         LogType.PASSWORD_CHANGED: 'import_password_status',
         LogType.MFA_CHANGES: 'import_mfa_changes',
         LogType.RISKY_USERS: 'import_risky_users',
+        # Phase 249 - New log types from v2.1.0-Production export format
+        LogType.TRANSPORT_RULES: 'import_transport_rules',
+        LogType.MAILBOX_DELEGATIONS: 'import_mailbox_delegations',
+        LogType.ADMIN_ROLE_ASSIGNMENTS: 'import_admin_role_assignments',
+        LogType.CONDITIONAL_ACCESS_POLICIES: 'import_conditional_access_policies',
+        LogType.NAMED_LOCATIONS: 'import_named_locations',
+        LogType.APPLICATION_REGISTRATIONS: 'import_application_registrations',
+        LogType.SERVICE_PRINCIPALS: 'import_service_principals',
+        LogType.EVIDENCE_MANIFEST: 'import_evidence_manifest',
     }
 
     # Verify all patterns have handlers
