@@ -37,6 +37,27 @@ az account set --subscription "subscription-name-or-id"
 |----------|-------------------|-----------------|--------|-------|
 | Aus-E-Mart | Aus-E-Mart | 3681c5eb-0e60-4beb-96fa-0a067f6969ac | 63dff77c-b5c0-4308-85b0-d14caf72a671 | Production |
 | Aus-E-Mart | Aus-E-Mart Dev Sub 1 | 5c5eaea6-1f2c-4d3b-9651-8c50bd6a4656 | 63dff77c-b5c0-4308-85b0-d14caf72a671 | Development |
+| NW Computing | N/A | N/A | b8636094-b771-45d0-85ce-84e27c7baefb | Direct account, CA blocking (see below) |
+
+### NW Computing Access Notes
+
+**Tenant ID**: b8636094-b771-45d0-85ce-84e27c7baefb
+**Domain**: nwcomputing.com.au
+**Account**: naythan.dawe@nwcomputing.com.au
+**Azure Subscriptions**: None visible (may be M365 only or no Azure RBAC assigned)
+
+**Conditional Access Blocking**:
+- Azure CLI access blocked by CA policy
+- Error: AADSTS53003
+- Reason: Device state "Unregistered" - requires compliant/managed device
+- App blocked: Azure CLI (04b07795-8ddb-461a-bbee-02f9e1bf7b46)
+
+**Workarounds**:
+1. Request CA policy exception from NW Computing IT
+2. Use Azure Portal in browser: `https://portal.azure.com/#@nwcomputing.com.au`
+3. Access from NW Computing-managed device
+
+See [GDAP Access Troubleshooting](gdap_access_troubleshooting.md) for diagnosis steps.
 
 ## Discovery Workflow
 
@@ -163,5 +184,10 @@ When new environments are added:
 4. Update safety protocols if needed
 5. Sync to capabilities database
 
-**Last Updated**: 2026-01-07
+**Last Updated**: 2026-01-08
 **Maintained By**: Azure Operations Engineer Agent / SRE Principal Engineer
+
+## Related Documentation
+
+- [GDAP Access Troubleshooting](gdap_access_troubleshooting.md)
+- [Azure VM Performance Investigation](azure_vm_performance_investigation.md)
