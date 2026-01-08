@@ -327,6 +327,93 @@ ORDER BY user_principal_name, logins DESC;
 
 ---
 
+### Phase 258: Data Quality Enhancements ⭐ NEW - PRODUCTION READY
+
+**MAJOR UPDATE (2026-01-08)**: Three new data quality features prevent analysis errors from PIR-FYNA-2025-12-08.
+
+#### 1. Auth Status View (`v_sign_in_auth_status`)
+
+**Problem**: `conditional_access_status = 'notApplied'` does NOT mean successful authentication. In PIR-FYNA-2025-12-08, this led to incorrect breach classification.
+
+**Solution**: SQL view that adds computed columns for auth determination:
+
+```sql
+-- Query sign-in logs with auth determination
+SELECT
+    user_principal_name,
+    ip_address,
+    auth_determination,    -- CONFIRMED_SUCCESS, CA_BLOCKED, LIKELY_SUCCESS_NO_CA, AUTH_FAILED, INDETERMINATE
+    auth_confidence_pct    -- 100, 90, 60, or 0
+FROM v_sign_in_auth_status
+WHERE auth_determination = 'CONFIRMED_SUCCESS';
+```
+
+**Auth Determination Values:**
+| Value | Meaning | Confidence |
+|-------|---------|------------|
+| `CONFIRMED_SUCCESS` | CA policy explicitly passed | 100% |
+| `CA_BLOCKED` | CA policy blocked login | 100% |
+| `LIKELY_SUCCESS_NO_CA` | No CA policy but no error | 60% |
+| `AUTH_FAILED` | Error code present | 90% |
+| `INDETERMINATE` | Cannot determine | 0% |
+
+**CRITICAL**: Always use `v_sign_in_auth_status` instead of raw `sign_in_logs` for breach determination.
+
+#### 2. Log Coverage Summary (`log_coverage.py`)
+
+**Problem**: Different M365 log types have different retention windows. Missing this leads to incorrect "clean" determinations when logs simply don't cover the attack window.
+
+**Solution**: Automatic coverage gap detection after import:
+
+```python
+from claude.tools.m365_ir.log_coverage import update_log_coverage_summary
+
+# Run after import
+result = update_log_coverage_summary(db.db_path)
+
+if result['gaps_detected'] > 0:
+    print("⚠️ FORENSIC GAPS DETECTED:")
+    for item in result['coverage_report']:
+        if item['gap_detected']:
+            print(f"  {item['log_type']}: {item['gap_description']}")
+```
+
+**Coverage Query:**
+```sql
+-- Check coverage gaps before making breach determinations
+SELECT log_type, total_records, coverage_days, expected_days, gap_description
+FROM log_coverage_summary
+WHERE gap_detected = 1;
+```
+
+**Gap Threshold**: Coverage < 80% of expected 90 days triggers warning.
+
+#### 3. PowerShell Validation (`powershell_validation.py`)
+
+**Problem**: PowerShell exports sometimes fail to expand .NET objects, resulting in type names like `Microsoft.Graph.PowerShell.Models.MicrosoftGraphSignInStatus` instead of actual values.
+
+**Solution**: Automatic detection of corrupted exports:
+
+```python
+from claude.tools.m365_ir.powershell_validation import check_powershell_object_corruption
+
+result = check_powershell_object_corruption(db.db_path, 'sign_in_logs')
+
+if result['corrupted']:
+    print(f"⚠️ CORRUPTED EXPORT DETECTED!")
+    print(f"   Affected fields: {result['affected_fields']}")
+    print(f"   Recommendation: Re-export with -ExpandProperty or ConvertTo-Json -Depth 10")
+```
+
+**When Corruption is Detected**:
+1. STOP analysis immediately
+2. Request re-export from customer
+3. PowerShell fix: `| ConvertTo-Json -Depth 10` or `-ExpandProperty Status`
+
+**Bottom Line**: These three features prevent the exact error types that caused PIR-FYNA-2025-12-08 misclassification. They are automatically run during import workflow.
+
+---
+
 ## Core Specialties
 
 - **Log Forensics**: UAL, Azure AD Sign-in, Mailbox Audit, Admin Activity parsing

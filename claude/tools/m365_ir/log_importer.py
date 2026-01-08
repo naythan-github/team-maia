@@ -42,6 +42,8 @@ from .m365_log_parser import (
     parse_m365_datetime,
     normalize_status,
 )
+from .log_coverage import update_log_coverage_summary
+from .powershell_validation import check_powershell_object_corruption, validate_all_tables
 
 # Configure module logger
 logger = logging.getLogger(__name__)
@@ -1591,18 +1593,70 @@ class LogImporter:
             raise FileNotFoundError(f"Source not found: {source}")
 
         # Detect source type and dispatch
+        results = None
         if source.is_file() and source.suffix.lower() == '.zip':
-            return self._import_from_zip(source)
+            results = self._import_from_zip(source)
         elif source.is_dir():
-            return self._import_from_directory(source)
+            results = self._import_from_directory(source)
         else:
             # Try as zip if it's a file (might not have .zip extension)
             if source.is_file():
                 try:
-                    return self._import_from_zip(source)
+                    results = self._import_from_zip(source)
                 except zipfile.BadZipFile:
                     raise
-            raise FileNotFoundError(f"Source must be a directory or zip file: {source}")
+            else:
+                raise FileNotFoundError(f"Source must be a directory or zip file: {source}")
+
+        # Phase 258: Post-import validation (PIR-FYNA-2025-12-08 lessons learned)
+        if results:
+            self._run_post_import_validation(results)
+
+        return results
+
+    def _run_post_import_validation(self, results: Dict[str, 'ImportResult']) -> None:
+        """
+        Run Phase 258 post-import validation checks.
+
+        PIR-FYNA-2025-12-08 lessons learned - automatically detects:
+        1. Log coverage gaps (forensic timeline incomplete)
+        2. PowerShell .NET object corruption (unexpanded objects)
+
+        Logs warnings but does not fail import - allows analyst to decide.
+        """
+        try:
+            # 1. Update log coverage summary
+            coverage_result = update_log_coverage_summary(self._db.db_path)
+            if coverage_result['gaps_detected'] > 0:
+                logger.warning(
+                    f"⚠️  FORENSIC COVERAGE GAPS DETECTED: {coverage_result['gaps_detected']} log types "
+                    f"have insufficient coverage. Query log_coverage_summary for details."
+                )
+                for item in coverage_result['coverage_report']:
+                    if item['gap_detected']:
+                        logger.warning(f"    - {item['log_type']}: {item['gap_description']}")
+
+            # 2. Check for PowerShell .NET object corruption
+            ps_results = validate_all_tables(self._db.db_path)
+            any_corrupted = False
+            for table, ps_result in ps_results.items():
+                if ps_result['corrupted']:
+                    any_corrupted = True
+                    logger.warning(
+                        f"⚠️  POWERSHELL EXPORT CORRUPTION in {table}: "
+                        f"Fields {ps_result['affected_fields']} contain .NET type names instead of values. "
+                        f"Re-export with: | ConvertTo-Json -Depth 10"
+                    )
+
+            if any_corrupted:
+                logger.warning(
+                    "⚠️  CRITICAL: PowerShell export corruption detected. "
+                    "Analysis may be unreliable. Request re-export from customer."
+                )
+
+        except Exception as e:
+            # Log but don't fail import - validation is advisory
+            logger.error(f"Post-import validation failed (non-fatal): {e}")
 
     def _import_from_directory(self, exports_dir: Path) -> Dict[str, ImportResult]:
         """

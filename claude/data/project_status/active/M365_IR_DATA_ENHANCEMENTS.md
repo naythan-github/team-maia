@@ -472,9 +472,9 @@ def test_accepts_zero_padded_filenames():
 ## Acceptance Criteria
 
 ### Overall
-- [x] All tests pass (`pytest tests/m365_ir/ -v`) - **144 tests passing**
+- [x] All tests pass (`pytest tests/m365_ir/ -v`) - **151 tests passing** (7 new integration tests)
 - [x] No regressions in existing import functionality
-- [ ] Documentation updated in agent markdown
+- [x] Documentation updated in agent markdown (Phase 258 section added)
 
 ### Per Requirement
 1. **Log Coverage Summary** ✅
@@ -518,18 +518,27 @@ def test_accepts_zero_padded_filenames():
 ### New Files Created:
 - `claude/tools/m365_ir/log_coverage.py` - Log coverage gap detection
 - `claude/tools/m365_ir/powershell_validation.py` - PowerShell .NET object detection
-- `claude/tools/m365_ir/tests/test_auth_status_view.py` - 8 tests
-- `claude/tools/m365_ir/tests/test_log_coverage_summary.py` - 8 tests
-- `claude/tools/m365_ir/tests/test_powershell_validation.py` - 7 tests
+- `claude/tools/m365_ir/tests/test_auth_status_view.py` - 8 unit tests
+- `claude/tools/m365_ir/tests/test_log_coverage_summary.py` - 8 unit tests
+- `claude/tools/m365_ir/tests/test_powershell_validation.py` - 7 unit tests
+- `claude/tools/m365_ir/tests/test_phase_258_integration.py` - 7 integration tests (NEW)
 
 ### Modified Files:
 - `claude/tools/m365_ir/log_database.py` - Added v_sign_in_auth_status view
+- `claude/tools/m365_ir/log_importer.py` - Added post-import validation (Phase 258 integration)
 - `claude/tools/m365_ir/tests/test_m365_log_parser.py` - Fixed deprecated LogType.AUDIT test
+- `claude/agents/m365_incident_response_agent.md` - Added Phase 258 documentation
 
 ### Test Results:
-- **144 tests passing**
+- **151 tests passing** (7 new integration tests)
 - **0 failures**
-- **0.93s runtime**
+- **1.18s runtime**
+
+### Integration Points:
+- `LogImporter.import_all()` now calls `_run_post_import_validation()` after import
+- Automatically runs log coverage summary (`update_log_coverage_summary()`)
+- Automatically runs PowerShell validation (`validate_all_tables()`)
+- Warnings logged but import not blocked (advisory only)
 
 ---
 
