@@ -67,7 +67,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  \"TKT-Assigned To User\" as \"Assignee\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" IS NOT NULL \nAND \"TKT-Assigned To User\" <> 'PendingAssignment'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 15;",
+            "rawSql": "SELECT \n  \"TKT-Assigned To User\" as \"Assignee\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" IS NOT NULL \nAND \"TKT-Assigned To User\" <> 'PendingAssignment'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 15;",
             "refId": "A"
           }
         ],
@@ -113,7 +113,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%call%' OR \"TKT-Title\" ILIKE '%pbx%' OR \"TKT-Title\" ILIKE '%teams%' OR \"TKT-Title\" ILIKE '%meeting%' THEN 'Communication/Collaboration'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%license%' THEN 'Administrative/Operational'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%troubleshoot%' OR \"TKT-Title\" ILIKE '%fix%' OR \"TKT-Title\" ILIKE '%issue%' THEN 'Technical (Implementation + Troubleshooting)'\n    WHEN \"TKT-Title\" ILIKE '%azure%' OR \"TKT-Title\" ILIKE '%architect%' OR \"TKT-Title\" ILIKE '%design%' OR \"TKT-Title\" ILIKE '%security%' THEN 'Specialized/Expert'\n    ELSE 'Other'\n  END as \"Task Level\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1\nORDER BY 2 DESC;",
+            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%call%' OR \"TKT-Title\" ILIKE '%pbx%' OR \"TKT-Title\" ILIKE '%teams%' OR \"TKT-Title\" ILIKE '%meeting%' THEN 'Communication/Collaboration'\n    WHEN \"TKT-Title\" ILIKE '%email%' OR \"TKT-Title\" ILIKE '%mailbox%' OR \"TKT-Title\" ILIKE '%access%' OR \"TKT-Title\" ILIKE '%password%' OR \"TKT-Title\" ILIKE '%license%' THEN 'Administrative/Operational'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%install%' OR \"TKT-Title\" ILIKE '%troubleshoot%' OR \"TKT-Title\" ILIKE '%fix%' OR \"TKT-Title\" ILIKE '%issue%' THEN 'Technical (Implementation + Troubleshooting)'\n    WHEN \"TKT-Title\" ILIKE '%azure%' OR \"TKT-Title\" ILIKE '%architect%' OR \"TKT-Title\" ILIKE '%design%' OR \"TKT-Title\" ILIKE '%security%' THEN 'Specialized/Expert'\n    ELSE 'Other'\n  END as \"Task Level\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1\nORDER BY 2 DESC;",
             "refId": "A"
           }
         ],
@@ -166,7 +166,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400.0) as \"Avg Days to Resolve\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Actual Resolution Date\" IS NOT NULL\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('week', \"TKT-Created Time\") as time,\n  AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400.0) as \"Avg Days to Resolve\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Actual Resolution Date\" IS NOT NULL\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -219,7 +219,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  COUNT(*) as \"Unassigned Tickets\",\n  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM servicedesk.tickets WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'), 2) as \"% of Total\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" = 'PendingAssignment';",
+            "rawSql": "SELECT \n  COUNT(*) as \"Unassigned Tickets\",\n  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM servicedesk.tickets WHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'), 2) as \"% of Total\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" = 'PendingAssignment';",
             "refId": "A"
           }
         ],
@@ -279,7 +279,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  COUNT(*) as \"Comms Tickets\",\n  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM servicedesk.tickets WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'), 2) as \"% of Total\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%call%' OR \"TKT-Title\" ILIKE '%pbx%' OR \"TKT-Title\" ILIKE '%teams%' OR \"TKT-Title\" ILIKE '%3cx%');",
+            "rawSql": "SELECT \n  COUNT(*) as \"Comms Tickets\",\n  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM servicedesk.tickets WHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'), 2) as \"% of Total\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%call%' OR \"TKT-Title\" ILIKE '%pbx%' OR \"TKT-Title\" ILIKE '%teams%' OR \"TKT-Title\" ILIKE '%3cx%');",
             "refId": "A"
           }
         ],
@@ -331,7 +331,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "WITH top_assignees AS (\n  SELECT \"TKT-Assigned To User\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\n  AND \"TKT-Assigned To User\" IS NOT NULL AND \"TKT-Assigned To User\" <> 'PendingAssignment'\n  GROUP BY 1\n  ORDER BY COUNT(*) DESC\n  LIMIT 10\n)\nSELECT \n  t.\"TKT-Assigned To User\" as \"Assignee\",\n  t.\"TKT-Category\" as \"Category\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets t\nINNER JOIN top_assignees ta ON t.\"TKT-Assigned To User\" = ta.\"TKT-Assigned To User\"\nWHERE t.\"TKT-Created Time\" >= '2025-07-01' AND t.\"TKT-Created Time\" <= '2025-10-13'\nAND t.\"TKT-Category\" IS NOT NULL\nGROUP BY 1, 2\nORDER BY 1, 3 DESC;",
+            "rawSql": "WITH top_assignees AS (\n  SELECT \"TKT-Assigned To User\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\n  AND \"TKT-Assigned To User\" IS NOT NULL AND \"TKT-Assigned To User\" <> 'PendingAssignment'\n  GROUP BY 1\n  ORDER BY COUNT(*) DESC\n  LIMIT 10\n)\nSELECT \n  t.\"TKT-Assigned To User\" as \"Assignee\",\n  t.\"TKT-Category\" as \"Category\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets t\nINNER JOIN top_assignees ta ON t.\"TKT-Assigned To User\" = ta.\"TKT-Assigned To User\"\nWHERE \"TKT-Team\" IN ('${team:raw}') AND t.\"TKT-Created Time\" >= '2025-07-01' AND t.\"TKT-Created Time\" <= '2025-10-13'\nAND t.\"TKT-Category\" IS NOT NULL\nGROUP BY 1, 2\nORDER BY 1, 3 DESC;",
             "refId": "A"
           }
         ],
@@ -389,7 +389,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  \"TKT-Assigned To User\" as \"Assignee\",\n  COUNT(*) as \"Total Tickets\",\n  COUNT(CASE WHEN \"TKT-Status\" = 'Closed' THEN 1 END) as \"Closed\",\n  ROUND(100.0 * COUNT(CASE WHEN \"TKT-Status\" = 'Closed' THEN 1 END) / NULLIF(COUNT(*), 0), 1) as \"Close Rate %\",\n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 3600.0), 2) as \"Avg Hours to Resolve\",\n  COUNT(CASE WHEN \"TKT-Category\" = 'Alert' THEN 1 END) as \"Alerts\",\n  COUNT(CASE WHEN \"TKT-Category\" = 'Support Tickets' THEN 1 END) as \"Support\",\n  COUNT(CASE WHEN \"TKT-Severity\" = 'Priority 1' THEN 1 END) as \"P1 Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" IS NOT NULL \nAND \"TKT-Assigned To User\" <> 'PendingAssignment'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 15;",
+            "rawSql": "SELECT \n  \"TKT-Assigned To User\" as \"Assignee\",\n  COUNT(*) as \"Total Tickets\",\n  COUNT(CASE WHEN \"TKT-Status\" = 'Closed' THEN 1 END) as \"Closed\",\n  ROUND(100.0 * COUNT(CASE WHEN \"TKT-Status\" = 'Closed' THEN 1 END) / NULLIF(COUNT(*), 0), 1) as \"Close Rate %\",\n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 3600.0), 2) as \"Avg Hours to Resolve\",\n  COUNT(CASE WHEN \"TKT-Category\" = 'Alert' THEN 1 END) as \"Alerts\",\n  COUNT(CASE WHEN \"TKT-Category\" = 'Support Tickets' THEN 1 END) as \"Support\",\n  COUNT(CASE WHEN \"TKT-Severity\" = 'Priority 1' THEN 1 END) as \"P1 Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Assigned To User\" IS NOT NULL \nAND \"TKT-Assigned To User\" <> 'PendingAssignment'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 15;",
             "refId": "A"
           }
         ],
@@ -493,7 +493,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "WITH top_5 AS (\n  SELECT \"TKT-Assigned To User\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\n  AND \"TKT-Assigned To User\" IS NOT NULL AND \"TKT-Assigned To User\" <> 'PendingAssignment'\n  GROUP BY 1\n  ORDER BY COUNT(*) DESC\n  LIMIT 5\n)\nSELECT \n  DATE_TRUNC('week', t.\"TKT-Created Time\") as time,\n  t.\"TKT-Assigned To User\" as metric,\n  COUNT(*) as value\nFROM servicedesk.tickets t\nINNER JOIN top_5 ON t.\"TKT-Assigned To User\" = top_5.\"TKT-Assigned To User\"\nWHERE t.\"TKT-Created Time\" >= '2025-07-01' AND t.\"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1, 2\nORDER BY 1, 2;",
+            "rawSql": "WITH top_5 AS (\n  SELECT \"TKT-Assigned To User\"\n  FROM servicedesk.tickets\n  WHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\n  AND \"TKT-Assigned To User\" IS NOT NULL AND \"TKT-Assigned To User\" <> 'PendingAssignment'\n  GROUP BY 1\n  ORDER BY COUNT(*) DESC\n  LIMIT 5\n)\nSELECT \n  DATE_TRUNC('week', t.\"TKT-Created Time\") as time,\n  t.\"TKT-Assigned To User\" as metric,\n  COUNT(*) as value\nFROM servicedesk.tickets t\nINNER JOIN top_5 ON t.\"TKT-Assigned To User\" = top_5.\"TKT-Assigned To User\"\nWHERE \"TKT-Team\" IN ('${team:raw}') AND t.\"TKT-Created Time\" >= '2025-07-01' AND t.\"TKT-Created Time\" <= '2025-10-13'\nGROUP BY 1, 2\nORDER BY 1, 2;",
             "refId": "A"
           }
         ],
@@ -532,6 +532,48 @@
     ],
     "templating": {
       "list": [
+        {
+          "name": "team",
+          "label": "Team",
+          "type": "custom",
+          "query": "All,Cloud - Infrastructure,Cloud - Security,Cloud - L3 Escalation",
+          "current": {
+            "selected": true,
+            "text": [
+              "All"
+            ],
+            "value": [
+              "All"
+            ]
+          },
+          "options": [
+            {
+              "selected": true,
+              "text": "All",
+              "value": "All"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Infrastructure",
+              "value": "Cloud - Infrastructure"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Security",
+              "value": "Cloud - Security"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - L3 Escalation",
+              "value": "Cloud - L3 Escalation"
+            }
+          ],
+          "multi": true,
+          "includeAll": true,
+          "allValue": "Cloud - Infrastructure','Cloud - Security','Cloud - L3 Escalation",
+          "hide": 0,
+          "skipUrlSync": false
+        },
         {
           "name": "datasource",
           "label": "Data Source",

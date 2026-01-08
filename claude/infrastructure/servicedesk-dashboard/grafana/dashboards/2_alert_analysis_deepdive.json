@@ -67,7 +67,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Motion/Sensor Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%')\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Motion/Sensor Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%')\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -122,7 +122,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Patch Failures\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%')\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Patch Failures\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%')\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -173,7 +173,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Network/VPN Issues\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%')\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Network/VPN Issues\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%')\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -223,7 +223,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Azure Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%')\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Azure Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%')\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -273,7 +273,7 @@
               "uid": "${datasource}"
             },
             "format": "time_series",
-            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"SSL/Cert Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%')\nGROUP BY 1\nORDER BY 1;",
+            "rawSql": "SELECT \n  DATE_TRUNC('day', \"TKT-Created Time\") as time,\n  COUNT(*) as \"SSL/Cert Alerts\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND (\"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%')\nGROUP BY 1\nORDER BY 1;",
             "refId": "A"
           }
         ],
@@ -322,7 +322,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  EXTRACT(DOW FROM \"TKT-Created Time\") as \"Day\",\n  EXTRACT(HOUR FROM \"TKT-Created Time\") as \"Hour\",\n  COUNT(*) as \"Alert Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1, 2\nORDER BY 1, 2;",
+            "rawSql": "SELECT \n  EXTRACT(DOW FROM \"TKT-Created Time\") as \"Day\",\n  EXTRACT(HOUR FROM \"TKT-Created Time\") as \"Hour\",\n  COUNT(*) as \"Alert Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1, 2\nORDER BY 1, 2;",
             "refId": "A"
           }
         ],
@@ -383,7 +383,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  \"TKT-Title\" as \"Alert Title\",\n  COUNT(*) as \"Occurrences\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365, 0) as \"Projected Annual\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5 * 80 / 1000, 1) || 'K' as \"Est. Savings (30min avg)\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10;",
+            "rawSql": "SELECT \n  \"TKT-Title\" as \"Alert Title\",\n  COUNT(*) as \"Occurrences\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365, 0) as \"Projected Annual\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5 * 80 / 1000, 1) || 'K' as \"Est. Savings (30min avg)\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10;",
             "refId": "A"
           }
         ],
@@ -444,7 +444,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' THEN 'Motion/Sensor'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' THEN 'Patch Failures'\n    WHEN \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' THEN 'Network/VPN'\n    WHEN \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' THEN 'Azure Resource'\n    WHEN \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' THEN 'SSL/Certificate'\n    ELSE 'Other Alerts'\n  END as \"Alert Type\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC;",
+            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%motion%' OR \"TKT-Title\" ILIKE '%sensor%' THEN 'Motion/Sensor'\n    WHEN \"TKT-Title\" ILIKE '%patch%' OR \"TKT-Title\" ILIKE '%update fail%' THEN 'Patch Failures'\n    WHEN \"TKT-Title\" ILIKE '%vpn%' OR \"TKT-Title\" ILIKE '%network%' THEN 'Network/VPN'\n    WHEN \"TKT-Title\" ILIKE '%azure%resource%' OR \"TKT-Title\" ILIKE '%azure health%' THEN 'Azure Resource'\n    WHEN \"TKT-Title\" ILIKE '%ssl%' OR \"TKT-Title\" ILIKE '%certificate%expir%' THEN 'SSL/Certificate'\n    ELSE 'Other Alerts'\n  END as \"Alert Type\",\n  COUNT(*) as \"Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC;",
             "refId": "A"
           }
         ],
@@ -498,7 +498,7 @@
               "uid": "${datasource}"
             },
             "format": "table",
-            "rawSql": "SELECT \n  COUNT(*) as \"Total Alerts\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5 * 80 / 1000, 0) || 'K' as \"Annual Savings (30min avg)\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5, 0) as \"Hours Saved/Year\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert';",
+            "rawSql": "SELECT \n  COUNT(*) as \"Total Alerts\",\n  '$' || ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5 * 80 / 1000, 0) || 'K' as \"Annual Savings (30min avg)\",\n  ROUND(COUNT(*) * 1.0 / 104 * 365 * 0.5, 0) as \"Hours Saved/Year\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01' AND \"TKT-Created Time\" <= '2025-10-13'\nAND \"TKT-Category\" = 'Alert';",
             "refId": "A"
           }
         ],
@@ -535,6 +535,48 @@
     ],
     "templating": {
       "list": [
+        {
+          "name": "team",
+          "label": "Team",
+          "type": "custom",
+          "query": "All,Cloud - Infrastructure,Cloud - Security,Cloud - L3 Escalation",
+          "current": {
+            "selected": true,
+            "text": [
+              "All"
+            ],
+            "value": [
+              "All"
+            ]
+          },
+          "options": [
+            {
+              "selected": true,
+              "text": "All",
+              "value": "All"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Infrastructure",
+              "value": "Cloud - Infrastructure"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Security",
+              "value": "Cloud - Security"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - L3 Escalation",
+              "value": "Cloud - L3 Escalation"
+            }
+          ],
+          "multi": true,
+          "includeAll": true,
+          "allValue": "Cloud - Infrastructure','Cloud - Security','Cloud - L3 Escalation",
+          "hide": 0,
+          "skipUrlSync": false
+        },
         {
           "name": "datasource",
           "label": "Data Source",

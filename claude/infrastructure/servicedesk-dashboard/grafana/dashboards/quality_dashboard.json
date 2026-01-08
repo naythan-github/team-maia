@@ -499,7 +499,53 @@
           }
         }
       }
-    ]
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "team",
+          "label": "Team",
+          "type": "custom",
+          "query": "All,Cloud - Infrastructure,Cloud - Security,Cloud - L3 Escalation",
+          "current": {
+            "selected": true,
+            "text": [
+              "All"
+            ],
+            "value": [
+              "All"
+            ]
+          },
+          "options": [
+            {
+              "selected": true,
+              "text": "All",
+              "value": "All"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Infrastructure",
+              "value": "Cloud - Infrastructure"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Security",
+              "value": "Cloud - Security"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - L3 Escalation",
+              "value": "Cloud - L3 Escalation"
+            }
+          ],
+          "multi": true,
+          "includeAll": true,
+          "allValue": "Cloud - Infrastructure','Cloud - Security','Cloud - L3 Escalation",
+          "hide": 0,
+          "skipUrlSync": false
+        }
+      ]
+    }
   },
   "overwrite": true
 }

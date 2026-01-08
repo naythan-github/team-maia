@@ -178,7 +178,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "table",
-            "rawSql": "SELECT\n  CAST(SUM(CASE WHEN \"TKT-SLA Met\" = 'yes' THEN 1 ELSE 0 END)*100.0/COUNT(*) AS NUMERIC(10,1)) as value\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01'\nAND \"TKT-SLA Met\" IS NOT NULL\nAND \"TKT-Assigned To User\" NOT LIKE ' %';",
+            "rawSql": "SELECT\n  CAST(SUM(CASE WHEN \"TKT-SLA Met\" = 'yes' THEN 1 ELSE 0 END)*100.0/COUNT(*) AS NUMERIC(10,1)) as value\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01'\nAND \"TKT-SLA Met\" IS NOT NULL\nAND \"TKT-Assigned To User\" NOT LIKE ' %';",
             "refId": "A"
           }
         ],
@@ -628,7 +628,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "table",
-            "rawSql": "WITH assignee_metrics AS (\n  SELECT\n    t.\"TKT-Assigned To User\" as assignee,\n    COUNT(DISTINCT t.\"TKT-Ticket ID\") as total_tickets,\n    SUM(CASE WHEN t.\"TKT-SLA Met\" = 'yes' THEN 1 ELSE 0 END)*100.0/COUNT(*) as sla_pct,\n    AVG(EXTRACT(EPOCH FROM (t.\"TKT-Actual Resolution Date\" - t.\"TKT-Created Time\"))/3600) as avg_resolution_hours\n  FROM servicedesk.tickets t\n  WHERE t.\"TKT-Created Time\" >= '2025-07-01'\n  AND t.\"TKT-Assigned To User\" IS NOT NULL\n  AND t.\"TKT-SLA Met\" IS NOT NULL\n  GROUP BY t.\"TKT-Assigned To User\"\n  HAVING COUNT(*) >= 20\n),\nassignee_sentiment AS (\n  SELECT\n    t.\"TKT-Assigned To User\" as assignee,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(thank|great|excellent|happy|appreciate|wonderful|fantastic|perfect|amazing).*' THEN 1 ELSE 0 END) as positive,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(issue|problem|unhappy|frustrated|angry|disappointed|urgent|critical|error|fail).*' THEN 1 ELSE 0 END) as negative,\n    COUNT(*) as total_comments\n  FROM servicedesk.tickets t\n  INNER JOIN servicedesk.comments c ON t.\"TKT-Ticket ID\" = c.ticket_id\n  WHERE t.\"TKT-Created Time\" >= '2025-07-01'\n  AND t.\"TKT-Assigned To User\" IS NOT NULL\n  AND c.visible_to_customer = 'Yes'\n  GROUP BY t.\"TKT-Assigned To User\"\n),\nscored AS (\n  SELECT\n    am.assignee,\n    am.total_tickets,\n    CAST(am.sla_pct AS NUMERIC(10,1)) as sla_percentage,\n    CAST(am.avg_resolution_hours AS NUMERIC(10,1)) as avg_hours,\n    COALESCE(asent.positive, 0) as positive_comments,\n    COALESCE(asent.negative, 0) as negative_comments,\n    COALESCE(asent.total_comments, 0) as total_comments,\n    CAST(\n      (am.sla_pct * 0.3) +\n      ((100 - LEAST(am.avg_resolution_hours, 100)) * 0.3) +\n      (CASE\n        WHEN COALESCE(asent.total_comments, 0) > 0\n        THEN ((COALESCE(asent.positive, 0) - COALESCE(asent.negative, 0))*100.0/asent.total_comments * 0.4)\n        ELSE 0\n      END)\n    AS NUMERIC(10,2)) as composite_score\n  FROM assignee_metrics am\n  LEFT JOIN assignee_sentiment asent ON am.assignee = asent.assignee\n  WHERE am.assignee NOT LIKE ' %'\n)\nSELECT\n  ROW_NUMBER() OVER (ORDER BY composite_score DESC) as \"Rank\",\n  assignee as \"Team Member\",\n  CAST(composite_score AS NUMERIC(10,1)) as \"Score\",\n  sla_percentage as \"SLA %\",\n  avg_hours as \"Avg Resolution (hrs)\",\n  total_tickets as \"Tickets\",\n  positive_comments as \"Positive\",\n  negative_comments as \"Negative\",\n  total_comments as \"Total Comments\"\nFROM scored\nORDER BY composite_score DESC\nLIMIT 20;",
+            "rawSql": "WITH assignee_metrics AS (\n  SELECT\n    t.\"TKT-Assigned To User\" as assignee,\n    COUNT(DISTINCT t.\"TKT-Ticket ID\") as total_tickets,\n    SUM(CASE WHEN t.\"TKT-SLA Met\" = 'yes' THEN 1 ELSE 0 END)*100.0/COUNT(*) as sla_pct,\n    AVG(EXTRACT(EPOCH FROM (t.\"TKT-Actual Resolution Date\" - t.\"TKT-Created Time\"))/3600) as avg_resolution_hours\n  FROM servicedesk.tickets t\n  WHERE t.\"TKT-Team\" IN ('${team:raw}') AND t.\"TKT-Created Time\" >= '2025-07-01'\n  AND t.\"TKT-Assigned To User\" IS NOT NULL\n  AND t.\"TKT-SLA Met\" IS NOT NULL\n  GROUP BY t.\"TKT-Assigned To User\"\n  HAVING COUNT(*) >= 20\n),\nassignee_sentiment AS (\n  SELECT\n    t.\"TKT-Assigned To User\" as assignee,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(thank|great|excellent|happy|appreciate|wonderful|fantastic|perfect|amazing).*' THEN 1 ELSE 0 END) as positive,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(issue|problem|unhappy|frustrated|angry|disappointed|urgent|critical|error|fail).*' THEN 1 ELSE 0 END) as negative,\n    COUNT(*) as total_comments\n  FROM servicedesk.tickets t\n  INNER JOIN servicedesk.comments c ON t.\"TKT-Ticket ID\" = c.ticket_id\n  WHERE t.\"TKT-Team\" IN ('${team:raw}') AND t.\"TKT-Created Time\" >= '2025-07-01'\n  AND t.\"TKT-Assigned To User\" IS NOT NULL\n  AND c.visible_to_customer = 'Yes'\n  GROUP BY t.\"TKT-Assigned To User\"\n),\nscored AS (\n  SELECT\n    am.assignee,\n    am.total_tickets,\n    CAST(am.sla_pct AS NUMERIC(10,1)) as sla_percentage,\n    CAST(am.avg_resolution_hours AS NUMERIC(10,1)) as avg_hours,\n    COALESCE(asent.positive, 0) as positive_comments,\n    COALESCE(asent.negative, 0) as negative_comments,\n    COALESCE(asent.total_comments, 0) as total_comments,\n    CAST(\n      (am.sla_pct * 0.3) +\n      ((100 - LEAST(am.avg_resolution_hours, 100)) * 0.3) +\n      (CASE\n        WHEN COALESCE(asent.total_comments, 0) > 0\n        THEN ((COALESCE(asent.positive, 0) - COALESCE(asent.negative, 0))*100.0/asent.total_comments * 0.4)\n        ELSE 0\n      END)\n    AS NUMERIC(10,2)) as composite_score\n  FROM assignee_metrics am\n  LEFT JOIN assignee_sentiment asent ON am.assignee = asent.assignee\n  WHERE am.assignee NOT LIKE ' %'\n)\nSELECT\n  ROW_NUMBER() OVER (ORDER BY composite_score DESC) as \"Rank\",\n  assignee as \"Team Member\",\n  CAST(composite_score AS NUMERIC(10,1)) as \"Score\",\n  sla_percentage as \"SLA %\",\n  avg_hours as \"Avg Resolution (hrs)\",\n  total_tickets as \"Tickets\",\n  positive_comments as \"Positive\",\n  negative_comments as \"Negative\",\n  total_comments as \"Total Comments\"\nFROM scored\nORDER BY composite_score DESC\nLIMIT 20;",
             "refId": "A"
           }
         ],
@@ -713,7 +713,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "table",
-            "rawSql": "WITH assignee_sentiment AS (\n  SELECT\n    t.\"TKT-Assigned To User\" as assignee,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(thank|great|excellent|happy|appreciate|wonderful|fantastic|perfect|amazing).*' THEN 1 ELSE 0 END) as positive,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(issue|problem|unhappy|frustrated|angry|disappointed|urgent|critical|error|fail).*' THEN 1 ELSE 0 END) as negative\n  FROM servicedesk.tickets t\n  INNER JOIN servicedesk.comments c ON t.\"TKT-Ticket ID\" = c.ticket_id\n  WHERE t.\"TKT-Created Time\" >= '2025-07-01'\n  AND t.\"TKT-Assigned To User\" IS NOT NULL\n  AND c.visible_to_customer = 'Yes'\n  GROUP BY t.\"TKT-Assigned To User\"\n  HAVING COUNT(*) >= 50\n)\nSELECT\n  assignee as \"Team Member\",\n  positive as \"Positive\",\n  negative as \"Negative\"\nFROM assignee_sentiment\nWHERE assignee NOT LIKE ' %'\nORDER BY (positive + negative) DESC\nLIMIT 15;",
+            "rawSql": "WITH assignee_sentiment AS (\n  SELECT\n    t.\"TKT-Assigned To User\" as assignee,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(thank|great|excellent|happy|appreciate|wonderful|fantastic|perfect|amazing).*' THEN 1 ELSE 0 END) as positive,\n    SUM(CASE WHEN LOWER(c.comment_text) ~ '.*(issue|problem|unhappy|frustrated|angry|disappointed|urgent|critical|error|fail).*' THEN 1 ELSE 0 END) as negative\n  FROM servicedesk.tickets t\n  INNER JOIN servicedesk.comments c ON t.\"TKT-Ticket ID\" = c.ticket_id\n  WHERE t.\"TKT-Team\" IN ('${team:raw}') AND t.\"TKT-Created Time\" >= '2025-07-01'\n  AND t.\"TKT-Assigned To User\" IS NOT NULL\n  AND c.visible_to_customer = 'Yes'\n  GROUP BY t.\"TKT-Assigned To User\"\n  HAVING COUNT(*) >= 50\n)\nSELECT\n  assignee as \"Team Member\",\n  positive as \"Positive\",\n  negative as \"Negative\"\nFROM assignee_sentiment\nWHERE assignee NOT LIKE ' %'\nORDER BY (positive + negative) DESC\nLIMIT 15;",
             "refId": "A"
           }
         ],
@@ -854,7 +854,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "table",
-            "rawSql": "SELECT\n  \"TKT-Assigned To User\" as \"Team Member\",\n  CAST(SUM(CASE WHEN \"TKT-SLA Met\" = 'yes' THEN 1 ELSE 0 END)*100.0/COUNT(*) AS NUMERIC(10,1)) as \"SLA %\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01'\nAND \"TKT-Assigned To User\" IS NOT NULL\nAND \"TKT-SLA Met\" IS NOT NULL\nAND \"TKT-Assigned To User\" NOT LIKE ' %'\nGROUP BY \"TKT-Assigned To User\"\nHAVING COUNT(*) >= 50\nORDER BY \"SLA %\" DESC\nLIMIT 15;",
+            "rawSql": "SELECT\n  \"TKT-Assigned To User\" as \"Team Member\",\n  CAST(SUM(CASE WHEN \"TKT-SLA Met\" = 'yes' THEN 1 ELSE 0 END)*100.0/COUNT(*) AS NUMERIC(10,1)) as \"SLA %\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01'\nAND \"TKT-Assigned To User\" IS NOT NULL\nAND \"TKT-SLA Met\" IS NOT NULL\nAND \"TKT-Assigned To User\" NOT LIKE ' %'\nGROUP BY \"TKT-Assigned To User\"\nHAVING COUNT(*) >= 50\nORDER BY \"SLA %\" DESC\nLIMIT 15;",
             "refId": "A"
           }
         ],
@@ -909,7 +909,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "table",
-            "rawSql": "SELECT\n  \"TKT-Assigned To User\" as \"Team Member\",\n  CAST(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\"))/3600) AS NUMERIC(10,1)) as \"Avg Hours\"\nFROM servicedesk.tickets\nWHERE \"TKT-Created Time\" >= '2025-07-01'\nAND \"TKT-Assigned To User\" IS NOT NULL\nAND \"TKT-Actual Resolution Date\" IS NOT NULL\nAND \"TKT-Assigned To User\" NOT LIKE ' %'\nGROUP BY \"TKT-Assigned To User\"\nHAVING COUNT(*) >= 50\nORDER BY \"Avg Hours\" ASC\nLIMIT 15;",
+            "rawSql": "SELECT\n  \"TKT-Assigned To User\" as \"Team Member\",\n  CAST(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\"))/3600) AS NUMERIC(10,1)) as \"Avg Hours\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= '2025-07-01'\nAND \"TKT-Assigned To User\" IS NOT NULL\nAND \"TKT-Actual Resolution Date\" IS NOT NULL\nAND \"TKT-Assigned To User\" NOT LIKE ' %'\nGROUP BY \"TKT-Assigned To User\"\nHAVING COUNT(*) >= 50\nORDER BY \"Avg Hours\" ASC\nLIMIT 15;",
             "refId": "A"
           }
         ],
@@ -1108,7 +1108,53 @@
           }
         }
       }
-    ]
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "team",
+          "label": "Team",
+          "type": "custom",
+          "query": "All,Cloud - Infrastructure,Cloud - Security,Cloud - L3 Escalation",
+          "current": {
+            "selected": true,
+            "text": [
+              "All"
+            ],
+            "value": [
+              "All"
+            ]
+          },
+          "options": [
+            {
+              "selected": true,
+              "text": "All",
+              "value": "All"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Infrastructure",
+              "value": "Cloud - Infrastructure"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - Security",
+              "value": "Cloud - Security"
+            },
+            {
+              "selected": false,
+              "text": "Cloud - L3 Escalation",
+              "value": "Cloud - L3 Escalation"
+            }
+          ],
+          "multi": true,
+          "includeAll": true,
+          "allValue": "Cloud - Infrastructure','Cloud - Security','Cloud - L3 Escalation",
+          "hide": 0,
+          "skipUrlSync": false
+        }
+      ]
+    }
   },
   "folderId": 0,
   "overwrite": true
