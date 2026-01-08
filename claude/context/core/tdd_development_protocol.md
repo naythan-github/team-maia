@@ -7,6 +7,14 @@
 
 ---
 
+## Domain-Specific Protocols
+
+| Domain | Protocol | Trigger |
+|--------|----------|---------|
+| Grafana Dashboards | [GTDD Protocol](../protocols/gtdd_protocol.md) | "GTDD", "TDD for Grafana" |
+
+---
+
 ## Workflow State Machine
 
 ```

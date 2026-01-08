@@ -109,7 +109,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "table",
-            "rawSql": "SELECT COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN (\\'${team:raw}\\') AND \"TKT-Created Time\" >= NOW() - INTERVAL '90 days';",
+            "rawSql": "SELECT COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= NOW() - INTERVAL '90 days';",
             "refId": "A"
           }
         ],
@@ -160,7 +160,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "table",
-            "rawSql": "SELECT\n  \"TKT-Root Cause Category\" as \"Root Cause\",\n  COUNT(*) as \"Ticket Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN (\\'${team:raw}\\') AND \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Root Cause Category\" IS NOT NULL\n  AND \"TKT-Root Cause Category\" != ''\nGROUP BY \"TKT-Root Cause Category\"\nORDER BY COUNT(*) DESC\nLIMIT 10;",
+            "rawSql": "SELECT\n  \"TKT-Root Cause Category\" as \"Root Cause\",\n  COUNT(*) as \"Ticket Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Root Cause Category\" IS NOT NULL\n  AND \"TKT-Root Cause Category\" != ''\nGROUP BY \"TKT-Root Cause Category\"\nORDER BY COUNT(*) DESC\nLIMIT 10;",
             "refId": "A"
           }
         ],
@@ -290,7 +290,7 @@
               "uid": "P6BECECF7273D15EE"
             },
             "format": "time_series",
-            "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Ticket Volume\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN (\\'${team:raw}\\') AND \"TKT-Created Time\" >= NOW() - INTERVAL '90 days'\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\")\nORDER BY time;",
+            "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Ticket Volume\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= NOW() - INTERVAL '90 days'\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\")\nORDER BY time;",
             "refId": "A"
           }
         ],

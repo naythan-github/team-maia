@@ -232,6 +232,7 @@ sqlite3 claude/data/databases/system/capabilities.db "SELECT * FROM v_tools WHER
 - Development: `claude/context/core/development_workflow_protocol.md`
 - Anti-Breakage: `claude/context/core/anti_breakage_protocol.md`
 - TDD Protocol: `claude/context/core/tdd_development_protocol.md`
+- GTDD Protocol: `claude/context/protocols/gtdd_protocol.md` (Grafana dashboards)
 - Architecture: `claude/context/core/architecture_standards.md`
 - File Policy: `claude/context/core/file_organization_policy.md`
 
