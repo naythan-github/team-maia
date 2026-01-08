@@ -338,7 +338,8 @@ class TestExportDirectoryDiscovery:
         discovered = parser.discover_log_files(export)
 
         assert LogType.SIGNIN in discovered
-        assert LogType.AUDIT in discovered
+        # Note: LogType.AUDIT is deprecated, use ENTRA_AUDIT instead
+        assert LogType.ENTRA_AUDIT in discovered
         assert LogType.MAILBOX_AUDIT in discovered
         assert LogType.LEGACY_AUTH in discovered
 

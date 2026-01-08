@@ -604,6 +604,47 @@ class IRLogDatabase:
             )
         """)
 
+        # ================================================================
+        # Auth Status View (Phase 258 - PIR-FYNA-2025-12-08 lessons learned)
+        # Eliminates ambiguity in authentication status interpretation.
+        # conditional_access_status='notApplied' does NOT mean success!
+        # ================================================================
+        cursor.execute("""
+            CREATE VIEW IF NOT EXISTS v_sign_in_auth_status AS
+            SELECT
+                *,
+                CASE
+                    -- CA policy explicitly passed = confirmed success
+                    WHEN conditional_access_status = 'success' THEN 'CONFIRMED_SUCCESS'
+
+                    -- CA policy blocked = confirmed failure
+                    WHEN conditional_access_status = 'failure' THEN 'CA_BLOCKED'
+
+                    -- No CA policy but no error code = likely success (legacy/excluded apps)
+                    WHEN conditional_access_status = 'notApplied'
+                         AND (status_error_code IS NULL OR status_error_code = 0)
+                    THEN 'LIKELY_SUCCESS_NO_CA'
+
+                    -- Error code present = failed auth
+                    WHEN status_error_code IS NOT NULL AND status_error_code != 0
+                    THEN 'AUTH_FAILED'
+
+                    -- Cannot determine
+                    ELSE 'INDETERMINATE'
+                END as auth_determination,
+
+                CASE
+                    WHEN conditional_access_status = 'success' THEN 100
+                    WHEN conditional_access_status = 'failure' THEN 100
+                    WHEN conditional_access_status = 'notApplied'
+                         AND (status_error_code IS NULL OR status_error_code = 0) THEN 60
+                    WHEN status_error_code IS NOT NULL AND status_error_code != 0 THEN 90
+                    ELSE 0
+                END as auth_confidence_pct
+
+            FROM sign_in_logs
+        """)
+
     def _create_indexes(self, cursor: sqlite3.Cursor) -> None:
         """Create performance indexes on key columns."""
 
