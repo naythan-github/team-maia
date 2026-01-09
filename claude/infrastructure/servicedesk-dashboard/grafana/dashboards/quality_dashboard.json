@@ -39,7 +39,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT ROUND(AVG(quality_score)::numeric, 2) as \"Quality Score\" FROM servicedesk.comment_quality WHERE quality_score IS NOT NULL;",
@@ -91,7 +91,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT ROUND(AVG(professionalism_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
             "refId": "A",
@@ -141,7 +141,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT ROUND(AVG(clarity_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
             "refId": "A",
@@ -191,7 +191,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT ROUND(AVG(empathy_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
             "refId": "A",
@@ -241,7 +241,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT ROUND(AVG(actionability_score)::numeric, 2) as \"Score\" FROM servicedesk.comment_quality;",
             "refId": "A",
@@ -292,7 +292,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT ROUND(100.0 * COUNT(DISTINCT cq.comment_id) / (SELECT COUNT(*) FROM servicedesk.comments), 2) as \"Coverage %\" FROM servicedesk.comment_quality cq;",
             "refId": "A",
@@ -341,7 +341,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT quality_tier as \"Tier\", COUNT(*) as \"Count\" FROM servicedesk.comment_quality WHERE quality_tier IS NOT NULL GROUP BY quality_tier ORDER BY CASE quality_tier WHEN 'excellent' THEN 1 WHEN 'good' THEN 2 WHEN 'acceptable' THEN 3 WHEN 'poor' THEN 4 END;",
             "refId": "A",
@@ -462,7 +462,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT 'Professionalism' as dimension, ROUND(AVG(professionalism_score)::numeric, 2) as score FROM servicedesk.comment_quality UNION ALL SELECT 'Clarity', ROUND(AVG(clarity_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Empathy', ROUND(AVG(empathy_score)::numeric, 2) FROM servicedesk.comment_quality UNION ALL SELECT 'Actionability', ROUND(AVG(actionability_score)::numeric, 2) FROM servicedesk.comment_quality;",
             "refId": "A",
@@ -502,6 +502,16 @@
     ],
     "templating": {
       "list": [
+        {
+          "name": "datasource",
+          "label": "Data Source",
+          "type": "datasource",
+          "query": "postgres",
+          "current": {
+            "value": "ServiceDesk PostgreSQL",
+            "text": "ServiceDesk PostgreSQL"
+          }
+        },
         {
           "name": "team",
           "label": "Team",

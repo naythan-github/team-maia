@@ -33,7 +33,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Resolution Days\" FROM servicedesk.tickets WHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Status\" IN ('Closed', 'Resolved') AND \"TKT-Actual Resolution Date\" IS NOT NULL GROUP BY DATE_TRUNC('month', \"TKT-Created Time\") ORDER BY time;",
             "refId": "A",
@@ -90,7 +90,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "SELECT DATE_TRUNC('month', \"TKT-Created Time\") as time, COUNT(*) as \"Ticket Count\" FROM servicedesk.tickets WHERE \"TKT-Team\" IN ('${team:raw}')\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\") ORDER BY time;",
             "refId": "A",
@@ -134,7 +134,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "WITH customer_facing_comments AS (SELECT ticket_id, COUNT(*) as customer_comment_count FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id) SELECT CASE WHEN COALESCE(cfc.customer_comment_count, 0) = 0 THEN '0 comments (Auto-resolved)' WHEN cfc.customer_comment_count = 1 THEN '1 comment (FCR)' WHEN cfc.customer_comment_count BETWEEN 2 AND 3 THEN '2-3 comments' ELSE '4+ comments' END as \"Comment Range\", COUNT(*) as \"Tickets\" FROM servicedesk.tickets t LEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id WHERE t.\"TKT-Team\" IN ('${team:raw}') AND t.\"TKT-Status\" IN ('Closed', 'Resolved') GROUP BY \"Comment Range\";",
             "refId": "A",
@@ -219,7 +219,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "rawSql": "WITH customer_facing_comments AS (SELECT ticket_id, COUNT(*) as customer_comment_count FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id) SELECT t.\"TKT-Team\" as \"Team\", ROUND(100.0 * SUM(CASE WHEN cfc.customer_comment_count > 0 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Estimated FCR %\" FROM servicedesk.tickets t LEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id WHERE t.\"TKT-Status\" IN ('Closed', 'Resolved') GROUP BY t.\"TKT-Team\" HAVING COUNT(*) >= 50 ORDER BY \"Estimated FCR %\" DESC LIMIT 10;",
             "refId": "A",
@@ -265,6 +265,16 @@
     ],
     "templating": {
       "list": [
+        {
+          "name": "datasource",
+          "label": "Data Source",
+          "type": "datasource",
+          "query": "postgres",
+          "current": {
+            "value": "ServiceDesk PostgreSQL",
+            "text": "ServiceDesk PostgreSQL"
+          }
+        },
         {
           "name": "team",
           "label": "Team",

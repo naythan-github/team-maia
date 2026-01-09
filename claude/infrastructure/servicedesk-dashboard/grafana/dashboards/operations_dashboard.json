@@ -47,7 +47,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "WITH ticket_agent_counts AS (\n  SELECT\n    \"TS-Ticket Project Master Code\" as ticket_id,\n    COUNT(DISTINCT \"TS-User Full Name\") as agent_count\n  FROM servicedesk.timesheets\n  WHERE \"TS-Ticket Project Master Code\" IS NOT NULL\n  GROUP BY \"TS-Ticket Project Master Code\"\n)\nSELECT\n  ROUND(100.0 * SUM(CASE WHEN agent_count > 1 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Reassignment %\"\nFROM ticket_agent_counts;",
@@ -106,7 +106,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT COUNT(*) as \"Total Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= NOW() - INTERVAL '90 days';",
@@ -157,7 +157,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT\n  \"TKT-Root Cause Category\" as \"Root Cause\",\n  COUNT(*) as \"Ticket Count\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Root Cause Category\" IS NOT NULL\n  AND \"TKT-Root Cause Category\" != ''\nGROUP BY \"TKT-Root Cause Category\"\nORDER BY COUNT(*) DESC\nLIMIT 10;",
@@ -231,7 +231,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT\n  \"TKT-Team\" as \"Team\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Team\" IS NOT NULL\nGROUP BY \"TKT-Team\"\nORDER BY COUNT(*) DESC\nLIMIT 10;",
@@ -287,7 +287,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "time_series",
             "rawSql": "SELECT\n  DATE_TRUNC('month', \"TKT-Created Time\") as time,\n  COUNT(*) as \"Ticket Volume\"\nFROM servicedesk.tickets\nWHERE \"TKT-Team\" IN ('${team:raw}') AND \"TKT-Created Time\" >= NOW() - INTERVAL '90 days'\nGROUP BY DATE_TRUNC('month', \"TKT-Created Time\")\nORDER BY time;",
@@ -351,7 +351,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT\n  \"TKT-Team\" as \"Team\",\n  ROUND(AVG(EXTRACT(EPOCH FROM (\"TKT-Actual Resolution Date\" - \"TKT-Created Time\")) / 86400)::numeric, 2) as \"Avg Days\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Resolved')\n  AND \"TKT-Actual Resolution Date\" IS NOT NULL\n  AND \"TKT-Team\" IS NOT NULL\nGROUP BY \"TKT-Team\"\nHAVING COUNT(*) >= 50\nORDER BY \"Avg Days\" ASC\nLIMIT 10;",
@@ -414,7 +414,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "WITH customer_facing_comments AS (\n  SELECT ticket_id, COUNT(*) as customer_comment_count\n  FROM servicedesk.comments WHERE visible_to_customer = 'Yes' GROUP BY ticket_id\n)\nSELECT\n  t.\"TKT-Team\" as \"Team\",\n  ROUND(100.0 * SUM(CASE WHEN cfc.customer_comment_count > 0 THEN 1 ELSE 0 END) / COUNT(*), 2) as \"Coverage %\"\nFROM servicedesk.tickets t\nLEFT JOIN customer_facing_comments cfc ON t.\"TKT-Ticket ID\" = cfc.ticket_id\nWHERE t.\"TKT-Status\" IN ('Closed', 'Resolved')\nGROUP BY t.\"TKT-Team\"\nHAVING COUNT(*) >= 50\nORDER BY \"Coverage %\" DESC\nLIMIT 10;",
@@ -474,7 +474,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT\n  quality_tier as \"Quality Tier\",\n  COUNT(*) as \"Comments\"\nFROM servicedesk.comment_quality\nWHERE quality_tier IS NOT NULL\nGROUP BY quality_tier\nORDER BY CASE quality_tier\n  WHEN 'excellent' THEN 1\n  WHEN 'good' THEN 2\n  WHEN 'acceptable' THEN 3\n  WHEN 'poor' THEN 4\nEND;",
@@ -556,7 +556,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT \n  COUNT(*) FILTER (WHERE \"TKT-Created Time\" >= NOW() - INTERVAL '3 days') as \"Safe (< 3d)\",\n  COUNT(*) FILTER (WHERE \"TKT-Created Time\" < NOW() - INTERVAL '3 days' \n                   AND \"TKT-Created Time\" >= NOW() - INTERVAL '7 days') as \"Warning (3-7d)\",\n  COUNT(*) FILTER (WHERE \"TKT-Created Time\" < NOW() - INTERVAL '7 days') as \"Critical (> 7d)\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved');",
@@ -581,16 +581,49 @@
           },
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "Safe (< 3d)"},
-              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+              "matcher": {
+                "id": "byName",
+                "options": "Safe (< 3d)"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "green"
+                  }
+                }
+              ]
             },
             {
-              "matcher": {"id": "byName", "options": "Warning (3-7d)"},
-              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "yellow"}}]
+              "matcher": {
+                "id": "byName",
+                "options": "Warning (3-7d)"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "yellow"
+                  }
+                }
+              ]
             },
             {
-              "matcher": {"id": "byName", "options": "Critical (> 7d)"},
-              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+              "matcher": {
+                "id": "byName",
+                "options": "Critical (> 7d)"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "fixed",
+                    "fixedColor": "red"
+                  }
+                }
+              ]
             }
           ]
         }
@@ -610,7 +643,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "WITH age_calc AS (\n  SELECT \n    EXTRACT(DAY FROM NOW() - \"TKT-Created Time\") as age_days\n  FROM servicedesk.tickets\n  WHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved')\n)\nSELECT \n  CASE \n    WHEN age_days < 1 THEN '1: < 1 day'\n    WHEN age_days < 7 THEN '2: 1-7 days'\n    WHEN age_days < 30 THEN '3: 1-4 weeks'\n    WHEN age_days < 90 THEN '4: 1-3 months'\n    WHEN age_days < 180 THEN '5: 3-6 months'\n    ELSE '6: > 6 months'\n  END as \"Age Bucket\",\n  COUNT(*) as \"Open Tickets\"\nFROM age_calc\nGROUP BY 1\nORDER BY 1;",
@@ -624,20 +657,38 @@
           "stacking": "none",
           "groupWidth": 0.7,
           "barWidth": 0.97,
-          "legend": {"showLegend": false}
+          "legend": {
+            "showLegend": false
+          }
         },
         "fieldConfig": {
           "defaults": {
-            "custom": {"fillOpacity": 80},
-            "color": {"mode": "thresholds"},
+            "custom": {
+              "fillOpacity": 80
+            },
+            "color": {
+              "mode": "thresholds"
+            },
             "unit": "short",
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": null, "color": "green"},
-                {"value": 500, "color": "yellow"},
-                {"value": 1000, "color": "orange"},
-                {"value": 2000, "color": "red"}
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 500,
+                  "color": "yellow"
+                },
+                {
+                  "value": 1000,
+                  "color": "orange"
+                },
+                {
+                  "value": 2000,
+                  "color": "red"
+                }
               ]
             },
             "decimals": 0
@@ -659,7 +710,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT \n  CASE \n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 3600 < 1 THEN '1: < 1 hour'\n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 3600 < 24 THEN '2: 1-24 hours'\n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 86400 < 3 THEN '3: 1-3 days'\n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 86400 < 7 THEN '4: 3-7 days'\n    ELSE '5: > 7 days'\n  END as \"Resolution Time\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Incident Resolved')\n  AND \"TKT-Modified Time\" > \"TKT-Created Time\"\nGROUP BY 1\nORDER BY 1;",
@@ -673,20 +724,38 @@
           "stacking": "none",
           "groupWidth": 0.7,
           "barWidth": 0.97,
-          "legend": {"showLegend": false}
+          "legend": {
+            "showLegend": false
+          }
         },
         "fieldConfig": {
           "defaults": {
-            "custom": {"fillOpacity": 80},
-            "color": {"mode": "thresholds"},
+            "custom": {
+              "fillOpacity": 80
+            },
+            "color": {
+              "mode": "thresholds"
+            },
             "unit": "short",
             "thresholds": {
               "mode": "absolute",
               "steps": [
-                {"value": null, "color": "green"},
-                {"value": 20000, "color": "yellow"},
-                {"value": 40000, "color": "orange"},
-                {"value": 60000, "color": "red"}
+                {
+                  "value": null,
+                  "color": "green"
+                },
+                {
+                  "value": 20000,
+                  "color": "yellow"
+                },
+                {
+                  "value": 40000,
+                  "color": "orange"
+                },
+                {
+                  "value": 60000,
+                  "color": "red"
+                }
               ]
             },
             "decimals": 0
@@ -708,7 +777,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%azure%memory%' OR \"TKT-Title\" ILIKE '%50.000000 % of physical memory%' THEN 'Azure Memory Alerts'\n    WHEN \"TKT-Title\" ILIKE '%cusf%network%' THEN 'CUSF Network Alerts'\n    WHEN \"TKT-Title\" ILIKE '%whephdc1%' THEN 'whephdc1 VM Status Alerts'\n    WHEN \"TKT-Title\" ILIKE '%motion detected%' THEN 'Motion Detection Alerts'\n    WHEN \"TKT-Title\" ILIKE '%vpn connectivity%' THEN 'VPN Connectivity Alerts'\n    WHEN \"TKT-Title\" ILIKE '%volume latency%' THEN 'Volume Latency Alerts'\n    WHEN \"TKT-Title\" ILIKE '%disk%' THEN 'Disk Alerts'\n    ELSE 'Other Alerts'\n  END as \"Alert Pattern\",\n  COUNT(*) as \"Occurrences\",\n  COUNT(DISTINCT DATE_TRUNC('day', \"TKT-Created Time\")) as \"Days Affected\",\n  ROUND(COUNT(*)::numeric / NULLIF(COUNT(DISTINCT DATE_TRUNC('day', \"TKT-Created Time\")), 0), 1) as \"Avg/Day\"\nFROM servicedesk.tickets\nWHERE \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10;",
@@ -718,27 +787,56 @@
         "options": {
           "showHeader": true,
           "cellHeight": "sm",
-          "footer": {"show": false}
+          "footer": {
+            "show": false
+          }
         },
         "fieldConfig": {
           "defaults": {
-            "custom": {"align": "auto", "displayMode": "auto"}
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
           },
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "Occurrences"},
+              "matcher": {
+                "id": "byName",
+                "options": "Occurrences"
+              },
               "properties": [
-                {"id": "custom.displayMode", "value": "gradient-gauge"},
-                {"id": "max", "value": 20000},
-                {"id": "thresholds", "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {"value": null, "color": "green"},
-                    {"value": 1000, "color": "yellow"},
-                    {"value": 3000, "color": "orange"},
-                    {"value": 5000, "color": "red"}
-                  ]
-                }}
+                {
+                  "id": "custom.displayMode",
+                  "value": "gradient-gauge"
+                },
+                {
+                  "id": "max",
+                  "value": 20000
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 1000,
+                        "color": "yellow"
+                      },
+                      {
+                        "value": 3000,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 5000,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                }
               ]
             }
           ]
@@ -759,7 +857,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "WITH team_stats AS (\n  SELECT \n    \"TKT-Team\" as team,\n    COUNT(*) FILTER (WHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved')) as open_tickets,\n    COUNT(*) FILTER (WHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved') \n                     AND \"TKT-Assigned To User\" LIKE '%PendingAssignment%') as unassigned,\n    COUNT(*) FILTER (WHERE \"TKT-Status\" IN ('Closed', 'Incident Resolved') \n                     AND \"TKT-Modified Time\" >= NOW() - INTERVAL '30 days') as closed_30d\n  FROM servicedesk.tickets\n  WHERE \"TKT-Team\" IS NOT NULL AND \"TKT-Team\" != ''\n  GROUP BY 1\n)\nSELECT \n  team as \"Team\",\n  open_tickets as \"Open\",\n  unassigned as \"Unassigned\",\n  CASE WHEN open_tickets > 0 THEN ROUND(100.0 * unassigned / open_tickets, 1) ELSE 0 END as \"Unassigned %\"\nFROM team_stats\nWHERE open_tickets > 0\nORDER BY open_tickets DESC\nLIMIT 10;",
@@ -769,28 +867,60 @@
         "options": {
           "showHeader": true,
           "cellHeight": "sm",
-          "footer": {"show": false}
+          "footer": {
+            "show": false
+          }
         },
         "fieldConfig": {
           "defaults": {
-            "custom": {"align": "auto", "displayMode": "auto"}
+            "custom": {
+              "align": "auto",
+              "displayMode": "auto"
+            }
           },
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "Unassigned %"},
+              "matcher": {
+                "id": "byName",
+                "options": "Unassigned %"
+              },
               "properties": [
-                {"id": "custom.displayMode", "value": "gradient-gauge"},
-                {"id": "unit", "value": "percent"},
-                {"id": "max", "value": 100},
-                {"id": "thresholds", "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {"value": null, "color": "green"},
-                    {"value": 10, "color": "yellow"},
-                    {"value": 30, "color": "orange"},
-                    {"value": 50, "color": "red"}
-                  ]
-                }}
+                {
+                  "id": "custom.displayMode",
+                  "value": "gradient-gauge"
+                },
+                {
+                  "id": "unit",
+                  "value": "percent"
+                },
+                {
+                  "id": "max",
+                  "value": 100
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 10,
+                        "color": "yellow"
+                      },
+                      {
+                        "value": 30,
+                        "color": "orange"
+                      },
+                      {
+                        "value": 50,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                }
               ]
             }
           ]
@@ -811,7 +941,7 @@
           {
             "datasource": {
               "type": "postgres",
-              "uid": "P6BECECF7273D15EE"
+              "uid": "${datasource}"
             },
             "format": "table",
             "rawSql": "SELECT * FROM servicedesk.v_orphaned_data;",
@@ -836,18 +966,41 @@
           },
           "overrides": [
             {
-              "matcher": {"id": "byName", "options": "count"},
+              "matcher": {
+                "id": "byName",
+                "options": "count"
+              },
               "properties": [
-                {"id": "displayName", "value": "Orphaned Records"},
-                {"id": "color", "value": {"mode": "thresholds"}},
-                {"id": "thresholds", "value": {
-                  "mode": "absolute",
-                  "steps": [
-                    {"value": null, "color": "green"},
-                    {"value": 10000, "color": "yellow"},
-                    {"value": 100000, "color": "red"}
-                  ]
-                }}
+                {
+                  "id": "displayName",
+                  "value": "Orphaned Records"
+                },
+                {
+                  "id": "color",
+                  "value": {
+                    "mode": "thresholds"
+                  }
+                },
+                {
+                  "id": "thresholds",
+                  "value": {
+                    "mode": "absolute",
+                    "steps": [
+                      {
+                        "value": null,
+                        "color": "green"
+                      },
+                      {
+                        "value": 10000,
+                        "color": "yellow"
+                      },
+                      {
+                        "value": 100000,
+                        "color": "red"
+                      }
+                    ]
+                  }
+                }
               ]
             }
           ]
@@ -856,6 +1009,16 @@
     ],
     "templating": {
       "list": [
+        {
+          "name": "datasource",
+          "label": "Data Source",
+          "type": "datasource",
+          "query": "postgres",
+          "current": {
+            "value": "ServiceDesk PostgreSQL",
+            "text": "ServiceDesk PostgreSQL"
+          }
+        },
         {
           "name": "team",
           "label": "Team",
