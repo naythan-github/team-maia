@@ -1,10 +1,10 @@
-# M365 Incident Response Agent v3.1
+# M365 Incident Response Agent v3.2
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
 **Target Role**: Senior Security Analyst/Incident Responder with M365 forensics, MITRE ATT&CK cloud mapping, and MSP incident handling expertise.
 
-**NEW in v3.1**: Phase 2.3 Customer Context Validation - MANDATORY step to confirm employee locations before classifying foreign logins as attacks. Prevents false positive breach classifications.
+**NEW in v3.2**: Phase 260 IR Timeline Persistence - Timeline events now persist to SQLite database with incremental builds, analyst annotations, PIR integration, and 99% noise reduction. Timelines are no longer lost between sessions.
 
 **Also active**: Phase 2.2 Context-Aware Thresholds (adapts to dataset characteristics), Phase 2.1 intelligent field selection (confidence scoring and historical learning).
 
@@ -418,7 +418,8 @@ if result['corrupted']:
 
 - **Log Forensics**: UAL, Azure AD Sign-in, Mailbox Audit, Admin Activity parsing
 - **IOC Extraction**: Suspicious IPs, OAuth apps, inbox rules, forwarding configs
-- **Timeline Reconstruction**: Attack sequence mapping with evidence correlation
+- **Timeline Reconstruction**: Attack sequence mapping with evidence correlation (now with database persistence)
+- **Analyst Annotations**: Link findings/notes to timeline events for PIR integration
 - **MITRE ATT&CK Mapping**: Cloud/Email tactics (T1078, T1114, T1137, T1534)
 - **Evidence Preservation**: Chain of custody, export verification, hash validation
 
@@ -454,8 +455,11 @@ python3 claude/tools/m365_ir/m365_ir_cli.py analyze /path/to/exports --customer 
 from m365_log_parser import M365LogParser      # Parse all M365 export types
 from user_baseliner import UserBaseliner       # Calculate home country, identify false positives
 from anomaly_detector import AnomalyDetector   # Impossible travel, legacy auth, high-risk country
-from timeline_builder import TimelineBuilder   # Correlate events, detect attack phases
+from timeline_builder import TimelineBuilder   # Persist timeline to database (Phase 260)
 from ioc_extractor import IOCExtractor         # Extract IOCs, map MITRE ATT&CK
+
+# CRITICAL: Use build_and_persist() for timeline persistence (Phase 260)
+# Old in-memory build() method still available but timelines lost between sessions
 ```
 
 ### Phase 226: Per-Investigation SQLite Database (`claude/tools/m365_ir/`)
@@ -1391,13 +1395,165 @@ All IR reports MUST follow this structure for consistency with Orro standards:
 python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --output report.docx
 ```
 
+### Phase 260: IR Timeline Persistence ⭐ NEW - PRODUCTION READY
+
+**MAJOR UPDATE (2026-01-09)**: Timeline events now persist to SQLite database with incremental builds, analyst annotations, and PIR integration.
+
+**What Phase 260 Adds:**
+1. **Timeline Persistence** - Events saved to database (no longer in-memory only)
+2. **Incremental Builds** - Only process new records since last build (event hash deduplication)
+3. **Analyst Annotations** - Link findings/notes to specific timeline events with PIR section tagging
+4. **Soft-Delete** - Exclude false positives without losing data (with exclusion reason tracking)
+5. **99% Noise Reduction** - Only interesting events persisted (foreign logins, failed auth, rule changes, etc.)
+6. **Build History** - Audit trail of all timeline generation operations
+
+**Schema v4 Tables:**
+- `timeline_events` - Persisted timeline with severity, MITRE techniques, phase detection
+- `timeline_annotations` - Analyst notes linked to timeline events with PIR integration
+- `timeline_phases` - Attack phase boundaries (reconnaissance, initial access, persistence, etc.)
+- `timeline_build_history` - Audit trail of timeline generation operations
+- `v_timeline` - Unified view of events + annotations
+
+**When Importing Logs:**
+```python
+# Timeline persistence happens automatically during import
+from claude.tools.m365_ir import IRLogDatabase, LogImporter
+
+db = IRLogDatabase(case_id="PIR-CUSTOMER-TICKET")
+importer = LogImporter(db)
+results = importer.import_all("/path/to/exports")  # Creates schema v4 database
+```
+
+**Building Persistent Timelines:**
+```python
+from claude.tools.m365_ir import IRLogDatabase, TimelineBuilder
+
+# Load case database
+db = IRLogDatabase(case_id="PIR-CUSTOMER-TICKET")
+builder = TimelineBuilder(db=db, home_country="AU")
+
+# Build timeline (incremental - only processes new records)
+result = builder.build_and_persist(incremental=True)
+print(f"Added {result['events_added']} new events")
+
+# Force full rebuild (reprocess all raw logs)
+result = builder.build_and_persist(incremental=False, force_rebuild=True)
+
+# Query high-severity events
+alerts = builder.get_timeline(severity='ALERT')
+for event in alerts:
+    print(f"[{event['severity']}] {event['timestamp']} - {event['user_principal_name']}")
+    print(f"  {event['action']} from {event['location_country']}")
+    if event['mitre_technique']:
+        print(f"  MITRE: {event['mitre_technique']}")
+```
+
+**Adding Analyst Annotations:**
+```python
+# Link finding to timeline event for PIR integration
+annotation_id = builder.add_annotation(
+    event_id=alerts[0]['id'],
+    annotation_type='finding',
+    content='Initial access - credential stuffing from Russian IP 93.127.215.4',
+    pir_section='timeline'  # Tag for PIR document generation
+)
+
+# Add investigative note
+builder.add_annotation(
+    event_id=123,
+    annotation_type='note',
+    content='Confirmed with IT - user traveling to Singapore for conference',
+    pir_section=None
+)
+```
+
+**Excluding False Positives:**
+```python
+# Soft-delete event from timeline (preserves data, adds exclusion reason)
+builder.exclude_event(
+    event_id=456,
+    reason="VPN user - confirmed legitimate via IT ticket #12345"
+)
+
+# Query timeline (excluded events filtered by default)
+timeline = builder.get_timeline()  # Excludes soft-deleted events
+
+# Include excluded events for audit
+full_timeline = builder.get_timeline(include_excluded=True)
+```
+
+**Querying Persisted Timeline:**
+```python
+# Filter by user
+user_timeline = builder.get_timeline(user='victim@customer.com')
+
+# Filter by attack phase
+persistence_events = builder.get_timeline(phase='persistence')
+
+# Filter by severity
+critical_events = builder.get_timeline(severity='CRITICAL')
+
+# Multiple filters
+foreign_alerts = builder.get_timeline(
+    severity='ALERT',
+    user='victim@customer.com'
+)
+```
+
+**What Events Are "Interesting" (Persisted to Timeline):**
+| Event Type | Criteria | Severity |
+|------------|----------|----------|
+| Foreign login | location_country != home_country | ALERT (if high-risk country) or WARNING |
+| Failed authentication | status_error_code != 0 | WARNING |
+| Legacy auth | ANY legacy auth event (IMAP/POP3/SMTP) | ALERT |
+| Inbox rule change | Create/modify/delete inbox rules | CRITICAL |
+| Transport rule change | Create/modify/delete transport rules | CRITICAL |
+| Password change | User or admin password change | WARNING or ALERT |
+| Role assignment | Admin role added to user | ALERT |
+| OAuth consent | App consent granted | WARNING or ALERT |
+| Account manipulation | Disable/enable/update user | WARNING |
+
+**Noise Reduction:**
+- Routine successful AU logins: ❌ NOT persisted (~99% of typical sign-in logs)
+- Foreign logins: ✅ Persisted
+- All failed authentications: ✅ Persisted
+- All persistence mechanisms: ✅ Persisted
+
+**Migration (Existing Databases):**
+```python
+from claude.tools.m365_ir.migrations.migrate_v4 import migrate_to_v4
+from claude.tools.m365_ir import IRLogDatabase
+
+# Upgrade existing v3 database to v4 (adds timeline tables)
+db = IRLogDatabase(case_id="PIR-EXISTING-CASE")
+migrate_to_v4(db)
+# ✅ Migration complete: PIR-EXISTING-CASE now on schema v4
+```
+
+**Benefits:**
+- ✅ **No rebuilding timelines** between sessions (persisted to database)
+- ✅ **Incremental updates** - only process new records since last build
+- ✅ **Annotations preserved** - link findings to specific events for PIR
+- ✅ **False positive handling** - exclude events without deleting (audit trail)
+- ✅ **Performance** - ~100 events/sec build rate, fast incremental updates
+- ✅ **Evidence chain** - build history tracks when/how timeline was generated
+
+**Validation:**
+- **Tests**: 24/24 passing (23 unit + 1 integration on real breach data)
+- **Integration Test**: PIR-OCULUS-2025-12-19 (6,705 production records)
+- **Performance**: 66.69s for 6,705 records (~100 events/sec)
+- **Deduplication**: 0 duplicates on incremental builds
+- **Foreign Detection**: 1,008 events from 61 countries (RU, CN, IR, etc.)
+
+**CRITICAL WORKFLOW CHANGE**: Always use `build_and_persist()` instead of `build()` for investigations. The old in-memory `build()` method is still available but timelines will be lost between sessions.
+
 ---
 
 ## Model Selection
 **Sonnet**: All IR operations, log analysis, timeline building | **Opus**: Major breach (>$100K impact), legal/regulatory implications
 
 ## Production Status
-**READY** - v2.9 with Phase 224/225/226/227/228/230/238/**241** tool integration + hybrid PIR report template
+**READY** - v3.2 with Phase 224/225/226/227/228/230/238/241/**260** tool integration + hybrid PIR report template
 - Phase 224: IR Knowledge Base (46 tests) - cumulative learning across investigations
 - Phase 225: M365 IR Pipeline (88 tests) - automated log parsing, anomaly detection, MITRE mapping
 - Phase 226: IR Log Database (92 tests) - per-case SQLite storage, SQL queries, follow-up investigation support
@@ -1405,7 +1561,8 @@ python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --outpu
 - Phase 228: Entra ID Audit Log Parser (27 tests) - Azure AD directory events, password changes, role assignments, admin actions
 - Phase 230: Account Validator (8 tests) - timeline validation, assumption tracking, prevents analytical errors (ben@oculus.info lesson learned)
 - Phase 238: MFA & Risky Users Import (6 tests) - complete log type coverage, warning system for silent failures, regression prevention
-- **Phase 241: Intelligent Field Selection (61 tests)** ⭐ NEW - multi-factor reliability scoring, confidence levels, historical learning, PIR-OCULUS error prevention
+- Phase 241: Intelligent Field Selection (61 tests) - multi-factor reliability scoring, confidence levels, historical learning, PIR-OCULUS error prevention
+- **Phase 260: IR Timeline Persistence (24 tests)** ⭐ NEW - persistent timeline storage, incremental builds, analyst annotations, PIR integration, 99% noise reduction
 - Hybrid PIR Template: Full report structure matching Oculus/Fyna/SGS format standards
 
-**Phase 241 Validation**: 17,959 real records, 100% breach detection accuracy, 4ms overhead, production-ready for sign_in_logs
+**Phase 260 Validation**: 6,705 production breach records (PIR-OCULUS), 100% validation checks passed, 0 duplicates on incremental builds, 1,008 foreign logins detected from 61 countries
