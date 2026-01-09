@@ -1,13 +1,13 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 590 tools, 96 agents | **Updated**: 2026-01-07 (Phase 238+)
+**Total**: 591 tools, 96 agents | **Updated**: 2026-01-09 (Phase 260.5 - Checkpoint skill)
 
 ---
 
 ## Tools
 
-### SRE (`claude/tools/sre/`) - 263 tools
+### SRE (`claude/tools/sre/`) - 264 tools
 
 | Tool | Purpose |
 |------|---------|
@@ -45,6 +45,7 @@
 | `capabilities_registry.py` | Capabilities Registry - Fast Tool/Agent Discovery for Maia Scans claude/tools/ a... |
 | `categorize_tickets_by_tier.py` | ServiceDesk Ticket Tier Categorization (L1/L2/L3) Categorizes all tickets by sup... |
 | `checkpoint_manager.py` | import json from pathlib import Path from datetime import datetime from typing i... |
+| `checkpoint.py` | Checkpoint Generator - Compaction-Ready Progress Documentation (Phase 260.5) Generates structured checkpoint files for mid-project compaction with guaranteed resumption and agent restoration. Auto-detects git state, tests, agent, and provides explicit resume instructions with `/init sre` for code projects. |
 | `circuit_breaker.py` | Circuit breaker pattern for ITGlue API client Prevents cascading failures by fai... |
 | `client.py` | ITGlue REST API Client Production-grade API client with: - Rate limiting (3000 r... |
 | `client_intelligence_fob.py` | ServiceDesk Client Intelligence FOB - Client satisfaction and engagement analysi... |

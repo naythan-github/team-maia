@@ -5,19 +5,32 @@ IRCase - Incident Response Case Management.
 Manages case folder structure, source file handling, and database configuration.
 
 Directory structure:
-    ~/.maia/ir-cases/
-    └── PIR-{CUSTOMER}-{YYYY-MM-DD}/
+    ~/work_projects/ir_cases/
+    └── PIR-{CUSTOMER}-{TICKET}/        # Ticket-based (preferred)
+    └── PIR-{CUSTOMER}-{YYYY-MM-DD}/    # Date-based (fallback)
         ├── source-files/
         │   └── Export_2025-12-01.zip
         ├── reports/
         │   └── (analysis outputs)
-        └── PIR-{CUSTOMER}-{YYYY-MM-DD}_logs.db
+        └── PIR-{CUSTOMER}-{TICKET}_logs.db
+
+Case ID Formats:
+    - Ticket-based (preferred): PIR-SGS-11111111
+    - Date-based (fallback): PIR-SGS-2026-01-09
 
 Usage:
-    # Create new case from zip file
-    case = IRCase.from_zip(zip_path, customer="FYNA", base_path="~/.maia/ir-cases")
+    # Create new case from ticket reference (PREFERRED)
+    case = IRCase.from_ticket(ticket="11111111", customer="SGS")
+    case.initialize()
+
+    # Create case from zip with ticket
+    case = IRCase.from_zip(zip_path, customer="SGS", ticket="11111111")
     case.initialize()
     case.move_source_zip()
+
+    # Create case from zip (date-based fallback)
+    case = IRCase.from_zip(zip_path, customer="FYNA")
+    case.initialize()
 
     # Import logs
     db = case.get_database()
@@ -26,10 +39,11 @@ Usage:
     importer.import_all(case.source_files_dir / "export.zip")
 
     # Open existing case
-    case = IRCase(case_id="PIR-FYNA-2025-12-15", base_path="~/.maia/ir-cases")
+    case = IRCase(case_id="PIR-SGS-11111111", base_path="~/work_projects/ir_cases")
 
 Author: Maia System
 Created: 2025-01-05 (Phase 226.1)
+Updated: 2026-01-09 (Added ticket-based case ID support)
 """
 
 import os
@@ -76,26 +90,76 @@ class IRCase:
         self._original_zip_path = _zip_path
 
     @classmethod
+    def from_ticket(
+        cls,
+        ticket: str,
+        customer: str,
+        base_path: Optional[Union[str, Path]] = None,
+        zip_path: Optional[Union[str, Path]] = None,
+    ) -> "IRCase":
+        """
+        Create a new case from a ticket reference number.
+
+        Generates case ID from customer name and ticket number.
+        Format: PIR-{CUSTOMER}-{TICKET}
+
+        Args:
+            ticket: Ticket reference number (e.g., 11111111)
+            customer: Customer name (will be sanitized for case ID)
+            base_path: Base directory for IR cases
+            zip_path: Optional zip path to associate with case
+
+        Returns:
+            IRCase instance with ticket-based case ID
+        """
+        # Sanitize customer name
+        customer_slug = cls._sanitize_customer_name(customer)
+
+        # Sanitize ticket (remove any non-alphanumeric chars)
+        ticket_clean = re.sub(r'[^A-Z0-9]+', '', ticket.upper())
+
+        # Generate case ID: PIR-{CUSTOMER}-{TICKET}
+        case_id = f"PIR-{customer_slug}-{ticket_clean}"
+
+        return cls(
+            case_id=case_id,
+            base_path=base_path,
+            _zip_path=Path(zip_path) if zip_path else None,
+        )
+
+    @classmethod
     def from_zip(
         cls,
         zip_path: Union[str, Path],
         customer: str,
         base_path: Optional[Union[str, Path]] = None,
+        ticket: Optional[str] = None,
     ) -> "IRCase":
         """
         Create a new case from a zip file.
 
-        Generates case ID from customer name and zip file modification date.
+        Generates case ID from customer name and either ticket number (preferred)
+        or zip file modification date (fallback).
 
         Args:
             zip_path: Path to the zip file
             customer: Customer name (will be sanitized for case ID)
             base_path: Base directory for IR cases
+            ticket: Optional ticket reference number (if provided, uses ticket instead of date)
 
         Returns:
             IRCase instance with generated case ID
         """
         zip_path = Path(zip_path)
+
+        # If ticket provided, use ticket-based case ID
+        if ticket:
+            return cls.from_ticket(
+                ticket=ticket,
+                customer=customer,
+                base_path=base_path,
+                zip_path=zip_path,
+            )
 
         # Get zip file modification time
         mtime = zip_path.stat().st_mtime
@@ -120,21 +184,32 @@ class IRCase:
         dir_path: Union[str, Path],
         customer: str,
         base_path: Optional[Union[str, Path]] = None,
+        ticket: Optional[str] = None,
     ) -> "IRCase":
         """
         Create a new case from an export directory.
 
-        Generates case ID from customer name and earliest CSV file modification date.
+        Generates case ID from customer name and either ticket number (preferred)
+        or earliest CSV file modification date (fallback).
 
         Args:
             dir_path: Path to the export directory
             customer: Customer name (will be sanitized for case ID)
             base_path: Base directory for IR cases
+            ticket: Optional ticket reference number (if provided, uses ticket instead of date)
 
         Returns:
             IRCase instance with generated case ID
         """
         dir_path = Path(dir_path)
+
+        # If ticket provided, use ticket-based case ID
+        if ticket:
+            return cls.from_ticket(
+                ticket=ticket,
+                customer=customer,
+                base_path=base_path,
+            )
 
         # Find earliest mtime among CSV files
         csv_files = list(dir_path.glob("*.csv"))

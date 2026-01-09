@@ -18,26 +18,35 @@ Phase 226 additions:
 - stats: Show database statistics
 - list: List all case databases
 
+Case ID Formats:
+- Ticket-based (PREFERRED): PIR-{CUSTOMER}-{TICKET} (e.g., PIR-SGS-11111111)
+- Date-based (fallback): PIR-{CUSTOMER}-{YYYY-MM-DD} (e.g., PIR-SGS-2026-01-09)
+
 Usage:
     # Analysis (original)
     python3 m365_ir_cli.py analyze /path/to/exports --customer "CustomerName"
 
-    # Database operations (Phase 226.1) - auto-generates case ID from zip mtime
-    python3 m365_ir_cli.py import ~/Downloads/Export.zip --customer "Fyna Foods"
-    # Creates: ~/.maia/ir-cases/PIR-FYNA-FOODS-2025-12-15/
+    # Database operations - TICKET-BASED (PREFERRED)
+    python3 m365_ir_cli.py import ~/Downloads/Export.zip --customer "Good Samaritans" --ticket 11111111
+    # Creates: ~/work_projects/ir_cases/PIR-GOOD-SAMARITANS-11111111/
     #          ├── source-files/Export.zip (moved here)
     #          ├── reports/
-    #          └── PIR-FYNA-FOODS-2025-12-15_logs.db
+    #          └── PIR-GOOD-SAMARITANS-11111111_logs.db
+
+    # Database operations - DATE-BASED (fallback if no ticket)
+    python3 m365_ir_cli.py import ~/Downloads/Export.zip --customer "Fyna Foods"
+    # Creates: ~/work_projects/ir_cases/PIR-FYNA-FOODS-2025-12-15/
 
     # Query and analysis
-    python3 m365_ir_cli.py query PIR-FYNA-FOODS-2025-12-15 --ip 185.234.100.50
-    python3 m365_ir_cli.py query PIR-FYNA-FOODS-2025-12-15 --user victim@example.com
-    python3 m365_ir_cli.py stats PIR-FYNA-FOODS-2025-12-15
+    python3 m365_ir_cli.py query PIR-SGS-11111111 --ip 185.234.100.50
+    python3 m365_ir_cli.py query PIR-SGS-11111111 --user victim@example.com
+    python3 m365_ir_cli.py stats PIR-SGS-11111111
     python3 m365_ir_cli.py list
 
 Author: Maia System
 Created: 2025-12-18 (Phase 225)
 Updated: 2025-01-05 (Phase 226 - Database commands)
+Updated: 2026-01-09 (Added ticket-based case ID support)
 """
 
 import argparse
@@ -358,6 +367,7 @@ def cmd_import(args):
 
     source_path = args.exports
     is_zip = source_path.is_file() and source_path.suffix.lower() == '.zip'
+    ticket = getattr(args, 'ticket', None)
 
     # Determine case setup based on whether case_id is provided
     if args.case_id:
@@ -368,22 +378,35 @@ def cmd_import(args):
             print(f"Created case: {case.case_id}")
         else:
             print(f"Using existing case: {case.case_id}")
+    elif ticket and args.customer:
+        # Create new case from ticket reference (PREFERRED)
+        case = IRCase.from_ticket(
+            ticket=ticket,
+            customer=args.customer,
+            base_path=args.base_path,
+            zip_path=source_path if is_zip else None,
+        )
+        case.initialize()
+        print(f"Created case: {case.case_id}")
+        print(f"  (ticket-based case ID)")
     elif is_zip and args.customer:
-        # Create new case from zip file - use zip mtime for date
+        # Create new case from zip file - use zip mtime for date (fallback)
         case = IRCase.from_zip(
             zip_path=source_path,
             customer=args.customer,
-            base_path=args.base_path
+            base_path=args.base_path,
+            ticket=ticket,  # Pass ticket if provided
         )
         case.initialize()
         print(f"Created case: {case.case_id}")
         print(f"  (date from zip file: {source_path.name})")
     elif source_path.is_dir() and args.customer:
-        # Create new case from directory - use earliest file mtime for date
+        # Create new case from directory - use earliest file mtime for date (fallback)
         case = IRCase.from_directory(
             dir_path=source_path,
             customer=args.customer,
-            base_path=args.base_path
+            base_path=args.base_path,
+            ticket=ticket,  # Pass ticket if provided
         )
         case.initialize()
         print(f"Created case: {case.case_id}")
@@ -392,11 +415,14 @@ def cmd_import(args):
         # Fallback: require customer for new cases
         if not args.customer:
             print("Error: --customer required when creating new case without --case-id")
-            print("Usage: m365_ir_cli.py import exports.zip --customer 'Customer Name'")
+            print("Usage: m365_ir_cli.py import exports.zip --customer 'Customer Name' --ticket 11111111")
             sys.exit(1)
-        # Unknown source type - use current date as fallback
+        # Unknown source type - use ticket or current date as fallback
         customer_slug = args.customer.upper().replace(' ', '-')[:20]
-        case_id = f"PIR-{customer_slug}-{datetime.now().strftime('%Y-%m-%d')}"
+        if ticket:
+            case_id = f"PIR-{customer_slug}-{ticket.upper()}"
+        else:
+            case_id = f"PIR-{customer_slug}-{datetime.now().strftime('%Y-%m-%d')}"
         case = IRCase(case_id=case_id, base_path=args.base_path)
         case.initialize()
         print(f"Created case: {case.case_id}")
@@ -832,28 +858,34 @@ Examples:
   %(prog)s analyze /path/to/export --customer "Acme Corp"
   %(prog)s analyze /export1 /export2 /export3 --customer "Oculus" --output ./results
 
-  # Database operations (Phase 226)
-  %(prog)s import /path/to/exports.zip --case-id PIR-ACME-2025-001   # Direct zip import
-  %(prog)s import /path/to/extracted/ --case-id PIR-ACME-2025-001    # Directory import
-  %(prog)s query PIR-ACME-2025-001 --ip 185.234.100.50
-  %(prog)s query PIR-ACME-2025-001 --user victim@example.com
-  %(prog)s query PIR-ACME-2025-001 --suspicious
-  %(prog)s query PIR-ACME-2025-001 --legacy-auth                     # All legacy auth events
-  %(prog)s query PIR-ACME-2025-001 --legacy-auth user@example.com    # Legacy auth for user
-  %(prog)s query PIR-ACME-2025-001 --password-status                 # All password status
-  %(prog)s query PIR-ACME-2025-001 --stale-passwords 90              # Passwords older than 90 days
-  %(prog)s query PIR-ACME-2025-001 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
-  %(prog)s stats PIR-ACME-2025-001
+  # Database operations - TICKET-BASED (PREFERRED)
+  %(prog)s import /path/to/exports.zip --customer "Good Samaritans" --ticket 11111111
+  %(prog)s import /path/to/extracted/ --customer "SGS" --ticket 11111111
+
+  # Database operations - DATE-BASED (fallback if no ticket)
+  %(prog)s import /path/to/exports.zip --customer "Fyna Foods"     # Uses zip mtime for date
+  %(prog)s import /path/to/extracted/ --case-id PIR-ACME-2025-001  # Explicit case ID
+
+  # Query and analysis
+  %(prog)s query PIR-SGS-11111111 --ip 185.234.100.50
+  %(prog)s query PIR-SGS-11111111 --user victim@example.com
+  %(prog)s query PIR-SGS-11111111 --suspicious
+  %(prog)s query PIR-SGS-11111111 --legacy-auth                     # All legacy auth events
+  %(prog)s query PIR-SGS-11111111 --legacy-auth user@example.com    # Legacy auth for user
+  %(prog)s query PIR-SGS-11111111 --password-status                 # All password status
+  %(prog)s query PIR-SGS-11111111 --stale-passwords 90              # Passwords older than 90 days
+  %(prog)s query PIR-SGS-11111111 --sql "SELECT * FROM sign_in_logs WHERE location_country = 'Russia'"
+  %(prog)s stats PIR-SGS-11111111
   %(prog)s list
 
   # Account validation (Phase 230)
-  %(prog)s validate-account PIR-ACME-2025-001 ben@example.com      # Validate single account
-  %(prog)s validate-all PIR-ACME-2025-001                          # Validate all compromised accounts
+  %(prog)s validate-account PIR-SGS-11111111 ben@example.com      # Validate single account
+  %(prog)s validate-all PIR-SGS-11111111                          # Validate all compromised accounts
 
   # Authentication verification (Phase 241)
-  %(prog)s verify-status PIR-ACME-2025-001                         # Verify all log types
-  %(prog)s verify-status PIR-ACME-2025-001 --log-type legacy_auth  # Verify specific log type
-  %(prog)s verify-status PIR-ACME-2025-001 --verbose               # Show detailed status code breakdown
+  %(prog)s verify-status PIR-SGS-11111111                         # Verify all log types
+  %(prog)s verify-status PIR-SGS-11111111 --log-type legacy_auth  # Verify specific log type
+  %(prog)s verify-status PIR-SGS-11111111 --verbose               # Show detailed status code breakdown
         """
     )
 
@@ -874,6 +906,7 @@ Examples:
     import_parser.add_argument("exports", type=Path, help="Export directory or zip file to import")
     import_parser.add_argument("--case-id", help="Case identifier (auto-generated if not provided)")
     import_parser.add_argument("--customer", "-c", help="Customer name (used for auto-generated case ID)")
+    import_parser.add_argument("--ticket", "-t", help="Ticket reference number (e.g., 11111111). Creates PIR-CUSTOMER-TICKET format instead of date-based")
     import_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases (default: {db_base_path})")
 
     # Query command (Phase 226)

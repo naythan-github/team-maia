@@ -4,7 +4,7 @@
 
 This playbook captures cumulative learnings from M365 incident response investigations. It serves as a reference for forensic analysis, PIR writing, and avoiding past mistakes.
 
-**Last Updated**: 2026-01-07 (PIR-OCULUS-2025-12-19 - Added Section 0.5 Pre-Classification Checklist)
+**Last Updated**: 2026-01-09 (Added ticket-based case ID workflow, PIR Document Standards)
 
 ---
 
@@ -240,6 +240,7 @@ conn.close()
 | ☐ | **Legacy Auth Separate** | Query `legacy_auth_logs` independently | Not blocked by geo-CA policies |
 | ☐ | **Baseline Location** | Run baseline query below | 100% foreign logins = user based there |
 | ☐ | **Shared IP Analysis** | Check device fingerprints on shared IPs | Same IP + different devices = office network |
+| ☐ | **Browser Fingerprint** | Compare browser versions (Section 1) | Outdated browser = attack toolkit (PIR-SGS lesson) |
 
 ### Required Queries
 
@@ -286,6 +287,27 @@ ORDER BY users DESC;
 -- Different users + different fingerprints = office network, not attacker
 ```
 
+**5. Browser Fingerprint Analysis (NEW):**
+```sql
+-- For each user with foreign logins, compare browser versions
+SELECT
+    user_principal_name,
+    location_country,
+    browser,
+    COUNT(*) as logins
+FROM sign_in_logs
+WHERE user_principal_name IN (
+    SELECT DISTINCT user_principal_name FROM sign_in_logs
+    WHERE location_country NOT IN ('AU', 'Australia')
+      AND conditional_access_status = 'success'
+)
+AND conditional_access_status = 'success'
+GROUP BY user_principal_name, location_country, browser
+ORDER BY user_principal_name, logins DESC;
+-- Red flag: Foreign login uses older browser version than AU logins
+-- Example: AU uses Edge 142, foreign uses Edge 129 = attack toolkit
+```
+
 ### Customer Context Questions (MANDATORY)
 
 Before classifying ANY foreign login as "attacker":
@@ -323,11 +345,83 @@ Before classifying ANY foreign login as "attacker":
 
 ## 1. Attack Signatures
 
+### Browser/Device Fingerprint Analysis ⭐ NEW
+
+**MANDATORY**: Compare browser versions between suspicious and legitimate logins for the same user.
+
+#### Why This Matters
+
+Attack toolkits often use **outdated browser user agents** because:
+- Toolkits are developed with specific browser versions and not updated
+- Token replay attacks preserve the original session's user agent
+- Attackers rarely match victim's exact browser version
+
+#### Standard Triage Query
+
+```sql
+-- Compare browser versions for users with foreign logins
+SELECT
+    user_principal_name,
+    location_country,
+    browser,
+    os,
+    COUNT(*) as logins,
+    MIN(timestamp) as first_seen,
+    MAX(timestamp) as last_seen
+FROM sign_in_logs
+WHERE user_principal_name IN (
+    -- Users with foreign successful logins
+    SELECT DISTINCT user_principal_name
+    FROM sign_in_logs
+    WHERE location_country NOT IN ('AU', 'Australia')
+      AND conditional_access_status = 'success'
+)
+GROUP BY user_principal_name, location_country, browser, os
+ORDER BY user_principal_name, logins DESC;
+```
+
+#### Red Flags
+
+| Indicator | Example | Confidence |
+|-----------|---------|------------|
+| **Outdated browser version** | Edge 129 when current is 142 | HIGH |
+| **Version mismatch same user** | Legitimate: Edge 142, Attacker: Edge 129 | HIGH |
+| **Impossible browser/OS combo** | Safari on Windows | CONFIRMED |
+| **Generic/missing browser** | Empty or "Other clients" from foreign IP | MEDIUM |
+| **Old Chrome version** | Chrome 120 when current is 130+ | HIGH |
+
+#### Case Study: PIR-SGS-2026-01-09
+
+**Finding**: rbrady@goodsams.org.au had a "success" login from VPS IP on Nov 13.
+
+**Browser Analysis**:
+| Source | Browser | Assessment |
+|--------|---------|------------|
+| Legitimate logins (Nov 12, 16-17) | Edge 142.0.0 | Current version |
+| VPS login (Nov 13) | Edge 129.0.0 | ~1 year outdated |
+| VPS attack (Nov 14) | Edge 129.0.0 | Same outdated version |
+
+**Conclusion**: Browser version mismatch (Edge 129 vs 142) strongly indicates the Nov 13 login was from an attack toolkit, not the legitimate user.
+
+#### Browser Version Reference (as of Jan 2026)
+
+| Browser | Current Version | Suspicious if < |
+|---------|-----------------|-----------------|
+| Edge | 142.x | 135 |
+| Chrome | 131.x | 125 |
+| Firefox | 134.x | 128 |
+| Safari | 18.x | 17 |
+
+*Note: Update these versions periodically. Attackers using versions 6+ months old are common.*
+
+---
+
 ### Session Token Theft Indicators
 
 | Signature | Attack Type | Confidence | Notes |
 |-----------|-------------|------------|-------|
 | **Safari on Windows** | AitM (Evilginx) | HIGH | Apple discontinued Safari for Windows in 2012. Any Safari on Windows10 UA in 2025 is technically impossible = synthetic toolkit |
+| **Outdated browser version** | Attack toolkit | HIGH | Edge 129 when user normally uses Edge 142 (see Browser Analysis above) |
 | Safari on macOS from Windows IP | AitM | HIGH | UA/IP mismatch indicates proxy |
 | Multiple geolocations < 1 hour | Token replay or VPN | MEDIUM | Check if customer uses VPN before concluding |
 | Same token, different IPs | Token theft | HIGH | Session tokens bound to single device don't hop IPs |
@@ -552,23 +646,48 @@ Always version PIRs when facts change:
 python3 claude/tools/document_conversion/convert_md_to_docx.py report.md --output report.docx
 ```
 
-### Log Import
+### Case Creation and Log Import
+
+#### ⚠️ MANDATORY: Ask for Ticket Reference
+
+**Before creating a new IR case, ALWAYS ask the user for the ticket reference number.** This ensures consistent case naming and traceability.
+
+**Required information:**
+1. **Ticket reference number** (e.g., 11111111) - Used in case ID: PIR-CUSTOMER-TICKET
+2. **Customer name** (e.g., "Good Samaritans")
+3. **Log export file/zip location**
+
+#### Case ID Formats
+
+| Format | Example | When to Use |
+|--------|---------|-------------|
+| **Ticket-based (PREFERRED)** | PIR-SGS-11111111 | Always when ticket number is available |
+| Date-based (fallback) | PIR-SGS-2026-01-09 | Only if ticket unavailable |
+
+#### Import Commands
 
 ```bash
-# ⭐ RECOMMENDED: Import from zip files (CLI handles case creation + file management)
-python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export.zip --customer "Customer Name"
-# Automatically: creates case, moves zip to source-files/, imports logs
+# ⭐ RECOMMENDED: Ticket-based import (ALWAYS ask for ticket first!)
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export.zip \
+    --customer "Good Samaritans" --ticket 11111111
+# Creates: ~/work_projects/ir_cases/PIR-GOOD-SAMARITANS-11111111/
+#          ├── source-files/Export.zip (moved here)
+#          ├── reports/
+#          └── PIR-GOOD-SAMARITANS-11111111_logs.db
 
-# Multiple zips for same incident
-python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-1.zip --customer "Customer"
-python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-2.zip --case-id PIR-CUSTOMER-2025-XX-XX
-python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-3.zip --case-id PIR-CUSTOMER-2025-XX-XX
+# Multiple zips for same incident (use --case-id for subsequent imports)
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-1.zip --customer "SGS" --ticket 11111111
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-2.zip --case-id PIR-SGS-11111111
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export-3.zip --case-id PIR-SGS-11111111
+
+# Date-based fallback (only if ticket unavailable)
+python3 claude/tools/m365_ir/m365_ir_cli.py import ~/Downloads/Export.zip --customer "Customer Name"
 
 # Legacy: Programmatic import (if you need custom logic)
 python3 -c "
 from claude.tools.m365_ir.log_database import IRLogDatabase
 from claude.tools.m365_ir.log_importer import LogImporter
-db = IRLogDatabase(case_id='PIR-XXX-YYYY-MM-DD', base_path='/path/to/case')
+db = IRLogDatabase(case_id='PIR-XXX-11111111', base_path='/path/to/case')
 db.create()
 importer = LogImporter(db)
 results = importer.import_all('/path/to/exports')
@@ -586,7 +705,106 @@ python3 claude/tools/ir/ir_knowledge_query.py ip 93.127.215.4
 
 ---
 
-## 9. Lessons Learned Log
+## 9. PIR Document Standards
+
+### Mandatory Content Elements
+
+| Section | Requirement |
+|---------|-------------|
+| **Remediation Actions** | Include in Executive Summary with CA deployment date and whether controls were in place during attack window |
+| **NDB Disclaimer** | Add to Regulatory Impact: "Orro is not providing legal advice and the NDB decision rests with [Customer Name]." |
+| **Assumptions Section** | Clearly separate CONFIRMED findings from assumptions requiring customer verification |
+
+### Owner References
+
+| Don't Use | Use Instead | Reason |
+|-----------|-------------|--------|
+| "Customer IT" | "Orro" | Orro IS the IT department for most customers |
+| "Customer" (generic) | Customer name (e.g., "Good Samaritans") | Be specific |
+
+**Example:**
+```markdown
+| **CRITICAL** | Reset edelaney password | Orro | Immediate |
+| HIGH | Confirm travel to Turkey | Good Samaritans | Expected: No |
+```
+
+### Markdown Formatting for docx Conversion
+
+**Lists - No blank lines between items:**
+```markdown
+# CORRECT (converts properly)
+- Item one
+- Item two
+- Item three
+
+# WRONG (creates separate lists)
+- Item one
+
+- Item two
+
+- Item three
+```
+
+**Numbered lists - Blank line BEFORE list, NO blank lines between items:**
+```markdown
+# CORRECT - blank line after intro text, no blanks between items
+The pattern suggests either:
+
+1. First possibility
+2. Second possibility
+3. Third possibility
+
+# WRONG - no blank line before list (renders inline)
+The pattern suggests either:
+1. First possibility
+2. Second possibility
+
+# WRONG - blank lines between items (creates separate lists)
+1. First possibility
+
+2. Second possibility
+
+3. Third possibility
+```
+
+**Period after number (not parenthesis):**
+```markdown
+# CORRECT
+1. First item
+
+# WRONG
+1) First item
+```
+
+**Nested lists - Consistent indentation:**
+```markdown
+1. Parent item
+   - Child item (3 spaces for numbered parent)
+   - Another child
+2. Next parent
+```
+
+### Regulatory Impact Template
+
+For incidents with confirmed or likely breach:
+```markdown
+| Regulatory Impact | Review required - potential data access during compromise window. Orro is not providing legal advice and the NDB decision rests with [Customer Name]. |
+```
+
+### Document Version Control
+
+Always increment version on significant changes:
+```markdown
+| Version | Date | Author | Changes |
+|---------|------|--------|---------|
+| 1.0 | YYYY-MM-DD | Orro Cloud | Initial release |
+| 2.0 | YYYY-MM-DD | Orro Cloud | Major revision: [key changes] |
+| 2.1 | YYYY-MM-DD | Orro Cloud | Added [specific additions] |
+```
+
+---
+
+## 10. Lessons Learned Log
 
 ### 2026-01-05: PIR-FYNA-2025-12-08
 
@@ -606,9 +824,28 @@ python3 claude/tools/ir/ir_knowledge_query.py ip 93.127.215.4
 **Root Cause**: Tool not documented in IR agent
 **Fix**: Added PIR Document Generation section to `m365_incident_response_agent.md`
 
+### 2026-01-09: PIR-SGS-2026-01-09
+
+**Issue**: Missed browser version mismatch during initial triage
+**Root Cause**: Browser fingerprint comparison not part of standard triage workflow
+**Fix**: Added Browser/Device Fingerprint Analysis section to playbook (Section 1)
+
+**Finding**: rbrady@goodsams.org.au had VPS "success" login on Nov 13 with Edge 129.0.0, while all legitimate logins used Edge 142.0.0. The ~1 year outdated browser version is strong evidence of attack toolkit, not legitimate user.
+
+**Key Insight**: Attack toolkits often use outdated browser user agents because:
+- Toolkits are developed with specific versions and not updated
+- Token replay attacks preserve original session user agent
+- Attackers rarely match victim's exact current browser version
+
+**New Standard**: For any suspicious foreign login, compare browser version against user's normal baseline. Version mismatch of 6+ months is HIGH confidence attack indicator.
+
+**Process Change**: Ticket-based case naming
+**Issue**: Date-based case IDs (PIR-CUSTOMER-2026-01-09) don't link to ticketing system
+**Fix**: Now use ticket reference numbers for case IDs (PIR-CUSTOMER-11111111). CLI updated with `--ticket` parameter. Agent must ask user for ticket before creating new case.
+
 ---
 
-## 10. References
+## 11. References
 
 - [Evilginx Documentation](https://github.com/kgretzky/evilginx2) - AitM toolkit
 - [MITRE ATT&CK Cloud Matrix](https://attack.mitre.org/matrices/enterprise/cloud/)

@@ -522,8 +522,9 @@ query.execute("SELECT * FROM unified_audit_log WHERE operation = ?", ("Set-Inbox
 **Lessons Learned (Phase 226)**:
 | Pattern | Guidance |
 |---------|----------|
-| Case Naming | Use `PIR-{CUSTOMER}-{YEAR}-{SEQ}`. Year from first export date, not import date |
-| Zip Import Workflow | **CRITICAL**: Import directly from zip files using `import ~/Downloads/Export.zip --customer "Name"`. Never manually extract to case folder - breaks audit trail and prevents re-import. For multiple zips: first with `--customer`, rest with `--case-id` |
+| **⚠️ TICKET REQUIRED** | **ALWAYS ask user for ticket reference number before creating a new case.** Use ticket-based format: `PIR-{CUSTOMER}-{TICKET}` (e.g., PIR-SGS-11111111) |
+| Case Naming | **PREFERRED**: `PIR-{CUSTOMER}-{TICKET}` (e.g., PIR-SGS-11111111). **FALLBACK**: `PIR-{CUSTOMER}-{YYYY-MM-DD}` only if ticket unavailable |
+| Zip Import Workflow | **CRITICAL**: Import with ticket: `import ~/Downloads/Export.zip --customer "Name" --ticket 11111111`. Never manually extract to case folder - breaks audit trail and prevents re-import. For multiple zips: first with `--customer --ticket`, rest with `--case-id` |
 | Deduplication | UNIQUE constraints + INSERT OR IGNORE. Real exports have 35-45% duplicates |
 | Export Quirks | M365 has varying date formats (ISO/US), column names. Handle all variations |
 | Per-Case Isolation | One SQLite per case at `~/work_projects/ir_cases/{CASE_ID}/` |
