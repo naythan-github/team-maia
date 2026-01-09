@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     Automated installer for all components needed to run MAIA on Windows:
-    - WSL2 with Ubuntu 22.04
+    - WSL1/WSL2 with Ubuntu 22.04 (WSL1 default for broader VM compatibility)
     - VSCode with Remote-WSL extension
     - Claude Code CLI
     - Node.js (for Claude Code and MCP servers)
@@ -22,21 +22,35 @@
 .PARAMETER MaiaRepo
     GitHub repository URL for MAIA. Default: https://github.com/naythan-orro/maia.git
 
+.PARAMETER WSLVersion
+    WSL version to install (1 or 2). Default: 1 (better Azure VM compatibility).
+    WSL2 requires nested virtualization (not available on B-series VMs).
+
 .EXAMPLE
     .\Install-MaiaEnvironment.ps1
 
 .EXAMPLE
     .\Install-MaiaEnvironment.ps1 -CheckOnly
 
+.EXAMPLE
+    .\Install-MaiaEnvironment.ps1 -WSLVersion 2
+
 .NOTES
-    Version: 2.0
+    Version: 2.2
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
+    Changed:
+    - WSL1 default for Azure VM compatibility
+    - Batched sudo operations (8+ prompts → 2 prompts)
+    - Fixed Node.js installation reliability
+    - Added Git SSH key authentication handling
 #>
 
 param(
     [switch]$CheckOnly,
     [switch]$SkipRestart,
-    [string]$MaiaRepo = "https://github.com/naythan-orro/maia.git"
+    [string]$MaiaRepo = "https://github.com/naythan-orro/maia.git",
+    [ValidateSet(1, 2)]
+    [int]$WSLVersion = 1
 )
 
 $ErrorActionPreference = "Continue"
@@ -48,6 +62,7 @@ $script:Config = @{
     NodeVersion = "20"  # LTS version
     PythonVersion = "3.11"
     RequiredDiskSpaceGB = 10
+    WSLVersion = $WSLVersion
     VSCodeExtensions = @(
         "ms-vscode-remote.remote-wsl",
         "ms-python.python",
@@ -185,43 +200,98 @@ function Test-SystemRequirements {
 }
 
 function Install-WSL {
-    Write-Step 2 "Checking WSL2"
+    Write-Step 2 "Checking WSL$($script:Config.WSLVersion)"
 
-    # Check if WSL is installed
+    # Step 1: Check if required Windows features are enabled
+    Write-Host "    Checking Windows features..." -ForegroundColor Gray
+
+    $wslFeature = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -ErrorAction SilentlyContinue
+    $vmPlatformFeature = Get-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -ErrorAction SilentlyContinue
+
+    $wslEnabled = $wslFeature -and $wslFeature.State -eq "Enabled"
+    $vmPlatformEnabled = $vmPlatformFeature -and $vmPlatformFeature.State -eq "Enabled"
+
+    # Step 2: Enable features if not already enabled
+    if (-not $wslEnabled -or -not $vmPlatformEnabled) {
+        if ($CheckOnly) {
+            if (-not $wslEnabled) { Write-Status "Windows Subsystem for Linux feature not enabled" "WARN" }
+            if (-not $vmPlatformEnabled) { Write-Status "Virtual Machine Platform feature not enabled" "WARN" }
+            return $false
+        }
+
+        Write-Status "Enabling required Windows features (this may take 2-5 minutes)..." "INFO"
+
+        try {
+            # Enable WSL feature (required for both WSL1 and WSL2)
+            if (-not $wslEnabled) {
+                Write-Host "    Enabling Windows Subsystem for Linux..." -ForegroundColor Gray
+                dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart | Out-Null
+
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Status "Windows Subsystem for Linux enabled" "OK"
+                } else {
+                    Write-Status "Failed to enable WSL feature (exit code: $LASTEXITCODE)" "ERROR"
+                    return $false
+                }
+            }
+
+            # Enable Virtual Machine Platform (required for both WSL1 and WSL2)
+            if (-not $vmPlatformEnabled) {
+                Write-Host "    Enabling Virtual Machine Platform..." -ForegroundColor Gray
+                dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart | Out-Null
+
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Status "Virtual Machine Platform enabled" "OK"
+                } else {
+                    Write-Status "Failed to enable VM Platform (exit code: $LASTEXITCODE)" "ERROR"
+                    return $false
+                }
+            }
+
+            Write-Status "RESTART REQUIRED to activate Windows features" "WARN"
+            Write-Host "    After restart, re-run this script to continue installation" -ForegroundColor Yellow
+            $script:Results.NeedsRestart = $true
+            return $false
+
+        } catch {
+            Write-Status "Failed to enable Windows features: $_" "ERROR"
+            return $false
+        }
+    }
+
+    Write-Status "Required Windows features are enabled" "OK"
+
+    # Step 3: Check if WSL command is available
     $wslInstalled = $false
     try {
         $wslVersion = wsl --version 2>&1
         if ($LASTEXITCODE -eq 0) {
             $wslInstalled = $true
-            Write-Status "WSL2 is installed" "OK"
+            Write-Status "WSL is installed" "OK"
         }
     } catch {}
 
     if (-not $wslInstalled) {
-        Write-Status "WSL2 is not installed" "WARN"
+        Write-Status "WSL command not available (features enabled but may need restart)" "WARN"
 
         if ($CheckOnly) {
             return $false
         }
 
-        Write-Host "    Installing WSL2..." -ForegroundColor Gray
+        # Features are enabled but WSL command not ready - likely needs restart
+        Write-Status "Windows features enabled but WSL not ready - restart may be required" "WARN"
+        $script:Results.NeedsRestart = $true
+        return $false
+    }
 
-        try {
-            # Enable WSL feature
-            dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart | Out-Null
-            dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart | Out-Null
+    # Step 4: Set WSL version as default
+    Write-Host "    Setting WSL$($script:Config.WSLVersion) as default..." -ForegroundColor Gray
+    wsl --set-default-version $script:Config.WSLVersion 2>&1 | Out-Null
 
-            # Set WSL2 as default
-            wsl --set-default-version 2 2>&1 | Out-Null
-
-            Write-Status "WSL2 features enabled" "OK"
-            Write-Status "RESTART REQUIRED to complete WSL2 installation" "WARN"
-            $script:Results.NeedsRestart = $true
-            return $false
-        } catch {
-            Write-Status "Failed to enable WSL2: $_" "ERROR"
-            return $false
-        }
+    if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq 1) {
+        Write-Status "WSL$($script:Config.WSLVersion) set as default" "OK"
+    } else {
+        Write-Status "Could not set WSL version (may already be set)" "WARN"
     }
 
     return $true
@@ -451,44 +521,87 @@ function Install-WSLDependencies {
         return $true
     }
 
-    # Install packages in WSL
-    Write-Host "    Updating apt packages..." -ForegroundColor Gray
-    Invoke-WSLCommand "apt update" -Sudo | Out-Null
+    # BATCHED INSTALLATION - Single sudo session for all operations
+    Write-Host "    Installing all dependencies (this may take 5-10 minutes)..." -ForegroundColor Gray
+    Write-Host "    You will be prompted for your password ONCE at the start..." -ForegroundColor Yellow
 
-    Write-Host "    Installing core packages..." -ForegroundColor Gray
-    $packages = "build-essential curl wget git vim htop tree jq unzip software-properties-common apt-transport-https ca-certificates gnupg lsb-release ripgrep fd-find bat"
-    Invoke-WSLCommand "apt install -y $packages" -Sudo | Out-Null
-    Write-Status "Core packages installed" "OK"
+    # Create a single script that runs all sudo operations
+    $installScript = @'
+#!/bin/bash
+set -e
 
-    # Python 3.11
-    Write-Host "    Installing Python 3.11..." -ForegroundColor Gray
-    Invoke-WSLCommand "add-apt-repository ppa:deadsnakes/ppa -y" -Sudo | Out-Null
-    Invoke-WSLCommand "apt update" -Sudo | Out-Null
-    Invoke-WSLCommand "apt install -y python3.11 python3.11-dev python3.11-venv python3-pip python3.11-distutils" -Sudo | Out-Null
-    Invoke-WSLCommand "update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1" -Sudo | Out-Null
+echo "[1/6] Updating apt..."
+apt update 2>&1 | grep -v "does not have a stable CLI" || true
 
+echo "[2/6] Installing core packages..."
+apt install -y build-essential curl wget git vim htop tree jq unzip software-properties-common apt-transport-https ca-certificates gnupg lsb-release 2>&1 | grep -v "does not have a stable CLI" || true
+
+echo "[3/6] Adding Python 3.11 repository..."
+add-apt-repository ppa:deadsnakes/ppa -y 2>&1 | grep -v "does not have a stable CLI" || true
+apt update 2>&1 | grep -v "does not have a stable CLI" || true
+
+echo "[4/6] Installing Python 3.11..."
+apt install -y python3.11 python3.11-dev python3.11-venv python3-pip python3.11-distutils 2>&1 | grep -v "does not have a stable CLI" || true
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1 2>/dev/null || true
+
+echo "[5/6] Installing Node.js..."
+curl -fsSL https://deb.nodesource.com/setup_lts.x -o /tmp/nodesource_setup.sh
+bash /tmp/nodesource_setup.sh 2>&1 | grep -v "does not have a stable CLI" || true
+apt install -y nodejs 2>&1 | grep -v "does not have a stable CLI" || true
+
+echo "[6/6] Verifying installations..."
+python3 --version
+node --version
+npm --version
+
+echo "Installation complete!"
+'@
+
+    # Write script to temp file in WSL
+    $scriptPath = "/tmp/maia_install_$(Get-Date -Format 'yyyyMMddHHmmss').sh"
+    Invoke-WSLCommand "echo '$installScript' > $scriptPath && chmod +x $scriptPath"
+
+    # Execute with single sudo call
+    Write-Host ""
+    Invoke-WSLCommand "bash $scriptPath" -Sudo
+
+    # Cleanup
+    Invoke-WSLCommand "rm -f $scriptPath"
+
+    # Verify installations
+    Write-Host ""
     $pythonCheck = Get-WSLCommand "python3 --version"
     if ($pythonCheck.Success) {
         Write-Status "Python: $($pythonCheck.Output)" "OK"
+    } else {
+        Write-Status "Python installation may have issues" "WARN"
     }
-
-    # Node.js in WSL
-    Write-Host "    Installing Node.js in WSL..." -ForegroundColor Gray
-    Invoke-WSLCommand "curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -" | Out-Null
-    Invoke-WSLCommand "apt install -y nodejs" -Sudo | Out-Null
 
     $nodeCheck = Get-WSLCommand "node --version"
     if ($nodeCheck.Success) {
-        Write-Status "Node.js (WSL): $($nodeCheck.Output)" "OK"
+        Write-Status "Node.js: $($nodeCheck.Output)" "OK"
+    } else {
+        Write-Status "Node.js installation failed" "ERROR"
+        return $false
     }
 
-    # Claude Code in WSL
-    Write-Host "    Installing Claude Code in WSL..." -ForegroundColor Gray
+    $npmCheck = Get-WSLCommand "npm --version"
+    if ($npmCheck.Success) {
+        Write-Status "npm: v$($npmCheck.Output)" "OK"
+    } else {
+        Write-Status "npm not available" "ERROR"
+        return $false
+    }
+
+    # Claude Code in WSL (separate call - needs npm)
+    Write-Host "    Installing Claude Code CLI..." -ForegroundColor Gray
     Invoke-WSLCommand "npm install -g @anthropic-ai/claude-code" -Sudo | Out-Null
 
     $claudeCheck = Get-WSLCommand "claude --version"
     if ($claudeCheck.Success) {
-        Write-Status "Claude Code (WSL): $($claudeCheck.Output)" "OK"
+        Write-Status "Claude Code: $($claudeCheck.Output)" "OK"
+    } else {
+        Write-Status "Claude Code installation had issues (can install later)" "WARN"
     }
 
     return $true
@@ -519,16 +632,54 @@ function Install-Maia {
     }
 
     Write-Host "    Cloning MAIA repository..." -ForegroundColor Gray
+    Write-Host "    Repository: $MaiaRepo" -ForegroundColor Gray
+
+    # Check if SSH key exists
+    $sshKeyCheck = Get-WSLCommand "test -f ~/.ssh/id_rsa || test -f ~/.ssh/id_ed25519 && echo 'exists'"
+    $hasSshKey = $sshKeyCheck.Output -match "exists"
+
+    # Try SSH URL first if SSH key exists
+    $repoUrl = $MaiaRepo
+    if ($hasSshKey -and $MaiaRepo -match "https://github.com/(.*)") {
+        $repoPath = $Matches[1] -replace '\.git$', ''
+        $sshUrl = "git@github.com:$repoPath.git"
+        Write-Host "    SSH key found, trying SSH clone: $sshUrl" -ForegroundColor Gray
+        $repoUrl = $sshUrl
+    }
 
     # Create directory and clone
     Invoke-WSLCommand "mkdir -p ~/maia"
-    $cloneResult = Invoke-WSLCommand "git clone $MaiaRepo ~/maia"
+    $cloneResult = Invoke-WSLCommand "git clone $repoUrl ~/maia 2>&1"
 
-    if ($cloneResult) {
-        Write-Status "MAIA repository cloned" "OK"
+    if ($LASTEXITCODE -eq 0) {
+        Write-Status "MAIA repository cloned successfully" "OK"
     } else {
-        Write-Status "Failed to clone MAIA - check repository access" "ERROR"
-        return $false
+        Write-Status "Failed to clone MAIA" "ERROR"
+        Write-Host ""
+        Write-Host "    Git clone failed. This repository requires authentication." -ForegroundColor Yellow
+        Write-Host ""
+        Write-Host "    Option 1: Use SSH key (recommended)" -ForegroundColor Cyan
+        Write-Host "      1. Generate SSH key: wsl ssh-keygen -t ed25519 -C 'your_email@example.com'" -ForegroundColor Gray
+        Write-Host "      2. Add key to GitHub: wsl cat ~/.ssh/id_ed25519.pub" -ForegroundColor Gray
+        Write-Host "      3. Re-run this script" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "    Option 2: Use GitHub CLI" -ForegroundColor Cyan
+        Write-Host "      1. Install: wsl sudo apt install gh" -ForegroundColor Gray
+        Write-Host "      2. Authenticate: wsl gh auth login" -ForegroundColor Gray
+        Write-Host "      3. Re-run this script" -ForegroundColor Gray
+        Write-Host ""
+        Write-Host "    Option 3: Clone manually after setup" -ForegroundColor Cyan
+        Write-Host "      1. Complete this installation (will skip MAIA clone)" -ForegroundColor Gray
+        Write-Host "      2. Then run: wsl git clone $MaiaRepo ~/maia" -ForegroundColor Gray
+        Write-Host ""
+
+        $response = Read-Host "Skip MAIA clone and continue with other setup? (y/N)"
+        if ($response -eq "y" -or $response -eq "Y") {
+            Write-Status "Skipping MAIA clone - manual setup required" "WARN"
+            return $true
+        } else {
+            return $false
+        }
     }
 
     # Install Python dependencies
@@ -543,7 +694,7 @@ function Install-Maia {
 
 # MAIA Environment
 export MAIA_ROOT=~/maia
-export MAIA_ENV=wsl2
+export MAIA_ENV=wsl$($script:Config.WSLVersion)
 export PYTHONPATH=~/maia:\$PYTHONPATH
 cd ~/maia 2>/dev/null
 "@
@@ -587,12 +738,18 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.0"
+Write-Banner "MAIA Environment Installer v2.2"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow
 } else {
-    Write-Host "MODE: Full Installation" -ForegroundColor Green
+    Write-Host "MODE: Full Installation (WSL$WSLVersion)" -ForegroundColor Green
+}
+
+if ($WSLVersion -eq 1) {
+    Write-Host "NOTE: Using WSL1 for broader Azure VM compatibility" -ForegroundColor Gray
+} else {
+    Write-Host "NOTE: WSL2 requires nested virtualization support" -ForegroundColor Gray
 }
 Write-Host ""
 

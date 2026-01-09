@@ -13,7 +13,7 @@ import sys
 from pathlib import Path
 from docx import Document
 from docx.shared import RGBColor
-from convert_md_to_docx import convert_md_to_docx
+from orro_md_to_docx import convert_md_to_docx
 
 # Test constants
 ORRO_PURPLE = RGBColor(112, 48, 160)
