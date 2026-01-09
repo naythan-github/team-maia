@@ -5,7 +5,7 @@
 
 .DESCRIPTION
     Automated installer for all components needed to run MAIA on Windows:
-    - WSL1/WSL2 with Ubuntu 22.04 (WSL1 default for broader VM compatibility)
+    - WSL1/WSL2 with Ubuntu 22.04 (WSL2 default - requires D/E-series Azure VMs)
     - VSCode with Remote-WSL extension
     - Claude Code CLI
     - Node.js (for Claude Code and MCP servers)
@@ -23,8 +23,8 @@
     GitHub repository URL for MAIA. Default: https://github.com/naythan-orro/maia.git
 
 .PARAMETER WSLVersion
-    WSL version to install (1 or 2). Default: 1 (better Azure VM compatibility).
-    WSL2 requires nested virtualization (not available on B-series VMs).
+    WSL version to install (1 or 2). Default: 2 (team requirement).
+    WSL2 requires nested virtualization (D/E-series VMs, not available on B-series).
 
 .EXAMPLE
     .\Install-MaiaEnvironment.ps1
@@ -36,13 +36,37 @@
     .\Install-MaiaEnvironment.ps1 -WSLVersion 2
 
 .NOTES
-    Version: 2.2
+    Version: 2.10
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
-    Changed:
-    - WSL1 default for Azure VM compatibility
-    - Batched sudo operations (8+ prompts → 2 prompts)
-    - Fixed Node.js installation reliability
-    - Added Git SSH key authentication handling
+
+    Changed v2.10:
+    - Changed default WSL version to 2 (team requirement)
+    - WSL2 requires D/E-series Azure VMs with nested virtualization support
+
+    Changed v2.9:
+    - Use msiexec.exe directly for MSI installs (bypasses SmartScreen/Defender blocks)
+    - Fixed cleanup error (removed orphaned $winTempScript reference)
+
+    Changed v2.8:
+    - Fixed wslpath path conversion (now uses stdin pipe to avoid path mangling)
+    - Added Unblock-File before MSI installation
+    - Simplified bashrc append using stdin pipe
+
+    Changed v2.7 (Critical Bug Fixes):
+    - Fixed bash script generation (removed -NoNewline that broke scripts)
+    - Fixed wslpath command syntax (added -u flag)
+    - Fixed bash command quoting in Get-WSLCommand and Invoke-WSLCommand
+    - Fixed git clone error checking ($cloneSuccess instead of $LASTEXITCODE)
+    - Fixed SSH key detection logic (operator precedence)
+    - Fixed bashrc append (file-based to preserve bash variables)
+    - Added error checking for WSL script copy operation
+    - Fixed MSI header validation (binary bytes instead of ASCII)
+
+    Changed v2.6:
+    - Enhanced download validation (file size, MSI header validation)
+    - Better error messages for installation failures
+    - Exit code validation (0 or 3010 = success)
+    - TLS 1.2 enforcement for downloads
 #>
 
 param(
@@ -50,7 +74,7 @@ param(
     [switch]$SkipRestart,
     [string]$MaiaRepo = "https://github.com/naythan-orro/maia.git",
     [ValidateSet(1, 2)]
-    [int]$WSLVersion = 1
+    [int]$WSLVersion = 2
 )
 
 $ErrorActionPreference = "Continue"
@@ -59,7 +83,7 @@ $ProgressPreference = "SilentlyContinue"
 # Configuration
 $script:Config = @{
     UbuntuVersion = "Ubuntu-22.04"
-    NodeVersion = "20"  # LTS version
+    NodeVersion = "20.18.1"  # LTS version
     PythonVersion = "3.11"
     RequiredDiskSpaceGB = 10
     WSLVersion = $WSLVersion
@@ -122,9 +146,137 @@ function Test-CommandExists {
     return $null -ne (Get-Command $Command -ErrorAction SilentlyContinue)
 }
 
+function Refresh-EnvironmentPath {
+    # Refresh PATH from registry to pick up newly installed commands
+    $machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+    $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+    $env:Path = "$machinePath;$userPath"
+}
+
+function Test-CommandWithRetry {
+    param(
+        [string]$Command,
+        [int]$MaxRetries = 5,
+        [int]$DelaySeconds = 2
+    )
+
+    for ($i = 1; $i -le $MaxRetries; $i++) {
+        Refresh-EnvironmentPath
+        if (Test-CommandExists $Command) {
+            return $true
+        }
+        if ($i -lt $MaxRetries) {
+            Write-Host "    Waiting for $Command to become available ($i/$MaxRetries)..." -ForegroundColor Gray
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+    return $false
+}
+
+function Wait-ForWSLCommand {
+    param([int]$MaxRetries = 10, [int]$DelaySeconds = 3)
+
+    for ($i = 1; $i -le $MaxRetries; $i++) {
+        try {
+            $result = wsl --status 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                return $true
+            }
+        } catch {}
+
+        if ($i -lt $MaxRetries) {
+            Write-Host "    Waiting for WSL to become available ($i/$MaxRetries)..." -ForegroundColor Gray
+            Start-Sleep -Seconds $DelaySeconds
+        }
+    }
+    return $false
+}
+
+function Request-Restart {
+    param([string]$Reason)
+
+    Write-Host ""
+    Write-Banner "RESTART REQUIRED"
+    Write-Host "Reason: $Reason" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "Installation cannot continue until restart is complete." -ForegroundColor Red
+    Write-Host "After restart, re-run this script to continue installation." -ForegroundColor Yellow
+    Write-Host ""
+
+    $script:Results.NeedsRestart = $true
+
+    $restart = Read-Host "Restart now? (y/N)"
+    if ($restart -eq "y" -or $restart -eq "Y") {
+        Write-Host "Restarting computer..." -ForegroundColor Gray
+        Restart-Computer -Force
+    }
+
+    exit 0
+}
+
+function Test-NetworkConnectivity {
+    Write-Host "    Testing network connectivity..." -ForegroundColor Gray
+
+    $testUrls = @{
+        "GitHub" = "https://github.com"
+        "Node.js" = "https://nodejs.org"
+        "Ubuntu Repos" = "http://archive.ubuntu.com"
+    }
+
+    $allPassed = $true
+    foreach ($service in $testUrls.GetEnumerator()) {
+        try {
+            $response = Invoke-WebRequest -Uri $service.Value -Method Head -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop
+            Write-Host "      $($service.Key): " -NoNewline -ForegroundColor Gray
+            Write-Host "OK" -ForegroundColor Green
+        } catch {
+            Write-Host "      $($service.Key): " -NoNewline -ForegroundColor Gray
+            Write-Host "FAILED" -ForegroundColor Red
+            $allPassed = $false
+        }
+    }
+
+    return $allPassed
+}
+
+function Test-DiskSpace {
+    Write-Host "    Checking disk space..." -ForegroundColor Gray
+
+    # Check system drive
+    $sysDrive = $env:SystemDrive
+    $sysDisk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$sysDrive'"
+    $sysFreeGB = [math]::Round($sysDisk.FreeSpace / 1GB, 1)
+
+    Write-Host "      System drive ($sysDrive): " -NoNewline -ForegroundColor Gray
+    if ($sysFreeGB -lt $script:Config.RequiredDiskSpaceGB) {
+        Write-Host "${sysFreeGB}GB free (need $($script:Config.RequiredDiskSpaceGB)GB)" -ForegroundColor Red
+        return $false
+    } else {
+        Write-Host "${sysFreeGB}GB free" -ForegroundColor Green
+    }
+
+    # Check WSL installation path
+    $wslBasePath = "$env:LOCALAPPDATA\Packages"
+    $wslDrive = Split-Path -Qualifier $wslBasePath
+    if ($wslDrive -ne $sysDrive) {
+        $wslDisk = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='$wslDrive'"
+        $wslFreeGB = [math]::Round($wslDisk.FreeSpace / 1GB, 1)
+
+        Write-Host "      WSL drive ($wslDrive): " -NoNewline -ForegroundColor Gray
+        if ($wslFreeGB -lt $script:Config.RequiredDiskSpaceGB) {
+            Write-Host "${wslFreeGB}GB free (need $($script:Config.RequiredDiskSpaceGB)GB)" -ForegroundColor Red
+            return $false
+        } else {
+            Write-Host "${wslFreeGB}GB free" -ForegroundColor Green
+        }
+    }
+
+    return $true
+}
+
 function Get-WSLCommand {
     param([string]$Command)
-    $result = wsl -d $script:Config.UbuntuVersion -- bash -c $Command 2>&1
+    $result = wsl -d $script:Config.UbuntuVersion -- bash -c "$Command" 2>&1
     return @{
         Output = $result
         Success = $LASTEXITCODE -eq 0
@@ -134,7 +286,7 @@ function Get-WSLCommand {
 function Invoke-WSLCommand {
     param([string]$Command, [switch]$Sudo)
     $cmd = if ($Sudo) { "sudo $Command" } else { $Command }
-    wsl -d $script:Config.UbuntuVersion -- bash -c $cmd
+    wsl -d $script:Config.UbuntuVersion -- bash -c "$cmd"
     return $LASTEXITCODE -eq 0
 }
 
@@ -143,18 +295,98 @@ function Install-FromWeb {
         [string]$Name,
         [string]$Url,
         [string]$OutFile,
-        [string]$Arguments = "/S"
+        [string]$Arguments = "/S",
+        [int]$MinFileSizeMB = 1
     )
 
-    Write-Host "    Downloading $Name..." -ForegroundColor Gray
+    Write-Host "    Downloading $Name from: $Url" -ForegroundColor Gray
+
+    # Ensure TLS 1.2
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
     try {
-        Invoke-WebRequest -Uri $Url -OutFile $OutFile -UseBasicParsing
+        # Download with progress
+        $progressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -Uri $Url -OutFile $OutFile -UseBasicParsing -TimeoutSec 300
+
+        # Validate download
+        if (-not (Test-Path $OutFile)) {
+            Write-Status "Download failed - file not created" "ERROR"
+            return $false
+        }
+
+        $fileSize = (Get-Item $OutFile).Length
+        $fileSizeMB = [math]::Round($fileSize / 1MB, 1)
+
+        Write-Host "    Downloaded: ${fileSizeMB}MB" -ForegroundColor Gray
+
+        if ($fileSizeMB -lt $MinFileSizeMB) {
+            Write-Status "Downloaded file too small (${fileSizeMB}MB) - download incomplete or corrupt" "ERROR"
+            Remove-Item $OutFile -Force -ErrorAction SilentlyContinue
+            return $false
+        }
+
+        # Check if it's a valid executable/MSI
+        if ($OutFile -match '\.msi$') {
+            # Quick validation - MSI files are OLE compound documents
+            # They start with hex: D0 CF 11 E0 A1 B1 1A E1
+            $bytes = [System.IO.File]::ReadAllBytes($OutFile)
+            if ($bytes.Length -lt 8) {
+                Write-Status "Downloaded file too small to be valid MSI" "ERROR"
+                Remove-Item $OutFile -Force -ErrorAction SilentlyContinue
+                return $false
+            }
+
+            $header = $bytes[0..7]
+            $validMSI = ($header[0] -eq 0xD0 -and $header[1] -eq 0xCF -and
+                        $header[2] -eq 0x11 -and $header[3] -eq 0xE0 -and
+                        $header[4] -eq 0xA1 -and $header[5] -eq 0xB1 -and
+                        $header[6] -eq 0x1A -and $header[7] -eq 0xE1)
+
+            if (-not $validMSI) {
+                Write-Status "Downloaded file is not a valid MSI installer" "ERROR"
+                Write-Host "    File header: $([System.BitConverter]::ToString($header))" -ForegroundColor Gray
+                Write-Host "    Expected:    D0-CF-11-E0-A1-B1-1A-E1" -ForegroundColor Gray
+                Write-Host "    File may be HTML error page or blocked by security software" -ForegroundColor Yellow
+                Remove-Item $OutFile -Force -ErrorAction SilentlyContinue
+                return $false
+            }
+        }
+
+        # Unblock file (Windows security may mark downloads as unsafe)
+        try {
+            Unblock-File -Path $OutFile -ErrorAction SilentlyContinue
+        } catch {}
+
         Write-Host "    Installing $Name..." -ForegroundColor Gray
-        Start-Process -FilePath $OutFile -ArgumentList $Arguments -Wait -NoNewWindow
+
+        # Use msiexec for MSI files (more reliable than Start-Process)
+        if ($OutFile -match '\.msi$') {
+            $msiArgs = @("/i", "`"$OutFile`"", "/qn", "/norestart")
+            $process = Start-Process "msiexec.exe" -ArgumentList $msiArgs -Wait -NoNewWindow -PassThru
+        } else {
+            $process = Start-Process -FilePath $OutFile -ArgumentList $Arguments -Wait -NoNewWindow -PassThru
+        }
+
+        if ($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010) {
+            Write-Status "Installation failed with exit code: $($process.ExitCode)" "ERROR"
+            Write-Host "    Troubleshooting:" -ForegroundColor Yellow
+            Write-Host "      - Check if antivirus is blocking the installer" -ForegroundColor Gray
+            Write-Host "      - Try running as Administrator" -ForegroundColor Gray
+            Write-Host "      - Check Windows Event Log for details" -ForegroundColor Gray
+            Write-Host "      - MSI file location: $OutFile" -ForegroundColor Gray
+            Remove-Item $OutFile -Force -ErrorAction SilentlyContinue
+            return $false
+        }
+
         Remove-Item $OutFile -Force -ErrorAction SilentlyContinue
         return $true
+
     } catch {
-        Write-Status "Failed to install $Name`: $_" "ERROR"
+        Write-Status "Failed to download/install $Name`: $_" "ERROR"
+        if (Test-Path $OutFile) {
+            Remove-Item $OutFile -Force -ErrorAction SilentlyContinue
+        }
         return $false
     }
 }
@@ -177,15 +409,24 @@ function Test-SystemRequirements {
         return $false
     }
 
-    # Disk space
-    $systemDrive = Get-CimInstance Win32_LogicalDisk -Filter "DeviceID='C:'"
-    $freeGB = [math]::Round($systemDrive.FreeSpace / 1GB, 1)
-
-    if ($freeGB -ge $script:Config.RequiredDiskSpaceGB) {
-        Write-Status "Disk space: ${freeGB}GB free" "OK"
-    } else {
-        Write-Status "Insufficient disk space: ${freeGB}GB free, need $($script:Config.RequiredDiskSpaceGB)GB" "ERROR"
+    # Disk space (comprehensive check)
+    if (-not (Test-DiskSpace)) {
+        Write-Status "Insufficient disk space for installation" "ERROR"
         return $false
+    }
+
+    # Network connectivity
+    if (-not $CheckOnly) {
+        if (-not (Test-NetworkConnectivity)) {
+            Write-Status "Network connectivity issues detected" "WARN"
+            Write-Host "    Installation may fail if network issues persist" -ForegroundColor Yellow
+            $continue = Read-Host "Continue anyway? (y/N)"
+            if ($continue -ne "y" -and $continue -ne "Y") {
+                return $false
+            }
+        } else {
+            Write-Status "Network connectivity verified" "OK"
+        }
     }
 
     # RAM
@@ -227,8 +468,11 @@ function Install-WSL {
                 Write-Host "    Enabling Windows Subsystem for Linux..." -ForegroundColor Gray
                 dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart | Out-Null
 
-                if ($LASTEXITCODE -eq 0) {
+                if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq 3010) {
                     Write-Status "Windows Subsystem for Linux enabled" "OK"
+                    if ($LASTEXITCODE -eq 3010) {
+                        Request-Restart "Windows Subsystem for Linux feature enabled"
+                    }
                 } else {
                     Write-Status "Failed to enable WSL feature (exit code: $LASTEXITCODE)" "ERROR"
                     return $false
@@ -240,18 +484,20 @@ function Install-WSL {
                 Write-Host "    Enabling Virtual Machine Platform..." -ForegroundColor Gray
                 dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart | Out-Null
 
-                if ($LASTEXITCODE -eq 0) {
+                if ($LASTEXITCODE -eq 0 -or $LASTEXITCODE -eq 3010) {
                     Write-Status "Virtual Machine Platform enabled" "OK"
+                    if ($LASTEXITCODE -eq 3010) {
+                        Request-Restart "Virtual Machine Platform feature enabled"
+                    }
                 } else {
                     Write-Status "Failed to enable VM Platform (exit code: $LASTEXITCODE)" "ERROR"
                     return $false
                 }
             }
 
-            Write-Status "RESTART REQUIRED to activate Windows features" "WARN"
-            Write-Host "    After restart, re-run this script to continue installation" -ForegroundColor Yellow
-            $script:Results.NeedsRestart = $true
-            return $false
+            # If we get here, features are enabled without needing restart
+            Write-Status "Windows features enabled successfully" "OK"
+            return $true
 
         } catch {
             Write-Status "Failed to enable Windows features: $_" "ERROR"
@@ -261,27 +507,21 @@ function Install-WSL {
 
     Write-Status "Required Windows features are enabled" "OK"
 
-    # Step 3: Check if WSL command is available
-    $wslInstalled = $false
-    try {
-        $wslVersion = wsl --version 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            $wslInstalled = $true
-            Write-Status "WSL is installed" "OK"
-        }
-    } catch {}
+    # Step 3: Check if WSL command is available (with retry logic for race conditions)
+    Write-Host "    Verifying WSL is ready..." -ForegroundColor Gray
+    $wslReady = Wait-ForWSLCommand -MaxRetries 10 -DelaySeconds 3
 
-    if (-not $wslInstalled) {
-        Write-Status "WSL command not available (features enabled but may need restart)" "WARN"
+    if ($wslReady) {
+        Write-Status "WSL is ready" "OK"
+    } else {
+        Write-Status "WSL command not available after waiting" "WARN"
 
         if ($CheckOnly) {
             return $false
         }
 
-        # Features are enabled but WSL command not ready - likely needs restart
-        Write-Status "Windows features enabled but WSL not ready - restart may be required" "WARN"
-        $script:Results.NeedsRestart = $true
-        return $false
+        # Features are enabled but WSL command not ready - restart required
+        Request-Restart "WSL features enabled but command not available"
     }
 
     # Step 4: Set WSL version as default
@@ -421,24 +661,29 @@ function Install-NodeJS {
         }
 
         if (-not (Test-CommandExists "node")) {
-            $nodeUrl = "https://nodejs.org/dist/v$($script:Config.NodeVersion).0.0/node-v$($script:Config.NodeVersion).0.0-x64.msi"
+            $nodeUrl = "https://nodejs.org/dist/v$($script:Config.NodeVersion)/node-v$($script:Config.NodeVersion)-x64.msi"
             $nodeMsi = "$env:TEMP\node-installer.msi"
 
-            if (Install-FromWeb -Name "Node.js" -Url $nodeUrl -OutFile $nodeMsi -Arguments "/quiet /norestart") {
+            if (Install-FromWeb -Name "Node.js" -Url $nodeUrl -OutFile $nodeMsi -Arguments "/quiet /norestart" -MinFileSizeMB 25) {
                 Write-Status "Node.js installed" "OK"
-                $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+
+                # Wait for node command to become available (PATH refresh with retry)
+                if (-not (Test-CommandWithRetry "node" -MaxRetries 5 -DelaySeconds 2)) {
+                    Write-Status "Node.js installed but command not available - may need terminal restart" "WARN"
+                    return $false
+                }
             } else {
                 return $false
             }
         }
     }
 
-    # Verify npm
-    if (Test-CommandExists "npm") {
+    # Verify npm (with retry logic)
+    if (Test-CommandWithRetry "npm" -MaxRetries 5 -DelaySeconds 2) {
         $npmVersion = npm --version 2>&1
         Write-Status "npm installed: v$npmVersion" "OK"
     } else {
-        Write-Status "npm not found - restart terminal and re-run script" "WARN"
+        Write-Status "npm not found - Node.js installation may have failed" "ERROR"
         return $false
     }
 
@@ -528,7 +773,10 @@ function Install-WSLDependencies {
     # Create a single script that runs all sudo operations
     $installScript = @'
 #!/bin/bash
-set -e
+set -euo pipefail
+
+# Error trap
+trap 'echo "ERROR: Installation failed at line $LINENO"' ERR
 
 echo "[1/6] Updating apt..."
 apt update 2>&1 | grep -v "does not have a stable CLI" || true
@@ -557,16 +805,37 @@ npm --version
 echo "Installation complete!"
 '@
 
-    # Write script to temp file in WSL
+    # Write script directly to WSL filesystem (avoids path conversion issues)
     $scriptPath = "/tmp/maia_install_$(Get-Date -Format 'yyyyMMddHHmmss').sh"
-    Invoke-WSLCommand "echo '$installScript' > $scriptPath && chmod +x $scriptPath"
+
+    # Create temp file with proper line endings for bash
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    [System.IO.File]::WriteAllText($tempFile, $installScript, [System.Text.Encoding]::UTF8)
+
+    # Copy via stdin to avoid wslpath issues
+    Get-Content $tempFile -Raw | wsl -d $script:Config.UbuntuVersion -- bash -c "cat > $scriptPath && chmod +x $scriptPath"
+
+    # Cleanup temp file
+    Remove-Item $tempFile -Force -ErrorAction SilentlyContinue
+
+    # Verify script was created
+    $scriptCheck = Get-WSLCommand "test -f $scriptPath && echo 'exists'"
+    if ($scriptCheck.Output -notmatch "exists") {
+        Write-Status "Failed to create install script in WSL" "ERROR"
+        return $false
+    }
 
     # Execute with single sudo call
     Write-Host ""
-    Invoke-WSLCommand "bash $scriptPath" -Sudo
+    $installResult = Invoke-WSLCommand "bash $scriptPath" -Sudo
 
     # Cleanup
     Invoke-WSLCommand "rm -f $scriptPath"
+
+    if (-not $installResult) {
+        Write-Status "Dependency installation failed" "ERROR"
+        return $false
+    }
 
     # Verify installations
     Write-Host ""
@@ -635,7 +904,7 @@ function Install-Maia {
     Write-Host "    Repository: $MaiaRepo" -ForegroundColor Gray
 
     # Check if SSH key exists
-    $sshKeyCheck = Get-WSLCommand "test -f ~/.ssh/id_rsa || test -f ~/.ssh/id_ed25519 && echo 'exists'"
+    $sshKeyCheck = Get-WSLCommand "(test -f ~/.ssh/id_rsa || test -f ~/.ssh/id_ed25519) && echo 'exists'"
     $hasSshKey = $sshKeyCheck.Output -match "exists"
 
     # Try SSH URL first if SSH key exists
@@ -649,9 +918,9 @@ function Install-Maia {
 
     # Create directory and clone
     Invoke-WSLCommand "mkdir -p ~/maia"
-    $cloneResult = Invoke-WSLCommand "git clone $repoUrl ~/maia 2>&1"
+    $cloneSuccess = Invoke-WSLCommand "git clone $repoUrl ~/maia"
 
-    if ($LASTEXITCODE -eq 0) {
+    if ($cloneSuccess) {
         Write-Status "MAIA repository cloned successfully" "OK"
     } else {
         Write-Status "Failed to clone MAIA" "ERROR"
@@ -702,7 +971,8 @@ cd ~/maia 2>/dev/null
     # Check if already configured
     $envCheck = Get-WSLCommand "grep -q MAIA_ROOT ~/.bashrc && echo 'configured'"
     if ($envCheck.Output -notmatch "configured") {
-        Invoke-WSLCommand "echo '$bashrcAdditions' >> ~/.bashrc"
+        # Append via stdin to avoid path conversion issues
+        $bashrcAdditions | wsl -d $script:Config.UbuntuVersion -- bash -c "cat >> ~/.bashrc"
         Write-Status "Environment variables configured in ~/.bashrc" "OK"
     } else {
         Write-Status "Environment already configured" "OK"
@@ -738,7 +1008,7 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.2"
+Write-Banner "MAIA Environment Installer v2.10"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow
@@ -747,9 +1017,9 @@ if ($CheckOnly) {
 }
 
 if ($WSLVersion -eq 1) {
-    Write-Host "NOTE: Using WSL1 for broader Azure VM compatibility" -ForegroundColor Gray
+    Write-Host "NOTE: Using WSL1 (lower performance but broader compatibility)" -ForegroundColor Gray
 } else {
-    Write-Host "NOTE: WSL2 requires nested virtualization support" -ForegroundColor Gray
+    Write-Host "NOTE: Using WSL2 (requires D/E-series Azure VMs with nested virtualization)" -ForegroundColor Gray
 }
 Write-Host ""
 

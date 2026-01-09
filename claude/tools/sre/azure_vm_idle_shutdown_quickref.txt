@@ -1,0 +1,97 @@
+╔════════════════════════════════════════════════════════════════════════╗
+║             Azure VM Idle Shutdown - Quick Reference                  ║
+╚════════════════════════════════════════════════════════════════════════╝
+
+┌─ SETUP ──────────────────────────────────────────────────────────────┐
+│ Bash:                                                                 │
+│   ./setup_azure_vm_idle_shutdown.sh                                  │
+│                                                                       │
+│ PowerShell:                                                           │
+│   ./Setup-AzureVMIdleShutdown.ps1 -SubscriptionId "id" \            │
+│       -ResourceGroup "rg" -VMName "vm" -Location "australiaeast"     │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ MANAGEMENT ─────────────────────────────────────────────────────────┐
+│ Test:                                                                 │
+│   ./Manage-VMIdleShutdown.ps1 -Action Test -ResourceGroup "rg" \    │
+│       -VMName "vm"                                                    │
+│                                                                       │
+│ Status:                                                               │
+│   ./Manage-VMIdleShutdown.ps1 -Action Status -ResourceGroup "rg" \  │
+│       -VMName "vm"                                                    │
+│                                                                       │
+│ Disable:                                                              │
+│   ./Manage-VMIdleShutdown.ps1 -Action Disable -ResourceGroup "rg" \ │
+│       -VMName "vm"                                                    │
+│                                                                       │
+│ Enable:                                                               │
+│   ./Manage-VMIdleShutdown.ps1 -Action Enable -ResourceGroup "rg" \  │
+│       -VMName "vm"                                                    │
+│                                                                       │
+│ View Logs:                                                            │
+│   ./Manage-VMIdleShutdown.ps1 -Action ViewLogs -ResourceGroup "rg" \│
+│       -VMName "vm"                                                    │
+│                                                                       │
+│ Start VM:                                                             │
+│   ./Manage-VMIdleShutdown.ps1 -Action StartVM -ResourceGroup "rg" \ │
+│       -VMName "vm"                                                    │
+│                                                                       │
+│   OR via Azure CLI:                                                   │
+│   az vm start -g "rg" -n "vm"                                        │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ DEFAULT THRESHOLDS ─────────────────────────────────────────────────┐
+│ CPU:      < 5%                                                        │
+│ Network:  < 100 KB                                                    │
+│ Duration: 30 minutes idle                                             │
+│ Check:    Every 5 minutes                                             │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ HOW IT WORKS ───────────────────────────────────────────────────────┐
+│ 1. Azure Monitor checks VM metrics every 5 minutes                   │
+│ 2. Alert fires if CPU < 5% for 30+ minutes                           │
+│ 3. Webhook triggers Automation runbook                                │
+│ 4. Runbook validates idle state (CPU + Network)                      │
+│ 5. VM deallocates if confirmed idle                                   │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ COST SAVINGS (Example: D2s_v3) ─────────────────────────────────────┐
+│ Running 24/7:           $70/month compute + $8 storage = $78/month   │
+│ Running 8h/day:         $23/month compute + $8 storage = $31/month   │
+│ Deallocated (stopped):  $0/month compute + $8 storage = $8/month     │
+│                                                                       │
+│ Savings: $47/month (60%) for 8h/day usage pattern                    │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ TROUBLESHOOTING ────────────────────────────────────────────────────┐
+│ Runbook fails:                                                        │
+│   → Check RBAC: Get-AzRoleAssignment -Scope <vm-id>                 │
+│   → Wait 2-3 min for identity propagation                            │
+│                                                                       │
+│ Alert not firing:                                                     │
+│   → Check enabled: Get-AzMetricAlertRuleV2 -Name "vm-idle-alert-*"  │
+│   → Metrics delayed 3-5 minutes                                       │
+│   → Test manually: ./Manage-VMIdleShutdown.ps1 -Action Test         │
+│                                                                       │
+│ VM shuts down during use:                                             │
+│   → Increase thresholds in alert rule                                │
+│   → Disable temporarily: ./Manage-VMIdleShutdown.ps1 -Action Disable│
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ FILES ──────────────────────────────────────────────────────────────┐
+│ azure_vm_idle_shutdown_runbook.ps1  - PowerShell runbook            │
+│ setup_azure_vm_idle_shutdown.sh     - Bash setup script             │
+│ Setup-AzureVMIdleShutdown.ps1       - PowerShell setup script       │
+│ Manage-VMIdleShutdown.ps1           - Management utility            │
+│ AZURE_VM_IDLE_SHUTDOWN_README.md    - Full documentation            │
+└───────────────────────────────────────────────────────────────────────┘
+
+┌─ PORTAL LOCATIONS ───────────────────────────────────────────────────┐
+│ Automation Account:  Azure Portal → Automation Accounts             │
+│ Runbook:            Automation Account → Runbooks                    │
+│ Alert Rule:         Azure Portal → Monitor → Alerts                  │
+│ VM Status:          Azure Portal → Virtual Machines → <vm> → Status │
+│ Activity Log:       Azure Portal → Monitor → Activity Log            │
+└───────────────────────────────────────────────────────────────────────┘
+
+Full documentation: AZURE_VM_IDLE_SHUTDOWN_README.md

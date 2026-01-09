@@ -1,0 +1,93 @@
+{
+  "environment_name": "Sandbox Development Environment",
+  "description": "Visual Studio Enterprise subscription-based development sandbox for Maia testing",
+  "azure": {
+    "subscription": {
+      "id": "9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde",
+      "name": "Visual Studio Enterprise Subscription – MPN",
+      "tenant_id": "7e0c3f88-faec-4a28-86ad-33bfe7c4b326",
+      "tenant_name": "ORRO PTY LTD",
+      "tenant_domain": "Orrogroup.onmicrosoft.com"
+    },
+    "primary_vm": {
+      "name": "win11-vscode",
+      "resource_group": "DEV-RG",
+      "location": "australiaeast",
+      "vm_size": "Standard_D2as_v5",
+      "vm_id": "87bb952d-8e83-4fcd-8098-68ab94d323cc",
+      "resource_id": "/subscriptions/9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde/resourceGroups/DEV-RG/providers/Microsoft.Compute/virtualMachines/win11-vscode",
+      "os": {
+        "type": "Windows",
+        "version": "Windows 11 Enterprise 23H2",
+        "image_version": "22631.6345.251205",
+        "admin_user": "azureuser",
+        "additional_users": ["maiateam"]
+      },
+      "hardware": {
+        "vcpu": 2,
+        "ram_gb": 8,
+        "os_disk_size_gb": 128,
+        "disk_type": "Premium_LRS",
+        "processor": "AMD-based (D2as_v5)"
+      },
+      "networking": {
+        "nic_name": "win11-vscodeVMNic",
+        "nic_id": "/subscriptions/9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde/resourceGroups/DEV-RG/providers/Microsoft.Network/networkInterfaces/win11-vscodeVMNic"
+      },
+      "tags": {
+        "environment": "dev",
+        "os": "windows11",
+        "purpose": "maia-testing",
+        "tools": "vscode"
+      },
+      "created": "2026-01-09T08:29:28.370944+00:00",
+      "security": {
+        "type": "TrustedLaunch",
+        "secure_boot": true,
+        "vtpm": true
+      }
+    },
+    "costs": {
+      "vm_size": "Standard_D2as_v5",
+      "estimated_hourly": "$0.096",
+      "estimated_monthly_24x7": "$70",
+      "estimated_monthly_8h_day": "$23",
+      "storage_monthly": "$8",
+      "notes": "Costs are estimates for australiaeast region"
+    }
+  },
+  "quick_commands": {
+    "switch_subscription": "az account set --subscription 9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde",
+    "start_vm": "az vm start -g DEV-RG -n win11-vscode",
+    "stop_vm": "az vm stop -g DEV-RG -n win11-vscode",
+    "deallocate_vm": "az vm deallocate -g DEV-RG -n win11-vscode",
+    "vm_status": "az vm get-instance-view -g DEV-RG -n win11-vscode --query instanceView.statuses",
+    "vm_details": "az vm show -g DEV-RG -n win11-vscode",
+    "rdp_info": "az vm show -g DEV-RG -n win11-vscode -d --query publicIps -o tsv"
+  },
+  "powershell_quick_commands": {
+    "switch_subscription": "Set-AzContext -SubscriptionId 9b8e7b3f-d3e7-4da9-a22a-9bf7c8ee4dde",
+    "start_vm": "Start-AzVM -ResourceGroupName DEV-RG -Name win11-vscode",
+    "stop_vm": "Stop-AzVM -ResourceGroupName DEV-RG -Name win11-vscode",
+    "vm_status": "Get-AzVM -ResourceGroupName DEV-RG -Name win11-vscode -Status",
+    "vm_details": "Get-AzVM -ResourceGroupName DEV-RG -Name win11-vscode"
+  },
+  "idle_shutdown_config": {
+    "automation_account_name": "sandbox-vm-idle-shutdown",
+    "runbook_name": "Stop-IdleVM",
+    "alert_name": "sandbox-idle-alert",
+    "action_group_name": "sandbox-vm-idle-actions",
+    "thresholds": {
+      "cpu_percent": 5,
+      "network_kb": 100,
+      "idle_duration_minutes": 30
+    }
+  },
+  "notes": [
+    "VM created today (2026-01-09) for Maia testing",
+    "Windows 11 Enterprise with VS Code pre-installed",
+    "Uses Visual Studio Enterprise subscription benefits",
+    "Located in australiaeast for optimal latency",
+    "Trusted Launch security for enhanced protection"
+  ]
+}
