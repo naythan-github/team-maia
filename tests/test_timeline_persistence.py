@@ -571,11 +571,107 @@ class TestMigration:
 
     def test_migrate_v3_to_v4(self):
         """Migration should add timeline tables to v3 database."""
-        pytest.skip("Implement after migration script created")
+        from claude.tools.m365_ir.migrations.migrate_v4 import migrate_to_v4
+        import sqlite3
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Manually create a v3-style database (without timeline tables)
+            case_id = "PIR-TEST-V3"
+            db_path = Path(tmpdir) / case_id / f"{case_id}_logs.db"
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+
+            # Create database with v3 tables only (sign_in_logs but no timeline_events)
+            conn = sqlite3.connect(str(db_path))
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+
+            # Create minimal v3 schema (just sign_in_logs for validation)
+            cursor.execute("""
+                CREATE TABLE sign_in_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    user_principal_name TEXT NOT NULL,
+                    imported_at TEXT NOT NULL
+                )
+            """)
+            conn.commit()
+
+            # Verify v3 tables exist
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='sign_in_logs'")
+            assert cursor.fetchone() is not None
+
+            # Verify v4 tables DON'T exist yet
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='timeline_events'")
+            assert cursor.fetchone() is None
+
+            conn.close()
+
+            # Run migration
+            db = IRLogDatabase(case_id=case_id, base_path=tmpdir)
+            migrate_to_v4(db)
+
+            # Verify v4 tables NOW exist
+            conn = db.connect()
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='timeline_events'")
+            assert cursor.fetchone() is not None
+
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='timeline_annotations'")
+            assert cursor.fetchone() is not None
+
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='timeline_phases'")
+            assert cursor.fetchone() is not None
+
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='timeline_build_history'")
+            assert cursor.fetchone() is not None
+
+            # Verify v_timeline view exists
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='view' AND name='v_timeline'")
+            assert cursor.fetchone() is not None
+
+            conn.close()
 
     def test_migration_idempotent(self):
         """Running migration twice should not cause errors."""
-        pytest.skip("Implement after migration script created")
+        from claude.tools.m365_ir.migrations.migrate_v4 import migrate_to_v4
+        import sqlite3
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Manually create v3 database
+            case_id = "PIR-TEST-V3"
+            db_path = Path(tmpdir) / case_id / f"{case_id}_logs.db"
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+
+            conn = sqlite3.connect(str(db_path))
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("""
+                CREATE TABLE sign_in_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    user_principal_name TEXT NOT NULL,
+                    imported_at TEXT NOT NULL
+                )
+            """)
+            conn.commit()
+            conn.close()
+
+            # Run migration first time
+            db = IRLogDatabase(case_id=case_id, base_path=tmpdir)
+            migrate_to_v4(db)
+
+            # Run migration second time - should not error
+            migrate_to_v4(db)  # Should be idempotent
+
+            # Verify tables still exist and are functional
+            conn = db.connect()
+            cursor = conn.cursor()
+
+            cursor.execute("SELECT COUNT(*) FROM timeline_events")
+            assert cursor.fetchone()[0] == 0  # Empty but functional
+
+            conn.close()
 
 
 if __name__ == "__main__":
