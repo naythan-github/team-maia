@@ -540,6 +540,318 @@
             ]
           }
         }
+      },
+      {
+        "id": 9,
+        "type": "stat",
+        "title": "SLA Risk Indicator",
+        "description": "Open tickets grouped by age risk level\nSafe: < 3 days old\nWarning: 3-7 days old\nCritical: > 7 days old (SLA breach risk)",
+        "gridPos": {
+          "h": 4,
+          "w": 8,
+          "x": 0,
+          "y": 24
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "format": "table",
+            "rawSql": "SELECT \n  COUNT(*) FILTER (WHERE \"TKT-Created Time\" >= NOW() - INTERVAL '3 days') as \"Safe (< 3d)\",\n  COUNT(*) FILTER (WHERE \"TKT-Created Time\" < NOW() - INTERVAL '3 days' \n                   AND \"TKT-Created Time\" >= NOW() - INTERVAL '7 days') as \"Warning (3-7d)\",\n  COUNT(*) FILTER (WHERE \"TKT-Created Time\" < NOW() - INTERVAL '7 days') as \"Critical (> 7d)\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved');",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": true,
+            "calcs": []
+          },
+          "orientation": "horizontal",
+          "textMode": "value_and_name",
+          "colorMode": "background",
+          "graphMode": "none",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Safe (< 3d)"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "green"}}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Warning (3-7d)"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "yellow"}}]
+            },
+            {
+              "matcher": {"id": "byName", "options": "Critical (> 7d)"},
+              "properties": [{"id": "color", "value": {"mode": "fixed", "fixedColor": "red"}}]
+            }
+          ]
+        }
+      },
+      {
+        "id": 10,
+        "type": "barchart",
+        "title": "Open Ticket Age Distribution",
+        "description": "Distribution of open tickets by age bucket\nCritical insight: 52% of open tickets are > 30 days old",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 8,
+          "y": 24
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "format": "table",
+            "rawSql": "WITH age_calc AS (\n  SELECT \n    EXTRACT(DAY FROM NOW() - \"TKT-Created Time\") as age_days\n  FROM servicedesk.tickets\n  WHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved')\n)\nSELECT \n  CASE \n    WHEN age_days < 1 THEN '1: < 1 day'\n    WHEN age_days < 7 THEN '2: 1-7 days'\n    WHEN age_days < 30 THEN '3: 1-4 weeks'\n    WHEN age_days < 90 THEN '4: 1-3 months'\n    WHEN age_days < 180 THEN '5: 3-6 months'\n    ELSE '6: > 6 months'\n  END as \"Age Bucket\",\n  COUNT(*) as \"Open Tickets\"\nFROM age_calc\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "showValue": "always",
+          "stacking": "none",
+          "groupWidth": 0.7,
+          "barWidth": 0.97,
+          "legend": {"showLegend": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"fillOpacity": 80},
+            "color": {"mode": "thresholds"},
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 500, "color": "yellow"},
+                {"value": 1000, "color": "orange"},
+                {"value": 2000, "color": "red"}
+              ]
+            },
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "id": 11,
+        "type": "barchart",
+        "title": "Resolution Time Distribution",
+        "description": "Distribution of closed tickets by resolution time\nCritical: 41.6% take > 7 days to resolve",
+        "gridPos": {
+          "h": 8,
+          "w": 8,
+          "x": 16,
+          "y": 24
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "format": "table",
+            "rawSql": "SELECT \n  CASE \n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 3600 < 1 THEN '1: < 1 hour'\n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 3600 < 24 THEN '2: 1-24 hours'\n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 86400 < 3 THEN '3: 1-3 days'\n    WHEN EXTRACT(EPOCH FROM (\"TKT-Modified Time\" - \"TKT-Created Time\")) / 86400 < 7 THEN '4: 3-7 days'\n    ELSE '5: > 7 days'\n  END as \"Resolution Time\",\n  COUNT(*) as \"Tickets\"\nFROM servicedesk.tickets\nWHERE \"TKT-Status\" IN ('Closed', 'Incident Resolved')\n  AND \"TKT-Modified Time\" > \"TKT-Created Time\"\nGROUP BY 1\nORDER BY 1;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "orientation": "horizontal",
+          "xTickLabelRotation": 0,
+          "showValue": "always",
+          "stacking": "none",
+          "groupWidth": 0.7,
+          "barWidth": 0.97,
+          "legend": {"showLegend": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"fillOpacity": 80},
+            "color": {"mode": "thresholds"},
+            "unit": "short",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {"value": null, "color": "green"},
+                {"value": 20000, "color": "yellow"},
+                {"value": 40000, "color": "orange"},
+                {"value": 60000, "color": "red"}
+              ]
+            },
+            "decimals": 0
+          }
+        }
+      },
+      {
+        "id": 12,
+        "type": "table",
+        "title": "Recurring Alert Patterns (Grouped)",
+        "description": "Alert tickets grouped by pattern for root cause analysis\nTop patterns indicate automation opportunities",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 0,
+          "y": 32
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "format": "table",
+            "rawSql": "SELECT \n  CASE \n    WHEN \"TKT-Title\" ILIKE '%azure%memory%' OR \"TKT-Title\" ILIKE '%50.000000 % of physical memory%' THEN 'Azure Memory Alerts'\n    WHEN \"TKT-Title\" ILIKE '%cusf%network%' THEN 'CUSF Network Alerts'\n    WHEN \"TKT-Title\" ILIKE '%whephdc1%' THEN 'whephdc1 VM Status Alerts'\n    WHEN \"TKT-Title\" ILIKE '%motion detected%' THEN 'Motion Detection Alerts'\n    WHEN \"TKT-Title\" ILIKE '%vpn connectivity%' THEN 'VPN Connectivity Alerts'\n    WHEN \"TKT-Title\" ILIKE '%volume latency%' THEN 'Volume Latency Alerts'\n    WHEN \"TKT-Title\" ILIKE '%disk%' THEN 'Disk Alerts'\n    ELSE 'Other Alerts'\n  END as \"Alert Pattern\",\n  COUNT(*) as \"Occurrences\",\n  COUNT(DISTINCT DATE_TRUNC('day', \"TKT-Created Time\")) as \"Days Affected\",\n  ROUND(COUNT(*)::numeric / NULLIF(COUNT(DISTINCT DATE_TRUNC('day', \"TKT-Created Time\")), 0), 1) as \"Avg/Day\"\nFROM servicedesk.tickets\nWHERE \"TKT-Category\" = 'Alert'\nGROUP BY 1\nORDER BY 2 DESC\nLIMIT 10;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "cellHeight": "sm",
+          "footer": {"show": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"align": "auto", "displayMode": "auto"}
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Occurrences"},
+              "properties": [
+                {"id": "custom.displayMode", "value": "gradient-gauge"},
+                {"id": "max", "value": 20000},
+                {"id": "thresholds", "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"value": null, "color": "green"},
+                    {"value": 1000, "color": "yellow"},
+                    {"value": 3000, "color": "orange"},
+                    {"value": 5000, "color": "red"}
+                  ]
+                }}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 13,
+        "type": "table",
+        "title": "Team Queue Capacity Status",
+        "description": "Open tickets and unassigned percentage by team\nCritical: Cloud Infrastructure has 78.8% unassigned",
+        "gridPos": {
+          "h": 8,
+          "w": 12,
+          "x": 12,
+          "y": 32
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "format": "table",
+            "rawSql": "WITH team_stats AS (\n  SELECT \n    \"TKT-Team\" as team,\n    COUNT(*) FILTER (WHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved')) as open_tickets,\n    COUNT(*) FILTER (WHERE \"TKT-Status\" NOT IN ('Closed', 'Incident Resolved') \n                     AND \"TKT-Assigned To User\" LIKE '%PendingAssignment%') as unassigned,\n    COUNT(*) FILTER (WHERE \"TKT-Status\" IN ('Closed', 'Incident Resolved') \n                     AND \"TKT-Modified Time\" >= NOW() - INTERVAL '30 days') as closed_30d\n  FROM servicedesk.tickets\n  WHERE \"TKT-Team\" IS NOT NULL AND \"TKT-Team\" != ''\n  GROUP BY 1\n)\nSELECT \n  team as \"Team\",\n  open_tickets as \"Open\",\n  unassigned as \"Unassigned\",\n  CASE WHEN open_tickets > 0 THEN ROUND(100.0 * unassigned / open_tickets, 1) ELSE 0 END as \"Unassigned %\"\nFROM team_stats\nWHERE open_tickets > 0\nORDER BY open_tickets DESC\nLIMIT 10;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "showHeader": true,
+          "cellHeight": "sm",
+          "footer": {"show": false}
+        },
+        "fieldConfig": {
+          "defaults": {
+            "custom": {"align": "auto", "displayMode": "auto"}
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "Unassigned %"},
+              "properties": [
+                {"id": "custom.displayMode", "value": "gradient-gauge"},
+                {"id": "unit", "value": "percent"},
+                {"id": "max", "value": 100},
+                {"id": "thresholds", "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"value": null, "color": "green"},
+                    {"value": 10, "color": "yellow"},
+                    {"value": 30, "color": "orange"},
+                    {"value": 50, "color": "red"}
+                  ]
+                }}
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": 14,
+        "type": "stat",
+        "title": "Data Quality: Orphaned Records",
+        "description": "Records without matching tickets (data integrity)\nHigh orphan rate indicates API retention mismatch",
+        "gridPos": {
+          "h": 4,
+          "w": 8,
+          "x": 0,
+          "y": 40
+        },
+        "targets": [
+          {
+            "datasource": {
+              "type": "postgres",
+              "uid": "P6BECECF7273D15EE"
+            },
+            "format": "table",
+            "rawSql": "SELECT * FROM servicedesk.v_orphaned_data;",
+            "refId": "A"
+          }
+        ],
+        "options": {
+          "reduceOptions": {
+            "values": true,
+            "calcs": []
+          },
+          "orientation": "horizontal",
+          "textMode": "value_and_name",
+          "colorMode": "value",
+          "graphMode": "none",
+          "justifyMode": "auto"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short",
+            "decimals": 0
+          },
+          "overrides": [
+            {
+              "matcher": {"id": "byName", "options": "count"},
+              "properties": [
+                {"id": "displayName", "value": "Orphaned Records"},
+                {"id": "color", "value": {"mode": "thresholds"}},
+                {"id": "thresholds", "value": {
+                  "mode": "absolute",
+                  "steps": [
+                    {"value": null, "color": "green"},
+                    {"value": 10000, "color": "yellow"},
+                    {"value": 100000, "color": "red"}
+                  ]
+                }}
+              ]
+            }
+          ]
+        }
       }
     ],
     "templating": {
