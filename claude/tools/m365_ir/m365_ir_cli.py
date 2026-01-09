@@ -81,6 +81,15 @@ from claude.tools.m365_ir.auth_verifier import (
     STATUS_CODE_DESCRIPTIONS
 )
 
+# Phase 261 - Enhanced Auth Determination & Post-Compromise
+from claude.tools.m365_ir.compromise_validator import validate_compromise
+from claude.tools.m365_ir.duplicate_handler import (
+    identify_duplicates,
+    merge_duplicates,
+    get_merge_statistics,
+)
+from claude.tools.m365_ir.migrations.backfill_risk_levels import backfill_risk_levels
+
 
 class M365IRAnalyzer:
     """
@@ -848,6 +857,274 @@ def cmd_validate_all(args):
     return 1 if failures else 0
 
 
+def cmd_validate_compromise(args):
+    """
+    Handle validate-compromise command - post-compromise validation (Phase 261.3).
+
+    Validates suspected compromise by checking 11 indicators across
+    multiple log sources within 72-hour window.
+    """
+    db = IRLogDatabase(case_id=args.case_id, base_path=args.base_path)
+
+    if not db.exists:
+        print(f"❌ Case not found: {args.case_id}")
+        print(f"   Expected: {db.db_path}")
+        return 1
+
+    print(f"\n{'='*80}")
+    print(f"Post-Compromise Validation")
+    print(f"Case: {args.case_id}")
+    print(f"{'='*80}\n")
+
+    print(f"Suspected compromise:")
+    print(f"  User: {args.user}")
+    print(f"  Timestamp: {args.timestamp}")
+    print(f"  IP Address: {args.ip}")
+    print()
+
+    try:
+        # Parse timestamp
+        from datetime import datetime
+        if 'T' in args.timestamp:
+            ts = datetime.fromisoformat(args.timestamp.replace('Z', '+00:00'))
+        else:
+            ts = datetime.strptime(args.timestamp, '%Y-%m-%d %H:%M:%S')
+
+        # Run validation
+        # Note: Window parameters are hardcoded in validate_compromise (60min, 72h)
+        result = validate_compromise(
+            db_path=str(db.db_path),
+            user_principal_name=args.user,
+            ip_address=args.ip,
+            signin_time=ts,
+        )
+
+        # Display verdict
+        verdict = result['verdict']
+        confidence = result['confidence']
+        print(f"{'='*80}")
+        print(f"VERDICT: {verdict}")
+        print(f"Confidence: {confidence*100:.0f}%")
+        print(f"{'='*80}\n")
+
+        # Display indicators found
+        indicators = result['indicators']
+        indicators_detected = result['indicators_detected']
+
+        if indicators_detected > 0:
+            print(f"Indicators Found ({indicators_detected}/11):\n")
+            for indicator_name, details in indicators.items():
+                if details['detected']:
+                    print(f"  ✓ {indicator_name.replace('_', ' ').title()}")
+                    print(f"    Confidence: {details['confidence']*100:.0f}%")
+                    print(f"    Count: {details.get('count', 0)}")
+                    print()
+        else:
+            print("No post-compromise indicators found.\n")
+
+        # Display summary
+        summary = result['summary']
+        print(f"Summary:")
+        print(f"  {summary}")
+        print()
+
+        print(f"Analysis Window: 72 hours from sign-in")
+        print()
+
+        return 0 if verdict != 'CONFIRMED_COMPROMISE' else 2
+
+    except Exception as e:
+        print(f"❌ Validation error: {str(e)}")
+        import traceback
+        if args.verbose:
+            traceback.print_exc()
+        return 1
+
+
+def cmd_identify_duplicates(args):
+    """
+    Handle identify-duplicates command - find duplicate sign-in records (Phase 261.4).
+
+    Identifies duplicate groups based on exact timestamp + UPN + IP matching.
+    """
+    db = IRLogDatabase(case_id=args.case_id, base_path=args.base_path)
+
+    if not db.exists:
+        print(f"❌ Case not found: {args.case_id}")
+        print(f"   Expected: {db.db_path}")
+        return 1
+
+    print(f"\n{'='*80}")
+    print(f"Duplicate Identification")
+    print(f"Case: {args.case_id}")
+    print(f"{'='*80}\n")
+
+    try:
+        # Run identification (returns list of DuplicateGroup objects)
+        duplicate_groups = identify_duplicates(str(db.db_path))
+
+        # Calculate stats
+        total_groups = len(duplicate_groups)
+        total_duplicate_records = sum(group.count - 1 for group in duplicate_groups)  # -1 because one is primary
+
+        print(f"Scan Results:")
+        print(f"  Duplicate groups: {total_groups:,}")
+        print(f"  Duplicate records: {total_duplicate_records:,}")
+        print()
+
+        # Show duplicate groups
+        if duplicate_groups:
+            print(f"Duplicate Groups:\n")
+            for i, group in enumerate(duplicate_groups[:args.limit], 1):
+                print(f"{i}. {group.user_principal_name} @ {group.timestamp}")
+                print(f"   IP: {group.ip_address}")
+                print(f"   Record IDs: {group.record_ids}")
+                print(f"   Count: {group.count} duplicates")
+                print()
+
+            if len(duplicate_groups) > args.limit:
+                print(f"... and {len(duplicate_groups) - args.limit} more groups")
+                print(f"Use --limit to show more")
+                print()
+        else:
+            print("✅ No duplicates found!")
+            print()
+
+        return 0
+
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        import traceback
+        if args.verbose:
+            traceback.print_exc()
+        return 1
+
+
+def cmd_merge_duplicates(args):
+    """
+    Handle merge-duplicates command - merge duplicate records (Phase 261.4).
+
+    Merges duplicate records using MERGE approach (preserves data with audit trail).
+    """
+    db = IRLogDatabase(case_id=args.case_id, base_path=args.base_path)
+
+    if not db.exists:
+        print(f"❌ Case not found: {args.case_id}")
+        print(f"   Expected: {db.db_path}")
+        return 1
+
+    print(f"\n{'='*80}")
+    print(f"Duplicate Merging")
+    print(f"Case: {args.case_id}")
+    print(f"{'='*80}\n")
+
+    try:
+        # Identify duplicates first (returns list of DuplicateGroup objects)
+        duplicate_groups = identify_duplicates(str(db.db_path))
+
+        if len(duplicate_groups) == 0:
+            print("✅ No duplicates found! Nothing to merge.")
+            return 0
+
+        total_duplicate_records = sum(group.count - 1 for group in duplicate_groups)
+        print(f"Found {len(duplicate_groups)} duplicate groups with {total_duplicate_records} records\n")
+
+        # Confirm unless --auto-apply
+        if not args.auto_apply:
+            print("⚠️  This will merge duplicate records (data preserved with audit trail)")
+            response = input("Continue? [y/N]: ")
+            if response.lower() not in ['y', 'yes']:
+                print("Cancelled.")
+                return 0
+            print()
+
+        # Run merge
+        merge_result = merge_duplicates(str(db.db_path), dry_run=args.dry_run)
+
+        print(f"Merge Results:")
+        print(f"  Groups processed: {merge_result['groups_processed']}")
+        print(f"  Records merged: {merge_result['records_merged']}")
+        print(f"  Merge operations: {merge_result['merge_operations']}")
+
+        if args.dry_run:
+            print(f"\n⚠️  DRY RUN - No changes made")
+        else:
+            print(f"\n✅ Merge complete!")
+
+        print()
+
+        # Show statistics
+        stats = get_merge_statistics(str(db.db_path))
+        print(f"Database Statistics:")
+        print(f"  Total records: {stats['total_records']:,}")
+        print(f"  Active records: {stats['active_records']:,}")
+        print(f"  Merged records: {stats['merged_records']:,}")
+        print(f"  Merge operations: {stats['merge_operations']:,}")
+        print()
+
+        return 0
+
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        import traceback
+        if args.verbose:
+            traceback.print_exc()
+        return 1
+
+
+def cmd_backfill_risk_levels(args):
+    """
+    Handle backfill-risk-levels command - extract risk levels from raw_record (Phase 261.2).
+
+    Extracts RiskLevelDuringSignIn from compressed raw_record JSON
+    and populates risk_level column for NULL/unknown values.
+    """
+    db = IRLogDatabase(case_id=args.case_id, base_path=args.base_path)
+
+    if not db.exists:
+        print(f"❌ Case not found: {args.case_id}")
+        print(f"   Expected: {db.db_path}")
+        return 1
+
+    print(f"\n{'='*80}")
+    print(f"Risk Level Backfill")
+    print(f"Case: {args.case_id}")
+    print(f"{'='*80}\n")
+
+    try:
+        # Run backfill
+        result = backfill_risk_levels(str(db.db_path))
+
+        print(f"Backfill Results:")
+        print(f"  Records checked: {result['records_checked']:,}")
+        print(f"  Records updated: {result['records_updated']:,}")
+        print()
+
+        if result['errors']:
+            print(f"Errors ({len(result['errors'])}):")
+            for error in result['errors'][:5]:
+                print(f"  - {error}")
+            if len(result['errors']) > 5:
+                print(f"  ... and {len(result['errors']) - 5} more errors")
+            print()
+
+        if result['records_updated'] > 0:
+            print(f"✅ Backfill complete! {result['records_updated']:,} records updated.")
+        else:
+            print(f"✅ No backfill needed - all records already have risk levels.")
+
+        print()
+
+        return 0
+
+    except Exception as e:
+        print(f"❌ Error: {str(e)}")
+        import traceback
+        if args.verbose:
+            traceback.print_exc()
+        return 1
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="M365 Incident Response Analyzer",
@@ -886,6 +1163,12 @@ Examples:
   %(prog)s verify-status PIR-SGS-11111111                         # Verify all log types
   %(prog)s verify-status PIR-SGS-11111111 --log-type legacy_auth  # Verify specific log type
   %(prog)s verify-status PIR-SGS-11111111 --verbose               # Show detailed status code breakdown
+
+  # Post-compromise validation (Phase 261)
+  %(prog)s validate-compromise PIR-SGS-4241809 --user edelaney@goodsams.org.au --timestamp "2025-11-25T04:55:50" --ip 46.252.102.34
+  %(prog)s identify-duplicates PIR-SGS-11111111                   # Find duplicate records
+  %(prog)s merge-duplicates PIR-SGS-11111111 --auto-apply         # Merge duplicates automatically
+  %(prog)s backfill-risk-levels PIR-SGS-11111111                  # Extract risk levels from raw data
         """
     )
 
@@ -953,6 +1236,54 @@ Examples:
                                      help="Show detailed status code breakdown")
     verify_status_parser.add_argument("--base-path", default=db_base_path, help=f"Base path for case databases")
 
+    # Validate-compromise command (Phase 261.3)
+    validate_compromise_parser = subparsers.add_parser("validate-compromise",
+                                                       help="Post-compromise validation with 11 indicators")
+    validate_compromise_parser.add_argument("case_id", help="Case identifier")
+    validate_compromise_parser.add_argument("--user", "-u", required=True,
+                                           help="User principal name (email)")
+    validate_compromise_parser.add_argument("--timestamp", "-t", required=True,
+                                           help="Suspected compromise timestamp (ISO format or YYYY-MM-DD HH:MM:SS)")
+    validate_compromise_parser.add_argument("--ip", "-i", required=True,
+                                           help="IP address of suspected compromise")
+    validate_compromise_parser.add_argument("--verbose", "-v", action="store_true",
+                                           help="Show detailed error traces")
+    validate_compromise_parser.add_argument("--base-path", default=db_base_path,
+                                           help=f"Base path for case databases")
+
+    # Identify-duplicates command (Phase 261.4)
+    identify_duplicates_parser = subparsers.add_parser("identify-duplicates",
+                                                       help="Identify duplicate sign-in records")
+    identify_duplicates_parser.add_argument("case_id", help="Case identifier")
+    identify_duplicates_parser.add_argument("--limit", type=int, default=20,
+                                           help="Number of groups to display (default: 20)")
+    identify_duplicates_parser.add_argument("--verbose", "-v", action="store_true",
+                                           help="Show detailed error traces")
+    identify_duplicates_parser.add_argument("--base-path", default=db_base_path,
+                                           help=f"Base path for case databases")
+
+    # Merge-duplicates command (Phase 261.4)
+    merge_duplicates_parser = subparsers.add_parser("merge-duplicates",
+                                                    help="Merge duplicate records with audit trail")
+    merge_duplicates_parser.add_argument("case_id", help="Case identifier")
+    merge_duplicates_parser.add_argument("--auto-apply", action="store_true",
+                                        help="Skip confirmation prompt")
+    merge_duplicates_parser.add_argument("--dry-run", action="store_true",
+                                        help="Show what would be merged without making changes")
+    merge_duplicates_parser.add_argument("--verbose", "-v", action="store_true",
+                                        help="Show detailed error traces")
+    merge_duplicates_parser.add_argument("--base-path", default=db_base_path,
+                                        help=f"Base path for case databases")
+
+    # Backfill-risk-levels command (Phase 261.2)
+    backfill_risk_levels_parser = subparsers.add_parser("backfill-risk-levels",
+                                                        help="Extract risk levels from raw_record JSON")
+    backfill_risk_levels_parser.add_argument("case_id", help="Case identifier")
+    backfill_risk_levels_parser.add_argument("--verbose", "-v", action="store_true",
+                                             help="Show detailed error traces")
+    backfill_risk_levels_parser.add_argument("--base-path", default=db_base_path,
+                                             help=f"Base path for case databases")
+
     args = parser.parse_args()
 
     if args.command == "analyze":
@@ -994,6 +1325,18 @@ Examples:
 
     elif args.command == "verify-status":
         sys.exit(cmd_verify_status(args))
+
+    elif args.command == "validate-compromise":
+        sys.exit(cmd_validate_compromise(args))
+
+    elif args.command == "identify-duplicates":
+        sys.exit(cmd_identify_duplicates(args))
+
+    elif args.command == "merge-duplicates":
+        sys.exit(cmd_merge_duplicates(args))
+
+    elif args.command == "backfill-risk-levels":
+        sys.exit(cmd_backfill_risk_levels(args))
 
     else:
         parser.print_help()
