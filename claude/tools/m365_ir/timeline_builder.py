@@ -19,6 +19,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import List, Dict, Optional, Any, Tuple
 from pathlib import Path
+import hashlib
+import sqlite3
 import sys
 
 MAIA_ROOT = Path(__file__).parent.parent.parent.parent
@@ -272,15 +274,23 @@ class TimelineBuilder:
     """
     Build and analyze attack timelines.
 
+    Phase 260: Now supports database persistence for incremental builds.
+
     Usage:
+        # In-memory (original)
         builder = TimelineBuilder()
         timeline = builder.build(signin_entries, audit_entries)
-        summary = builder.get_summary(timeline)
-        md = builder.format_markdown(timeline)
+
+        # Persisted (new)
+        from log_database import IRLogDatabase
+        db = IRLogDatabase(case_id="PIR-CASE-001")
+        builder = TimelineBuilder(db=db)
+        builder.build_and_persist(incremental=True)
     """
 
-    def __init__(self, home_country: str = "AU"):
+    def __init__(self, home_country: str = "AU", db=None):
         self.home_country = home_country
+        self.db = db
 
     def build(
         self,
@@ -379,6 +389,272 @@ class TimelineBuilder:
             })
 
         return pir_events
+
+    # ================================================================
+    # Phase 260: Timeline Persistence Methods
+    # ================================================================
+
+    def build_and_persist(
+        self,
+        incremental: bool = True,
+        force_rebuild: bool = False
+    ) -> Dict[str, Any]:
+        """
+        Build timeline from raw logs and persist to database.
+
+        Args:
+            incremental: Only process new records since last build
+            force_rebuild: Clear existing timeline and rebuild from scratch
+
+        Returns:
+            Build result with statistics
+        """
+        if not self.db:
+            raise ValueError("Database required for persistence. Pass db= to __init__")
+
+        import json
+        from claude.tools.m365_ir.timeline_filter import (
+            is_interesting_event, get_event_severity, map_mitre_technique
+        )
+
+        conn = self.db.connect()
+        cursor = conn.cursor()
+
+        build_start = datetime.now().isoformat()
+        events_added = 0
+        events_updated = 0
+
+        # Get last processed timestamps per source if incremental
+        last_processed = {}
+        if incremental and not force_rebuild:
+            cursor.execute("""
+                SELECT source_type, MAX(timestamp) as last_ts
+                FROM timeline_events
+                GROUP BY source_type
+            """)
+            for row in cursor.fetchall():
+                last_processed[row['source_type']] = row['last_ts']
+
+        # Process sign_in_logs
+        where_clause = ""
+        if 'sign_in_logs' in last_processed:
+            where_clause = f"WHERE timestamp > '{last_processed['sign_in_logs']}'"
+
+        cursor.execute(f"SELECT * FROM sign_in_logs {where_clause} ORDER BY timestamp")
+        for row in cursor.fetchall():
+            event_dict = dict(row)
+            event_dict['source_type'] = 'sign_in_logs'
+
+            if is_interesting_event(event_dict, self.home_country):
+                event_hash = compute_event_hash(
+                    row['timestamp'],
+                    row['user_principal_name'],
+                    f"Sign-in from {row['location_country']}" if row['location_country'] else "Sign-in",
+                    row['id']
+                )
+
+                severity = get_event_severity(event_dict)
+                mitre = map_mitre_technique(event_dict)
+
+                try:
+                    cursor.execute("""
+                        INSERT INTO timeline_events
+                        (event_hash, timestamp, user_principal_name, action, details,
+                         source_type, source_id, severity, mitre_technique,
+                         ip_address, location_country, client_app, created_at, created_by)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        event_hash,
+                        event_dict['timestamp'],
+                        event_dict['user_principal_name'],
+                        f"Sign-in from {event_dict.get('location_country')}" if event_dict.get('location_country') else "Sign-in",
+                        event_dict.get('app_display_name', '') or '',
+                        'sign_in_logs',
+                        event_dict['id'],
+                        severity,
+                        mitre,
+                        event_dict.get('ip_address'),
+                        event_dict.get('location_country'),
+                        event_dict.get('app_display_name'),
+                        datetime.now().isoformat(),
+                        get_analyst_name()
+                    ))
+                    events_added += 1
+                except sqlite3.IntegrityError:
+                    # Duplicate event_hash - skip
+                    pass
+
+        # Record build history
+        cursor.execute("""
+            INSERT INTO timeline_build_history
+            (build_timestamp, build_type, events_added, events_updated,
+             source_tables, home_country, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, (
+            build_start,
+            'incremental' if incremental else 'full',
+            events_added,
+            events_updated,
+            json.dumps({'sign_in_logs': 1}),
+            self.home_country,
+            'completed'
+        ))
+
+        conn.commit()
+        conn.close()
+
+        return {
+            'events_added': events_added,
+            'events_updated': events_updated,
+            'build_type': 'incremental' if incremental else 'full'
+        }
+
+    def add_annotation(
+        self,
+        event_id: int,
+        annotation_type: str,
+        content: str,
+        pir_section: Optional[str] = None
+    ) -> int:
+        """
+        Add analyst annotation to timeline event.
+
+        Args:
+            event_id: Timeline event ID
+            annotation_type: Type (note, finding, question, ioc, false_positive)
+            content: Annotation content
+            pir_section: PIR section to include in (optional)
+
+        Returns:
+            Annotation ID
+        """
+        if not self.db:
+            raise ValueError("Database required")
+
+        conn = self.db.connect()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO timeline_annotations
+            (timeline_event_id, annotation_type, content, pir_section, created_at, created_by)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            event_id,
+            annotation_type,
+            content,
+            pir_section,
+            datetime.now().isoformat(),
+            get_analyst_name()
+        ))
+
+        annotation_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return annotation_id
+
+    def exclude_event(self, event_id: int, reason: str) -> None:
+        """
+        Soft-delete event from timeline with reason.
+
+        Args:
+            event_id: Timeline event ID
+            reason: Exclusion reason
+        """
+        if not self.db:
+            raise ValueError("Database required")
+
+        conn = self.db.connect()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            UPDATE timeline_events
+            SET excluded = 1, exclusion_reason = ?
+            WHERE id = ?
+        """, (reason, event_id))
+
+        conn.commit()
+        conn.close()
+
+    def get_timeline(
+        self,
+        user: Optional[str] = None,
+        phase: Optional[str] = None,
+        severity: Optional[str] = None,
+        include_excluded: bool = False
+    ) -> List[Dict[str, Any]]:
+        """
+        Query persisted timeline with filters.
+
+        Args:
+            user: Filter by user (optional)
+            phase: Filter by phase (optional)
+            severity: Filter by severity (optional)
+            include_excluded: Include soft-deleted events
+
+        Returns:
+            List of timeline event dicts
+        """
+        if not self.db:
+            raise ValueError("Database required")
+
+        conn = self.db.connect()
+        cursor = conn.cursor()
+
+        where_clauses = []
+        params = []
+
+        if not include_excluded:
+            where_clauses.append("excluded = 0")
+
+        if user:
+            where_clauses.append("user_principal_name = ?")
+            params.append(user)
+
+        if phase:
+            where_clauses.append("phase = ?")
+            params.append(phase)
+
+        if severity:
+            where_clauses.append("severity = ?")
+            params.append(severity)
+
+        where_sql = " AND ".join(where_clauses) if where_clauses else "1=1"
+
+        cursor.execute(f"""
+            SELECT * FROM timeline_events
+            WHERE {where_sql}
+            ORDER BY timestamp
+        """, params)
+
+        events = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        return events
+
+
+def compute_event_hash(timestamp: str, user: str, action: str, source_id: int) -> str:
+    """Generate unique hash for timeline event deduplication."""
+    data = f"{timestamp}|{user}|{action}|{source_id}"
+    return hashlib.sha256(data.encode()).hexdigest()
+
+
+def get_analyst_name() -> str:
+    """Get analyst name for created_by field."""
+    import os
+    import subprocess
+
+    if name := os.environ.get('MAIA_ANALYST'):
+        return name
+
+    try:
+        result = subprocess.run(
+            ['git', 'config', 'user.name'],
+            capture_output=True, text=True, check=True
+        )
+        return result.stdout.strip()
+    except:
+        return 'system'
 
 
 if __name__ == "__main__":

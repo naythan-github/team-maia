@@ -32,7 +32,8 @@ DEFAULT_BASE_PATH = os.path.expanduser("~/work_projects/ir_cases")
 # v1: Initial schema (Phase 226)
 # v2: Compression - raw_record and audit_data stored as BLOB (Phase 229)
 # v3: Verification - verification_summary table (Phase 241)
-SCHEMA_VERSION = 3
+# v4: Timeline persistence - timeline_events, timeline_annotations, timeline_phases, timeline_build_history (Phase 260)
+SCHEMA_VERSION = 4
 
 
 class IRLogDatabase:
@@ -605,6 +606,131 @@ class IRLogDatabase:
         """)
 
         # ================================================================
+        # Timeline Persistence Tables (Phase 260)
+        # Persisted timeline for incremental builds, analyst annotations, and PIR integration
+        # ================================================================
+
+        # Timeline Events table - Core persisted timeline
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS timeline_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                -- Event identification
+                event_hash TEXT NOT NULL UNIQUE,
+
+                -- Core event data
+                timestamp TEXT NOT NULL,
+                user_principal_name TEXT NOT NULL,
+                action TEXT NOT NULL,
+                details TEXT,
+
+                -- Source traceability (FK to raw log tables)
+                source_type TEXT NOT NULL,
+                source_id INTEGER NOT NULL,
+
+                -- Classification
+                phase TEXT,
+                severity TEXT DEFAULT 'INFO',
+                mitre_technique TEXT,
+
+                -- Evidence (denormalized for query performance)
+                ip_address TEXT,
+                location_country TEXT,
+                client_app TEXT,
+
+                -- Metadata
+                created_at TEXT NOT NULL,
+                created_by TEXT DEFAULT 'system',
+
+                -- Soft delete for timeline curation
+                excluded INTEGER DEFAULT 0,
+                exclusion_reason TEXT
+            )
+        """)
+
+        # Timeline Annotations table - Analyst notes and findings
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS timeline_annotations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                -- Link to timeline event
+                timeline_event_id INTEGER NOT NULL,
+
+                -- Annotation content
+                annotation_type TEXT NOT NULL,
+                content TEXT NOT NULL,
+
+                -- PIR integration
+                pir_section TEXT,
+                include_in_pir INTEGER DEFAULT 1,
+
+                -- Metadata
+                created_at TEXT NOT NULL,
+                created_by TEXT DEFAULT 'analyst',
+                updated_at TEXT,
+
+                FOREIGN KEY (timeline_event_id) REFERENCES timeline_events(id)
+            )
+        """)
+
+        # Timeline Phases table - Attack phase boundaries
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS timeline_phases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                -- Phase definition
+                phase TEXT NOT NULL,
+                phase_start TEXT NOT NULL,
+                phase_end TEXT,
+
+                -- Trigger event
+                trigger_event_id INTEGER,
+
+                -- Classification
+                confidence TEXT DEFAULT 'MEDIUM',
+                description TEXT NOT NULL,
+
+                -- Evidence count (denormalized)
+                event_count INTEGER DEFAULT 0,
+
+                -- Metadata
+                created_at TEXT NOT NULL,
+                updated_at TEXT,
+
+                FOREIGN KEY (trigger_event_id) REFERENCES timeline_events(id)
+            )
+        """)
+
+        # Timeline Build History table - Audit trail of timeline generation
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS timeline_build_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+                -- Build metadata
+                build_timestamp TEXT NOT NULL,
+                build_type TEXT NOT NULL,
+
+                -- Statistics
+                events_added INTEGER DEFAULT 0,
+                events_updated INTEGER DEFAULT 0,
+                phases_detected INTEGER DEFAULT 0,
+
+                -- Source data summary
+                source_tables TEXT,
+                date_range_start TEXT,
+                date_range_end TEXT,
+
+                -- Parameters used
+                home_country TEXT DEFAULT 'AU',
+                parameters TEXT,
+
+                -- Status
+                status TEXT DEFAULT 'completed',
+                error_message TEXT
+            )
+        """)
+
+        # ================================================================
         # Auth Status View (Phase 258 - PIR-FYNA-2025-12-08 lessons learned)
         # Eliminates ambiguity in authentication status interpretation.
         # conditional_access_status='notApplied' does NOT mean success!
@@ -643,6 +769,45 @@ class IRLogDatabase:
                 END as auth_confidence_pct
 
             FROM sign_in_logs
+        """)
+
+        # ================================================================
+        # Timeline View (Phase 260)
+        # Unified timeline combining events with annotations
+        # ================================================================
+        cursor.execute("""
+            CREATE VIEW IF NOT EXISTS v_timeline AS
+            SELECT
+                te.id,
+                te.timestamp,
+                te.user_principal_name,
+                te.action,
+                te.details,
+                te.source_type,
+                te.source_id,
+                te.phase,
+                te.severity,
+                te.mitre_technique,
+                te.ip_address,
+                te.location_country,
+                te.client_app,
+                te.excluded,
+                te.exclusion_reason,
+                te.created_at,
+                te.created_by,
+
+                -- Aggregated annotations
+                (SELECT COUNT(*) FROM timeline_annotations ta WHERE ta.timeline_event_id = te.id) as annotation_count,
+                (SELECT GROUP_CONCAT(ta.annotation_type, ', ') FROM timeline_annotations ta WHERE ta.timeline_event_id = te.id) as annotation_types,
+
+                -- Phase context
+                tp.phase as phase_name,
+                tp.confidence as phase_confidence
+
+            FROM timeline_events te
+            LEFT JOIN timeline_phases tp ON te.phase = tp.phase
+            WHERE te.excluded = 0
+            ORDER BY te.timestamp
         """)
 
     def _create_indexes(self, cursor: sqlite3.Cursor) -> None:
@@ -979,6 +1144,72 @@ class IRLogDatabase:
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_svc_principal_enabled
             ON service_principals(account_enabled)
+        """)
+
+        # ================================================================
+        # Timeline Persistence indexes (Phase 260)
+        # ================================================================
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_timeline_timestamp
+            ON timeline_events(timestamp)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_timeline_user
+            ON timeline_events(user_principal_name)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_timeline_phase
+            ON timeline_events(phase)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_timeline_severity
+            ON timeline_events(severity)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_timeline_source
+            ON timeline_events(source_type, source_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_timeline_mitre
+            ON timeline_events(mitre_technique)
+        """)
+
+        # Timeline annotations indexes
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_annotation_event
+            ON timeline_annotations(timeline_event_id)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_annotation_type
+            ON timeline_annotations(annotation_type)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_annotation_pir
+            ON timeline_annotations(pir_section)
+        """)
+
+        # Timeline phases indexes
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_phase_name
+            ON timeline_phases(phase)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_phase_start
+            ON timeline_phases(phase_start)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_phase_confidence
+            ON timeline_phases(confidence)
+        """)
+
+        # Timeline build history indexes
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_build_timestamp
+            ON timeline_build_history(build_timestamp)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_build_status
+            ON timeline_build_history(status)
         """)
 
 
