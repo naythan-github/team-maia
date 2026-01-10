@@ -150,13 +150,13 @@ class ReportGenerator:
         Results are cached per recommendation_id for performance.
 
         Args:
-            recommendation: Recommendation object
+            recommendation: Recommendation dict or object
 
         Returns:
             True if quick win, False otherwise
         """
         # Get recommendation ID for caching
-        rec_id = getattr(recommendation, 'recommendation_id', None)
+        rec_id = self._get_value(recommendation, 'recommendation_id')
 
         # Check cache first
         if rec_id and rec_id in self._quick_win_cache:
@@ -166,14 +166,15 @@ class ReportGenerator:
         is_quick_win = False
 
         # Check metadata first
-        if hasattr(recommendation, 'metadata') and recommendation.metadata:
-            effort = recommendation.metadata.get('effort', '').lower()
+        metadata = self._get_value(recommendation, 'metadata', {})
+        if isinstance(metadata, dict):
+            effort = metadata.get('effort', '').lower()
             if effort == 'low':
                 is_quick_win = True
 
         # Check title for quick win keywords (if not already determined)
         if not is_quick_win:
-            title = getattr(recommendation, 'title', '').lower()
+            title = self._get_value(recommendation, 'title', '').lower()
             for keyword in self.QUICK_WIN_KEYWORDS:
                 if keyword in title:
                     is_quick_win = True
@@ -417,54 +418,160 @@ class ReportGenerator:
         customer_slug: str
     ) -> str:
         """
-        Generate Markdown format report.
+        Generate Markdown format report with enhanced customer deliverable formatting.
 
         Args:
-            recommendations: List of recommendation objects
+            recommendations: List of recommendation dicts
             customer_slug: Customer identifier
 
         Returns:
-            Markdown string
+            Markdown string formatted for customer delivery
         """
         lines = []
-        lines.append(f"# Cost Optimization Report - {customer_slug}")
+        lines.append(f"# Azure Cost Optimization Report")
+        lines.append(f"## Customer: {customer_slug}")
         lines.append("")
-        lines.append(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        lines.append(f"**Report Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
         lines.append(f"**Total Recommendations**: {len(recommendations)}")
         lines.append("")
 
-        # Calculate total savings
+        # Calculate total savings - handle both dict and object access
         total_monthly = sum(
-            getattr(rec, 'estimated_savings_monthly', 0) or 0
+            self._get_value(rec, 'estimated_savings_monthly', 0)
             for rec in recommendations
         )
         total_annual = sum(
-            getattr(rec, 'estimated_savings_annual', 0) or 0
+            self._get_value(rec, 'estimated_savings_annual', 0)
             for rec in recommendations
         )
 
-        lines.append("## Summary")
+        # Count by impact level
+        high_impact = sum(1 for rec in recommendations if self._get_value(rec, 'impact', '').upper() == 'HIGH')
+        medium_impact = sum(1 for rec in recommendations if self._get_value(rec, 'impact', '').upper() == 'MEDIUM')
+        low_impact = sum(1 for rec in recommendations if self._get_value(rec, 'impact', '').upper() == 'LOW')
+
+        lines.append("## Executive Summary")
         lines.append("")
         lines.append(f"- **Potential Monthly Savings**: ${total_monthly:,.2f}")
         lines.append(f"- **Potential Annual Savings**: ${total_annual:,.2f}")
+        lines.append(f"- **High Impact Recommendations**: {high_impact}")
+        lines.append(f"- **Medium Impact Recommendations**: {medium_impact}")
+        lines.append(f"- **Low Impact Recommendations**: {low_impact}")
         lines.append("")
 
-        lines.append("## Recommendations")
+        # Quick wins section
+        quick_wins = [rec for rec in recommendations if self._is_quick_win(rec)]
+        if quick_wins:
+            quick_win_savings = sum(self._get_value(rec, 'estimated_savings_monthly', 0) for rec in quick_wins)
+            lines.append("### Quick Wins (Low Effort, High Impact)")
+            lines.append("")
+            lines.append(f"**{len(quick_wins)} recommendations** with potential savings of **${quick_win_savings:,.2f}/month**")
+            lines.append("")
+            lines.append("These are low-effort optimizations that can typically be implemented within 1-2 hours:")
+            lines.append("")
+            for i, rec in enumerate(quick_wins[:5], 1):  # Show top 5 quick wins
+                title = self._get_value(rec, 'title', 'Untitled')
+                savings = self._get_value(rec, 'estimated_savings_monthly', 0)
+                lines.append(f"{i}. {title} - ${savings:,.2f}/month")
+            lines.append("")
+
+        lines.append("---")
+        lines.append("")
+        lines.append("## Detailed Recommendations")
         lines.append("")
 
         for i, rec in enumerate(recommendations, 1):
-            lines.append(f"### {i}. {getattr(rec, 'title', 'Untitled')}")
+            # Get recommendation details - handle both dict and object
+            title = self._get_value(rec, 'title', 'Cost Optimization Opportunity')
+            impact = self._get_value(rec, 'impact', 'Unknown')
+            category = self._get_value(rec, 'category', 'Unknown')
+            monthly_savings = self._get_value(rec, 'estimated_savings_monthly', 0)
+            annual_savings = self._get_value(rec, 'estimated_savings_annual', 0)
+            recommendation_text = self._get_value(rec, 'recommendation', 'See Azure Advisor for details')
+            resource_id = self._get_value(rec, 'resource_id', '')
+
+            # Format impact with emoji
+            impact_emoji = {"HIGH": "🔴", "MEDIUM": "🟡", "LOW": "🟢"}.get(impact.upper(), "⚪")
+
+            lines.append(f"### {i}. {title}")
             lines.append("")
-            lines.append(f"**Impact**: {getattr(rec, 'impact', 'Unknown')}")
-            lines.append(f"**Category**: {getattr(rec, 'category', 'Unknown')}")
-            lines.append(f"**Monthly Savings**: ${getattr(rec, 'estimated_savings_monthly', 0):,.2f}")
-            lines.append("")
-            lines.append(f"**Recommendation**: {getattr(rec, 'recommendation', '')}")
+            lines.append(f"{impact_emoji} **Impact Level**: {impact}")
+            lines.append(f"📂 **Category**: {category}")
+            lines.append(f"💰 **Monthly Savings**: ${monthly_savings:,.2f}")
+            if annual_savings:
+                lines.append(f"💰 **Annual Savings**: ${annual_savings:,.2f}")
             lines.append("")
 
-            resource_id = getattr(rec, 'resource_id', '')
+            lines.append("**Description**:")
+            lines.append(f"> {recommendation_text}")
+            lines.append("")
+
             if resource_id:
-                lines.append(f"**Resource**: `{resource_id}`")
+                lines.append("**Affected Resource**:")
+                lines.append(f"```")
+                lines.append(f"{resource_id}")
+                lines.append(f"```")
                 lines.append("")
 
+            # Add implementation guidance based on title/category
+            if self._is_quick_win(rec):
+                lines.append("**Implementation**:")
+                lines.append("- ⏱️ **Effort**: Low (< 1 hour)")
+                lines.append("- ⚠️ **Risk**: Low")
+                lines.append("- ✅ **Priority**: Quick Win - Implement immediately")
+                lines.append("")
+
+                # Add specific commands for orphaned resources
+                if 'disk' in title.lower() or 'disk' in recommendation_text.lower():
+                    lines.append("**Azure CLI Commands**:")
+                    lines.append("```bash")
+                    lines.append("# List unattached disks")
+                    lines.append("az disk list --query \"[?diskState=='Unattached']\" -o table")
+                    lines.append("")
+                    if resource_id:
+                        disk_name = resource_id.split('/')[-1] if '/' in resource_id else resource_id
+                        rg_match = '/resourceGroups/' in resource_id
+                        if rg_match:
+                            rg = resource_id.split('/resourceGroups/')[1].split('/')[0]
+                            lines.append(f"# Delete this specific disk")
+                            lines.append(f"az disk delete --resource-group {rg} --name {disk_name} --yes")
+                    else:
+                        lines.append("# Delete specific disk (replace values)")
+                        lines.append("az disk delete --resource-group <RG_NAME> --name <DISK_NAME> --yes")
+                    lines.append("```")
+                    lines.append("")
+            else:
+                lines.append("**Implementation**:")
+                lines.append("- ⏱️ **Effort**: Medium-High")
+                lines.append("- ⚠️ **Risk**: Requires testing and validation")
+                lines.append("- 📋 **Priority**: Plan during maintenance window")
+                lines.append("")
+
+            lines.append("---")
+            lines.append("")
+
+        # Footer with next steps
+        lines.append("## Next Steps")
+        lines.append("")
+        lines.append("1. **Review Quick Wins** - Start with low-effort, high-impact optimizations")
+        lines.append("2. **Validate Recommendations** - Confirm resources are truly unused/over-provisioned")
+        lines.append("3. **Plan Implementation** - Schedule changes during appropriate maintenance windows")
+        lines.append("4. **Track Savings** - Monitor billing after implementation to confirm savings")
+        lines.append("")
+        lines.append("---")
+        lines.append("")
+        lines.append("*Report generated by Azure Cost Optimization Platform v1.1.0*")
+        lines.append("")
+
         return "\n".join(lines)
+
+    def _get_value(self, rec: Any, key: str, default: Any = None) -> Any:
+        """
+        Get value from recommendation dict or object.
+
+        Handles both dictionary access and object attribute access.
+        """
+        if isinstance(rec, dict):
+            return rec.get(key, default) or default
+        else:
+            return getattr(rec, key, default) or default
