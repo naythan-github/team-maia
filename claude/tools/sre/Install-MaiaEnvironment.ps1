@@ -36,8 +36,23 @@
     .\Install-MaiaEnvironment.ps1 -WSLVersion 2
 
 .NOTES
-    Version: 2.11
+    Version: 2.14
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
+
+    Changed v2.14:
+    - Improved Ubuntu initialization using official Microsoft manual installation method
+    - Added retry logic for ubuntu2204.exe availability after AppX install
+    - Added WSL distro registration verification
+    - Enhanced user creation with proper error checking
+
+    Changed v2.13:
+    - Replaced unreliable wsl --install with direct AppX package installation
+    - Automatically creates default user (maia/Test123!) without interactive prompts
+    - Downloads Ubuntu 22.04 directly from Microsoft CDN and installs via Add-AppxPackage
+
+    Changed v2.12:
+    - Auto-detects and installs WSL2 kernel update when missing (fixes 0x800701bc error)
+    - Prevents Ubuntu installation failure when WSL2 kernel is not updated
 
     Changed v2.11:
     - Fixed WSL path translation error when running from network/RDP drives
@@ -535,7 +550,39 @@ function Install-WSL {
         Request-Restart "WSL features enabled but command not available"
     }
 
-    # Step 4: Set WSL version as default
+    # Step 4: Install WSL2 kernel update if using WSL2
+    if ($script:Config.WSLVersion -eq 2) {
+        Write-Host "    Checking WSL2 kernel update..." -ForegroundColor Gray
+
+        # Try to set WSL2 as default - this will fail if kernel update is missing
+        $testResult = wsl --set-default-version 2 2>&1 | Out-String
+
+        if ($testResult -match "0x800701bc" -or $testResult -match "kernel") {
+            Write-Status "WSL2 kernel update required" "WARN"
+
+            if (-not $CheckOnly) {
+                Write-Host "    Downloading WSL2 kernel update..." -ForegroundColor Gray
+
+                $kernelUrl = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+                $kernelMsi = "$env:TEMP\wsl_update_x64.msi"
+
+                if (Install-FromWeb -Name "WSL2 Kernel Update" -Url $kernelUrl -OutFile $kernelMsi -Arguments "/quiet /norestart" -MinFileSizeMB 10) {
+                    Write-Status "WSL2 kernel update installed" "OK"
+
+                    # Retry setting WSL2 as default
+                    wsl --set-default-version 2 2>&1 | Out-Null
+                } else {
+                    Write-Status "Failed to install WSL2 kernel update" "ERROR"
+                    Write-Host "    Manual download: https://aka.ms/wsl2kernel" -ForegroundColor Yellow
+                    return $false
+                }
+            } else {
+                return $false
+            }
+        }
+    }
+
+    # Step 5: Set WSL version as default
     Write-Host "    Setting WSL$($script:Config.WSLVersion) as default..." -ForegroundColor Gray
     wsl --set-default-version $script:Config.WSLVersion 2>&1 | Out-Null
 
@@ -567,17 +614,104 @@ function Install-Ubuntu {
         return $false
     }
 
-    Write-Host "    Installing $($script:Config.UbuntuVersion)..." -ForegroundColor Gray
+    Write-Host "    Downloading and installing Ubuntu 22.04 AppX package..." -ForegroundColor Gray
+    Write-Host "    This may take 5-10 minutes on first install..." -ForegroundColor Yellow
 
     try {
-        wsl --install -d $script:Config.UbuntuVersion --no-launch
+        # Download Ubuntu 22.04 AppX bundle
+        $ubuntuUrl = "https://aka.ms/wslubuntu2204"
+        $appxPath = "$env:TEMP\Ubuntu2204.appx"
 
-        Write-Status "$($script:Config.UbuntuVersion) installation initiated" "OK"
-        Write-Status "After restart, launch Ubuntu from Start Menu to complete setup" "WARN"
-        $script:Results.NeedsRestart = $true
-        return $false
+        Write-Host "    Downloading Ubuntu package..." -ForegroundColor Gray
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        Invoke-WebRequest -Uri $ubuntuUrl -OutFile $appxPath -UseBasicParsing -TimeoutSec 300
+
+        if (-not (Test-Path $appxPath)) {
+            Write-Status "Failed to download Ubuntu package" "ERROR"
+            return $false
+        }
+
+        $fileSizeMB = [math]::Round((Get-Item $appxPath).Length / 1MB, 1)
+        Write-Host "    Downloaded: ${fileSizeMB}MB" -ForegroundColor Gray
+
+        # Install the AppX package
+        Write-Host "    Installing Ubuntu AppX package..." -ForegroundColor Gray
+        Add-AppxPackage -Path $appxPath -ErrorAction Stop
+
+        Write-Status "Ubuntu 22.04 AppX installed" "OK"
+
+        # Wait for installation to complete
+        Start-Sleep -Seconds 5
+
+        # Initialize Ubuntu with default user (non-interactive)
+        Write-Host "    Initializing Ubuntu with default user..." -ForegroundColor Gray
+        Write-Host "    Default user: maia" -ForegroundColor Gray
+        Write-Host "    Default password: Test123!" -ForegroundColor Gray
+
+        # Find the Ubuntu executable (may take a moment to appear after AppX install)
+        Write-Host "    Waiting for Ubuntu executable to become available..." -ForegroundColor Gray
+        $ubuntuExe = $null
+        for ($i = 1; $i -le 10; $i++) {
+            $ubuntuExe = Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu2204.exe" -ErrorAction SilentlyContinue
+            if ($ubuntuExe) { break }
+            Start-Sleep -Seconds 2
+        }
+
+        if (-not $ubuntuExe) {
+            Write-Status "Ubuntu executable not found after AppX installation" "ERROR"
+            Write-Host "    Try: Get-AppxPackage *Ubuntu* | Select Name,Status" -ForegroundColor Yellow
+            return $false
+        }
+
+        Write-Host "    Initializing Ubuntu (this extracts files and may take 2-3 minutes)..." -ForegroundColor Gray
+
+        # Install Ubuntu as root first (no user creation prompt)
+        $installOutput = & $ubuntuExe install --root 2>&1
+        Start-Sleep -Seconds 5
+
+        # Verify WSL distro was registered
+        $distroCheck = wsl --list --quiet 2>&1 | Out-String
+        if ($distroCheck -notmatch "Ubuntu") {
+            Write-Status "Ubuntu distro not registered with WSL" "ERROR"
+            Write-Host "    Install output: $installOutput" -ForegroundColor Yellow
+            return $false
+        }
+
+        # Create the default user via WSL
+        Write-Host "    Creating default user 'maia'..." -ForegroundColor Gray
+        wsl -d Ubuntu-22.04 -u root -- useradd -m -s /bin/bash maia 2>$null
+        wsl -d Ubuntu-22.04 -u root -- bash -c "echo 'maia:Test123!' | chpasswd" 2>$null
+        wsl -d Ubuntu-22.04 -u root -- usermod -aG sudo maia 2>$null
+
+        # Configure maia as default user for this distro
+        & $ubuntuExe config --default-user maia
+
+        # Verify user was created successfully
+        $userCheck = wsl -d Ubuntu-22.04 -u maia -- whoami 2>&1
+        if ($userCheck -match "maia") {
+            Write-Status "Ubuntu initialized with user 'maia'" "OK"
+        } else {
+            Write-Status "User creation may have issues - verify with: wsl whoami" "WARN"
+        }
+
+        # Cleanup
+        Remove-Item $appxPath -Force -ErrorAction SilentlyContinue
+
+        # Set as default WSL distro
+        wsl --set-default Ubuntu-22.04 2>&1 | Out-Null
+
+        Write-Status "Ubuntu 22.04 installation complete" "OK"
+        return $true
+
     } catch {
         Write-Status "Failed to install Ubuntu: $_" "ERROR"
+        Write-Host "    Error details: $($_.Exception.Message)" -ForegroundColor Red
+
+        # Cleanup on failure
+        if (Test-Path $appxPath) {
+            Remove-Item $appxPath -Force -ErrorAction SilentlyContinue
+        }
+
         return $false
     }
 }
@@ -1019,7 +1153,7 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.11"
+Write-Banner "MAIA Environment Installer v2.14"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow

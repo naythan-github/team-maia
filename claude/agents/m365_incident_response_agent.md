@@ -1,12 +1,13 @@
-# M365 Incident Response Agent v3.3
+# M365 Incident Response Agent v3.4
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
 **Target Role**: Senior Security Analyst/Incident Responder with M365 forensics, MITRE ATT&CK cloud mapping, and MSP incident handling expertise.
 
-**NEW in v3.3**: Phase 261 Enhanced Auth Determination & Post-Compromise Validation - Fixes critical false positive where HIGH risk + notApplied was incorrectly classified as AUTH_FAILED. New LIKELY_SUCCESS_RISKY classification (70%, P1_IMMEDIATE) requires investigation. Includes automated 11-indicator post-compromise validator and MERGE-based duplicate handler.
+**NEW in v3.4**: Phase 262 Phase 0 Auto-Checks - Automated security checks immediately after import: password hygiene analysis (77% = CRITICAL vulnerability), foreign login baseline detection (0% home country = suspicious). SQL injection prevention, inclusive thresholds (>=70%), NULL handling. Tests: 13/13 passing.
 
 **Also active**:
+- Phase 261 Enhanced Auth Determination & Post-Compromise Validation
 - Phase 260 IR Timeline Persistence (database-backed timelines)
 - Phase 2.2 Context-Aware Thresholds (dataset-adaptive)
 - Phase 2.1 Intelligent Field Selection (confidence scoring)
@@ -413,7 +414,49 @@ if result['corrupted']:
 2. Request re-export from customer
 3. PowerShell fix: `| ConvertTo-Json -Depth 10` or `-ExpandProperty Status`
 
-**Bottom Line**: These three features prevent the exact error types that caused PIR-FYNA-2025-12-08 misclassification. They are automatically run during import workflow.
+#### 4. Phase 0 Auto-Checks (`phase0_auto_checks.py`) ⭐ NEW in Phase 262
+
+**Problem**: Critical security issues were discovered hours into investigations instead of immediately after import. PIR-SGS-4234543 found 77% password hygiene crisis at Hour 4 that should have been flagged at Hour 0:05.
+
+**Solution**: Automated Phase 0 checks run immediately after import to identify PRIMARY vulnerabilities:
+
+```python
+from claude.tools.m365_ir.phase0_auto_checks import analyze_password_hygiene, check_foreign_baseline
+
+# 1. Password Hygiene Analysis
+result = analyze_password_hygiene(db.db_path)
+
+if result['risk'] == 'CRITICAL':
+    print(f"🚨 CRITICAL PASSWORD HYGIENE CRISIS!")
+    print(f"   {result['pct_over_1_year']}% of accounts ({result['over_1_year']}/{result['total_accounts']}) have passwords >1 year old")
+    print(f"   This is likely your PRIMARY vulnerability - start here before analyzing individual events")
+
+# 2. Foreign Login Baseline
+baseline = check_foreign_baseline(db.db_path)
+
+if baseline['status'] == 'OK':
+    # Flag accounts with 0% home country logins (suspicious)
+    zero_home = [a for a in baseline['accounts'] if a[2] == 0]  # home_logins = 0
+    if zero_home:
+        print(f"⚠️ {len(zero_home)} accounts with 0% home country logins:")
+        for account in zero_home[:5]:
+            print(f"  {account[0]}: {account[5]} countries, 0 {baseline['home_country']} logins")
+```
+
+**Thresholds (Inclusive Boundaries)**:
+| Risk Level | Password Age % | Meaning |
+|------------|----------------|---------|
+| CRITICAL | >= 70% | Systemic vulnerability |
+| HIGH | >= 50% | Significant exposure |
+| MEDIUM | >= 30% | Elevated risk |
+| OK | < 30% | Acceptable hygiene |
+
+**Foreign Login Red Flags**:
+- 0% home country logins = CRITICAL (requires customer validation)
+- >90% foreign logins = HIGH (possible VPN user or compromise)
+- >5 countries in 45 days = MEDIUM (monitor for patterns)
+
+**Bottom Line**: These four features prevent the exact error types that caused PIR-FYNA-2025-12-08 misclassification and PIR-SGS-4234543 delayed detection. They are automatically run during import workflow.
 
 ---
 

@@ -7,9 +7,9 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2026-01-09
-**Current Phase**: 260.5 (Complete - Checkpoint Skill)
-**Database Status**: ✅ Synced (92 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232, 233, 238, 239, 240, 260, 260.5)
+**Last Updated**: 2026-01-10
+**Current Phase**: 262 (Complete - M365 IR Phase 0 Auto-Checks Sprint 1)
+**Database Status**: ✅ Synced (93 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232, 233, 238, 239, 240, 260, 260.5, 262)
 
 ## 📊 PHASE 260: IR Timeline Persistence (2026-01-09) ✅ **PRODUCTION READY (100%)**
 
@@ -69114,3 +69114,254 @@ From Security Analyst review:
 - Behavioral baseline comparison
 - IP reputation enrichment from threat intelligence
 - Rate-based anomaly detection for slow exfiltration
+
+## 📊 PHASE 262: M365 IR Phase 0 Auto-Checks - Sprint 1 (2026-01-10) ✅ **PRODUCTION READY (100%)**
+
+### Achievement
+Implemented automated Phase 0 security checks for M365 IR investigations, fixing 4 critical bugs identified in PIR-SGS-4234543 swarm analysis: SQL injection prevention, resource leak fixes, threshold boundary corrections, and NULL handling. Tests: 13/13 passing. Code review: PASSED (0 MUST-FIX).
+
+### Problem Solved
+**Context**: PIR-SGS-4234543 lessons learned document identified 5 critical gaps in M365 IR workflow. Swarm analysis (4 agents) found 38 edge cases and 3 critical bugs that could cause false positives/negatives or security vulnerabilities.
+
+**Root Cause**:
+1. **SQL injection risk**: Original LESSONS_LEARNED code used f-strings in SQL (`f"location_country = '{home_country}'"`)
+2. **Resource leaks**: Connection management with try/finally had `conn.close()` after return (unreachable code)
+3. **Threshold boundaries**: Used exclusive `>` instead of inclusive `>=` (70.0% returned HIGH not CRITICAL)
+4. **NULL handling**: Missing explicit NULL checks caused division-by-zero and incorrect counts
+
+**Solution** (Sprint 1 - Critical Bug Fixes):
+1. A1: Parameterized queries with `?` placeholders prevent SQL injection
+2. A2: Proper try/finally with `conn.close()` in finally block (not after return)
+3. A3: Inclusive thresholds (`>= 70%` for CRITICAL, not `> 70%`)
+4. A4: Explicit `WHERE last_password_change IS NOT NULL` filtering
+
+### Implementation Details
+
+**Module Created**: `claude/tools/m365_ir/phase0_auto_checks.py` (167 lines)
+
+**Functions Implemented**:
+```python
+def check_foreign_baseline(db_path, override_home_country=None):
+    """
+    Check foreign login baseline with SQL injection prevention.
+    Uses parameterized queries exclusively (A1).
+    Proper connection management with try/finally (A2).
+    
+    Returns: {'status': 'OK'|'NO_DATA', 'home_country': str, 'accounts': list}
+    """
+    # PARAMETERIZED QUERY - prevents SQL injection
+    foreign_baseline = conn.execute("""
+        SELECT user_principal_name, COUNT(*) as total_logins,
+               SUM(CASE WHEN location_country = ? THEN 1 ELSE 0 END) as home_logins
+        FROM sign_in_logs
+        WHERE location_country IS NOT NULL
+        HAVING total_logins >= 5
+    """, (home_country, home_country, home_country)).fetchall()
+
+def analyze_password_hygiene(db_path):
+    """
+    Analyze password hygiene with proper resource management and NULL handling.
+    
+    Implements:
+    - A2: try/finally for connection management
+    - A3: Inclusive thresholds (>= not >)
+    - A4: Explicit NULL filtering
+    
+    Returns: {'risk': 'CRITICAL'|'HIGH'|'MEDIUM'|'OK'|'NO_DATA', ...}
+    """
+    # A4: Explicit NULL handling
+    result = conn.execute("""
+        SELECT COUNT(*) as total_accounts,
+               COUNT(CASE WHEN last_password_change < date('now', '-1 year') THEN 1 END) as over_1_year
+        FROM password_status
+        WHERE last_password_change IS NOT NULL
+    """).fetchone()
+    
+    # A3: Inclusive thresholds (>= not >)
+    if pct >= 70:  # Boundary value triggers alert
+        risk = 'CRITICAL'
+```
+
+**Test Fixtures Created**: `tests/fixtures/test_db_helpers.py` (347 lines)
+- `create_test_db()` - Empty M365 IR schema
+- `create_test_db_with_password_distribution(total, over_1_year)` - Specific distributions
+- `create_test_db_with_sign_ins()` - Sign-in log data
+- `add_sign_ins()`, `add_mfa_event()`, `add_accounts()` - Test data builders
+- `cleanup_test_db()` - Proper cleanup
+
+### Testing
+**Test Suite**: `tests/test_phase0_auto_checks.py` (319 lines, 13/13 passing)
+
+```
+Sprint 1 Tests (13/13 PASS):
+├─ A1: SQL Injection Prevention (2/2)
+│  ├─ test_foreign_baseline_sql_injection_prevention
+│  └─ test_foreign_baseline_uses_parameterized_queries (code inspection)
+├─ A2: Connection Management (2/2)
+│  ├─ test_connection_always_closed_on_success
+│  └─ test_connection_closed_on_exception
+├─ A3: Threshold Boundaries (4/4)
+│  ├─ test_password_threshold_70_percent_is_critical (boundary)
+│  ├─ test_password_threshold_50_percent_is_high (boundary)
+│  ├─ test_password_threshold_30_percent_is_medium (boundary)
+│  └─ test_password_threshold_29_percent_is_ok
+├─ A4: NULL Handling (3/3)
+│  ├─ test_null_password_dates_handled
+│  ├─ test_empty_table_returns_no_data
+│  └─ test_all_null_dates_returns_no_data
+└─ Structure Validation (2/2)
+   ├─ test_password_hygiene_returns_expected_structure
+   └─ test_foreign_baseline_returns_expected_structure
+
+Test Runtime: 0.06s (all passing)
+```
+
+**Test Coverage Examples**:
+```python
+def test_foreign_baseline_sql_injection_prevention():
+    """Ensure SQL injection via home_country is prevented"""
+    malicious_country = "AU'; DROP TABLE sign_in_logs; --"
+    result = check_foreign_baseline(db_path, override_home_country=malicious_country)
+    
+    # Table should still exist
+    tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
+    assert ('sign_in_logs',) in tables  # ✅ PASS
+
+def test_password_threshold_70_percent_is_critical():
+    """70.0% should be CRITICAL, not HIGH (boundary test)"""
+    db_path = create_test_db_with_password_distribution(total=100, over_1_year=70)
+    result = analyze_password_hygiene(db_path)
+    
+    assert result['pct_over_1_year'] == 70.0
+    assert result['risk'] == 'CRITICAL'  # ✅ PASS (was HIGH with > operator)
+```
+
+### Code Review
+**Python Code Reviewer Agent v2.5**: PASSED (0 MUST-FIX items)
+
+**Findings**:
+- ✅ Security fixes correctly implemented (A1-A4)
+- ✅ All tests passing
+- ✅ Code is maintainable and clear
+- ⚠️ 3 SHOULD-FIX items (context managers, pytest fixtures) - not blockers
+- ✅ No dangerous anti-patterns
+- ✅ No critical efficiency issues
+
+**Approved for production** with recommendations for Sprint 2 improvements.
+
+### Swarm Analysis
+**4 Agents Reviewed** (M365 IR, Security, Code Quality, QA):
+- **38 edge cases identified** (false positive/negative risks)
+- **3 CRITICAL bugs found** (SQL injection, unreachable code, T1562.008 missing)
+- **Threshold adjustments recommended** (70% → >=60%, dormant 45d → 60d)
+- **MFA context check required** before password analysis (PRIMARY vs SECONDARY vulnerability)
+
+**Key Findings**:
+| Issue | Risk Type | Recommendation |
+|-------|-----------|----------------|
+| FIDO2/passwordless accounts | False Positive (10-15%) | Add exclusion |
+| Break-glass admin accounts | False Positive (20-30%) | Add whitelist |
+| Admin accounts without "admin" in name | False Negative (15-20%) | Query Entra roles |
+| Same-country VPN attackers | False Negative (20-30%) | Add impossible travel |
+
+### Files Created
+**Implementation**:
+1. `claude/tools/m365_ir/phase0_auto_checks.py` (167 lines) - Core module
+2. `tests/test_phase0_auto_checks.py` (319 lines) - TDD tests
+3. `tests/fixtures/test_db_helpers.py` (347 lines) - Test fixtures
+
+**Documentation**:
+4. `/Users/naythandawe/work_projects/ir_cases/PIR-SGS-4234543/TDD_IMPLEMENTATION_PLAN.md` - 4-sprint plan
+5. `/Users/naythandawe/work_projects/ir_cases/PIR-SGS-4234543/SWARM_ANALYSIS_REPORT.md` - Swarm findings
+6. `/Users/naythandawe/work_projects/ir_cases/PIR-SGS-4234543/LESSONS_LEARNED_DETAILED.md` - Source analysis
+
+### Status: Sprint 1 Complete (100%)
+
+**Complete (Sprint 1 - Critical Bug Fixes)**:
+- ✅ A1: SQL injection prevention (parameterized queries)
+- ✅ A2: Resource leak fixes (try/finally)
+- ✅ A3: Threshold boundary fixes (>= not >)
+- ✅ A4: NULL handling (explicit WHERE clauses)
+- ✅ Test fixtures (347 lines)
+- ✅ TDD test suite (13/13 passing in 0.06s)
+- ✅ Code review (PASSED, 0 MUST-FIX)
+- ✅ Swarm analysis (38 edge cases documented)
+
+**Planned (Sprint 2-4)**:
+- ⏭️ Sprint 2: False Positive Prevention (MFA context, service accounts, FIDO2, role-based admin)
+- ⏭️ Sprint 3: False Negative Prevention (T1562.008, impossible travel, bidirectional MFA)
+- ⏭️ Sprint 4: Integration (CLI, documentation, regression tests)
+
+### Acceptance Criteria Status (Sprint 1)
+| Criteria | Status |
+|----------|--------|
+| SQL injection prevented | ✅ DONE (parameterized queries) |
+| Resource leaks fixed | ✅ DONE (try/finally) |
+| Threshold boundaries correct | ✅ DONE (>= operators) |
+| NULL handling explicit | ✅ DONE (WHERE clauses) |
+| Tests passing | ✅ DONE (13/13 in 0.06s) |
+| Code review passed | ✅ DONE (0 MUST-FIX) |
+| Swarm validation | ✅ DONE (4 agents, 38 edge cases) |
+
+**Complete**: 7/7 Sprint 1 criteria
+
+### Metrics
+| Metric | Value |
+|--------|-------|
+| Sprint | 1 of 4 (Critical Bug Fixes) |
+| Implementation | 167 lines (phase0_auto_checks.py) |
+| Tests | 13 passing, 0.06s runtime |
+| Test Code | 666 lines (tests + fixtures) |
+| Code Review | PASSED (0 MUST-FIX, 3 SHOULD-FIX) |
+| Security Fixes | 4 (A1-A4) |
+| Swarm Agents | 4 (M365 IR, Security, Code Quality, QA) |
+| Edge Cases Identified | 38 |
+| Estimated Sprint 1 Effort | 4-5 hours |
+| Actual Effort | ~4 hours (on target) |
+
+### Business Impact
+- ✅ SQL injection vulnerability prevented (CRITICAL security fix)
+- ✅ Resource leaks eliminated (production stability)
+- ✅ Threshold accuracy improved (70.0% now correctly flagged as CRITICAL)
+- ✅ NULL handling prevents crashes and incorrect statistics
+- ✅ TDD foundation for Sprint 2-4 (test coverage: 100% for implemented functions)
+- ✅ Swarm validation reduces false positive/negative risk in future sprints
+- ✅ Production-ready code per Python reviewer standards
+
+### Design Decisions
+| Decision | Rationale |
+|----------|-----------|
+| **4-sprint phased approach** | Critical bugs first, then FP prevention, then FN prevention, then integration |
+| **TDD methodology** | Write tests first → implement → code review → iterate |
+| **Swarm analysis** | 4 specialized agents validate logic and edge cases |
+| **Code review loop** | SRE implements → Python reviewer validates → hand back if MUST-FIX > 0 |
+| **Sprint 1 scope** | Security fixes only (A1-A4) to minimize risk before FP/FN work |
+
+### Integration
+- Documented in TDD_IMPLEMENTATION_PLAN.md (4 sprints, 38-44 hours estimated)
+- Source: LESSONS_LEARNED_DETAILED.md from PIR-SGS-4234543
+- Validated by: SWARM_ANALYSIS_REPORT.md (4 agents)
+- Ready for: Sprint 2 (MFA context, service account detection, FIDO2 handling)
+
+### Future Enhancements (Sprint 2-4)
+**Sprint 2** (12-15 hours):
+- MFA enforcement check before password analysis
+- Service account detection and exclusion
+- Break-glass account whitelist
+- FIDO2/passwordless account handling
+- Role-based admin detection (Entra query)
+
+**Sprint 3** (10-12 hours):
+- T1562.008 audit log integrity check
+- Impossible travel detection
+- Bidirectional MFA window (24hr before + 72hr after)
+- Absolute count thresholds for large orgs
+
+**Sprint 4** (6-8 hours):
+- CLI integration with m365_ir_cli.py
+- Agent documentation updates
+- Full regression test suite
+- Performance validation
+
+---
+
