@@ -42,3 +42,29 @@ tail -3 ~/.maia/logs/pre_compaction_debug.log
 ## Known Issues
 - **Bug Workaround**: Created due to Claude Code Issues [#13572](https://github.com/anthropics/claude-code/issues/13572) and [#13668](https://github.com/anthropics/claude-code/issues/13668)
 - PreCompact hooks don't fire on manual `/compact` (will be deprecated when fixed)
+
+## Automatic Continuous Capture (Phase 263)
+**NEW**: As of Phase 263 (2026-01-10), learning capture is now AUTOMATIC via continuous polling daemon.
+
+**Manual `/capture` is now SUPPLEMENTAL** - the continuous capture daemon handles most learning capture automatically:
+- Polls every 3 minutes for new learnings
+- Survives context compactions (high-water mark tracking)
+- Queue-based durability (no data loss)
+- Expected improvement: 1.9% → >50% capture rate (26x)
+
+**Check daemon status**:
+```bash
+PYTHONPATH=/Users/naythandawe/maia python3 -m claude.tools.learning.continuous_capture.installer status
+```
+
+**View daemon logs**:
+```bash
+tail -f ~/.maia/logs/continuous_capture_stderr.log
+```
+
+**Manual `/capture` is still useful for**:
+- Immediate capture before critical operations
+- Backup/redundancy
+- Debugging learning extraction
+
+See: Phase 263 in SYSTEM_STATE.md for full details

@@ -129,6 +129,97 @@ class CustomerDatabase:
         cursor = conn.execute("SELECT * FROM subscriptions")
         return [dict(row) for row in cursor.fetchall()]
 
+    def store_resource(
+        self,
+        resource_id: str,
+        resource_name: str,
+        resource_type: str,
+        location: str,
+        resource_group: str,
+        subscription_id: str,
+        tags: Optional[Dict[str, str]] = None,
+        properties: Optional[Dict[str, Any]] = None
+    ) -> None:
+        """
+        Store or update a resource in the database.
+
+        Args:
+            resource_id: Full Azure resource ID
+            resource_name: Resource name
+            resource_type: Resource type (e.g., Microsoft.Compute/virtualMachines)
+            location: Azure region
+            resource_group: Resource group name
+            subscription_id: Azure subscription ID
+            tags: Resource tags (optional)
+            properties: Additional resource properties (optional)
+        """
+        import json
+        conn = self._get_connection()
+        try:
+            # Convert tags dict to JSON string
+            tags_json = json.dumps(tags) if tags else None
+
+            conn.execute("""
+                INSERT INTO resources (
+                    resource_id, resource_name, resource_type, location,
+                    resource_group, subscription_id, tags, last_updated
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(resource_id) DO UPDATE SET
+                    resource_name = excluded.resource_name,
+                    resource_type = excluded.resource_type,
+                    location = excluded.location,
+                    resource_group = excluded.resource_group,
+                    tags = excluded.tags,
+                    last_updated = CURRENT_TIMESTAMP
+            """, (
+                resource_id, resource_name, resource_type, location,
+                resource_group, subscription_id, tags_json
+            ))
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise CustomerDatabaseError(f"Failed to store resource: {e}") from e
+
+    def store_advisor_recommendation(self, recommendation) -> None:
+        """
+        Store an Azure Advisor recommendation in the database.
+
+        Args:
+            recommendation: AdvisorRecommendation object from azure_advisor.py
+        """
+        conn = self._get_connection()
+        try:
+            conn.execute("""
+                INSERT INTO recommendations (
+                    recommendation_id, subscription_id, resource_id, category,
+                    source, type, impact, title, recommendation,
+                    estimated_savings_monthly, estimated_savings_annual, status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(recommendation_id) DO UPDATE SET
+                    status = excluded.status,
+                    estimated_savings_monthly = excluded.estimated_savings_monthly,
+                    estimated_savings_annual = excluded.estimated_savings_annual
+            """, (
+                recommendation.recommendation_id,
+                recommendation.subscription_id,
+                recommendation.resource_id,
+                recommendation.category,
+                'AzureAdvisor',  # source
+                recommendation.category,  # type
+                recommendation.impact,
+                recommendation.problem,  # title
+                recommendation.solution,  # recommendation text
+                recommendation.estimated_savings,  # monthly
+                recommendation.estimated_savings * 12 if recommendation.estimated_savings else None,  # annual
+                'Active'
+            ))
+            conn.commit()
+        except Exception as e:
+            conn.rollback()
+            raise CustomerDatabaseError(f"Failed to store recommendation: {e}") from e
+
     def __enter__(self):
         """Context manager entry."""
         return self

@@ -92,7 +92,7 @@ def add_subscription(customer: str, subscription_id: str) -> None:
     """
     try:
         db_manager = CustomerDatabaseManager()
-        db_manager.add_subscription(customer, subscription_id)
+        db_manager.add_subscription_to_customer(customer, subscription_id)
 
         click.echo(f"✅ Subscription {subscription_id} added to {customer}")
         logger.info(f"Added subscription {subscription_id} to {customer}")
@@ -154,13 +154,33 @@ def collect(customer: str, credential: str) -> None:
 
         # Get customer subscriptions
         db_manager = CustomerDatabaseManager()
-        subscriptions = db_manager.list_subscriptions(customer)
+        customer_obj = db_manager.get_customer(customer)
+
+        if not customer_obj:
+            click.echo(f"❌ Customer '{customer}' not found", err=True)
+            raise click.Abort()
+
+        subscriptions = customer_obj.subscription_ids
 
         if not subscriptions:
             click.echo(f"⚠️  No subscriptions found for {customer}. Add subscriptions first.")
             return
 
         click.echo(f"   Found {len(subscriptions)} subscription(s)")
+
+        # Ensure subscriptions exist in customer database before syncing
+        # (required for foreign key constraints on resources/recommendations tables)
+        click.echo("   Initializing customer database...")
+        from claude.tools.experimental.azure.customer_database import Subscription
+        with db_manager.get_customer_db(customer) as customer_db:
+            for sub_id in subscriptions:
+                # Add minimal subscription record (will be enriched during collection)
+                customer_db.add_subscription(Subscription(
+                    subscription_id=sub_id,
+                    subscription_name=f"Subscription {sub_id[:8]}",
+                    tenant_id="00000000-0000-0000-0000-000000000000",  # Placeholder
+                    state="Enabled"
+                ))
 
         # Initialize Azure credential
         cred = DefaultAzureCredential()

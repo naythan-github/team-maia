@@ -110,14 +110,17 @@ class AzureAdvisorClient:
         try:
             # List all recommendations for the subscription
             for rec in client.recommendations.list():
-                # Filter for Cost category only
-                if rec.properties.category != "Cost":
+                # Access properties directly (Azure SDK v9.0.0+ structure)
+                # ResourceRecommendationBase has direct attributes, not nested .properties
+                category = getattr(rec, 'category', None)
+                if category != "Cost":
                     continue
 
-                # Parse savings estimate
+                # Parse savings estimate from extended_properties
                 estimated_savings = None
-                if rec.properties.extended_properties:
-                    savings_str = rec.properties.extended_properties.get("savingsAmount")
+                extended_props = getattr(rec, 'extended_properties', {}) or {}
+                if extended_props:
+                    savings_str = extended_props.get("savingsAmount")
                     if savings_str:
                         try:
                             estimated_savings = float(savings_str)
@@ -128,19 +131,24 @@ class AzureAdvisorClient:
                             estimated_savings = None
 
                 # Extract resource ID from impacted_value
-                resource_id = rec.properties.impacted_value
+                resource_id = getattr(rec, 'impacted_value', None)
+
+                # Get short description (may be object or dict)
+                short_desc = getattr(rec, 'short_description', {}) or {}
+                problem = short_desc.get('problem', 'Unknown issue') if isinstance(short_desc, dict) else getattr(short_desc, 'problem', 'Unknown issue')
+                solution = short_desc.get('solution', 'See Azure Advisor') if isinstance(short_desc, dict) else getattr(short_desc, 'solution', 'See Azure Advisor')
 
                 # Create AdvisorRecommendation object
                 recommendation = AdvisorRecommendation(
                     recommendation_id=rec.name,
                     subscription_id=subscription_id,
                     resource_id=resource_id,
-                    category=rec.properties.category,
-                    impact=rec.properties.impact,
-                    problem=rec.properties.short_description.problem,
-                    solution=rec.properties.short_description.solution,
+                    category=category,
+                    impact=getattr(rec, 'impact', 'Unknown'),
+                    problem=problem,
+                    solution=solution,
                     estimated_savings=estimated_savings,
-                    extended_properties=dict(rec.properties.extended_properties or {}),
+                    extended_properties=dict(extended_props),
                 )
 
                 recommendations.append(recommendation)
