@@ -36,8 +36,26 @@
     .\Install-MaiaEnvironment.ps1 -WSLVersion 2
 
 .NOTES
-    Version: 2.14
+    Version: 2.17
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
+
+    Changed v2.17:
+    - CRITICAL FIX: Ubuntu registration check now uses install output instead of wsl --list
+    - FIXED: wsl --list --quiet returns UTF-16LE with NULL bytes breaking regex matching
+    - Now checks for "Installation successful" message from ubuntu.exe install --root
+    - Falls back to direct WSL test if install message unclear
+
+    Changed v2.16:
+    - CRITICAL FIX: WSL2 kernel now installed UNCONDITIONALLY (per Microsoft official docs)
+    - FIXED: Previous conditional check failed - wsl --set-default-version succeeds without kernel
+    - Kernel install now happens BEFORE Ubuntu installation (prevents 0x800701bc error)
+    - Follows Microsoft's Step 4 from manual installation guide exactly
+
+    Changed v2.15:
+    - FIXED: Changed executable name from ubuntu2204.exe to ubuntu.exe (actual AppX executable name)
+    - FIXED: Root cause identified via diagnostic agent - Ubuntu 22.04 AppX uses 'ubuntu.exe'
+    - Added executable name logging for troubleshooting
+    - Added WSL distro registration confirmation message
 
     Changed v2.14:
     - Improved Ubuntu initialization using official Microsoft manual installation method
@@ -550,33 +568,20 @@ function Install-WSL {
         Request-Restart "WSL features enabled but command not available"
     }
 
-    # Step 4: Install WSL2 kernel update if using WSL2
+    # Step 4: Install WSL2 kernel update (mandatory for WSL2)
     if ($script:Config.WSLVersion -eq 2) {
-        Write-Host "    Checking WSL2 kernel update..." -ForegroundColor Gray
+        Write-Host "    Installing WSL2 kernel update..." -ForegroundColor Gray
+        Write-Host "    (Required by Microsoft - unconditional install per official docs)" -ForegroundColor Gray
 
-        # Try to set WSL2 as default - this will fail if kernel update is missing
-        $testResult = wsl --set-default-version 2 2>&1 | Out-String
+        if (-not $CheckOnly) {
+            $kernelUrl = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
+            $kernelMsi = "$env:TEMP\wsl_update_x64.msi"
 
-        if ($testResult -match "0x800701bc" -or $testResult -match "kernel") {
-            Write-Status "WSL2 kernel update required" "WARN"
-
-            if (-not $CheckOnly) {
-                Write-Host "    Downloading WSL2 kernel update..." -ForegroundColor Gray
-
-                $kernelUrl = "https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi"
-                $kernelMsi = "$env:TEMP\wsl_update_x64.msi"
-
-                if (Install-FromWeb -Name "WSL2 Kernel Update" -Url $kernelUrl -OutFile $kernelMsi -Arguments "/quiet /norestart" -MinFileSizeMB 10) {
-                    Write-Status "WSL2 kernel update installed" "OK"
-
-                    # Retry setting WSL2 as default
-                    wsl --set-default-version 2 2>&1 | Out-Null
-                } else {
-                    Write-Status "Failed to install WSL2 kernel update" "ERROR"
-                    Write-Host "    Manual download: https://aka.ms/wsl2kernel" -ForegroundColor Yellow
-                    return $false
-                }
+            if (Install-FromWeb -Name "WSL2 Kernel Update" -Url $kernelUrl -OutFile $kernelMsi -Arguments "/quiet /norestart" -MinFileSizeMB 10) {
+                Write-Status "WSL2 kernel update installed" "OK"
             } else {
+                Write-Status "Failed to install WSL2 kernel update" "ERROR"
+                Write-Host "    Manual download: https://aka.ms/wsl2kernel" -ForegroundColor Yellow
                 return $false
             }
         }
@@ -652,29 +657,42 @@ function Install-Ubuntu {
         Write-Host "    Waiting for Ubuntu executable to become available..." -ForegroundColor Gray
         $ubuntuExe = $null
         for ($i = 1; $i -le 10; $i++) {
-            $ubuntuExe = Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu2204.exe" -ErrorAction SilentlyContinue
+            # Ubuntu 22.04 AppX uses 'ubuntu.exe', not 'ubuntu2204.exe'
+            $ubuntuExe = Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu.exe" -ErrorAction SilentlyContinue
             if ($ubuntuExe) { break }
             Start-Sleep -Seconds 2
         }
 
         if (-not $ubuntuExe) {
             Write-Status "Ubuntu executable not found after AppX installation" "ERROR"
-            Write-Host "    Try: Get-AppxPackage *Ubuntu* | Select Name,Status" -ForegroundColor Yellow
+            Write-Host "    Try: Get-ChildItem `$env:LOCALAPPDATA\Microsoft\WindowsApps\*ubuntu*" -ForegroundColor Yellow
             return $false
         }
 
+        Write-Host "    Found Ubuntu executable: $($ubuntuExe.Name)" -ForegroundColor Gray
         Write-Host "    Initializing Ubuntu (this extracts files and may take 2-3 minutes)..." -ForegroundColor Gray
 
         # Install Ubuntu as root first (no user creation prompt)
-        $installOutput = & $ubuntuExe install --root 2>&1
+        $installOutput = & $ubuntuExe install --root 2>&1 | Out-String
         Start-Sleep -Seconds 5
 
-        # Verify WSL distro was registered
-        $distroCheck = wsl --list --quiet 2>&1 | Out-String
-        if ($distroCheck -notmatch "Ubuntu") {
-            Write-Status "Ubuntu distro not registered with WSL" "ERROR"
+        # Verify installation succeeded by checking the output message
+        if ($installOutput -match "Installation successful") {
+            Write-Status "Ubuntu installation completed successfully" "OK"
+        } elseif ($installOutput -match "Error|Failed") {
+            Write-Status "Ubuntu installation failed" "ERROR"
             Write-Host "    Install output: $installOutput" -ForegroundColor Yellow
             return $false
+        } else {
+            # If unclear, try to test WSL directly
+            $testResult = wsl -d Ubuntu-22.04 -u root -- echo "test" 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Status "Ubuntu installation verified via WSL test" "OK"
+            } else {
+                Write-Status "Ubuntu installation status unclear" "WARN"
+                Write-Host "    Install output: $installOutput" -ForegroundColor Yellow
+                Write-Host "    WSL test: $testResult" -ForegroundColor Yellow
+            }
         }
 
         # Create the default user via WSL
@@ -1153,7 +1171,7 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.14"
+Write-Banner "MAIA Environment Installer v2.17"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow
