@@ -9,6 +9,7 @@ TDD Implementation - Tests in tests/test_report_generator.py
 
 import logging
 import json
+from enum import Enum
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
@@ -17,6 +18,33 @@ from pathlib import Path
 from claude.tools.experimental.azure.customer_database import CustomerDatabaseManager
 
 logger = logging.getLogger(__name__)
+
+
+class ImpactLevel(Enum):
+    """
+    Impact level hierarchy for recommendations.
+
+    Used for filtering and prioritizing recommendations by impact.
+    """
+    LOW = 0
+    MEDIUM = 1
+    HIGH = 2
+
+    @classmethod
+    def from_string(cls, value: str) -> Optional['ImpactLevel']:
+        """
+        Convert string to ImpactLevel enum.
+
+        Args:
+            value: Impact level string (case-insensitive)
+
+        Returns:
+            ImpactLevel enum or None if invalid
+        """
+        try:
+            return cls[value.upper()]
+        except KeyError:
+            return None
 
 
 @dataclass
@@ -84,6 +112,35 @@ class ReportGenerator:
         self.base_path = base_path
         self.db_manager = CustomerDatabaseManager(base_path=base_path)
 
+    def _recommendation_to_dict(self, rec: Any, include_ids: bool = False) -> Dict[str, Any]:
+        """
+        Convert recommendation object to dictionary with consistent field extraction.
+
+        Args:
+            rec: Recommendation object
+            include_ids: Whether to include recommendation_id, resource_id, subscription_id
+
+        Returns:
+            Dictionary with recommendation fields
+        """
+        result = {
+            "title": getattr(rec, 'title', ''),
+            "recommendation": getattr(rec, 'recommendation', ''),
+            "impact": getattr(rec, 'impact', ''),
+            "category": getattr(rec, 'category', ''),
+            "estimated_savings_monthly": getattr(rec, 'estimated_savings_monthly', 0),
+            "estimated_savings_annual": getattr(rec, 'estimated_savings_annual', 0),
+        }
+
+        if include_ids:
+            result.update({
+                "id": getattr(rec, 'recommendation_id', ''),
+                "resource_id": getattr(rec, 'resource_id', ''),
+                "subscription_id": getattr(rec, 'subscription_id', ''),
+            })
+
+        return result
+
     def _is_quick_win(self, recommendation: Any) -> bool:
         """
         Determine if recommendation is a quick win (low effort, fast implementation).
@@ -140,9 +197,14 @@ class ReportGenerator:
 
             return None
 
-        except Exception as e:
+        except (AttributeError, TypeError, KeyError) as e:
+            # Expected exceptions from status access or datetime operations
             logger.warning(f"Could not check data freshness: {e}")
             return None
+        except Exception as e:
+            # Unexpected exception - log as error and re-raise for investigation
+            logger.error(f"Unexpected error checking data freshness: {e}")
+            raise
 
     def generate_executive_summary(
         self,
@@ -212,13 +274,10 @@ class ReportGenerator:
             # Get top N recommendations
             top_recommendations = []
             for rec in sorted_recommendations[:top_n]:
-                top_recommendations.append({
-                    "title": getattr(rec, 'title', ''),
-                    "recommendation": getattr(rec, 'recommendation', ''),
-                    "impact": getattr(rec, 'impact', ''),
-                    "category": getattr(rec, 'category', ''),
-                    "savings": getattr(rec, 'estimated_savings_monthly', 0) or 0,
-                })
+                rec_dict = self._recommendation_to_dict(rec)
+                # Add 'savings' alias for executive summary
+                rec_dict["savings"] = rec_dict["estimated_savings_monthly"]
+                top_recommendations.append(rec_dict)
 
             summary = ExecutiveSummary(
                 customer_name=customer_slug,
@@ -267,9 +326,9 @@ class ReportGenerator:
         if format not in ["json", "markdown"]:
             raise ValueError(f"Unsupported format: {format}. Use 'json' or 'markdown'")
 
-        # Impact hierarchy for filtering
-        impact_hierarchy = {"Low": 0, "Medium": 1, "High": 2}
-        min_impact_level = impact_hierarchy.get(min_impact, -1) if min_impact else -1
+        # Convert min_impact to enum for type-safe filtering
+        min_impact_enum = ImpactLevel.from_string(min_impact) if min_impact else None
+        min_impact_level = min_impact_enum.value if min_impact_enum else -1
 
         with self.db_manager.get_customer_db(customer_slug) as db:
             # Get all active recommendations
@@ -287,10 +346,11 @@ class ReportGenerator:
                 ]
 
             # Filter by minimum impact if specified
-            if min_impact:
+            if min_impact_enum:
                 active_recommendations = [
                     rec for rec in active_recommendations
-                    if impact_hierarchy.get(getattr(rec, 'impact', 'Low'), 0) >= min_impact_level
+                    if (rec_impact := ImpactLevel.from_string(getattr(rec, 'impact', 'Low')))
+                    and rec_impact.value >= min_impact_level
                 ]
 
             # Sort by savings descending
@@ -329,17 +389,7 @@ class ReportGenerator:
         }
 
         for rec in recommendations:
-            report["recommendations"].append({
-                "id": getattr(rec, 'recommendation_id', ''),
-                "category": getattr(rec, 'category', ''),
-                "impact": getattr(rec, 'impact', ''),
-                "title": getattr(rec, 'title', ''),
-                "recommendation": getattr(rec, 'recommendation', ''),
-                "estimated_savings_monthly": getattr(rec, 'estimated_savings_monthly', 0),
-                "estimated_savings_annual": getattr(rec, 'estimated_savings_annual', 0),
-                "resource_id": getattr(rec, 'resource_id', ''),
-                "subscription_id": getattr(rec, 'subscription_id', ''),
-            })
+            report["recommendations"].append(self._recommendation_to_dict(rec, include_ids=True))
 
         return json.dumps(report, indent=2)
 

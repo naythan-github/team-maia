@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 @click.group()
 @click.version_option(version='1.0.0', prog_name='Azure Cost Optimizer')
-def cli():
+def cli() -> None:
     """
     Azure Cost Optimizer - Multi-tenant cost optimization platform.
 
@@ -48,7 +48,7 @@ def cli():
 @click.option('--name', required=True, help='Customer display name (e.g., "Aus-E-Mart")')
 @click.option('--slug', required=True, help='Customer slug identifier (e.g., "aus_e_mart")')
 @click.option('--contact-email', help='Customer contact email')
-def register_customer(name: str, slug: str, contact_email: Optional[str] = None):
+def register_customer(name: str, slug: str, contact_email: Optional[str] = None) -> None:
     """
     Register a new customer in the system.
 
@@ -84,7 +84,7 @@ def register_customer(name: str, slug: str, contact_email: Optional[str] = None)
 @cli.command('add-subscription')
 @click.option('--customer', required=True, help='Customer slug')
 @click.option('--subscription-id', required=True, help='Azure subscription ID')
-def add_subscription(customer: str, subscription_id: str):
+def add_subscription(customer: str, subscription_id: str) -> None:
     """
     Add an Azure subscription to a customer.
 
@@ -105,7 +105,7 @@ def add_subscription(customer: str, subscription_id: str):
 
 @cli.command('list-customers')
 @click.option('--active-only/--all', default=True, help='Show only active customers')
-def list_customers(active_only: bool):
+def list_customers(active_only: bool) -> None:
     """
     List all registered customers.
     """
@@ -138,7 +138,7 @@ def list_customers(active_only: bool):
 @cli.command('collect')
 @click.option('--customer', required=True, help='Customer slug')
 @click.option('--credential', help='Azure credential type (default: DefaultAzureCredential)', default='default')
-def collect(customer: str, credential: str):
+def collect(customer: str, credential: str) -> None:
     """
     Collect cost data from Azure APIs for a customer.
 
@@ -205,7 +205,7 @@ def collect(customer: str, credential: str):
 @click.option('--category', help='Filter by category (e.g., Cost)')
 @click.option('--min-impact', type=click.Choice(['Low', 'Medium', 'High']), help='Minimum impact level')
 @click.option('--output', '-o', type=click.Path(), help='Output file path (default: stdout)')
-def report(customer: str, format: str, category: Optional[str], min_impact: Optional[str], output: Optional[str]):
+def report(customer: str, format: str, category: Optional[str], min_impact: Optional[str], output: Optional[str]) -> None:
     """
     Generate detailed cost optimization report.
 
@@ -242,7 +242,7 @@ def report(customer: str, format: str, category: Optional[str], min_impact: Opti
 @cli.command('recommendations')
 @click.option('--customer', required=True, help='Customer slug')
 @click.option('--top', type=int, default=10, help='Number of top recommendations to show')
-def recommendations(customer: str, top: int):
+def recommendations(customer: str, top: int) -> None:
     """
     Show executive summary with top recommendations.
 
