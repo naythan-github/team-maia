@@ -181,12 +181,31 @@ class CustomerDatabase:
             conn.rollback()
             raise CustomerDatabaseError(f"Failed to store resource: {e}") from e
 
-    def store_advisor_recommendation(self, recommendation) -> None:
+    def store_advisor_recommendation(
+        self,
+        recommendation_id: str,
+        subscription_id: str,
+        resource_id: Optional[str],
+        category: str,
+        impact: str,
+        problem: str,
+        solution: str,
+        estimated_savings: Optional[float],
+        extended_properties: Optional[Dict[str, Any]] = None
+    ) -> None:
         """
         Store an Azure Advisor recommendation in the database.
 
         Args:
-            recommendation: AdvisorRecommendation object from azure_advisor.py
+            recommendation_id: Unique recommendation ID
+            subscription_id: Azure subscription ID
+            resource_id: Affected resource ID (optional)
+            category: Recommendation category (Cost, Security, etc.)
+            impact: Impact level (High, Medium, Low)
+            problem: Problem description
+            solution: Recommended solution
+            estimated_savings: Monthly savings estimate (USD)
+            extended_properties: Additional metadata (optional)
         """
         conn = self._get_connection()
         try:
@@ -202,23 +221,37 @@ class CustomerDatabase:
                     estimated_savings_monthly = excluded.estimated_savings_monthly,
                     estimated_savings_annual = excluded.estimated_savings_annual
             """, (
-                recommendation.recommendation_id,
-                recommendation.subscription_id,
-                recommendation.resource_id,
-                recommendation.category,
+                recommendation_id,
+                subscription_id,
+                resource_id,
+                category,
                 'AzureAdvisor',  # source
-                recommendation.category,  # type
-                recommendation.impact,
-                recommendation.problem,  # title
-                recommendation.solution,  # recommendation text
-                recommendation.estimated_savings,  # monthly
-                recommendation.estimated_savings * 12 if recommendation.estimated_savings else None,  # annual
+                category,  # type
+                impact,
+                problem,  # title
+                solution,  # recommendation text
+                estimated_savings,  # monthly
+                estimated_savings * 12 if estimated_savings else None,  # annual
                 'Active'
             ))
             conn.commit()
         except Exception as e:
             conn.rollback()
             raise CustomerDatabaseError(f"Failed to store recommendation: {e}") from e
+
+    def get_all_recommendations(self) -> List[Dict[str, Any]]:
+        """
+        Get all recommendations from the database.
+
+        Returns:
+            List of recommendation dictionaries
+        """
+        conn = self._get_connection()
+        cursor = conn.execute("""
+            SELECT * FROM recommendations
+            ORDER BY estimated_savings_monthly DESC
+        """)
+        return [dict(row) for row in cursor.fetchall()]
 
     def __enter__(self):
         """Context manager entry."""
