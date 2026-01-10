@@ -397,6 +397,54 @@ class TestCustomerSlugValidation:
 
         assert "reserved" in str(exc_info.value).lower() or "underscore" in str(exc_info.value).lower()
 
+    def test_slug_maximum_length_enforced(self):
+        """Slug exceeding maximum length should raise ValueError."""
+        from claude.tools.experimental.azure.validators import validate_customer_slug
+
+        # 65 character slug (max should be 64)
+        long_slug = "a" * 65
+
+        with pytest.raises(ValueError) as exc_info:
+            validate_customer_slug(long_slug)
+
+        assert "maximum" in str(exc_info.value).lower() or "too long" in str(exc_info.value).lower()
+
+    def test_slug_reserved_word_rejected(self):
+        """Slug using reserved words should raise ValueError."""
+        from claude.tools.experimental.azure.validators import validate_customer_slug
+
+        reserved_words = ["system", "admin", "root", "default", "test"]
+
+        for word in reserved_words:
+            with pytest.raises(ValueError) as exc_info:
+                validate_customer_slug(word)
+
+            assert "reserved" in str(exc_info.value).lower()
+
+    def test_slug_uppercase_normalized_to_lowercase(self):
+        """Uppercase slug should be normalized to lowercase."""
+        from claude.tools.experimental.azure.validators import validate_customer_slug
+
+        result = validate_customer_slug("CUSTOMER_A")
+        assert result == "customer_a"
+
+    def test_slug_mixed_case_normalized_to_lowercase(self):
+        """Mixed case slug should be normalized to lowercase."""
+        from claude.tools.experimental.azure.validators import validate_customer_slug
+
+        result = validate_customer_slug("Customer_A")
+        assert result == "customer_a"
+
+    def test_slug_valid_max_length_accepted(self):
+        """Slug at maximum length (64 chars) should be accepted."""
+        from claude.tools.experimental.azure.validators import validate_customer_slug
+
+        # 64 character slug (exactly at max)
+        max_slug = "a" * 64
+
+        result = validate_customer_slug(max_slug)
+        assert result == max_slug
+
 
 class TestSavingsValidation:
     """Tests for savings amount validation."""

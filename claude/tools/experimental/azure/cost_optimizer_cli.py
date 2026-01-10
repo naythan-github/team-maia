@@ -170,14 +170,33 @@ def collect(customer: str, credential: str) -> None:
         advisor_client = AzureAdvisorClient(credential=cred)
         total_advisor_recs = 0
 
-        for sub_id in subscriptions:
-            try:
-                count = advisor_client.sync_to_database(customer, sub_id)
-                total_advisor_recs += count
-                click.echo(f"   ✅ {sub_id}: {count} recommendations")
-            except Exception as e:
-                click.echo(f"   ⚠️  {sub_id}: {e}", err=True)
-                logger.warning(f"Failed to collect Advisor data for {sub_id}: {e}")
+        # Use progress bar for multiple subscriptions
+        if len(subscriptions) > 1:
+            with click.progressbar(
+                subscriptions,
+                label='Processing subscriptions',
+                show_eta=True,
+                show_percent=True,
+                item_show_func=lambda s: f"Processing {s}" if s else ""
+            ) as bar:
+                for sub_id in bar:
+                    try:
+                        count = advisor_client.sync_to_database(customer, sub_id)
+                        total_advisor_recs += count
+                        click.echo(f"   ✅ {sub_id}: {count} recommendations")
+                    except Exception as e:
+                        click.echo(f"   ⚠️  {sub_id}: {e}", err=True)
+                        logger.warning(f"Failed to collect Advisor data for {sub_id}: {e}")
+        else:
+            # Single subscription - no progress bar needed
+            for sub_id in subscriptions:
+                try:
+                    count = advisor_client.sync_to_database(customer, sub_id)
+                    total_advisor_recs += count
+                    click.echo(f"   ✅ {sub_id}: {count} recommendations")
+                except Exception as e:
+                    click.echo(f"   ⚠️  {sub_id}: {e}", err=True)
+                    logger.warning(f"Failed to collect Advisor data for {sub_id}: {e}")
 
         # Collect Resource Graph inventory
         click.echo("\n🗂️  Collecting Resource Graph inventory...")

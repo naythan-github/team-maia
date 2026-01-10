@@ -575,3 +575,111 @@ class TestReportSorting:
             assert summary.top_recommendations[0]["savings"] == 200.0
             assert summary.top_recommendations[1]["savings"] == 100.0
             assert summary.top_recommendations[2]["savings"] == 25.0
+
+
+class TestQuickWinCaching:
+    """Tests for quick win detection caching."""
+
+    def test_quick_win_cache_reduces_duplicate_checks(self):
+        """
+        Verify quick win detection uses cache to avoid duplicate checks.
+        """
+        from claude.tools.experimental.azure.report_generator import ReportGenerator
+
+        generator = ReportGenerator()
+
+        # Create a mock recommendation
+        rec = Mock(
+            recommendation_id="rec-1",
+            title="Delete orphaned disks",
+            metadata=None,
+        )
+
+        # First call should compute and cache
+        result1 = generator._is_quick_win(rec)
+        assert result1 is True
+
+        # Modify the rec object to verify cache is used (not recomputed)
+        rec.title = "Non quick win title"
+
+        # Second call should return cached result (True), not recompute (False)
+        result2 = generator._is_quick_win(rec)
+        assert result2 is True  # Cached value
+
+    def test_quick_win_cache_stores_per_recommendation_id(self):
+        """
+        Verify cache stores results per unique recommendation ID.
+        """
+        from claude.tools.experimental.azure.report_generator import ReportGenerator
+
+        generator = ReportGenerator()
+
+        rec1 = Mock(recommendation_id="rec-1", title="Delete orphaned disk", metadata=None)
+        rec2 = Mock(recommendation_id="rec-2", title="Resize VM", metadata=None)
+
+        # Check both recommendations
+        result1 = generator._is_quick_win(rec1)
+        result2 = generator._is_quick_win(rec2)
+
+        assert result1 is True   # "orphaned" keyword
+        assert result2 is False  # No quick win keywords
+
+        # Verify cache stores both results independently
+        assert len(generator._quick_win_cache) == 2
+        assert generator._quick_win_cache["rec-1"] is True
+        assert generator._quick_win_cache["rec-2"] is False
+
+    def test_quick_win_cache_handles_large_datasets(self):
+        """
+        Verify cache works efficiently with large datasets (1000+ recommendations).
+        """
+        from claude.tools.experimental.azure.report_generator import ReportGenerator
+
+        generator = ReportGenerator()
+
+        # Create 1000 mock recommendations
+        recommendations = [
+            Mock(
+                recommendation_id=f"rec-{i}",
+                title=f"Delete orphaned disk {i}" if i % 2 == 0 else f"Resize VM {i}",
+                metadata=None,
+            )
+            for i in range(1000)
+        ]
+
+        # Process all recommendations (first pass - populates cache)
+        results_first = [generator._is_quick_win(rec) for rec in recommendations]
+
+        # Verify cache populated
+        assert len(generator._quick_win_cache) == 1000
+
+        # Process again (second pass - should use cache)
+        results_second = [generator._is_quick_win(rec) for rec in recommendations]
+
+        # Results should be identical
+        assert results_first == results_second
+
+        # Verify cache still has 1000 entries (no duplicates)
+        assert len(generator._quick_win_cache) == 1000
+
+    def test_quick_win_cache_cleared_on_new_instance(self):
+        """
+        Verify cache is instance-specific and cleared on new instance.
+        """
+        from claude.tools.experimental.azure.report_generator import ReportGenerator
+
+        generator1 = ReportGenerator()
+        rec = Mock(recommendation_id="rec-1", title="Delete orphaned disk", metadata=None)
+
+        # Populate cache in first instance
+        generator1._is_quick_win(rec)
+        assert len(generator1._quick_win_cache) == 1
+
+        # Create new instance - cache should be empty
+        generator2 = ReportGenerator()
+        assert len(generator2._quick_win_cache) == 0
+
+        # New instance should have own independent cache
+        generator2._is_quick_win(rec)
+        assert len(generator2._quick_win_cache) == 1
+        assert len(generator1._quick_win_cache) == 1  # Original cache unchanged

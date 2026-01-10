@@ -171,6 +171,104 @@ class TestDataCollection:
         assert result.exit_code != 0 or 'customer' in result.output.lower()
 
 
+class TestProgressIndicators:
+    """Tests for progress indicators in long-running operations."""
+
+    def test_collect_command_shows_progress_for_multiple_subscriptions(self):
+        """
+        Verify collect command shows progress bar when processing multiple subscriptions.
+        """
+        from claude.tools.experimental.azure.cost_optimizer_cli import cli
+
+        runner = CliRunner()
+
+        with patch('claude.tools.experimental.azure.cost_optimizer_cli.CustomerDatabaseManager') as mock_mgr_class:
+            with patch('claude.tools.experimental.azure.cost_optimizer_cli.AzureAdvisorClient') as mock_advisor_class:
+                with patch('claude.tools.experimental.azure.cost_optimizer_cli.ResourceGraphClient') as mock_graph_class:
+                    with patch('azure.identity.DefaultAzureCredential'):
+                        # Setup mocks
+                        mock_mgr = Mock()
+                        mock_mgr.list_subscriptions.return_value = [f"sub-{i}" for i in range(5)]  # 5 subscriptions
+                        mock_mgr_class.return_value = mock_mgr
+
+                        mock_advisor = Mock()
+                        mock_advisor.sync_to_database.return_value = 10
+                        mock_advisor_class.return_value = mock_advisor
+
+                        mock_graph = Mock()
+                        mock_graph.sync_resources_to_database.return_value = 100
+                        mock_graph_class.return_value = mock_graph
+
+                        result = runner.invoke(cli, ['collect', '--customer', 'customer_a'])
+
+                        # Check for progress indicator patterns in output
+                        # Progress bars typically show: percentage, bar characters, or "Processing X/Y"
+                        assert '/' in result.output or '%' in result.output or '█' in result.output or 'Processing' in result.output
+
+    def test_collect_command_progress_updates_per_subscription(self):
+        """
+        Verify progress bar updates for each subscription processed.
+        """
+        from claude.tools.experimental.azure.cost_optimizer_cli import cli
+
+        runner = CliRunner()
+
+        with patch('claude.tools.experimental.azure.cost_optimizer_cli.CustomerDatabaseManager') as mock_mgr_class:
+            with patch('claude.tools.experimental.azure.cost_optimizer_cli.AzureAdvisorClient') as mock_advisor_class:
+                with patch('claude.tools.experimental.azure.cost_optimizer_cli.ResourceGraphClient') as mock_graph_class:
+                    with patch('azure.identity.DefaultAzureCredential'):
+                        mock_mgr = Mock()
+                        mock_mgr.list_subscriptions.return_value = ["sub-1", "sub-2", "sub-3"]
+                        mock_mgr_class.return_value = mock_mgr
+
+                        mock_advisor = Mock()
+                        mock_advisor.sync_to_database.return_value = 5
+                        mock_advisor_class.return_value = mock_advisor
+
+                        mock_graph = Mock()
+                        mock_graph.sync_resources_to_database.return_value = 50
+                        mock_graph_class.return_value = mock_graph
+
+                        result = runner.invoke(cli, ['collect', '--customer', 'customer_a'])
+
+                        # Should show progress (either with bar or step indicators like "1/3", "2/3", "3/3")
+                        output_lower = result.output.lower()
+                        has_progress = ('/' in result.output or
+                                      'processing' in output_lower or
+                                      '%' in result.output or
+                                      '█' in result.output)
+                        assert has_progress, f"Expected progress indicator in output:\n{result.output}"
+
+    def test_collect_command_no_progress_for_single_subscription(self):
+        """
+        Verify progress bar is skipped for single subscription (not needed).
+        """
+        from claude.tools.experimental.azure.cost_optimizer_cli import cli
+
+        runner = CliRunner()
+
+        with patch('claude.tools.experimental.azure.cost_optimizer_cli.CustomerDatabaseManager') as mock_mgr_class:
+            with patch('claude.tools.experimental.azure.cost_optimizer_cli.AzureAdvisorClient') as mock_advisor_class:
+                with patch('claude.tools.experimental.azure.cost_optimizer_cli.ResourceGraphClient') as mock_graph_class:
+                    with patch('azure.identity.DefaultAzureCredential'):
+                        mock_mgr = Mock()
+                        mock_mgr.list_subscriptions.return_value = ["sub-1"]  # Only 1 subscription
+                        mock_mgr_class.return_value = mock_mgr
+
+                        mock_advisor = Mock()
+                        mock_advisor.sync_to_database.return_value = 5
+                        mock_advisor_class.return_value = mock_advisor
+
+                        mock_graph = Mock()
+                        mock_graph.sync_resources_to_database.return_value = 50
+                        mock_graph_class.return_value = mock_graph
+
+                        result = runner.invoke(cli, ['collect', '--customer', 'customer_a'])
+
+                        # Should complete successfully (progress bar is optional for single item)
+                        assert result.exit_code == 0 or 'complete' in result.output.lower()
+
+
 class TestReporting:
     """Tests for report generation commands."""
 

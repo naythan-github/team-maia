@@ -21,7 +21,14 @@ GUID_PATTERN = re.compile(
 # Customer slug pattern (URL-safe identifier)
 # Allows: lowercase letters, numbers, hyphens, underscores
 # Disallows: leading underscore (reserved for system), spaces, special chars
-SLUG_PATTERN = re.compile(r'^[a-z0-9][a-z0-9_-]{1,}$', re.IGNORECASE)
+# Note: Pattern enforces lowercase-only (2-64 chars), case normalization happens in validate_customer_slug()
+SLUG_PATTERN = re.compile(r'^[a-z0-9][a-z0-9_-]{1,63}$')  # Min 2, max 64 characters
+
+# Reserved customer slug names (case-insensitive)
+RESERVED_SLUGS: Set[str] = {
+    "system", "admin", "root", "default", "test",
+    "internal", "public", "private", "null", "undefined",
+}
 
 # Valid values for enum-like fields
 VALID_STATUSES: Set[str] = {"Active", "Dismissed", "Implemented", "Expired"}
@@ -184,16 +191,17 @@ def validate_customer_slug(value: str) -> str:
     Validate customer slug (URL-safe identifier).
 
     Rules:
-    - Must be at least 2 characters
+    - Must be 2-64 characters
     - Can only contain lowercase letters, numbers, hyphens, underscores
     - Cannot start with underscore (reserved for system databases)
-    - Cannot contain spaces or special characters
+    - Cannot use reserved words (system, admin, root, etc.)
+    - Uppercase letters are automatically normalized to lowercase
 
     Args:
         value: The customer slug to validate
 
     Returns:
-        The validated slug
+        The validated slug (normalized to lowercase)
 
     Raises:
         ValueError: If the slug format is invalid
@@ -204,16 +212,29 @@ def validate_customer_slug(value: str) -> str:
     if len(value) < 2:
         raise ValueError("Customer slug must be at least 2 characters")
 
+    if len(value) > 64:
+        raise ValueError(f"Customer slug too long ({len(value)} chars). Maximum 64 characters allowed")
+
     if value.startswith("_"):
         raise ValueError("Customer slug cannot start with underscore (reserved for system)")
 
-    if not SLUG_PATTERN.match(value):
+    # Normalize to lowercase
+    normalized_slug = value.lower()
+
+    # Check reserved words
+    if normalized_slug in RESERVED_SLUGS:
+        raise ValueError(
+            f"Customer slug '{value}' is reserved. "
+            f"Cannot use: {', '.join(sorted(RESERVED_SLUGS))}"
+        )
+
+    if not SLUG_PATTERN.match(normalized_slug):
         raise ValueError(
             f"Invalid customer slug: {value}. "
             "Must contain only letters, numbers, hyphens, and underscores"
         )
 
-    return value
+    return normalized_slug
 
 
 def validate_savings(value: Optional[float]) -> Optional[float]:

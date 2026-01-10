@@ -111,6 +111,7 @@ class ReportGenerator:
         """
         self.base_path = base_path
         self.db_manager = CustomerDatabaseManager(base_path=base_path)
+        self._quick_win_cache: Dict[str, bool] = {}  # Cache: recommendation_id -> is_quick_win
 
     def _recommendation_to_dict(self, rec: Any, include_ids: bool = False) -> Dict[str, Any]:
         """
@@ -146,6 +147,7 @@ class ReportGenerator:
         Determine if recommendation is a quick win (low effort, fast implementation).
 
         Checks metadata for effort level or uses keyword detection.
+        Results are cached per recommendation_id for performance.
 
         Args:
             recommendation: Recommendation object
@@ -153,19 +155,35 @@ class ReportGenerator:
         Returns:
             True if quick win, False otherwise
         """
+        # Get recommendation ID for caching
+        rec_id = getattr(recommendation, 'recommendation_id', None)
+
+        # Check cache first
+        if rec_id and rec_id in self._quick_win_cache:
+            return self._quick_win_cache[rec_id]
+
+        # Compute quick win status
+        is_quick_win = False
+
         # Check metadata first
         if hasattr(recommendation, 'metadata') and recommendation.metadata:
             effort = recommendation.metadata.get('effort', '').lower()
             if effort == 'low':
-                return True
+                is_quick_win = True
 
-        # Check title for quick win keywords
-        title = getattr(recommendation, 'title', '').lower()
-        for keyword in self.QUICK_WIN_KEYWORDS:
-            if keyword in title:
-                return True
+        # Check title for quick win keywords (if not already determined)
+        if not is_quick_win:
+            title = getattr(recommendation, 'title', '').lower()
+            for keyword in self.QUICK_WIN_KEYWORDS:
+                if keyword in title:
+                    is_quick_win = True
+                    break
 
-        return False
+        # Cache the result if we have a recommendation ID
+        if rec_id:
+            self._quick_win_cache[rec_id] = is_quick_win
+
+        return is_quick_win
 
     def _check_data_freshness(self, customer_db: Any) -> Optional[str]:
         """
