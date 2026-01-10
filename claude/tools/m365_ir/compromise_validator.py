@@ -694,6 +694,143 @@ def check_orphan_ual_activity(
     }
 
 
+def check_pre_existing_delegations(
+    db_path: str,
+    user_principal_name: str
+) -> Dict[str, Any]:
+    """
+    Check for pre-existing mailbox delegations (FIX-5).
+
+    This is a STATIC check (not time-bound) that queries the mailbox_delegations
+    table to see if anyone has delegate access to this user's mailbox.
+
+    Pre-existing delegations can indicate:
+    - Persistence mechanism (attacker previously granted delegate access)
+    - Lateral movement path (attacker can access this mailbox)
+
+    Args:
+        db_path: Path to the investigation database
+        user_principal_name: Exact UPN to check
+
+    Returns:
+        {
+            'detected': bool,
+            'confidence': float (0.75 if detected),
+            'count': int,
+            'delegations': List[dict]
+        }
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Query mailbox_delegations table (from FIX-1)
+    # Only check NON-INHERITED delegations (is_inherited = 0)
+    cursor.execute("""
+        SELECT delegate, permission_type, access_rights, is_inherited
+        FROM mailbox_delegations
+        WHERE mailbox = ?
+          AND is_inherited = 0
+    """, (user_principal_name,))
+
+    results = cursor.fetchall()
+    conn.close()
+
+    delegations = []
+    for row in results:
+        delegations.append({
+            'delegate': row[0],
+            'permission_type': row[1],
+            'access_rights': row[2],
+            'is_inherited': row[3]
+        })
+
+    return {
+        'detected': len(delegations) > 0,
+        'confidence': 0.75 if len(delegations) > 0 else 0.0,
+        'count': len(delegations),
+        'delegations': delegations
+    }
+
+
+def check_password_reset_bypass(
+    db_path: str,
+    user_principal_name: str,
+    signin_time: datetime
+) -> Dict[str, Any]:
+    """
+    Check for password reset followed by immediate login (FIX-6).
+
+    This detects the bypass pattern where:
+    1. Password reset event occurs (entra_audit_log)
+    2. User signs in within 1 hour
+
+    This can indicate an attacker performed self-service password reset using
+    compromised recovery methods (phone, email).
+
+    Args:
+        db_path: Path to the investigation database
+        user_principal_name: Exact UPN to check
+        signin_time: Time of the sign-in
+
+    Returns:
+        {
+            'detected': bool,
+            'confidence': float (0.90 if detected),
+            'reset_time': str (ISO format),
+            'signin_time': str (ISO format),
+            'minutes_between': float
+        }
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Look back 24 hours for password reset events
+    lookback_time = signin_time - timedelta(hours=24)
+
+    # Query entra_audit_log for password resets
+    # Note: Password resets show as "Update user" activity on the target user
+    cursor.execute("""
+        SELECT timestamp, activity, initiated_by
+        FROM entra_audit_log
+        WHERE target = ?
+          AND (activity LIKE '%password%' OR activity LIKE '%Update user%')
+          AND result = 'success'
+          AND timestamp BETWEEN ? AND ?
+        ORDER BY timestamp DESC
+        LIMIT 1
+    """, (user_principal_name, lookback_time.isoformat(), signin_time.isoformat()))
+
+    result = cursor.fetchone()
+    conn.close()
+
+    if not result:
+        return {
+            'detected': False,
+            'confidence': 0.0,
+            'reset_time': None,
+            'signin_time': signin_time.isoformat(),
+            'minutes_between': None
+        }
+
+    reset_time_str = result[0]
+    reset_time = datetime.fromisoformat(reset_time_str)
+
+    # Calculate time between reset and sign-in
+    time_delta = signin_time - reset_time
+    minutes_between = time_delta.total_seconds() / 60
+
+    # Flag if sign-in happened within 1 hour (60 minutes) of reset
+    detected = 0 < minutes_between <= 60
+
+    return {
+        'detected': detected,
+        'confidence': 0.90 if detected else 0.0,
+        'reset_time': reset_time_str,
+        'signin_time': signin_time.isoformat(),
+        'minutes_between': round(minutes_between, 1)
+    }
+
+
 def validate_compromise(
     db_path: str,
     user_principal_name: str,
