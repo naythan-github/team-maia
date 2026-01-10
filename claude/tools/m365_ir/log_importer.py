@@ -1725,6 +1725,31 @@ class LogImporter:
                         elif log_type == LogType.RISKY_USERS:
                             result_key = 'risky_users'
                             import_result = self.import_risky_users(file)
+                        # Phase 249 unwired handlers - FIX-1
+                        elif log_type == LogType.MAILBOX_DELEGATIONS:
+                            result_key = 'mailbox_delegations'
+                            import_result = self.import_mailbox_delegations(file)
+                        elif log_type == LogType.SERVICE_PRINCIPALS:
+                            result_key = 'service_principals'
+                            import_result = self.import_service_principals(file)
+                        elif log_type == LogType.ADMIN_ROLE_ASSIGNMENTS:
+                            result_key = 'admin_role_assignments'
+                            import_result = self.import_admin_role_assignments(file)
+                        elif log_type == LogType.APPLICATION_REGISTRATIONS:
+                            result_key = 'application_registrations'
+                            import_result = self.import_application_registrations(file)
+                        elif log_type == LogType.TRANSPORT_RULES:
+                            result_key = 'transport_rules'
+                            import_result = self.import_transport_rules(file)
+                        elif log_type == LogType.CONDITIONAL_ACCESS_POLICIES:
+                            result_key = 'conditional_access_policies'
+                            import_result = self.import_conditional_access_policies(file)
+                        elif log_type == LogType.NAMED_LOCATIONS:
+                            result_key = 'named_locations'
+                            import_result = self.import_named_locations(file)
+                        elif log_type == LogType.EVIDENCE_MANIFEST:
+                            result_key = 'evidence_manifest'
+                            import_result = self.import_evidence_manifest(file)
 
                         # WARNING: File matched pattern but no handler exists (Phase 231)
                         if result_key is None and import_result is None:
@@ -1842,6 +1867,39 @@ class LogImporter:
                                 results['risky_users'] = self._import_risky_users_from_bytes(
                                     content, source_id, source_hash
                                 )
+                            # Phase 249 unwired handlers - FIX-1
+                            # These use temp file extraction since _from_bytes helpers don't exist yet
+                            elif log_type in [
+                                LogType.MAILBOX_DELEGATIONS, LogType.SERVICE_PRINCIPALS,
+                                LogType.ADMIN_ROLE_ASSIGNMENTS, LogType.APPLICATION_REGISTRATIONS,
+                                LogType.TRANSPORT_RULES, LogType.CONDITIONAL_ACCESS_POLICIES,
+                                LogType.NAMED_LOCATIONS, LogType.EVIDENCE_MANIFEST
+                            ]:
+                                # Extract to temp file and import
+                                import tempfile
+                                with tempfile.NamedTemporaryFile(mode='wb', delete=False, suffix='.csv') as tmp:
+                                    tmp.write(content)
+                                    tmp_path = tmp.name
+                                try:
+                                    # Map log type to result key and method
+                                    handlers = {
+                                        LogType.MAILBOX_DELEGATIONS: ('mailbox_delegations', self.import_mailbox_delegations),
+                                        LogType.SERVICE_PRINCIPALS: ('service_principals', self.import_service_principals),
+                                        LogType.ADMIN_ROLE_ASSIGNMENTS: ('admin_role_assignments', self.import_admin_role_assignments),
+                                        LogType.APPLICATION_REGISTRATIONS: ('application_registrations', self.import_application_registrations),
+                                        LogType.TRANSPORT_RULES: ('transport_rules', self.import_transport_rules),
+                                        LogType.CONDITIONAL_ACCESS_POLICIES: ('conditional_access_policies', self.import_conditional_access_policies),
+                                        LogType.NAMED_LOCATIONS: ('named_locations', self.import_named_locations),
+                                        LogType.EVIDENCE_MANIFEST: ('evidence_manifest', self.import_evidence_manifest),
+                                    }
+                                    result_key, handler = handlers[log_type]
+                                    results[result_key] = handler(tmp_path)
+                                    # Update source_file and source_hash to reflect zip origin
+                                    results[result_key].source_file = source_id
+                                    results[result_key].source_hash = source_hash
+                                finally:
+                                    import os
+                                    os.unlink(tmp_path)
                             else:
                                 # WARNING: Pattern matched but no handler (Phase 231)
                                 logger.warning(
@@ -3117,7 +3175,7 @@ class LogImporter:
         errors = []
         now = datetime.now().isoformat()
 
-        conn = self.db.get_connection()
+        conn = self._db.connect()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -3128,7 +3186,7 @@ class LogImporter:
         import_id = cursor.lastrowid
 
         try:
-            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            parser = M365LogParser(date_format='AU')
             entries = parser.parse_conditional_access_policies(source)
 
             for entry in entries:
@@ -3210,7 +3268,7 @@ class LogImporter:
         errors = []
         now = datetime.now().isoformat()
 
-        conn = self.db.get_connection()
+        conn = self._db.connect()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -3221,7 +3279,7 @@ class LogImporter:
         import_id = cursor.lastrowid
 
         try:
-            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            parser = M365LogParser(date_format='AU')
             entries = parser.parse_named_locations(source)
 
             for entry in entries:
@@ -3307,7 +3365,7 @@ class LogImporter:
         errors = []
         now = datetime.now().isoformat()
 
-        conn = self.db.get_connection()
+        conn = self._db.connect()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -3318,7 +3376,7 @@ class LogImporter:
         import_id = cursor.lastrowid
 
         try:
-            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            parser = M365LogParser(date_format='AU')
             entries = parser.parse_application_registrations(source)
 
             for entry in entries:
@@ -3402,7 +3460,7 @@ class LogImporter:
         errors = []
         now = datetime.now().isoformat()
 
-        conn = self.db.get_connection()
+        conn = self._db.connect()
         cursor = conn.cursor()
 
         cursor.execute("""
@@ -3413,7 +3471,7 @@ class LogImporter:
         import_id = cursor.lastrowid
 
         try:
-            parser = M365LogParser(date_format=self.db.metadata.get('date_format', 'AU'))
+            parser = M365LogParser(date_format='AU')
             entries = parser.parse_service_principals(source)
 
             for entry in entries:
