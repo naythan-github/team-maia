@@ -36,8 +36,15 @@
     .\Install-MaiaEnvironment.ps1 -WSLVersion 2
 
 .NOTES
-    Version: 2.19
+    Version: 2.20
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
+
+    Changed v2.20:
+    - CRITICAL FIX: Dynamic Ubuntu distro name detection (no longer hardcoded "Ubuntu-22.04")
+    - FIXED: Handles distros registering as "Ubuntu", "Ubuntu-22.04", or "Ubuntu-24.04"
+    - IMPROVED: Detects actual distro name from wsl --list with UTF-16LE cleanup
+    - IMPROVED: Fallback detection tries common Ubuntu distro names
+    - IMPROVED: Updates $script:Config.UbuntuVersion for all subsequent commands
 
     Changed v2.19:
     - CRITICAL FIX: Find ubuntu.exe from AppX package location instead of WindowsApps alias
@@ -719,14 +726,48 @@ function Install-Ubuntu {
             $installSuccess = $false
         }
 
-        # Method 3: Direct WSL test (most reliable)
-        Write-Host "    Testing WSL distro registration..." -ForegroundColor Gray
-        $null = wsl -d Ubuntu-22.04 -u root -- echo "test" 2>&1
-        if ($LASTEXITCODE -eq 0) {
-            Write-Host "    WSL test successful - distro is registered" -ForegroundColor Gray
-            $installSuccess = $true
+        # Method 3: Get actual registered distro name and test
+        Write-Host "    Detecting registered Ubuntu distro name..." -ForegroundColor Gray
+        $distroList = wsl --list --quiet 2>&1 | Out-String
+
+        # Parse distro name (handle UTF-16LE encoding with NULL bytes)
+        $detectedDistro = $null
+        if ($distroList -match "Ubuntu") {
+            # Try to extract the exact distro name
+            $distroLines = $distroList -split "`n" | Where-Object { $_ -match "Ubuntu" }
+            if ($distroLines) {
+                # Clean up NULL bytes and whitespace
+                $detectedDistro = ($distroLines[0] -replace "\0", "").Trim()
+                Write-Host "    Detected distro: $detectedDistro" -ForegroundColor Gray
+            }
+        }
+
+        # Fallback: Try common Ubuntu distro names
+        if (-not $detectedDistro) {
+            $commonNames = @("Ubuntu", "Ubuntu-22.04", "Ubuntu-24.04")
+            foreach ($name in $commonNames) {
+                $null = wsl -d $name -u root -- echo "test" 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    $detectedDistro = $name
+                    Write-Host "    Found working distro: $detectedDistro" -ForegroundColor Gray
+                    break
+                }
+            }
+        }
+
+        # Test the detected distro
+        if ($detectedDistro) {
+            $null = wsl -d $detectedDistro -u root -- echo "test" 2>&1
+            if ($LASTEXITCODE -eq 0) {
+                Write-Host "    WSL test successful - $detectedDistro is registered" -ForegroundColor Gray
+                $script:Config.UbuntuVersion = $detectedDistro
+                $installSuccess = $true
+            } else {
+                Write-Host "    WSL test failed for $detectedDistro" -ForegroundColor Yellow
+                $installSuccess = $false
+            }
         } else {
-            Write-Host "    WSL test failed - distro not properly registered" -ForegroundColor Yellow
+            Write-Host "    Could not detect Ubuntu distro name" -ForegroundColor Yellow
             $installSuccess = $false
         }
 
@@ -746,18 +787,19 @@ function Install-Ubuntu {
         }
 
         Write-Status "Ubuntu installation completed successfully" "OK"
+        Write-Host "    Registered as: $($script:Config.UbuntuVersion)" -ForegroundColor Gray
 
         # Create the default user via WSL
         Write-Host "    Creating default user 'maia'..." -ForegroundColor Gray
-        wsl -d Ubuntu-22.04 -u root -- useradd -m -s /bin/bash maia 2>$null
-        wsl -d Ubuntu-22.04 -u root -- bash -c "echo 'maia:Test123!' | chpasswd" 2>$null
-        wsl -d Ubuntu-22.04 -u root -- usermod -aG sudo maia 2>$null
+        wsl -d $script:Config.UbuntuVersion -u root -- useradd -m -s /bin/bash maia 2>$null
+        wsl -d $script:Config.UbuntuVersion -u root -- bash -c "echo 'maia:Test123!' | chpasswd" 2>$null
+        wsl -d $script:Config.UbuntuVersion -u root -- usermod -aG sudo maia 2>$null
 
         # Configure maia as default user for this distro
         & $ubuntuExe config --default-user maia
 
         # Verify user was created successfully
-        $userCheck = wsl -d Ubuntu-22.04 -u maia -- whoami 2>&1
+        $userCheck = wsl -d $script:Config.UbuntuVersion -u maia -- whoami 2>&1
         if ($userCheck -match "maia") {
             Write-Status "Ubuntu initialized with user 'maia'" "OK"
         } else {
@@ -768,7 +810,7 @@ function Install-Ubuntu {
         Remove-Item $appxPath -Force -ErrorAction SilentlyContinue
 
         # Set as default WSL distro
-        wsl --set-default Ubuntu-22.04 2>&1 | Out-Null
+        wsl --set-default $script:Config.UbuntuVersion 2>&1 | Out-Null
 
         Write-Status "Ubuntu 22.04 installation complete" "OK"
         return $true
@@ -1223,7 +1265,7 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.19"
+Write-Banner "MAIA Environment Installer v2.20"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow
@@ -1302,7 +1344,7 @@ if ($script:Results.NeedsRestart) {
     Write-Host "  5. Authenticate Claude: claude" -ForegroundColor Cyan
     Write-Host ""
     Write-Host "  Or open VSCode directly:" -ForegroundColor White
-    Write-Host "  code --remote wsl+Ubuntu-22.04 ~/maia" -ForegroundColor Cyan
+    Write-Host "  code --remote wsl+$($script:Config.UbuntuVersion) ~/maia" -ForegroundColor Cyan
 } else {
     Write-Host "Some components need attention. Review warnings above." -ForegroundColor Yellow
     Write-Host "Re-run this script after addressing issues." -ForegroundColor Yellow
