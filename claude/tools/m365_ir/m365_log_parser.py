@@ -8,9 +8,11 @@ Features:
 - Handle Microsoft PowerShell object bug in Status field
 - Multi-export merging with deduplication
 - Chronological sorting
+- Support date-ranged CSV exports (Phase 263)
 
 Author: Maia System
 Created: 2025-12-18 (Phase 225)
+Updated: 2026-01-10 (Phase 263) - Added support for ApplicationSignIns/MSISignIns date-ranged exports
 """
 
 import csv
@@ -55,10 +57,11 @@ class LogType(Enum):
 # Note: ENTRA_AUDIT (2_*AuditLogs.csv) is Entra ID/Azure AD directory audit,
 # distinct from FULL_AUDIT (7_*FullAuditLog.csv) which is the Unified Audit Log
 LOG_FILE_PATTERNS = {
-    # Patterns support both "1_" and "01_" zero-padded prefixes
-    LogType.SIGNIN: r"0?1_.*SignInLogs\.csv$",
-    LogType.ENTRA_AUDIT: r"0?2_.*(?:Directory)?AuditLogs\.csv$",
-    LogType.AUDIT: r"0?2_.*(?:Directory)?AuditLogs\.csv$",  # Deprecated: use ENTRA_AUDIT
+    # Patterns support both "1_" and "01_" zero-padded prefixes AND date-ranged exports
+    # Phase 263 Fix: Support ApplicationSignIns_YYYY-MM-DD_YYYY-MM-DD.csv and MSISignIns patterns
+    LogType.SIGNIN: r"(?:0?1_.*SignInLogs|.*(?:Application|MSI)SignIns.*)\.csv$",
+    LogType.ENTRA_AUDIT: r"(?:0?2_.*(?:Directory)?AuditLogs|AuditLogs_.*)\.csv$",
+    LogType.AUDIT: r"(?:0?2_.*(?:Directory)?AuditLogs|AuditLogs_.*)\.csv$",  # Deprecated: use ENTRA_AUDIT
     LogType.INBOX_RULES: r"0?3_.*InboxRules\.csv$",
     LogType.MAILBOX_AUDIT: r"0?4_.*MailboxAudit(?:Log)?\.csv$",
     LogType.OAUTH_CONSENTS: r"0?5_.*OAuthConsents\.csv$",
