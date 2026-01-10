@@ -36,8 +36,15 @@
     .\Install-MaiaEnvironment.ps1 -WSLVersion 2
 
 .NOTES
-    Version: 2.18
+    Version: 2.19
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
+
+    Changed v2.19:
+    - CRITICAL FIX: Find ubuntu.exe from AppX package location instead of WindowsApps alias
+    - FIXED: App Execution Alias registration often fails, causing ubuntu.exe not found errors
+    - FIXED: Microsoft changed aka.ms/wslubuntu2204 to redirect to Ubuntu 24.04
+    - IMPROVED: Get ubuntu.exe path directly from Get-AppxPackage InstallLocation
+    - IMPROVED: Works regardless of App Execution Alias state
 
     Changed v2.18:
     - CRITICAL BUG FIX: Script now properly stops when Ubuntu installation fails
@@ -660,21 +667,27 @@ function Install-Ubuntu {
         Write-Host "    Default user: maia" -ForegroundColor Gray
         Write-Host "    Default password: Test123!" -ForegroundColor Gray
 
-        # Find the Ubuntu executable (may take a moment to appear after AppX install)
-        Write-Host "    Waiting for Ubuntu executable to become available..." -ForegroundColor Gray
-        $ubuntuExe = $null
-        for ($i = 1; $i -le 10; $i++) {
-            # Ubuntu 22.04 AppX uses 'ubuntu.exe', not 'ubuntu2204.exe'
-            $ubuntuExe = Get-ChildItem "$env:LOCALAPPDATA\Microsoft\WindowsApps\ubuntu.exe" -ErrorAction SilentlyContinue
-            if ($ubuntuExe) { break }
-            Start-Sleep -Seconds 2
-        }
+        # Find Ubuntu executable directly from AppX install location
+        # NOTE: App Execution Alias often fails to register, so we get the path from the package itself
+        Write-Host "    Locating Ubuntu executable from AppX package..." -ForegroundColor Gray
 
-        if (-not $ubuntuExe) {
-            Write-Status "Ubuntu executable not found after AppX installation" "ERROR"
-            Write-Host "    Try: Get-ChildItem `$env:LOCALAPPDATA\Microsoft\WindowsApps\*ubuntu*" -ForegroundColor Yellow
+        $ubuntuPkg = Get-AppxPackage -Name "*Ubuntu*" | Select-Object -First 1
+        if (-not $ubuntuPkg) {
+            Write-Status "Ubuntu AppX package not found after installation" "ERROR"
             return $false
         }
+
+        Write-Host "    Found package: $($ubuntuPkg.Name) v$($ubuntuPkg.Version)" -ForegroundColor Gray
+
+        $ubuntuExePath = Join-Path $ubuntuPkg.InstallLocation "ubuntu.exe"
+        if (-not (Test-Path $ubuntuExePath)) {
+            Write-Status "ubuntu.exe not found in package location: $ubuntuExePath" "ERROR"
+            Write-Host "    Package location: $($ubuntuPkg.InstallLocation)" -ForegroundColor Yellow
+            Write-Host "    Try: Get-ChildItem `"$($ubuntuPkg.InstallLocation)`" -Filter *.exe" -ForegroundColor Yellow
+            return $false
+        }
+
+        $ubuntuExe = Get-Item $ubuntuExePath
 
         Write-Host "    Found Ubuntu executable: $($ubuntuExe.Name)" -ForegroundColor Gray
         Write-Host "    Initializing Ubuntu (this extracts files and may take 2-3 minutes)..." -ForegroundColor Gray
@@ -1210,7 +1223,7 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.18"
+Write-Banner "MAIA Environment Installer v2.19"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow
