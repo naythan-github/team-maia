@@ -482,5 +482,139 @@ class TestMailboxParseErrorHandling:
         assert parser.last_parse_errors == 1
 
 
+class TestDateRangedCSVPatterns:
+    """Test LOG_FILE_PATTERNS for date-ranged CSV exports (Phase 263 fix)
+
+    These tests validate pattern matching for CSV files exported with date ranges:
+    - ApplicationSignIns_YYYY-MM-DD_YYYY-MM-DD.csv
+    - SGS_ApplicationSignIns_YYYY-MM-DD_YYYY-MM-DD.csv
+    - MSISignIns_YYYY-MM-DD_YYYY-MM-DD.csv
+    - AuditLogs_YYYY-MM-DD.csv
+
+    Root cause: PIR-GOOD-SAMARITAN-777777 had 3 ZIPs (94 MB) not imported
+    because patterns were too restrictive (only matched "0?1_.*SignInLogs.csv").
+    """
+
+    @pytest.fixture
+    def parser(self):
+        return M365LogParser(date_format="AU")
+
+    def test_discovers_application_signin_date_ranged(self, parser, tmp_path):
+        """Should discover ApplicationSignIns_YYYY-MM-DD_YYYY-MM-DD.csv as SIGNIN type"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Create date-ranged ApplicationSignIns file
+        (export / "ApplicationSignIns_2025-11-04_2025-12-04.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        assert LogType.SIGNIN in discovered, \
+            f"ApplicationSignIns_2025-11-04_2025-12-04.csv should match SIGNIN pattern, discovered: {discovered}"
+        assert discovered[LogType.SIGNIN].name == "ApplicationSignIns_2025-11-04_2025-12-04.csv"
+
+    def test_discovers_prefixed_application_signin_date_ranged(self, parser, tmp_path):
+        """Should discover SGS_ApplicationSignIns_YYYY-MM-DD_YYYY-MM-DD.csv as SIGNIN type"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Create prefixed date-ranged ApplicationSignIns file
+        (export / "SGS_ApplicationSignIns_2025-11-28_2025-12-05.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        assert LogType.SIGNIN in discovered, \
+            f"SGS_ApplicationSignIns_2025-11-28_2025-12-05.csv should match SIGNIN pattern, discovered: {discovered}"
+        assert discovered[LogType.SIGNIN].name == "SGS_ApplicationSignIns_2025-11-28_2025-12-05.csv"
+
+    def test_discovers_msi_signin_date_ranged(self, parser, tmp_path):
+        """Should discover MSISignIns_YYYY-MM-DD_YYYY-MM-DD.csv as SIGNIN type"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Create MSISignIns file (Managed Service Identity sign-ins)
+        (export / "MSISignIns_2025-11-28_2025-12-05.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        assert LogType.SIGNIN in discovered, \
+            f"MSISignIns_2025-11-28_2025-12-05.csv should match SIGNIN pattern, discovered: {discovered}"
+        assert discovered[LogType.SIGNIN].name == "MSISignIns_2025-11-28_2025-12-05.csv"
+
+    def test_discovers_prefixed_msi_signin_date_ranged(self, parser, tmp_path):
+        """Should discover SGS_MSISignIns_YYYY-MM-DD_YYYY-MM-DD.csv as SIGNIN type"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Create prefixed MSISignIns file
+        (export / "SGS_MSISignIns_2025-11-28_2025-12-05.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        assert LogType.SIGNIN in discovered, \
+            f"SGS_MSISignIns_2025-11-28_2025-12-05.csv should match SIGNIN pattern, discovered: {discovered}"
+        assert discovered[LogType.SIGNIN].name == "SGS_MSISignIns_2025-11-28_2025-12-05.csv"
+
+    def test_discovers_audit_logs_date_stamped(self, parser, tmp_path):
+        """Should discover AuditLogs_YYYY-MM-DD.csv as ENTRA_AUDIT type"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Create date-stamped AuditLogs file
+        (export / "AuditLogs_2025-12-04.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        assert LogType.ENTRA_AUDIT in discovered, \
+            f"AuditLogs_2025-12-04.csv should match ENTRA_AUDIT pattern, discovered: {discovered}"
+        assert discovered[LogType.ENTRA_AUDIT].name == "AuditLogs_2025-12-04.csv"
+
+    def test_still_discovers_legacy_signin_format(self, parser, tmp_path):
+        """Should still discover old format 01_SignInLogs.csv"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Create legacy format file
+        (export / "01_SignInLogs.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        assert LogType.SIGNIN in discovered, \
+            f"Legacy 01_SignInLogs.csv should still match SIGNIN pattern, discovered: {discovered}"
+        assert discovered[LogType.SIGNIN].name == "01_SignInLogs.csv"
+
+    def test_still_discovers_legacy_audit_format(self, parser, tmp_path):
+        """Should still discover old format 02_AuditLogs.csv"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Create legacy format file
+        (export / "02_AuditLogs.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        assert LogType.ENTRA_AUDIT in discovered, \
+            f"Legacy 02_AuditLogs.csv should still match ENTRA_AUDIT pattern, discovered: {discovered}"
+        assert discovered[LogType.ENTRA_AUDIT].name == "02_AuditLogs.csv"
+
+    def test_mixed_old_and_new_formats(self, parser, tmp_path):
+        """Should discover both old and new formats in same directory"""
+        export = tmp_path / "export"
+        export.mkdir()
+
+        # Mix of old and new formats
+        (export / "01_SignInLogs.csv").write_text("header\n")
+        (export / "ApplicationSignIns_2025-11-04_2025-12-04.csv").write_text("header\n")
+        (export / "02_AuditLogs.csv").write_text("header\n")
+        (export / "AuditLogs_2025-12-04.csv").write_text("header\n")
+
+        discovered = parser.discover_log_files(export)
+
+        # Should discover at least SIGNIN and ENTRA_AUDIT
+        # (Note: discover_log_files returns first match, so we can't predict which specific file)
+        assert LogType.SIGNIN in discovered
+        assert LogType.ENTRA_AUDIT in discovered
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
