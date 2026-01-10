@@ -9,11 +9,22 @@ TDD Implementation - Tests in tests/test_report_generator.py
 
 import logging
 import json
+import sys
 from enum import Enum
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, asdict
 from datetime import datetime, timedelta
 from pathlib import Path
+
+# Add maia root to path for document conversion tool
+MAIA_ROOT = Path(__file__).resolve().parent.parent.parent.parent
+sys.path.insert(0, str(MAIA_ROOT))
+
+try:
+    from claude.tools.document_conversion.orro_md_to_docx import convert_md_to_docx
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
 
 from claude.tools.experimental.azure.customer_database import CustomerDatabaseManager
 
@@ -331,19 +342,19 @@ class ReportGenerator:
 
         Args:
             customer_slug: Customer identifier (e.g., "aus_e_mart")
-            format: Output format ("json" or "markdown")
+            format: Output format ("json", "markdown", or "docx")
             category: Optional category filter (e.g., "Cost")
             min_impact: Optional minimum impact filter (e.g., "High")
 
         Returns:
-            Formatted report string
+            Formatted report string (or bytes for DOCX)
 
         Raises:
             ValueError: If customer does not exist or format is unsupported
         """
         # Validate format
-        if format not in ["json", "markdown"]:
-            raise ValueError(f"Unsupported format: {format}. Use 'json' or 'markdown'")
+        if format not in ["json", "markdown", "docx"]:
+            raise ValueError(f"Unsupported format: {format}. Use 'json', 'markdown', or 'docx'")
 
         # Convert min_impact to enum for type-safe filtering
         min_impact_enum = ImpactLevel.from_string(min_impact) if min_impact else None
@@ -384,6 +395,8 @@ class ReportGenerator:
                 return self._generate_json_report(sorted_recommendations, customer_slug)
             elif format == "markdown":
                 return self._generate_markdown_report(sorted_recommendations, customer_slug)
+            elif format == "docx":
+                return self._generate_docx_report(sorted_recommendations, customer_slug)
 
     def _generate_json_report(
         self,
@@ -564,6 +577,68 @@ class ReportGenerator:
         lines.append("")
 
         return "\n".join(lines)
+
+    def _generate_docx_report(
+        self,
+        recommendations: List[Any],
+        customer_slug: str
+    ) -> str:
+        """
+        Generate Microsoft Word DOCX format report using Markdown→DOCX converter.
+
+        Uses existing orro_md_to_docx.py tool for professional formatting with:
+        - Orro corporate styling (purple headers, Aptos font)
+        - Proper table formatting with RGB borders
+        - Content-aware column widths
+        - Pandoc-based conversion for robust handling
+
+        Args:
+            recommendations: List of recommendation dicts
+            customer_slug: Customer identifier
+
+        Returns:
+            Path to generated DOCX file
+
+        Raises:
+            ImportError: If document conversion tool is not available
+        """
+        if not DOCX_AVAILABLE:
+            raise ImportError(
+                "Document conversion tool not available. "
+                "Ensure claude/tools/document_conversion/orro_md_to_docx.py exists"
+            )
+
+        # Generate Markdown report first
+        markdown_content = self._generate_markdown_report(recommendations, customer_slug)
+
+        # Write Markdown to temporary file
+        md_path = Path(f"/Users/naythandawe/work_projects/{customer_slug}_report.md")
+        md_path.write_text(markdown_content)
+
+        # Convert Markdown to DOCX using existing tool
+        docx_path = md_path.with_suffix('.docx')
+
+        try:
+            success = convert_md_to_docx(
+                md_path,
+                docx_path,
+                apply_table_styles=True  # Use full Orro styling
+            )
+
+            if not success:
+                raise RuntimeError("Markdown to DOCX conversion failed")
+
+            # Clean up temporary Markdown file
+            md_path.unlink()
+
+            logger.info(f"Generated DOCX report: {docx_path}")
+            return str(docx_path)
+
+        except Exception as e:
+            # Clean up temporary Markdown file on error
+            if md_path.exists():
+                md_path.unlink()
+            raise RuntimeError(f"DOCX generation failed: {e}") from e
 
     def _get_value(self, rec: Any, key: str, default: Any = None) -> Any:
         """

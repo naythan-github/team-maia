@@ -1,6 +1,6 @@
 # Azure Cost Optimization Platform
 
-**Version**: 1.1.0 (Production Validated)
+**Version**: 1.2.0 (Production Validated)
 **Status**: ✅ All 5 phases complete - live production testing successful
 **Test Coverage**: 344 tests passing (100% TDD)
 **Production Validation**: ✅ 60 resources synced, 3 recommendations, waste detection confirmed
@@ -38,7 +38,7 @@ Multi-tenant Azure cost optimization platform built with Test-Driven Development
 - **Waste Detection**: Orphaned disks, unattached IPs, idle resources with false positive prevention
 - **Workload Pattern Analysis**: Usage pattern detection for rightsizing recommendations
 - **Resource Classification**: Automatic prod/DR/dev/test classification
-- **Executive Reporting**: JSON and Markdown reports with savings calculations
+- **Executive Reporting**: JSON, Markdown, and DOCX reports with savings calculations
 - **Quick Win Identification**: Low-effort, high-impact recommendations with caching
 - **Data Freshness Tracking**: Automatic staleness warnings (48+ hours)
 - **Progress Indicators**: Real-time feedback for long-running operations
@@ -318,10 +318,10 @@ Generate detailed cost optimization report.
 
 **Options**:
 - `--customer` (required): Customer slug
-- `--format`: Output format - `json` or `markdown` (default: json)
+- `--format`: Output format - `json`, `markdown`, or `docx` (default: json)
 - `--category`: Filter by category (e.g., "Cost")
 - `--min-impact`: Minimum impact level - `Low`, `Medium`, or `High`
-- `--output`, `-o`: Output file path (default: stdout)
+- `--output`, `-o`: Output file path (default: stdout for json/markdown, auto-generated for docx)
 
 **Examples**:
 ```bash
@@ -330,6 +330,12 @@ cost_optimizer report --customer aus_e_mart --format json -o report.json
 
 # Markdown to stdout, high impact only
 cost_optimizer report --customer aus_e_mart --format markdown --min-impact High
+
+# Microsoft Word (DOCX) customer deliverable
+cost_optimizer report --customer aus_e_mart --format docx
+
+# DOCX with custom output path
+cost_optimizer report --customer aus_e_mart --format docx -o customer_report.docx
 
 # Cost category only
 cost_optimizer report --customer aus_e_mart --category Cost

@@ -240,37 +240,48 @@ def collect(customer: str, credential: str) -> None:
 
 @cli.command('report')
 @click.option('--customer', required=True, help='Customer slug')
-@click.option('--format', type=click.Choice(['json', 'markdown']), default='json', help='Output format')
+@click.option('--format', type=click.Choice(['json', 'markdown', 'docx']), default='json', help='Output format')
 @click.option('--category', help='Filter by category (e.g., Cost)')
 @click.option('--min-impact', type=click.Choice(['Low', 'Medium', 'High']), help='Minimum impact level')
-@click.option('--output', '-o', type=click.Path(), help='Output file path (default: stdout)')
+@click.option('--output', '-o', type=click.Path(), help='Output file path (default: stdout for json/markdown, auto-generated for docx)')
 def report(customer: str, format: str, category: Optional[str], min_impact: Optional[str], output: Optional[str]) -> None:
     """
     Generate detailed cost optimization report.
 
-    Outputs recommendations in JSON or Markdown format.
+    Outputs recommendations in JSON, Markdown, or DOCX format.
     """
     try:
         generator = ReportGenerator()
 
         click.echo(f"📝 Generating {format} report for {customer}...")
 
-        report_content = generator.generate_detailed_report(
+        report_result = generator.generate_detailed_report(
             customer_slug=customer,
             format=format,
             category=category,
             min_impact=min_impact,
         )
 
-        if output:
-            # Write to file
-            Path(output).write_text(report_content)
-            click.echo(f"✅ Report saved to {output}")
+        if format == 'docx':
+            # DOCX returns a file path, not content
+            if output:
+                # Move generated file to specified output path
+                import shutil
+                shutil.move(report_result, output)
+                click.echo(f"✅ DOCX report saved to {output}")
+            else:
+                click.echo(f"✅ DOCX report saved to {report_result}")
         else:
-            # Print to stdout
-            click.echo("\n" + "=" * 80)
-            click.echo(report_content)
-            click.echo("=" * 80)
+            # JSON and Markdown return content strings
+            if output:
+                # Write to file
+                Path(output).write_text(report_result)
+                click.echo(f"✅ Report saved to {output}")
+            else:
+                # Print to stdout
+                click.echo("\n" + "=" * 80)
+                click.echo(report_result)
+                click.echo("=" * 80)
 
     except Exception as e:
         click.echo(f"❌ Error generating report: {e}", err=True)
