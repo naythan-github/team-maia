@@ -36,8 +36,15 @@
     .\Install-MaiaEnvironment.ps1 -WSLVersion 2
 
 .NOTES
-    Version: 2.17
+    Version: 2.18
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
+
+    Changed v2.18:
+    - CRITICAL BUG FIX: Script now properly stops when Ubuntu installation fails
+    - CRITICAL BUG FIX: v2.17 showed WARN but continued, causing cascade failures
+    - IMPROVED: Multi-method verification (exit code + output + WSL test)
+    - IMPROVED: Detailed diagnostic output for troubleshooting installation failures
+    - IMPROVED: Better error messages with specific troubleshooting steps
 
     Changed v2.17:
     - CRITICAL FIX: Ubuntu registration check now uses install output instead of wsl --list
@@ -673,27 +680,59 @@ function Install-Ubuntu {
         Write-Host "    Initializing Ubuntu (this extracts files and may take 2-3 minutes)..." -ForegroundColor Gray
 
         # Install Ubuntu as root first (no user creation prompt)
+        Write-Host "    Running: ubuntu.exe install --root" -ForegroundColor Gray
         $installOutput = & $ubuntuExe install --root 2>&1 | Out-String
+        $installExitCode = $LASTEXITCODE
         Start-Sleep -Seconds 5
 
-        # Verify installation succeeded by checking the output message
-        if ($installOutput -match "Installation successful") {
-            Write-Status "Ubuntu installation completed successfully" "OK"
-        } elseif ($installOutput -match "Error|Failed") {
-            Write-Status "Ubuntu installation failed" "ERROR"
-            Write-Host "    Install output: $installOutput" -ForegroundColor Yellow
-            return $false
-        } else {
-            # If unclear, try to test WSL directly
-            $testResult = wsl -d Ubuntu-22.04 -u root -- echo "test" 2>&1
-            if ($LASTEXITCODE -eq 0) {
-                Write-Status "Ubuntu installation verified via WSL test" "OK"
-            } else {
-                Write-Status "Ubuntu installation status unclear" "WARN"
-                Write-Host "    Install output: $installOutput" -ForegroundColor Yellow
-                Write-Host "    WSL test: $testResult" -ForegroundColor Yellow
-            }
+        Write-Host "    Install command exit code: $installExitCode" -ForegroundColor Gray
+        Write-Host "    Install output length: $($installOutput.Length) chars" -ForegroundColor Gray
+
+        # Check if installation succeeded using multiple verification methods
+        $installSuccess = $false
+
+        # Method 1: Check exit code (0 = success)
+        if ($installExitCode -eq 0) {
+            Write-Host "    Exit code indicates success" -ForegroundColor Gray
+            $installSuccess = $true
         }
+
+        # Method 2: Check output message (if any)
+        if ($installOutput -match "Installation successful|already installed") {
+            Write-Host "    Output message indicates success" -ForegroundColor Gray
+            $installSuccess = $true
+        } elseif ($installOutput -match "Error|Failed|WslRegisterDistribution failed") {
+            Write-Host "    Output indicates failure: $installOutput" -ForegroundColor Yellow
+            $installSuccess = $false
+        }
+
+        # Method 3: Direct WSL test (most reliable)
+        Write-Host "    Testing WSL distro registration..." -ForegroundColor Gray
+        $null = wsl -d Ubuntu-22.04 -u root -- echo "test" 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "    WSL test successful - distro is registered" -ForegroundColor Gray
+            $installSuccess = $true
+        } else {
+            Write-Host "    WSL test failed - distro not properly registered" -ForegroundColor Yellow
+            $installSuccess = $false
+        }
+
+        # Final verification
+        if (-not $installSuccess) {
+            Write-Status "Ubuntu installation failed - distro not registered" "ERROR"
+            Write-Host "    This may indicate:" -ForegroundColor Yellow
+            Write-Host "    - WSL2 kernel not properly installed" -ForegroundColor Yellow
+            Write-Host "    - AppX package corrupted" -ForegroundColor Yellow
+            Write-Host "    - Previous installation left in broken state" -ForegroundColor Yellow
+            Write-Host "" -ForegroundColor Yellow
+            Write-Host "    Troubleshooting steps:" -ForegroundColor Cyan
+            Write-Host "    1. Run: wsl --list --verbose" -ForegroundColor White
+            Write-Host "    2. Run: Get-AppxPackage *Ubuntu*" -ForegroundColor White
+            Write-Host "    3. Try manual install: ubuntu.exe" -ForegroundColor White
+            return $false
+        }
+
+        Write-Status "Ubuntu installation completed successfully" "OK"
 
         # Create the default user via WSL
         Write-Host "    Creating default user 'maia'..." -ForegroundColor Gray
@@ -1171,7 +1210,7 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.17"
+Write-Banner "MAIA Environment Installer v2.18"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow
