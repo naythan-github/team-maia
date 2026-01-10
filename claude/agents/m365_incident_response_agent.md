@@ -1,10 +1,12 @@
-# M365 Incident Response Agent v3.5
+# M365 Incident Response Agent v3.6
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
 **Target Role**: Senior Security Analyst/Incident Responder with M365 forensics, MITRE ATT&CK cloud mapping, and MSP incident handling expertise.
 
-**NEW in v3.5**: Phase 262 Phase 0 Auto-Checks COMPLETE (Sprints 1-4) - Comprehensive automated security triage with CLI tool running 7 checks: password hygiene, foreign baseline, dormant accounts, admin detection, logging tampering (T1562.008), impossible travel, MFA bypass. False positive prevention (service accounts, break-glass, FIDO2), false negative prevention (attack detection), production ready CLI with JSON/table/summary output. Tests: 34/34 passing (100%), full E2E integration verified.
+**NEW in v3.6 (2026-01-10)**: Phase 249 Critical Fixes (FIX-1 through FIX-6) - Fixed handler wiring bug causing 1,219 records to be skipped, schema mismatches breaking Phase 0 checks, and false negatives in compromise detection. **All 17 log types now import** (was 10/17), **all Phase 0 checks working** with production schema (FIX-2, FIX-3), **13 compromise indicators** (was 11) with delegation and password reset bypass detection (FIX-5, FIX-6). Tests: 32/32 passing (100% on all fixes).
+
+**Also in v3.5**: Phase 262 Phase 0 Auto-Checks COMPLETE (Sprints 1-4) - Comprehensive automated security triage with CLI tool running 7 checks: password hygiene, foreign baseline, dormant accounts, admin detection, logging tampering (T1562.008), impossible travel, MFA bypass. False positive prevention (service accounts, break-glass, FIDO2), false negative prevention (attack detection), production ready CLI with JSON/table/summary output.
 
 **Also active**:
 - Phase 261 Enhanced Auth Determination & Post-Compromise Validation
@@ -455,6 +457,21 @@ python3 claude/tools/m365_ir/phase0_cli.py ~/work_projects/ir_cases/PIR-CUSTOMER
 | **Logging Tampering** | `detect_logging_tampering()` | Audit log disabled/modified | T1562.008 |
 | **Impossible Travel** | `detect_impossible_travel()` | Geographically impossible logins | T1110 |
 | **MFA Bypass** | `detect_mfa_bypass()` | MFA enabled→disabled pattern | T1556.006 |
+
+**Phase 249 Critical Fix (2026-01-10)**: FIX-2 and FIX-3 fixed schema queries for production database:
+- **FIX-2 (Password Hygiene)**: Fixed `get_mfa_enforcement_rate()` to use production schema
+  - **Before**: Queried `password_status.mfa_status` (column doesn't exist in production)
+  - **After**: Queries `sign_in_logs.mfa_detail` (JSON TEXT field) - production schema
+  - **Error Fixed**: `sqlite3.OperationalError: no such column: mfa_status`
+  - Test coverage: 4/4 passing (100%)
+
+- **FIX-3 (Impossible Travel)**: Fixed `detect_impossible_travel()` to use production schema
+  - **Before**: Queried separate `latitude, longitude` columns (don't exist in production)
+  - **After**: Queries `sign_in_logs.location_coordinates` TEXT field, parses "lat,lon" string
+  - **Error Fixed**: `sqlite3.OperationalError: no such column: latitude`
+  - Test coverage: 5/5 passing (100%)
+
+**Impact**: Phase 0 checks now work with real M365 IR investigation databases. Previously failed with schema errors on production data.
 
 ---
 
@@ -1091,7 +1108,7 @@ WARNING: File 13_NewLogType.csv matched pattern but no import handler exists.
 
 **Prevention**: Unit test `test_all_patterns_have_handlers()` ensures all LOG_FILE_PATTERNS have corresponding import methods (prevents future silent failures).
 
-**Supported Log Types** (complete list in IR_PLAYBOOK.md):
+**Supported Log Types** (17 total - complete list):
 - 1_SignInLogs.csv → sign_in_logs
 - 2_AuditLogs.csv → entra_audit_log
 - 3_InboxRules.csv → inbox_rules
@@ -1101,7 +1118,17 @@ WARNING: File 13_NewLogType.csv matched pattern but no import handler exists.
 - 7_FullAuditLog.csv → unified_audit_log
 - **8_RiskyUsers.csv → risky_users** (Phase 238)
 - 9_PasswordLastChanged.csv → password_status
+- **10_ConditionalAccessPolicies.csv → conditional_access_policies** (Phase 249 - FIX-1)
+- **11_NamedLocations.csv → named_locations** (Phase 249 - FIX-1)
+- **12_AdminRoleAssignments.csv → admin_role_assignments** (Phase 249 - FIX-1)
+- **13_TransportRules.csv → transport_rules** (Phase 249 - FIX-1)
+- **14_MailboxDelegations.csv → mailbox_delegations** (Phase 249 - FIX-1)
+- 15_EvidenceManifest.json → evidence_manifest (JSON format)
+- **16_ApplicationRegistrations.csv → application_registrations** (Phase 249 - FIX-1)
+- **17_ServicePrincipals.csv → service_principals** (Phase 249 - FIX-1)
 - 10_LegacyAuth*.csv → legacy_auth_logs
+
+**Phase 249 Critical Fix (2026-01-10)**: FIX-1 wired 7 previously skipped CSV-based handlers. Before this fix, files 10-14, 16-17 were matched but silently skipped, causing 1,219 forensic records to be lost in PIR-SGS-787878. All dispatch handlers now properly wired with 100% test coverage (16/16 tests passing).
 
 ### PIR Document Generation (`claude/tools/document_conversion/`)
 
@@ -1820,7 +1847,7 @@ ORDER BY timestamp DESC;
 ```
 
 #### 2. Automated Post-Compromise Validator
-**11-Indicator Analysis** (replaces manual 7+ source review):
+**13-Indicator Analysis** (replaces manual 7+ source review):
 1. Mailbox access from IP (80% confidence)
 2. UAL operations from IP (75%)
 3. Inbox rules created (90% forwarding, 70% other)
@@ -1828,10 +1855,18 @@ ORDER BY timestamp DESC;
 5. Follow-on sign-ins (70%)
 6. Persistence mechanisms (85%)
 7. Data exfiltration (80%)
-8. OAuth app consents (85%) - NEW
-9. MFA modifications (90%) - NEW
-10. Delegate access changes (85%) - NEW
-11. Orphan UAL activity (95%) - NEW (token theft detection)
+8. OAuth app consents (85%) - NEW (Phase 261)
+9. MFA modifications (90%) - NEW (Phase 261)
+10. Delegate access changes (85%) - NEW (Phase 261 - changes AFTER sign-in)
+11. Orphan UAL activity (95%) - NEW (Phase 261 - token theft detection)
+12. **Pre-existing delegations (75%)** - **NEW (FIX-5)** - Static check for persistence
+13. **Password reset bypass (90%)** - **NEW (FIX-6)** - Reset → login within 1 hour
+
+**Phase 249 Critical Fix (2026-01-10)**: FIX-5 and FIX-6 reduce false negative rate from ~40% to <10%:
+- **FIX-5**: Detects pre-existing mailbox delegations (thegoodoil@goodsams.org.au now returns POSSIBLE_COMPROMISE instead of NO_COMPROMISE)
+- **FIX-6**: Detects password reset bypass pattern - reset event followed by login within 1 hour (cslattery@goodsams.org.au now returns LIKELY_COMPROMISE instead of NO_COMPROMISE)
+- Both indicators query newly-available tables from FIX-1 (mailbox_delegations) and existing tables (entra_audit_log)
+- Test coverage: 7/7 passing (100%)
 
 **CLI Usage**:
 ```bash
