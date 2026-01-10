@@ -204,7 +204,10 @@ def analyze_password_hygiene(db_path, exclude_passwordless=False):
 
 def get_mfa_enforcement_rate(conn):
     """
-    Calculate MFA enforcement percentage from password_status table.
+    Calculate MFA enforcement percentage from sign_in_logs table.
+
+    FIX-2: Production schema stores MFA data in sign_in_logs.mfa_detail (JSON),
+    not password_status.mfa_status.
 
     Args:
         conn: Active SQLite connection
@@ -212,16 +215,17 @@ def get_mfa_enforcement_rate(conn):
     Returns:
         float: MFA enforcement percentage (0-100), or None if no data
     """
+    # Query sign_in_logs.mfa_detail instead of password_status.mfa_status
+    # mfa_detail is TEXT containing JSON - NOT NULL means MFA was used
     result = conn.execute("""
         SELECT
-            COUNT(*) as total,
-            COUNT(CASE WHEN mfa_status = 'Enabled' THEN 1 END) as mfa_enabled
-        FROM password_status
-        WHERE mfa_status IS NOT NULL
+            COUNT(DISTINCT user_principal_name) as total,
+            COUNT(DISTINCT CASE WHEN mfa_detail IS NOT NULL THEN user_principal_name END) as mfa_enabled
+        FROM sign_in_logs
     """).fetchone()
 
     if result[0] == 0:
-        return None  # No MFA data
+        return None  # No sign-in data
 
     return round((result[1] / result[0]) * 100, 1)
 
@@ -685,6 +689,9 @@ def detect_impossible_travel(db_path, speed_threshold_mph=500):
     """
     Detect geographically impossible logins (C2).
 
+    FIX-3: Production schema stores coordinates in location_coordinates TEXT ("lat,lon"),
+    not separate latitude/longitude columns.
+
     Identifies cases where a user signs in from locations that are impossible
     to reach within the time between logins (e.g., NYC to Beijing in 1.5 hours).
 
@@ -703,12 +710,12 @@ def detect_impossible_travel(db_path, speed_threshold_mph=500):
         impossible_travel_events = []
 
         # Get all sign-ins with coordinates, ordered by user and timestamp
+        # FIX-3: Query location_coordinates instead of latitude, longitude
         # A4: Explicitly filter NULL coordinates
         sign_ins = conn.execute("""
-            SELECT user_principal_name, timestamp, location_country, latitude, longitude
+            SELECT user_principal_name, timestamp, location_country, location_coordinates
             FROM sign_in_logs
-            WHERE latitude IS NOT NULL
-              AND longitude IS NOT NULL
+            WHERE location_coordinates IS NOT NULL
             ORDER BY user_principal_name, timestamp
         """).fetchall()
 
@@ -716,7 +723,15 @@ def detect_impossible_travel(db_path, speed_threshold_mph=500):
         current_user = None
         prev_login = None
 
-        for upn, timestamp, country, lat, lon in sign_ins:
+        for upn, timestamp, country, coords_str in sign_ins:
+            # FIX-3: Parse "lat,lon" string into floats
+            try:
+                lat_str, lon_str = coords_str.split(',')
+                lat = float(lat_str.strip())
+                lon = float(lon_str.strip())
+            except (ValueError, AttributeError):
+                # Skip malformed coordinates
+                continue
             if upn != current_user:
                 # New user, reset tracking
                 current_user = upn
