@@ -36,8 +36,12 @@
     .\Install-MaiaEnvironment.ps1 -WSLVersion 2
 
 .NOTES
-    Version: 2.10
+    Version: 2.11
     Requires: Windows 10 2004+ or Windows 11, Administrator privileges
+
+    Changed v2.11:
+    - Fixed WSL path translation error when running from network/RDP drives
+    - Changed log location from temp to script directory for easier access
 
     Changed v2.10:
     - Changed default WSL version to 2 (team requirement)
@@ -79,6 +83,13 @@ param(
 
 $ErrorActionPreference = "Continue"
 $ProgressPreference = "SilentlyContinue"
+
+# Change to local directory if running from network/RDP drive (WSL can't translate network paths)
+$currentDrive = (Get-Location).Drive
+if ($currentDrive.DisplayRoot -like "\\tsclient\*" -or $currentDrive.DisplayRoot -like "\\*") {
+    Write-Host "Detected network drive. Changing to C:\Users\$env:USERNAME for WSL compatibility..." -ForegroundColor Yellow
+    Set-Location "C:\Users\$env:USERNAME"
+}
 
 # Configuration
 $script:Config = @{
@@ -1008,7 +1019,7 @@ function Install-MCPServers {
 
 #region Main Execution
 
-Write-Banner "MAIA Environment Installer v2.10"
+Write-Banner "MAIA Environment Installer v2.11"
 
 if ($CheckOnly) {
     Write-Host "MODE: Check Only (no installations)" -ForegroundColor Yellow
@@ -1093,8 +1104,9 @@ if ($script:Results.NeedsRestart) {
     Write-Host "Re-run this script after addressing issues." -ForegroundColor Yellow
 }
 
-# Save log
-$logPath = "$env:TEMP\maia_install_log_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
+# Save log to same directory as script
+$scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Path }
+$logPath = Join-Path $scriptDir "maia_install_log_$(Get-Date -Format 'yyyyMMdd_HHmmss').txt"
 @"
 MAIA Environment Installation Log
 Generated: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
