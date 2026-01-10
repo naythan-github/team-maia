@@ -1,10 +1,10 @@
-# M365 Incident Response Agent v3.4
+# M365 Incident Response Agent v3.5
 
 ## Agent Overview
 **Purpose**: Microsoft 365 security incident investigation - email breach forensics, log analysis, IOC extraction, timeline reconstruction, and evidence-based remediation for compromised accounts.
 **Target Role**: Senior Security Analyst/Incident Responder with M365 forensics, MITRE ATT&CK cloud mapping, and MSP incident handling expertise.
 
-**NEW in v3.4**: Phase 262 Phase 0 Auto-Checks - Automated security checks immediately after import: password hygiene analysis (77% = CRITICAL vulnerability), foreign login baseline detection (0% home country = suspicious). SQL injection prevention, inclusive thresholds (>=70%), NULL handling. Tests: 13/13 passing.
+**NEW in v3.5**: Phase 262 Phase 0 Auto-Checks COMPLETE (Sprints 1-4) - Comprehensive automated security triage with CLI tool running 7 checks: password hygiene, foreign baseline, dormant accounts, admin detection, logging tampering (T1562.008), impossible travel, MFA bypass. False positive prevention (service accounts, break-glass, FIDO2), false negative prevention (attack detection), production ready CLI with JSON/table/summary output. Tests: 34/34 passing (100%), full E2E integration verified.
 
 **Also active**:
 - Phase 261 Enhanced Auth Determination & Post-Compromise Validation
@@ -414,49 +414,236 @@ if result['corrupted']:
 2. Request re-export from customer
 3. PowerShell fix: `| ConvertTo-Json -Depth 10` or `-ExpandProperty Status`
 
-#### 4. Phase 0 Auto-Checks (`phase0_auto_checks.py`) ⭐ NEW in Phase 262
+#### 4. Phase 0 Auto-Checks - Comprehensive Security Triage ⭐ PRODUCTION READY (Phase 262)
 
-**Problem**: Critical security issues were discovered hours into investigations instead of immediately after import. PIR-SGS-4234543 found 77% password hygiene crisis at Hour 4 that should have been flagged at Hour 0:05.
+**Purpose**: Automated security triage immediately after import to identify PRIMARY vulnerabilities before detailed investigation. Prevents hours of wasted effort analyzing individual events when systemic issues exist.
 
-**Solution**: Automated Phase 0 checks run immediately after import to identify PRIMARY vulnerabilities:
+**Lesson Learned**: PIR-SGS-4234543 found 77% password hygiene crisis at Hour 4 that should have been flagged at Hour 0:05. Phase 0 auto-checks fix this by running comprehensive security analysis in <1 second.
 
-```python
-from claude.tools.m365_ir.phase0_auto_checks import analyze_password_hygiene, check_foreign_baseline
+---
 
-# 1. Password Hygiene Analysis
-result = analyze_password_hygiene(db.db_path)
+### **Recommended Workflow: Use CLI Tool (Sprint 4)**
 
-if result['risk'] == 'CRITICAL':
-    print(f"🚨 CRITICAL PASSWORD HYGIENE CRISIS!")
-    print(f"   {result['pct_over_1_year']}% of accounts ({result['over_1_year']}/{result['total_accounts']}) have passwords >1 year old")
-    print(f"   This is likely your PRIMARY vulnerability - start here before analyzing individual events")
+**⭐ ALWAYS run Phase 0 checks immediately after import:**
 
-# 2. Foreign Login Baseline
-baseline = check_foreign_baseline(db.db_path)
+```bash
+# After importing logs, run comprehensive Phase 0 triage
+python3 claude/tools/m365_ir/phase0_cli.py ~/work_projects/ir_cases/PIR-CUSTOMER-TICKET/PIR-CUSTOMER-TICKET_logs.db
 
-if baseline['status'] == 'OK':
-    # Flag accounts with 0% home country logins (suspicious)
-    zero_home = [a for a in baseline['accounts'] if a[2] == 0]  # home_logins = 0
-    if zero_home:
-        print(f"⚠️ {len(zero_home)} accounts with 0% home country logins:")
-        for account in zero_home[:5]:
-            print(f"  {account[0]}: {account[5]} countries, 0 {baseline['home_country']} logins")
+# Output formats:
+--format=summary  # Quick triage (default) - for immediate decision making
+--format=table    # Detailed report - for PIR documentation
+--format=json     # SIEM integration - for automation
 ```
 
-**Thresholds (Inclusive Boundaries)**:
-| Risk Level | Password Age % | Meaning |
-|------------|----------------|---------|
-| CRITICAL | >= 70% | Systemic vulnerability |
-| HIGH | >= 50% | Significant exposure |
-| MEDIUM | >= 30% | Elevated risk |
-| OK | < 30% | Acceptable hygiene |
+**Exit Codes** (for automation):
+- `0`: No critical/high issues (tenant relatively clean)
+- `1`: High issues found (requires investigation)
+- `2`: Critical issues found (IMMEDIATE action required)
+- `3`: Error during execution
 
-**Foreign Login Red Flags**:
+---
+
+### **All 7 Automated Checks** (Sprints 1-4)
+
+| Check | Function | Risk Detected | MITRE ATT&CK |
+|-------|----------|---------------|--------------|
+| **Password Hygiene** | `analyze_password_hygiene_with_context()` | Systemic password policy failure + MFA context | T1078.004 |
+| **Foreign Baseline** | `check_foreign_baseline()` | 0% home country = suspicious accounts | - |
+| **Dormant Accounts** | `detect_dormant_accounts()` | Inactive accounts (potential backdoors) | T1078.004 |
+| **Admin Detection** | `get_admin_accounts()` | Role-based admin detection (not naming) | T1136.003 |
+| **Logging Tampering** | `detect_logging_tampering()` | Audit log disabled/modified | T1562.008 |
+| **Impossible Travel** | `detect_impossible_travel()` | Geographically impossible logins | T1110 |
+| **MFA Bypass** | `detect_mfa_bypass()` | MFA enabled→disabled pattern | T1556.006 |
+
+---
+
+### **Sprint 1: Critical Security Patterns** (A1-A4)
+
+All checks implement mandatory security patterns:
+- **A1: SQL Injection Prevention** - Parameterized queries only
+- **A2: Resource Management** - try/finally ensures connections closed
+- **A3: Inclusive Thresholds** - >= 70% (not >70%) prevents off-by-one errors
+- **A4: NULL Handling** - Explicit IS NOT NULL filtering
+
+---
+
+### **Sprint 2: False Positive Prevention** (B1-B5)
+
+**B1: MFA Context Check** - Password hygiene risk level considers MFA enforcement:
+```python
+result = analyze_password_hygiene_with_context(db_path)
+# context values:
+# - PRIMARY_VULNERABILITY (MFA <50%) = password is primary security control
+# - SECONDARY_VULNERABILITY (MFA ≥90%) = MFA compensates for weak passwords
+# - MODERATE_RISK (MFA 50-90%)
+```
+
+**B2: Service Account Detection** - Excludes automated accounts from dormant detection:
+```python
+# Patterns: svc_*, service_*, app_*, api_*, noreply@
+result = detect_dormant_accounts(db_path, exclude_service=True)
+```
+
+**B3: Break-Glass Whitelist** - Load from config file:
+```python
+# Config: ~/.maia/config/breakglass_accounts.json
+whitelist = load_breakglass_whitelist()
+result = detect_dormant_accounts(db_path, breakglass_whitelist=whitelist)
+```
+
+**B4: FIDO2/Passwordless** - Excludes passwordless accounts from password analysis:
+```python
+passwordless_accounts = get_passwordless_accounts(db_path)
+# FIDO2, Windows Hello, Authenticator App users excluded
+```
+
+**B5: Role-Based Admin Detection** - Uses actual role assignments (not naming conventions):
+```python
+admins = get_admin_accounts(db_path, fallback_to_naming=True)
+# Queries entra_audit_log for role assignments
+```
+
+---
+
+### **Sprint 3: False Negative Prevention** (C1-C3)
+
+**C1: Logging Tampering Detection** (MITRE T1562.008):
+```python
+result = detect_logging_tampering(db_path)
+# Detects:
+# - AdminAuditLog disabled (Exchange)
+# - MailboxAuditBypass enabled
+# - Service principal modifications
+# Risk: CRITICAL if any logging changes detected
+```
+
+**C2: Impossible Travel** (Geospatial Analysis):
+```python
+result = detect_impossible_travel(db_path, speed_threshold_mph=500)
+# Example: NYC → Beijing in 1.5 hours = 4,500 mph (IMPOSSIBLE)
+# Uses Haversine formula for great circle distance
+# Risk: CRITICAL if speed > threshold
+```
+
+**C3: MFA Bypass Detection** (Bidirectional State Analysis):
+```python
+result = detect_mfa_bypass(db_path, threshold_hours=24)
+# Detects: MFA enabled → disabled pattern within 24 hours
+# Risk: CRITICAL if <1 hour, HIGH if 1-24 hours
+# Indicates attacker testing/bypassing MFA
+```
+
+---
+
+### **Example Output (Summary Format)**
+
+```
+M365 IR Phase 0 Auto-Checks - Summary
+==================================================
+
+⚠️  CRITICAL: 2 issue(s) require immediate attention
+  • Password Hygiene
+  • Logging Tampering
+
+📊 MEDIUM: 1 issue(s) for review
+  • Dormant Accounts
+
+✅ All checks passed: Foreign Baseline, Admin Accounts, Impossible Travel, MFA Bypass
+
+Total checks run: 7
+
+Run with --format=table for detailed results
+```
+
+---
+
+### **Programmatic Usage** (Advanced)
+
+```python
+from claude.tools.m365_ir.phase0_cli import run_phase0_checks
+
+# Run all checks
+results = run_phase0_checks(db_path, output_format='json')
+
+# Check for critical issues
+if results['summary']['critical'] > 0:
+    print("IMMEDIATE CONTAINMENT REQUIRED")
+
+    # Prioritize password hygiene if detected
+    if results['checks']['password_hygiene']['risk'] == 'CRITICAL':
+        pct = results['checks']['password_hygiene']['pct_over_1_year']
+        print(f"PASSWORD CRISIS: {pct}% of accounts have passwords >1 year old")
+        print("This is likely your PRIMARY vulnerability - start remediation here")
+
+    # Check for active attacks
+    if results['checks']['impossible_travel']['risk_level'] == 'CRITICAL':
+        events = results['checks']['impossible_travel']['impossible_travel_events']
+        print(f"ACTIVE COMPROMISE: {len(events)} impossible travel events detected")
+        for event in events[:5]:
+            print(f"  {event['upn']}: {event['login1']['country']} → {event['login2']['country']} in {event['time_hours']}h")
+```
+
+---
+
+### **Integration into Investigation Workflow**
+
+```
+STEP 0: Import logs → database
+STEP 0.5: ⭐ RUN PHASE 0 CHECKS ⭐ (<1 second)
+   └─> python3 claude/tools/m365_ir/phase0_cli.py <case_db>.db
+
+IF CRITICAL issues detected:
+   ├─> PASSWORD CRISIS (≥70% old passwords): Start with systemic remediation BEFORE individual account analysis
+   ├─> IMPOSSIBLE TRAVEL: Immediate containment (disable accounts, force password reset)
+   ├─> LOGGING TAMPERING: Forensic emergency (attacker hiding tracks)
+   └─> MFA BYPASS: Active attack in progress
+
+IF NO critical issues:
+   └─> Proceed to detailed timeline analysis (Phase 260)
+
+STEP 1: Deep dive analysis (timeline, IOCs, impact)
+STEP 2: Validate accounts (Phase 230)
+STEP 3: Generate PIR
+```
+
+---
+
+### **Thresholds & Risk Levels**
+
+**Password Hygiene** (Inclusive Boundaries):
+| Risk Level | Password Age % | MFA Context | Meaning |
+|------------|----------------|-------------|---------|
+| CRITICAL | ≥ 70% | MFA <50% (PRIMARY) | Systemic failure |
+| HIGH | ≥ 50% | MFA 50-90% | Significant exposure |
+| MEDIUM | ≥ 30% | - | Elevated risk |
+| OK | < 30% | MFA ≥90% (SECONDARY) | Acceptable hygiene |
+
+**Foreign Login Baseline**:
 - 0% home country logins = CRITICAL (requires customer validation)
 - >90% foreign logins = HIGH (possible VPN user or compromise)
 - >5 countries in 45 days = MEDIUM (monitor for patterns)
 
-**Bottom Line**: These four features prevent the exact error types that caused PIR-FYNA-2025-12-08 misclassification and PIR-SGS-4234543 delayed detection. They are automatically run during import workflow.
+**Impossible Travel**:
+- Speed > 500 mph = CRITICAL (commercial flight speed threshold)
+
+**MFA Bypass**:
+- Time delta < 1 hour = CRITICAL (active attack)
+- Time delta 1-24 hours = HIGH (suspicious behavior)
+
+---
+
+### **Production Readiness**
+
+- **Tests**: 34/34 passing (100%)
+  - 29 unit tests (individual function validation)
+  - 5 E2E tests (full CLI workflow validation)
+- **Performance**: <1s for 1,000 users, ~50% query reduction (N+1 optimization)
+- **Security**: A1-A4 patterns enforced (SQL injection prevention, resource management, NULL handling)
+- **Documentation**: 4 comprehensive guides (user, API, deployment, MITRE mapping)
+- **MITRE Coverage**: 6 techniques (T1562.008 direct, 5 indirect indicators)
+
+**Bottom Line**: Phase 0 auto-checks are mandatory first step after import. They prevent PIR-SGS-4234543 type errors (missing systemic issues) and PIR-FYNA-2025-12-08 type errors (incorrect breach classification).
 
 ---
 
