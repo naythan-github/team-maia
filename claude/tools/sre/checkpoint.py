@@ -25,6 +25,10 @@ import re
 import argparse
 
 
+# Durable checkpoint storage - survives /tmp cleanup and reboots
+DURABLE_CHECKPOINT_DIR = Path.home() / ".maia" / "checkpoints"
+
+
 @dataclass
 class ProjectState:
     """Current state of the project."""
@@ -52,6 +56,42 @@ class ProjectState:
     phase_name: Optional[str] = None
     percent_complete: Optional[int] = None
     tdd_phase: Optional[str] = None
+
+    def to_json_dict(self) -> Dict:
+        """Convert state to JSON-serializable dictionary for durable storage."""
+        return {
+            "context_id": self.context_id,
+            "created_at": datetime.now().isoformat(),
+            "phase_number": self.phase_number,
+            "phase_name": self.phase_name,
+            "percent_complete": self.percent_complete,
+            "tdd_phase": self.tdd_phase,
+            "recommended_agent": self.recommended_agent,
+            "current_agent": self.current_agent,
+            "domain": self.domain,
+            "session_start": self.session_start,
+            "tests_passing": self.tests_passing,
+            "tests_total": self.tests_total,
+            "current_branch": self.current_branch,
+            "last_commit": self.last_commit,
+            "modified_files": self.modified_files[:20],  # Limit for JSON size
+            "staged_files": self.staged_files[:20],
+            "new_files": self.new_files[:20],
+            "deleted_files": self.deleted_files[:20],
+            "is_code_project": self.is_code_project,
+            "next_action": self._suggest_next_action()
+        }
+
+    def _suggest_next_action(self) -> str:
+        """Suggest specific next action based on state."""
+        if self.tests_total == 0:
+            return "Write tests for current implementation (TDD P3)"
+        elif self.tests_passing < self.tests_total:
+            return f"Fix {self.tests_total - self.tests_passing} failing tests"
+        elif self.modified_files and not self.staged_files:
+            return "Stage completed work: git add <files>"
+        else:
+            return "Continue implementation (see Next Steps section)"
 
     @property
     def is_code_project(self) -> bool:
@@ -542,7 +582,109 @@ If compaction happens unexpectedly:
 
         filepath.write_text(content)
 
+        # Also save durable checkpoint for compaction survival
+        try:
+            self.save_durable_checkpoint(state, content)
+        except Exception as e:
+            # Non-blocking - log error but don't fail
+            print(f"Warning: Durable checkpoint save failed: {e}")
+
         return filepath
+
+    def save_durable_checkpoint(
+        self,
+        state: ProjectState,
+        markdown_content: Optional[str] = None
+    ) -> Optional[Path]:
+        """
+        Save checkpoint to durable storage for compaction survival.
+
+        Saves both JSON (machine-readable) and markdown (human-readable) formats
+        to ~/.maia/checkpoints/{context_id}/.
+
+        Phase 264: Auto-resume system - durable checkpoints that survive
+        /tmp cleanup and enable automatic restoration after compaction.
+
+        Args:
+            state: Current project state
+            markdown_content: Optional pre-generated markdown content
+
+        Returns:
+            Path to the JSON checkpoint file, or None on failure
+        """
+        try:
+            # Create context-specific checkpoint directory
+            context_dir = DURABLE_CHECKPOINT_DIR / state.context_id
+            context_dir.mkdir(parents=True, exist_ok=True)
+
+            # Generate timestamp-based filename
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            json_filename = f"checkpoint_{timestamp}.json"
+            md_filename = f"checkpoint_{timestamp}.md"
+
+            json_path = context_dir / json_filename
+            md_path = context_dir / md_filename
+
+            # Save JSON format (machine-readable for auto-restore)
+            json_data = state.to_json_dict()
+
+            # Atomic write: temp file + rename
+            json_tmp = json_path.with_suffix('.tmp')
+            with open(json_tmp, 'w') as f:
+                json.dump(json_data, f, indent=2)
+            json_tmp.rename(json_path)
+
+            # Save markdown format (human-readable)
+            if markdown_content:
+                md_tmp = md_path.with_suffix('.tmp')
+                with open(md_tmp, 'w') as f:
+                    f.write(markdown_content)
+                md_tmp.rename(md_path)
+
+            # Cleanup old checkpoints (keep last 5 per context)
+            self._cleanup_old_durable_checkpoints(context_dir, keep=5)
+
+            return json_path
+
+        except Exception as e:
+            # Non-blocking - log error but don't fail
+            try:
+                log_dir = Path.home() / ".maia" / "logs"
+                log_dir.mkdir(parents=True, exist_ok=True)
+                with open(log_dir / "checkpoint_errors.log", 'a') as f:
+                    f.write(f"{datetime.now().isoformat()} [ERROR] Durable checkpoint failed: {e}\n")
+            except Exception:
+                pass
+            return None
+
+    def _cleanup_old_durable_checkpoints(self, context_dir: Path, keep: int = 5):
+        """
+        Remove old checkpoints, keeping only the most recent N.
+
+        Args:
+            context_dir: Directory containing checkpoints for a context
+            keep: Number of recent checkpoints to keep
+        """
+        try:
+            json_files = sorted(
+                context_dir.glob("checkpoint_*.json"),
+                key=lambda p: p.stat().st_mtime,
+                reverse=True
+            )
+
+            # Delete older checkpoints
+            for old_file in json_files[keep:]:
+                try:
+                    old_file.unlink()
+                    # Also delete corresponding markdown if exists
+                    md_file = old_file.with_suffix('.md')
+                    if md_file.exists():
+                        md_file.unlink()
+                except Exception:
+                    pass  # Non-blocking
+
+        except Exception:
+            pass  # Non-blocking
 
 
 def main():

@@ -59,6 +59,7 @@ _setup_paths()
 from claude.tools.learning.extraction import get_extractor
 from claude.tools.learning.archive import get_archive
 from claude.tools.learning.pai_v2_bridge import get_pai_v2_bridge
+from claude.tools.sre.checkpoint import CheckpointGenerator, DURABLE_CHECKPOINT_DIR
 
 
 class PreCompactionHook:
@@ -79,6 +80,7 @@ class PreCompactionHook:
         self.extractor = get_extractor()
         self.archive = get_archive()
         self.pai_v2_bridge = get_pai_v2_bridge()
+        self.checkpoint_generator = CheckpointGenerator()
 
     def process(
         self,
@@ -249,12 +251,46 @@ class PreCompactionHook:
             metadata=archive_metadata
         )
 
+        # Phase 264: Auto-save durable checkpoint for post-compaction resume
+        self._save_pre_compaction_checkpoint(context_id)
+
         return {
             'success': True,
             'snapshot_id': snapshot_id,
             'learnings_captured': len(learnings),
             'messages_processed': metadata['message_count']
         }
+
+    def _save_pre_compaction_checkpoint(self, context_id: str):
+        """
+        Auto-save durable checkpoint before compaction.
+
+        Phase 264: Ensures checkpoint is saved for post-compaction resume.
+        Non-blocking - failures are logged but don't prevent compaction.
+
+        Args:
+            context_id: Claude context window ID
+        """
+        try:
+            # Gather current project state
+            state = self.checkpoint_generator.gather_state()
+
+            # Set auto-detected phase info
+            state.phase_name = "Pre-compaction auto-checkpoint"
+            state.percent_complete = 50  # Unknown, assume mid-project
+            state.tdd_phase = "P4"  # Default to implementation phase
+
+            # Save durable checkpoint
+            result = self.checkpoint_generator.save_durable_checkpoint(state)
+
+            if result:
+                self._log_debug(f"Pre-compaction checkpoint saved: {result}")
+            else:
+                self._log_debug("Pre-compaction checkpoint save returned None (graceful degradation)")
+
+        except Exception as e:
+            # Non-blocking - log error but don't fail hook
+            self._log_error(f"Pre-compaction checkpoint failed: {type(e).__name__}: {e}")
 
     def _extract_topics(self, learnings: list) -> list:
         """
