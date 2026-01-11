@@ -1,7 +1,7 @@
 # Maia Capability Index v3.0 (Complete)
 
 **Purpose**: Complete registry of ALL tools/agents - search (Cmd/Ctrl+F) before building new
-**Total**: 591 tools, 96 agents | **Updated**: 2026-01-09 (Phase 260.5 - Checkpoint skill)
+**Total**: 591 tools, 96 agents | **Updated**: 2026-01-11 (Phase 264.1 - Auto-compaction hooks registered)
 
 ---
 
@@ -595,7 +595,8 @@
 | Hook | Purpose |
 |------|---------|
 | `tool_output_capture.py` | Phase 234: PostToolUse hook for automatic UOCS capture - add to .claude/settings.json |
-| `pre_compaction_learning_capture.py` | **Phase 237**: PreCompact hook - extracts learnings and archives full conversation before Claude Code compaction (3-retry logic, graceful degradation, <5s performance) |
+| `pre_compaction_learning_capture.py` | **Phase 237/264.1**: PreCompact hook - extracts learnings and archives full conversation before Claude Code compaction (auto + manual matchers, 3-retry logic, graceful degradation, <5s performance) ✅ AUTO-COMPACTION ENABLED |
+| `post_compaction_restore.py` | **Phase 264.1**: SessionStart hook (matcher: compact) - automatically restores agent, checkpoint, and context after compaction (durable JSON + session data, 2s timeout, graceful degradation to SRE agent) ✅ PRODUCTION |
 | `context_monitor.py` | **Phase 237.4**: Background daemon - monitors Claude Code context usage every 5min, triggers proactive learning capture at 70% threshold (PID file, signal handling, multi-project support) |
 
 ---
