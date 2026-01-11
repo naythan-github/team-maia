@@ -69839,3 +69839,101 @@ launchctl list | grep com.maia.continuous-capture
 
 ---
 
+
+---
+
+# Phase 264: Auto-Resume System for Compaction Survival
+
+**Date**: 2026-01-11  
+**Duration**: ~3 hours  
+**Agent**: SRE Principal Engineer Agent  
+**Objective**: Preserve agent identity, context, and TDD discipline across compaction events
+
+## Problem Statement
+After compaction, Claude sometimes:
+- Loses agent identity (reverts to "default Claude" instead of SRE)
+- Loses context about project phase and progress
+- Forgets TDD discipline, code quality suffers
+- PreCompact hooks are unreliable (GitHub Issues #13572, #13668, #10814, #16047)
+
+## Solution Architecture
+
+### Phase 264.0: Durable Checkpoint Storage
+**Files Modified**:
+- `claude/tools/sre/checkpoint.py` - Added `DURABLE_CHECKPOINT_DIR`, `ProjectState.to_json_dict()`, `save_durable_checkpoint()`, `_cleanup_old_durable_checkpoints()`
+
+**Storage**: `~/.maia/checkpoints/{context_id}/checkpoint_{timestamp}.json`
+
+**Features**:
+- JSON format for machine-readable auto-restore
+- Atomic writes (temp file + rename)
+- Cleanup keeps last 5 checkpoints per context
+
+### Phase 264.1: Tool Counter Auto-Checkpoint (PreCompact Workaround)
+**File**: `claude/hooks/tool_output_capture.py`
+
+**Trigger**: Every 30 tools via PostToolUse hook (reliable, unlike PreCompact)
+
+**Configuration**:
+- `MAIA_CHECKPOINT_INTERVAL`: Default 30 (env var override)
+- `MAIA_CHECKPOINT_ENABLED`: Set "0" to disable
+
+**Counter Storage**: `~/.maia/state/tool_counter_{session_id}.json`
+
+### Phase 264.2: Post-Compaction Restore Hook
+**File**: `claude/hooks/post_compaction_restore.py`
+
+**Trigger**: SessionStart hook with `"compact"` matcher
+
+**Restoration**:
+1. Load latest checkpoint from `~/.maia/checkpoints/{context_id}/`
+2. Load session from `~/.maia/sessions/swarm_session_{context_id}.json`
+3. Determine agent (checkpoint > session > SRE default)
+4. Output restoration context to stdout (injected into Claude)
+
+## Hook Configuration
+
+```json
+// ~/.claude/settings.local.json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "*",
+        "hooks": [{
+          "type": "command",
+          "command": "python3 /path/to/maia/claude/hooks/tool_output_capture.py",
+          "timeout": 2000
+        }]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [{
+          "type": "command",
+          "command": "python3 /path/to/maia/claude/hooks/post_compaction_restore.py",
+          "timeout": 2000
+        }]
+      }
+    ]
+  }
+}
+```
+
+## Test Coverage
+- `tests/test_durable_checkpoint.py` - 26 tests
+- `tests/hooks/test_post_compaction_restore.py` - 20 tests
+- `tests/hooks/test_tool_counter_checkpoint.py` - 15 tests
+- **Total**: 61 tests passing
+
+## Commits
+- `feat(phase-264): Add auto-resume system for compaction survival`
+- `feat(phase-264.1): Add tool counter auto-checkpoint (PreCompact workaround)`
+- `chore(phase-264.1): Lower checkpoint interval from 50 to 30 tools`
+
+## Expected Impact
+- Agent identity preserved across compaction
+- TDD discipline maintained (SRE agent auto-restored for code projects)
+- Progress visible via checkpoint context
+- 3-4 auto-checkpoints before typical compaction (at 30 tool interval)
