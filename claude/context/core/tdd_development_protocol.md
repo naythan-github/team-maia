@@ -62,9 +62,10 @@ P0:Architecture → P1:Requirements → P2:Documentation → P3:Tests → P3.5:I
 **GATE**: No implementation until all tests written
 
 ### P3.5: Integration Test Design
-**CATEGORIES**: Cross-component | External dependencies | State management
+**CATEGORIES**: Cross-component | External dependencies | State management | **E2E Pipeline** (Phase 264 lesson)
+**E2E REQUIREMENT**: If building a pipeline, design E2E test covering ALL stages (not just unit tests)
 **SRE REVIEW**: Failure modes, observability coverage
-**GATE**: No implementation until integration plan approved
+**GATE**: No implementation until integration plan approved (including E2E test design)
 
 ### P4: Implementation
 **CYCLE**: Red → Green → Refactor | Regular verification against requirements.md
@@ -98,6 +99,7 @@ python3 claude/tools/sre/system_state_etl.py --recent 10
    - ✅ `SYSTEM_STATE.md` phase documented (if significant work)
    - ✅ `requirements.md` reflects final implementation
    - ✅ Domain-specific docs updated (IR_PLAYBOOK.md, etc.)
+   - ✅ **Agent documentation updated** (Phase 264 lesson: agents must know about new tools)
 
 2. **Integration Tests Complete**:
    - ✅ P3.5 integration tests ran successfully
@@ -335,6 +337,42 @@ When token warning detected OR context feels ~65% consumed:
 - `context_monitor.py` - Uses 70% threshold (`MAIA_CONTEXT_THRESHOLD`)
 - `pre_compaction_learning_capture.py` - Auto-captures learning before compaction
 - `feature_tracker.py` - JSON state persists through compaction
+
+---
+
+## Lessons Learned Log
+
+### Phase 264: Multi-Schema ETL Pipeline (2026-01-11)
+
+**Process Gaps Identified**:
+
+1. **E2E Testing Was Afterthought, Not Sprint Item**
+   - **Issue**: E2E testing wasn't explicitly planned; validated only after user asked
+   - **Bugs Found**: Schema detection used wrong headers, `parse_with_schema()` needed `get_schema_definition()` not raw enum
+   - **Fix**: Add explicit "E2E Integration Test" sprint item to implementation phases
+
+2. **Documentation Updates Marked Incomplete**
+   - **Issue**: Plan line 173 showed `[ ] Documentation updates` unchecked at phase completion
+   - **Impact**: Agent couldn't use new tools because docs weren't updated
+   - **Fix**: Documentation is part of "COMPLETE", not optional. Block phase completion until docs updated.
+
+3. **Agent Knowledge Gap**
+   - **Issue**: IR agent (v3.6) didn't know Phase 264 tools existed
+   - **Root Cause**: Added tools to modules but didn't update agent documentation
+   - **User Discovered**: "does the IR agent know how to use all of the new tools?"
+   - **Fix**: When adding tools, immediately update relevant agent documentation
+
+**Recommended Sprint Template** (Add to all implementation phases):
+```markdown
+### Sprint X.X: Validation & Documentation (MANDATORY)
+- [ ] E2E integration test (all stages integrated)
+- [ ] Update relevant agent documentation
+- [ ] Verify agent can invoke new tools correctly
+- [ ] Update SYSTEM_STATE.md with phase completion
+- [ ] Run learning capture before session end
+```
+
+**Anti-Pattern**: Treating validation/docs as "we'll do that later" items. They are part of the definition of done.
 
 ---
 
