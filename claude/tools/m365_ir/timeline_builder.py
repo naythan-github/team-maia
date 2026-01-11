@@ -111,19 +111,58 @@ def build_timeline(
     # Convert sign-in entries
     if signin_entries:
         for entry in signin_entries:
+            # Phase 264: Handle service principal vs user sign-ins
+            is_service_principal = getattr(entry, 'is_service_principal', 0)
+            if is_service_principal:
+                user = getattr(entry, 'service_principal_name', '') or 'Unknown Service Principal'
+                action = f"Service Principal Auth"
+                source_type = "service_principal"
+            else:
+                user = entry.user_principal_name
+                action = f"Sign-in from {entry.country}"
+                source_type = "signin"
+
+            # Build evidence dict with Phase 264 fields
+            evidence = {
+                "ip_address": entry.ip_address,
+                "country": entry.country,
+                "city": entry.city,
+                "app": entry.app_display_name,
+                "status": entry.status_normalized,
+                # Phase 264 fields
+                "sign_in_type": getattr(entry, 'sign_in_type', None),
+                "is_service_principal": is_service_principal,
+                "service_principal_name": getattr(entry, 'service_principal_name', None),
+                "latency_ms": getattr(entry, 'latency_ms', None),
+                "device_compliant": getattr(entry, 'device_compliant', None),
+                "mfa_result": getattr(entry, 'mfa_result', None),
+                "schema_variant": getattr(entry, 'schema_variant', None),
+            }
+
+            # Determine severity based on Phase 264 fields
+            severity = "INFO"
+            latency_ms = getattr(entry, 'latency_ms', None)
+            device_compliant = getattr(entry, 'device_compliant', None)
+
+            # Latency-based severity (thresholds: WARNING > 1000ms, ALERT > 5000ms)
+            if latency_ms is not None:
+                if latency_ms >= 5000:
+                    severity = "ALERT"
+                elif latency_ms >= 1000:
+                    severity = "WARNING"
+
+            # Non-compliant device severity
+            if device_compliant == 0:
+                severity = max(severity, "WARNING", key=lambda s: ["INFO", "WARNING", "ALERT", "CRITICAL"].index(s))
+
             events.append(TimelineEvent(
                 timestamp=entry.created_datetime,
-                user=entry.user_principal_name,
-                action=f"Sign-in from {entry.country}",
+                user=user,
+                action=action,
                 details=f"{entry.city}, {entry.country} via {entry.app_display_name}",
-                source_type="signin",
-                evidence={
-                    "ip_address": entry.ip_address,
-                    "country": entry.country,
-                    "city": entry.city,
-                    "app": entry.app_display_name,
-                    "status": entry.status_normalized,
-                },
+                source_type=source_type,
+                severity=severity,
+                evidence=evidence,
             ))
 
     # Convert audit entries
@@ -162,6 +201,82 @@ def build_timeline(
     events.sort(key=lambda e: e.timestamp)
 
     return events
+
+
+def filter_timeline_by_signin_type(
+    timeline: List[TimelineEvent],
+    signin_type: str
+) -> List[TimelineEvent]:
+    """
+    Filter timeline events by sign-in type.
+
+    Args:
+        timeline: List of timeline events
+        signin_type: Type to filter by ('interactive', 'noninteractive', 'service_principal')
+
+    Returns:
+        Filtered list of timeline events
+    """
+    if signin_type == "service_principal":
+        # Filter by is_service_principal flag
+        return [e for e in timeline if e.evidence.get("is_service_principal") == 1]
+    else:
+        # Filter by sign_in_type field
+        return [e for e in timeline if e.evidence.get("sign_in_type") == signin_type]
+
+
+def filter_timeline_by_schema_variant(
+    timeline: List[TimelineEvent],
+    schema_variant: str
+) -> List[TimelineEvent]:
+    """
+    Filter timeline events by schema variant.
+
+    Args:
+        timeline: List of timeline events
+        schema_variant: Schema variant to filter by
+            ('graph_interactive', 'graph_noninteractive', 'graph_application', 'graph_msi', 'legacy_portal')
+
+    Returns:
+        Filtered list of timeline events
+    """
+    return [e for e in timeline if e.evidence.get("schema_variant") == schema_variant]
+
+
+def create_service_principal_event(entry: SignInLogEntry) -> TimelineEvent:
+    """
+    Create a timeline event specifically for service principal authentication.
+
+    Args:
+        entry: Sign-in log entry for a service principal
+
+    Returns:
+        TimelineEvent for the service principal auth
+    """
+    service_principal_name = getattr(entry, 'service_principal_name', None) or 'Unknown Service Principal'
+
+    return TimelineEvent(
+        timestamp=entry.created_datetime,
+        user=service_principal_name,
+        action="Service Principal Auth",
+        details=f"via {entry.app_display_name}",
+        source_type="service_principal",
+        severity="INFO",
+        evidence={
+            "ip_address": entry.ip_address,
+            "country": entry.country,
+            "city": entry.city,
+            "app": entry.app_display_name,
+            "status": entry.status_normalized,
+            "sign_in_type": getattr(entry, 'sign_in_type', 'service_principal'),
+            "is_service_principal": True,
+            "service_principal_name": service_principal_name,
+            "latency_ms": getattr(entry, 'latency_ms', None),
+            "device_compliant": getattr(entry, 'device_compliant', None),
+            "mfa_result": getattr(entry, 'mfa_result', None),
+            "schema_variant": getattr(entry, 'schema_variant', None),
+        },
+    )
 
 
 def correlate_events(events: List[TimelineEvent]) -> List[TimelineEvent]:
