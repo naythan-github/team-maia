@@ -150,11 +150,23 @@ CSV Files → Schema Detector → Schema Registry → Schema-Aware Parser → Im
 - [x] Latency-based severity (WARNING >1s, ALERT >5s)
 - [x] Device compliance severity
 
-### Phase 4: PowerShell Schema ⏳ BLOCKED
+### Phase 4: PowerShell Schema → DEFERRED TO PHASE 265
 
-- [ ] Obtain PowerShell export samples (BLOCKED - no samples available)
-- [ ] Define POWERSHELL_V1_SCHEMA
-- [ ] Handle nested JSON expansion
+**Decision**: Deferred to Phase 265 (2026-01-11)
+**Rationale**:
+- Phase 264 is production-ready with Graph API + Legacy Portal support
+- FYNA PowerShell Enhanced format found in archive (30 cols)
+- Not raw PowerShell (no nested JSON) - cleaned/expanded format
+- Will implement if customers submit this format
+
+**Samples Found**:
+- FYNA: `01_SignInLogs.csv` (30 columns, StatusErrorCode separated, "True"/"False" booleans)
+
+**Phase 265 Scope** (when needed):
+- [ ] Define POWERSHELL_ENHANCED schema (from FYNA sample)
+- [ ] Boolean parsing ("True"/"False" → 1/0)
+- [ ] AppliedCAPs field parsing
+- [ ] Latitude/Longitude geo-location support
 - [ ] Integration tests
 
 ### Phase 5: Testing & Validation ✅ COMPLETE
