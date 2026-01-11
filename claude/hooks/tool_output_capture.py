@@ -3,9 +3,14 @@
 Tool Output Capture Hook
 
 Phase 234: PostToolUse hook that captures tool outputs to UOCS.
+Phase 264.1: Added tool counter auto-checkpoint (PreCompact workaround).
 
-This hook is triggered after each tool execution and captures
-the output for learning and analysis.
+This hook is triggered after each tool execution and:
+1. Captures the output for learning and analysis (UOCS)
+2. Auto-saves checkpoint every CHECKPOINT_INTERVAL tools (default: 50)
+
+The auto-checkpoint compensates for unreliable PreCompact hooks
+(see GitHub issues #13572, #13668, #10814, #16047).
 
 Install by adding to .claude/settings.json:
 {
@@ -23,12 +28,18 @@ Install by adding to .claude/settings.json:
     ]
   }
 }
+
+Environment Variables:
+  MAIA_CHECKPOINT_INTERVAL: Tool count between auto-checkpoints (default: 50)
+  MAIA_CHECKPOINT_ENABLED: Set to "0" to disable auto-checkpoints (default: "1")
 """
 
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Dict, Any, Optional
+from datetime import datetime
 
 # Add project root to path for imports
 PROJECT_ROOT = Path(__file__).parent.parent.parent
@@ -51,12 +62,22 @@ def process_tool_output(input_data: Dict[str, Any]) -> Dict[str, Any]:
         'decision': 'allow',  # PostToolUse hooks should not block
     }
 
+    session_id = input_data.get('session_id', 'unknown')
+
+    # Capture to UOCS
     try:
         capture_result = capture_to_uocs(input_data)
         result.update(capture_result)
     except Exception as e:
         result['error'] = str(e)
         result['captured'] = False
+
+    # Phase 264.1: Check if auto-checkpoint needed
+    try:
+        checkpoint_result = maybe_auto_checkpoint(session_id)
+        result['checkpoint'] = checkpoint_result
+    except Exception as e:
+        result['checkpoint_error'] = str(e)
 
     return result
 
@@ -115,6 +136,141 @@ def capture_to_uocs(input_data: Dict[str, Any]) -> Dict[str, Any]:
             'captured': False,
             'error': str(e),
         }
+
+
+# ============================================================================
+# Phase 264.1: Tool Counter Auto-Checkpoint
+# ============================================================================
+
+COUNTER_DIR = Path.home() / ".maia" / "state"
+CHECKPOINT_INTERVAL = int(os.environ.get('MAIA_CHECKPOINT_INTERVAL', '50'))
+CHECKPOINT_ENABLED = os.environ.get('MAIA_CHECKPOINT_ENABLED', '1') != '0'
+
+
+def get_counter_file(session_id: str) -> Path:
+    """Get path to tool counter file for this session."""
+    COUNTER_DIR.mkdir(parents=True, exist_ok=True)
+    return COUNTER_DIR / f"tool_counter_{session_id}.json"
+
+
+def get_tool_count(session_id: str) -> int:
+    """Get current tool count for session."""
+    try:
+        counter_file = get_counter_file(session_id)
+        if counter_file.exists():
+            data = json.loads(counter_file.read_text())
+            return data.get('count', 0)
+    except Exception:
+        pass
+    return 0
+
+
+def increment_tool_count(session_id: str) -> int:
+    """Increment and return new tool count."""
+    try:
+        counter_file = get_counter_file(session_id)
+        count = get_tool_count(session_id) + 1
+        data = {
+            'count': count,
+            'last_updated': datetime.now().isoformat(),
+            'session_id': session_id,
+        }
+        counter_file.write_text(json.dumps(data, indent=2))
+        return count
+    except Exception:
+        return 0
+
+
+def reset_tool_count(session_id: str):
+    """Reset tool count after checkpoint."""
+    try:
+        counter_file = get_counter_file(session_id)
+        data = {
+            'count': 0,
+            'last_updated': datetime.now().isoformat(),
+            'last_checkpoint': datetime.now().isoformat(),
+            'session_id': session_id,
+        }
+        counter_file.write_text(json.dumps(data, indent=2))
+    except Exception:
+        pass
+
+
+def trigger_auto_checkpoint(session_id: str) -> bool:
+    """
+    Trigger durable checkpoint save.
+
+    Returns:
+        True if checkpoint saved successfully
+    """
+    try:
+        from claude.tools.sre.checkpoint import CheckpointGenerator
+
+        generator = CheckpointGenerator()
+        state = generator.gather_state()
+
+        # Set auto-checkpoint metadata
+        state.phase_name = "Auto-checkpoint (tool counter)"
+        state.percent_complete = 50  # Unknown, assume mid-project
+        state.tdd_phase = "P4"  # Default to implementation phase
+        state.context_id = session_id
+
+        result = generator.save_durable_checkpoint(state)
+
+        if result:
+            # Log success
+            log_dir = Path.home() / ".maia" / "logs"
+            log_dir.mkdir(parents=True, exist_ok=True)
+            with open(log_dir / "auto_checkpoint.log", 'a') as f:
+                f.write(f"{datetime.now().isoformat()} [INFO] Auto-checkpoint saved: {result}\n")
+            return True
+        return False
+
+    except Exception as e:
+        # Log error but don't fail
+        try:
+            log_dir = Path.home() / ".maia" / "logs"
+            log_dir.mkdir(parents=True, exist_ok=True)
+            with open(log_dir / "auto_checkpoint.log", 'a') as f:
+                f.write(f"{datetime.now().isoformat()} [ERROR] Auto-checkpoint failed: {e}\n")
+        except Exception:
+            pass
+        return False
+
+
+def maybe_auto_checkpoint(session_id: str) -> Dict[str, Any]:
+    """
+    Check if auto-checkpoint should be triggered and do it.
+
+    Returns:
+        Dict with checkpoint status
+    """
+    if not CHECKPOINT_ENABLED:
+        return {'checkpoint_enabled': False}
+
+    count = increment_tool_count(session_id)
+
+    if count >= CHECKPOINT_INTERVAL:
+        success = trigger_auto_checkpoint(session_id)
+        if success:
+            reset_tool_count(session_id)
+            return {
+                'checkpoint_triggered': True,
+                'checkpoint_success': True,
+                'tool_count': 0,
+            }
+        else:
+            return {
+                'checkpoint_triggered': True,
+                'checkpoint_success': False,
+                'tool_count': count,
+            }
+
+    return {
+        'checkpoint_triggered': False,
+        'tool_count': count,
+        'next_checkpoint_in': CHECKPOINT_INTERVAL - count,
+    }
 
 
 def generate_hook_config() -> Dict[str, Any]:
@@ -178,4 +334,12 @@ __all__ = [
     "capture_to_uocs",
     "generate_hook_config",
     "main",
+    # Phase 264.1 exports
+    "get_tool_count",
+    "increment_tool_count",
+    "reset_tool_count",
+    "trigger_auto_checkpoint",
+    "maybe_auto_checkpoint",
+    "CHECKPOINT_INTERVAL",
+    "CHECKPOINT_ENABLED",
 ]
