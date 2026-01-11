@@ -1298,17 +1298,22 @@ def verify_mfa_status(db_path: str) -> MFAVerificationSummary:
             created_at=datetime.now().isoformat()
         )
 
-    # Count MFA required (multiFactorAuthentication)
+    # Count MFA required (matches "Multifactor authentication" from Graph API)
+    # Also matches legacy "multiFactorAuthentication" format
     mfa_required_count = cursor.execute("""
         SELECT COUNT(*) FROM sign_in_logs
-        WHERE auth_requirement LIKE '%multiFactorAuthentication%'
+        WHERE auth_requirement LIKE '%Multifactor%'
+           OR auth_requirement LIKE '%multiFactor%'
     """).fetchone()[0]
 
-    # Count MFA satisfied
+    # Count MFA satisfied - matches real Graph API values:
+    # - "MFA requirement satisfied by claim in the token"
+    # - "MFA completed in Azure AD"
+    # - "MFA not required during Windows broker logon flow"
     mfa_satisfied_count = cursor.execute("""
         SELECT COUNT(*) FROM sign_in_logs
-        WHERE auth_requirement LIKE '%multiFactorAuthentication%'
-        AND mfa_result = 'satisfied'
+        WHERE (auth_requirement LIKE '%Multifactor%' OR auth_requirement LIKE '%multiFactor%')
+        AND (mfa_result LIKE '%satisfied%' OR mfa_result LIKE '%completed%' OR mfa_result LIKE '%not required%')
     """).fetchone()[0]
 
     # Calculate gap (required but not satisfied)
