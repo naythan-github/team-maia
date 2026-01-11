@@ -198,6 +198,70 @@ def parse_integer_field(value: Optional[str]) -> Optional[int]:
         raise ValueError(f"Invalid integer value: {value}") from e
 
 
+def parse_latency_field(value: Optional[str]) -> Optional[int]:
+    """
+    Parse latency field from Graph API exports.
+
+    Graph API latency format:
+    - "123ms" → 123
+    - "456.78ms" → 456 (truncates decimal)
+    - "789ms" → 789
+    - "" → None
+
+    Args:
+        value: Latency string with 'ms' suffix
+
+    Returns:
+        Latency in milliseconds as integer, or None if empty
+
+    Raises:
+        ValueError: If value is not a valid latency format
+
+    Example:
+        >>> parse_latency_field("123ms")
+        123
+        >>> parse_latency_field("456.78ms")
+        456
+    """
+    if not value or (isinstance(value, str) and not value.strip()):
+        return None
+
+    value = value.strip()
+
+    # Remove 'ms' suffix if present
+    if value.endswith('ms'):
+        value = value[:-2].strip()
+
+    try:
+        # Parse as float first (handles decimals), then truncate to int
+        return int(float(value))
+    except ValueError as e:
+        raise ValueError(f"Invalid latency format: {value}") from e
+
+
+def clean_trailing_spaces(field_name: str) -> str:
+    """
+    Clean trailing spaces from field names.
+
+    Graph API bug: some field names have trailing spaces:
+    - "Application ID " → "Application ID"
+    - "Username" → "Username" (no change)
+
+    Args:
+        field_name: CSV field name
+
+    Returns:
+        Field name with trailing spaces removed
+
+    Example:
+        >>> clean_trailing_spaces("Application ID ")
+        'Application ID'
+    """
+    if not field_name:
+        return field_name
+    return field_name.rstrip()
+
+
 def normalize_conditional_access_status(status: Optional[str]) -> Optional[str]:
     """
     Normalize Conditional Access status across schema variants.

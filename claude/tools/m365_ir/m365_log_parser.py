@@ -102,8 +102,42 @@ class SignInLogEntry:
     risk_level_aggregated: str
     conditional_access_status: str
 
+    # Phase 264: Multi-schema ETL fields (optional with defaults)
+    schema_variant: Optional[str] = None
+    sign_in_type: Optional[str] = None
+    is_service_principal: int = 0
+    service_principal_id: Optional[str] = None
+    service_principal_name: Optional[str] = None
+    user_id: Optional[str] = None
+    request_id: Optional[str] = None
+    auth_requirement: Optional[str] = None
+    mfa_result: Optional[str] = None
+    latency_ms: Optional[int] = None
+    device_compliant: Optional[int] = None
+    device_managed: Optional[int] = None
+    credential_key_id: Optional[str] = None
+    resource_id: Optional[str] = None
+    state: Optional[str] = None  # For location parsing (City, State, Country)
+    device_id: Optional[str] = None  # Device ID field
+
     # Computed fields
     is_foreign: bool = False
+
+    # Property aliases for backward compatibility and test convenience
+    @property
+    def timestamp(self) -> datetime:
+        """Alias for created_datetime"""
+        return self.created_datetime
+
+    @property
+    def status(self) -> str:
+        """Alias for status_normalized"""
+        return self.status_normalized
+
+    @property
+    def application(self) -> str:
+        """Alias for app_display_name"""
+        return self.app_display_name
 
     def __hash__(self):
         """Hash for deduplication"""
@@ -692,6 +726,266 @@ class M365LogParser:
                     continue
 
         return entries
+
+    def parse_with_schema(
+        self,
+        csv_path: Union[str, Path],
+        schema_definition=None,
+        filename: str = None
+    ) -> List[SignInLogEntry]:
+        """
+        Parse sign-in logs using schema-aware field mappings (Phase 264).
+
+        Auto-detects schema if not provided. Handles all 5 schema variants:
+        - LEGACY_PORTAL
+        - GRAPH_INTERACTIVE
+        - GRAPH_NONINTERACTIVE
+        - GRAPH_APPLICATION (service principal)
+        - GRAPH_MSI (managed identity)
+
+        Args:
+            csv_path: Path to sign-in logs CSV
+            schema_definition: Optional schema definition (auto-detected if None)
+            filename: Optional filename hint for schema detection
+
+        Returns:
+            List of SignInLogEntry objects with schema tracking
+
+        Example:
+            parser = M365LogParser()
+            entries = parser.parse_with_schema("InteractiveSignIns.csv")
+        """
+        from claude.tools.m365_ir.schema_registry import (
+            detect_schema_variant,
+            detect_signin_type_from_filename,
+            get_schema_definition,
+        )
+
+        csv_path = Path(csv_path)
+        entries = []
+        self.last_parse_errors = 0
+
+        # Auto-detect schema if not provided
+        if schema_definition is None:
+            headers = self._read_csv_headers(csv_path)
+            variant = detect_schema_variant(headers, filename or csv_path.name)
+            signin_type = detect_signin_type_from_filename(filename or csv_path.name)
+            schema_definition = get_schema_definition(variant, signin_type)
+
+        # Parse CSV with schema-aware field mappings
+        with open(csv_path, 'r', encoding='utf-8-sig') as f:
+            reader = csv.DictReader(f)
+            for row_num, row in enumerate(reader, start=2):
+                try:
+                    entry = self._parse_row_with_schema(row, schema_definition)
+                    if entry:
+                        entries.append(entry)
+                except Exception as e:
+                    self.last_parse_errors += 1
+                    logger.debug(f"Skipped row {row_num} in schema-aware parsing: {e}")
+
+        return entries
+
+    def _read_csv_headers(self, csv_path: Path) -> List[str]:
+        """
+        Extract CSV headers for schema detection.
+
+        Args:
+            csv_path: Path to CSV file
+
+        Returns:
+            List of header column names
+        """
+        try:
+            with open(csv_path, 'r', encoding='utf-8-sig') as f:
+                reader = csv.reader(f)
+                headers = next(reader)
+                return headers
+        except Exception as e:
+            logger.error(f"Failed to read headers from {csv_path}: {e}")
+            return []
+
+    def _parse_row_with_schema(self, row: Dict[str, str], schema_definition) -> Optional[SignInLogEntry]:
+        """
+        Parse a single CSV row using schema-aware field mappings.
+
+        Args:
+            row: CSV row as dictionary
+            schema_definition: SchemaDefinition from schema_registry
+
+        Returns:
+            SignInLogEntry or None if parsing fails
+        """
+        from claude.tools.m365_ir.schema_transforms import (
+            parse_iso_datetime,
+            parse_graph_location,
+            parse_graph_status,
+            parse_boolean_field,
+            parse_latency_field,
+            clean_trailing_spaces,
+        )
+
+        # Clean trailing spaces from field names (Graph API bug)
+        row_cleaned = {clean_trailing_spaces(k): v for k, v in row.items()}
+
+        # Apply field mappings from schema definition
+        mapped = self._apply_field_mappings(row_cleaned, schema_definition.field_mappings)
+
+        # Parse datetime based on schema
+        timestamp = self._parse_datetime_by_schema(
+            mapped.get('timestamp', ''),
+            schema_definition
+        )
+
+        # Extract location components
+        city, state, country = self._extract_location_components(
+            mapped.get('location_raw', ''),  # Graph API: combined "City, State, Country"
+            mapped.get('city', ''),           # Legacy Portal: separate fields
+            mapped.get('state', ''),
+            mapped.get('country', '')
+        )
+
+        # Handle service principal vs user authentication
+        is_service_principal = bool(mapped.get('service_principal_id'))
+        user_principal_name = mapped.get('user_principal_name', '')
+        service_principal_id = mapped.get('service_principal_id', '')
+        service_principal_name = mapped.get('service_principal_name', '')
+
+        # Parse status
+        status_raw = mapped.get('status_raw', '')
+        status_normalized = parse_graph_status(status_raw) if status_raw else 'unknown'
+
+        # Parse device compliance booleans
+        device_compliant = None
+        if mapped.get('device_compliant') is not None:
+            device_compliant = parse_boolean_field(mapped.get('device_compliant'))
+
+        device_managed = None
+        if mapped.get('device_managed') is not None:
+            device_managed = parse_boolean_field(mapped.get('device_managed'))
+
+        # Parse latency
+        latency_ms = None
+        if mapped.get('latency_ms'):
+            latency_ms = parse_latency_field(mapped.get('latency_ms'))
+
+        # Create SignInLogEntry
+        entry = SignInLogEntry(
+            created_datetime=timestamp,
+            user_principal_name=user_principal_name,
+            user_display_name=mapped.get('user_display_name', ''),
+            app_display_name=mapped.get('app_display_name', ''),
+            ip_address=mapped.get('ip_address', ''),
+            city=city,
+            country=country,
+            device=mapped.get('device', ''),
+            browser=mapped.get('browser', ''),
+            os=mapped.get('os', ''),
+            status_raw=status_raw,
+            status_normalized=status_normalized,
+            risk_state=mapped.get('risk_state', ''),
+            risk_level_during_signin=mapped.get('risk_level_during_signin', ''),
+            risk_level_aggregated=mapped.get('risk_level_aggregated', ''),
+            conditional_access_status=mapped.get('conditional_access_status', ''),
+            # Phase 264 fields
+            schema_variant=schema_definition.variant.value,
+            sign_in_type=schema_definition.signin_type.value,
+            is_service_principal=1 if is_service_principal else 0,
+            service_principal_id=service_principal_id,
+            service_principal_name=service_principal_name,
+            user_id=mapped.get('user_id', ''),
+            request_id=mapped.get('request_id', ''),
+            auth_requirement=mapped.get('auth_requirement', ''),
+            mfa_result=mapped.get('mfa_result', ''),
+            latency_ms=latency_ms,
+            device_compliant=device_compliant,
+            device_managed=device_managed,
+            credential_key_id=mapped.get('credential_key_id', ''),
+            resource_id=mapped.get('resource_id', ''),
+            state=state,
+            device_id=mapped.get('device_id', ''),
+        )
+
+        return entry
+
+    def _parse_datetime_by_schema(self, value: str, schema_definition) -> datetime:
+        """
+        Parse datetime based on schema variant.
+
+        Args:
+            value: Datetime string
+            schema_definition: SchemaDefinition
+
+        Returns:
+            Parsed datetime object
+        """
+        from claude.tools.m365_ir.schema_registry import SchemaVariant
+        from claude.tools.m365_ir.schema_transforms import parse_iso_datetime
+
+        if not value:
+            raise ValueError("Empty datetime value")
+
+        # Graph API schemas use ISO 8601
+        if schema_definition.variant in (
+            SchemaVariant.GRAPH_INTERACTIVE,
+            SchemaVariant.GRAPH_NONINTERACTIVE,
+            SchemaVariant.GRAPH_APPLICATION,
+            SchemaVariant.GRAPH_MSI
+        ):
+            return parse_iso_datetime(value)
+        else:
+            # Legacy Portal uses AU/US ambiguous format
+            return parse_m365_datetime(value, self.date_format)
+
+    def _extract_location_components(
+        self,
+        location_combined: str,
+        city_raw: str,
+        state_raw: str,
+        country_raw: str
+    ) -> tuple:
+        """
+        Extract location components from combined or separate fields.
+
+        Args:
+            location_combined: Combined "City, State, Country" field (Graph API)
+            city_raw: Separate city field (Legacy Portal)
+            state_raw: Separate state field (Legacy Portal)
+            country_raw: Separate country field (Legacy Portal)
+
+        Returns:
+            Tuple of (city, state, country)
+        """
+        from claude.tools.m365_ir.schema_transforms import parse_graph_location
+
+        # If combined location exists (Graph API), parse it
+        if location_combined:
+            city, state, country = parse_graph_location(location_combined)
+            return (city, state, country)
+
+        # Otherwise use separate fields (Legacy Portal)
+        return (city_raw, state_raw, country_raw)
+
+    def _apply_field_mappings(self, row: Dict[str, str], field_mappings: Dict[str, str]) -> Dict[str, str]:
+        """
+        Apply field mappings from schema definition to CSV row.
+
+        Args:
+            row: CSV row dictionary (keys already cleaned of trailing spaces)
+            field_mappings: Mapping of source field -> canonical field
+
+        Returns:
+            Mapped fields dictionary
+        """
+        from claude.tools.m365_ir.schema_transforms import clean_trailing_spaces
+
+        mapped = {}
+        for source_field, canonical_field in field_mappings.items():
+            # Clean source_field to match cleaned row keys (handles "Resource ID " → "Resource ID")
+            source_field_cleaned = clean_trailing_spaces(source_field)
+            if source_field_cleaned in row:
+                mapped[canonical_field] = row[source_field_cleaned]
+        return mapped
 
     def parse_mailbox_audit(self, csv_path: Union[str, Path]) -> List[MailboxAuditEntry]:
         """
