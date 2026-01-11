@@ -929,13 +929,15 @@ def create_session_state(
     agent: str,
     domain: str,
     classification: Dict[str, Any],
-    query: str
+    query: str,
+    enable_handoffs: bool = False
 ) -> bool:
     """
     Create session state file for Maia agent context loading (Phase 5 - with handoff support).
 
     File: ~/.maia/sessions/swarm_session_{context_id}.json (Phase 230: multi-user)
     Phase 232: Also starts PAI v2 learning session for tool output capture.
+    Sprint 5: Added handoff support with enable_handoffs parameter.
 
     Format:
     {
@@ -945,8 +947,17 @@ def create_session_state(
         "context": {"previous_work": "..."},
         "domain": "security",
         "last_classification_confidence": 0.87,
-        "query": "Review code for security"
+        "query": "Review code for security",
+        "handoffs_enabled": true,
+        "version": "1.4"
     }
+
+    Args:
+        agent: Agent name to load
+        domain: Agent's domain
+        classification: Classification result dict
+        query: User query
+        enable_handoffs: Enable handoff capability (default: False)
 
     Returns True if successful, False otherwise.
     Performance target: <5ms (atomic write)
@@ -998,7 +1009,8 @@ def create_session_state(
             "query": query[:200],  # Truncate for file size
             "handoff_reason": classification.get("handoff_reason"),  # Phase 5: Track why handoff occurred
             "created_by": "swarm_auto_loader.py",
-            "version": "1.3",  # Agentic AI: LTM integration
+            "version": "1.4",  # Sprint 5: Handoff support
+            "handoffs_enabled": enable_handoffs,  # Sprint 5: Handoff capability flag
             # Phase 221: TDD Feature Tracker Integration
             "tdd_context": tdd_context,
             "tdd_status": format_tdd_context_for_session(tdd_context) if tdd_context else None,

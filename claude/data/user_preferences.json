@@ -1,9 +1,11 @@
 {
   "default_agent": "sre_principal_engineer_agent",
   "fallback_agent": "sre_principal_engineer_agent",
-  "version": "1.0",
+  "handoffs_enabled": true,
+  "handoffs_max": 5,
+  "version": "1.1",
   "description": "User-specific preferences for Maia system behavior",
-  "updated": "2026-01-06T17:10:00Z",
+  "updated": "2026-01-11T17:00:00Z",
   "analysis_preferences": {
     "otc_servicedesk": {
       "default_start_date": "2025-12-28",

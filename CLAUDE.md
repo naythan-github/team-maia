@@ -75,6 +75,7 @@ maia/
 - **Session persistence** via `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json`
 - **Smart context loading** reduces token usage (5-30K vs 42K+ full file)
 - **DB-first queries** for SYSTEM_STATE (500-2500x faster than markdown parsing)
+- **Automatic agent handoffs** - agents collaborate via transfer_to_X() functions generated from Collaborations metadata
 
 ---
 
@@ -122,6 +123,7 @@ maia/
 | 20 | **PAI v2 Learning** | Auto-capture on session, VERIFY+LEARN on close | `claude/tools/learning/` |
 | 21 | **Completeness Review** | Pause after tests pass: verify docs updated, integration complete, holistic review (P6.5) | `tdd_development_protocol.md` v2.5 |
 | 22 | **Compaction-Ready** | Checkpoint progress at phase boundaries; if token warning, complete atomic op + save state | `tdd_development_protocol.md` v2.5 |
+| 23 | **Agent Handoffs** | Agents collaborate via Collaborations metadata; transfer_to_X() for handoffs | `agent_handoff_developer_guide.md` |
 
 ---
 
@@ -177,6 +179,8 @@ maia/
 | Capabilities DB (PRIMARY) | `claude/data/databases/system/capabilities.db` - Use for all capability queries |
 | Capabilities Markdown (FALLBACK) | `claude/context/core/capability_index.md` - Auto-fallback if DB unavailable |
 | Azure Environment Discovery | `claude/context/protocols/azure_environment_discovery.md` - Multi-tenant Azure discovery protocol |
+| Handoff System | `claude/tools/orchestration/` - Handoff generator, executor, SwarmOrchestrator |
+| Handoff Events | `claude/data/handoff_events.jsonl` - Event log for handoff tracking |
 
 ---
 
@@ -200,6 +204,7 @@ maia/
 | `/close-session` | End session + learning |
 | `save state` | Commit + sync + push |
 | `/memory search <query>` | Search past sessions |
+| Enable handoffs | Set `handoffs_enabled: true` in `claude/data/user_preferences.json` |
 
 ---
 
@@ -235,6 +240,9 @@ sqlite3 claude/data/databases/system/capabilities.db "SELECT * FROM v_tools WHER
 - GTDD Protocol: `claude/context/protocols/gtdd_protocol.md` (Grafana dashboards)
 - Architecture: `claude/context/core/architecture_standards.md`
 - File Policy: `claude/context/core/file_organization_policy.md`
+- Handoff Developer Guide: `claude/context/tools/agent_handoff_developer_guide.md`
+- Handoff Architecture: `claude/context/core/handoff_architecture.md`
+- Handoff Operations: `claude/context/tools/handoff_operations_runbook.md`
 
 ---
 
