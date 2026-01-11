@@ -728,7 +728,7 @@ class TestRealDataIntegration:
     def test_parse_real_interactive_signins_csv(self, extracted_files):
         """Should parse real InteractiveSignIns CSV (9,486 records)."""
         parser = M365LogParser()
-        csv_path = extracted_files / 'InteractiveSignIns_2025-11-04_2025-12-04.csv'
+        csv_path = extracted_files / 'SGS_2025-11-04_2025-12-04' / 'InteractiveSignIns_2025-11-04_2025-12-04.csv'
 
         if not csv_path.exists():
             pytest.skip(f"File not found: {csv_path}")
@@ -746,7 +746,7 @@ class TestRealDataIntegration:
     def test_parse_real_noninteractive_signins_csv(self, extracted_files):
         """Should parse real NonInteractiveSignIns CSV (100K+ records)."""
         parser = M365LogParser()
-        csv_path = extracted_files / 'NonInteractiveSignIns_2025-11-04_2025-12-04.csv'
+        csv_path = extracted_files / 'SGS_2025-11-04_2025-12-04' / 'NonInteractiveSignIns_2025-11-04_2025-12-04.csv'
 
         if not csv_path.exists():
             pytest.skip(f"File not found: {csv_path}")
@@ -755,13 +755,13 @@ class TestRealDataIntegration:
         assert len(entries) > 0
 
         first_entry = entries[0]
-        assert first_entry.schema_variant == SchemaVariant.GRAPH_INTERACTIVE.value  # Same schema
+        assert first_entry.schema_variant == SchemaVariant.GRAPH_NONINTERACTIVE.value
         assert first_entry.sign_in_type == SignInType.NONINTERACTIVE.value
 
     def test_parse_real_application_signins_csv(self, extracted_files):
         """Should parse real ApplicationSignIns CSV (49K+ records, NO user fields)."""
         parser = M365LogParser()
-        csv_path = extracted_files / 'ApplicationSignIns_2025-11-04_2025-12-04.csv'
+        csv_path = extracted_files / 'SGS_2025-11-04_2025-12-04' / 'ApplicationSignIns_2025-11-04_2025-12-04.csv'
 
         if not csv_path.exists():
             pytest.skip(f"File not found: {csv_path}")
@@ -779,7 +779,7 @@ class TestRealDataIntegration:
     def test_parse_real_msi_signins_csv(self, extracted_files):
         """Should parse real MSISignIns CSV (300+ records)."""
         parser = M365LogParser()
-        csv_path = extracted_files / 'MSISignIns_2025-11-04_2025-12-04.csv'
+        csv_path = extracted_files / 'SGS_2025-11-04_2025-12-04' / 'MSISignIns_2025-11-04_2025-12-04.csv'
 
         if not csv_path.exists():
             pytest.skip(f"File not found: {csv_path}")
