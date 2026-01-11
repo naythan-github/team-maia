@@ -33,7 +33,8 @@ DEFAULT_BASE_PATH = os.path.expanduser("~/work_projects/ir_cases")
 # v2: Compression - raw_record and audit_data stored as BLOB (Phase 229)
 # v3: Verification - verification_summary table (Phase 241)
 # v4: Timeline persistence - timeline_events, timeline_annotations, timeline_phases, timeline_build_history (Phase 260)
-SCHEMA_VERSION = 4
+# v5: Multi-schema ETL - schema_variant, sign_in_type, service_principal fields, Graph API fields (Phase 264)
+SCHEMA_VERSION = 5
 
 
 class IRLogDatabase:

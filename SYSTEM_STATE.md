@@ -7,9 +7,119 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2026-01-10
-**Current Phase**: 263 (Complete - M365 IR Date-Ranged CSV Pattern Support)
-**Database Status**: ✅ Synced (94 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232, 233, 238, 239, 240, 260, 260.5, 262, 263)
+**Last Updated**: 2026-01-11
+**Current Phase**: 264 (In Progress - M365 Multi-Schema ETL Pipeline)
+**Database Status**: ✅ Synced (95 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232, 233, 238, 239, 240, 260, 260.5, 262, 263, 264)
+
+## 📊 PHASE 264: M365 Multi-Schema ETL Pipeline - Sprint 1.3 Database Migration (2026-01-11) ✅ **FOUNDATION COMPLETE (33%)**
+
+### Achievement
+Completed Sprint 1.3: Database Migration v5 for multi-schema ETL support. TDD approach: 20 tests written first (all failing → red phase), migrate_v5.py implementation (green phase), 100% test pass rate. Adds 14 new columns to sign_in_logs table for Graph API exports (schema_variant, sign_in_type, service_principal fields, device compliance, latency tracking). Migration tested on PIR-GOOD-SAMARITAN-777777 real database (9,486 records preserved). Idempotency verified. **Phase 1 Foundation Complete**: Schema detection (Sprint 1.1), transform functions (Sprint 1.2), database migration (Sprint 1.3) - ready for Phase 2 Parser Integration.
+
+### Problem Solved
+**Context**: Phase 264 Sprint 1 builds foundation for multi-schema ETL pipeline. Sprint 1.3 upgrades database schema from v4 to v5 to store multi-schema metadata and Graph API-specific fields.
+
+**Requirements**:
+1. Support 5 schema variants: Legacy Portal, Graph Interactive/NonInteractive/Application/MSI
+2. Store schema metadata: schema_variant, sign_in_type, is_service_principal
+3. Support service principal authentication (no user_principal_name)
+4. Graph API fields: user_id, request_id, auth_requirement, mfa_result, latency_ms
+5. Device compliance: device_compliant, device_managed
+6. Credential tracking: credential_key_id, resource_id
+7. Backward compatible: preserve all existing v4 data
+8. Idempotent: safe to run multiple times
+
+**Solution**:
+1. Created migrate_v5.py with column existence checks (`_column_exists()`)
+2. Added 14 new columns via ALTER TABLE (conditional on non-existence)
+3. Created 3 performance indexes: idx_signin_type, idx_signin_schema, idx_signin_service_principal
+4. Updated SCHEMA_VERSION constant from 4 to 5 in log_database.py
+5. Comprehensive test coverage: 20 tests (structure, indexes, idempotency, backward compatibility, error handling)
+
+### Implementation Details
+
+**New Columns** (`migrate_v5.py`):
+```python
+# Schema tracking
+ALTER TABLE sign_in_logs ADD COLUMN schema_variant TEXT;
+ALTER TABLE sign_in_logs ADD COLUMN sign_in_type TEXT;
+ALTER TABLE sign_in_logs ADD COLUMN is_service_principal INTEGER DEFAULT 0;
+
+# Service principal fields (ApplicationSignIns/MSISignIns)
+ALTER TABLE sign_in_logs ADD COLUMN service_principal_id TEXT;
+ALTER TABLE sign_in_logs ADD COLUMN service_principal_name TEXT;
+ALTER TABLE sign_in_logs ADD COLUMN credential_key_id TEXT;
+
+# Graph API tracking
+ALTER TABLE sign_in_logs ADD COLUMN user_id TEXT;
+ALTER TABLE sign_in_logs ADD COLUMN request_id TEXT;
+
+# Authentication fields
+ALTER TABLE sign_in_logs ADD COLUMN auth_requirement TEXT;
+ALTER TABLE sign_in_logs ADD COLUMN mfa_result TEXT;
+
+# Performance fields
+ALTER TABLE sign_in_logs ADD COLUMN latency_ms INTEGER;
+
+# Device compliance
+ALTER TABLE sign_in_logs ADD COLUMN device_compliant INTEGER;
+ALTER TABLE sign_in_logs ADD COLUMN device_managed INTEGER;
+
+# Resource tracking
+ALTER TABLE sign_in_logs ADD COLUMN resource_id TEXT;
+```
+
+**Performance Indexes**:
+```sql
+CREATE INDEX idx_signin_type ON sign_in_logs(sign_in_type);
+CREATE INDEX idx_signin_schema ON sign_in_logs(schema_variant);
+CREATE INDEX idx_signin_service_principal ON sign_in_logs(is_service_principal);
+```
+
+### Test Results
+
+**Sprint 1.3 Tests**: 20/20 passing
+- 12 structure tests (column existence, data types, defaults)
+- 3 index tests (idx_signin_type, idx_signin_schema, idx_signin_service_principal)
+- 2 idempotency tests (safe to run multiple times)
+- 3 backward compatibility tests (record preservation, column preservation, default values)
+- 1 error handling test (nonexistent database)
+
+**Phase 264 Cumulative**: 100/100 passing
+- Sprint 1.1: 36 schema detection tests
+- Sprint 1.2: 44 transform function tests
+- Sprint 1.3: 20 migration tests
+- Zero regressions in existing m365_log_parser.py tests (42 tests)
+
+**Real Data Validation**:
+- Database: PIR-GOOD-SAMARITAN-777777_logs.db
+- Migration: v4 → v5 successful
+- Records preserved: 9,486/9,486 (100%)
+- Columns added: 14 (24 → 38)
+- Indexes created: 3
+- Idempotency: ✅ (second run no errors, no duplicates)
+
+### Files Modified/Created
+
+**Created**:
+- `claude/tools/m365_ir/migrations/migrate_v5.py` (236 lines)
+- `claude/tools/m365_ir/tests/test_migrate_v5.py` (450 lines)
+
+**Modified**:
+- `claude/tools/m365_ir/log_database.py` (SCHEMA_VERSION 4 → 5)
+
+### Business Impact
+
+**Sprint 1 Foundation Complete (33% of Phase 264)**:
+- Sprint 1.1: Schema detection (5 variants) ✅
+- Sprint 1.2: Transform functions (6 functions) ✅
+- Sprint 1.3: Database migration (14 columns) ✅
+
+**Next**: Phase 2 Parser Integration (Sprint 2.1: Schema-aware parsing, Sprint 2.2: Importer updates)
+
+**Milestone**: Database schema ready to receive Graph API imports. Parser integration can now begin.
+
+---
 
 ## 📊 PHASE 263: M365 IR Date-Ranged CSV Pattern Support (2026-01-10) ✅ **PRODUCTION READY (100%)**
 
