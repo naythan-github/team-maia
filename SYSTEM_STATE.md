@@ -69950,6 +69950,36 @@ After compaction, Claude sometimes:
 - **Real data validation**: Verified against PIR-GOOD-SAMARITAN-777777 Graph API exports
 - **Detection logic**: Fingerprint-based with filename support for MSI/Interactive disambiguation
 
+
+### Sprint 1.2 Deliverables (2026-01-11)
+- **schema_transforms.py**: 6 transform functions (ISO datetime, location parsing, status/boolean/integer parsing)
+- **test_schema_transforms.py**: 44 comprehensive TDD tests (100% passing)
+- **Schema definitions**: 5 complete schemas with 27-field mappings for Graph API Interactive
+- **Real data validation**: 47.4% field coverage (27/57 core fields mapped, 30 optional unmapped)
+
+### Transform Functions
+- `parse_iso_datetime()`: ISO 8601 → UTC datetime
+- `parse_graph_location()`: "City, State, Country" → (city, state, country)
+- `parse_graph_status()`: Status normalization
+- `parse_boolean_field()`: Yes/No → True/False
+- `parse_integer_field()`: String → int with None handling
+- `normalize_conditional_access_status()`: Cross-schema CA status normalization
+
+### Test Coverage (Sprint 1.1 + 1.2)
+- 80 new tests: Schema detection (36) + Transform functions (44)
+- 42 existing tests: Zero regressions
+- Real data: Field mappings verified against PIR-GOOD-SAMARITAN-777777
+
+### Files Modified/Created
+- `claude/tools/m365_ir/schema_registry.py` (updated - added 5 SchemaDefinition instances)
+- `claude/tools/m365_ir/schema_transforms.py` (new - 218 lines)
+- `claude/tools/m365_ir/tests/test_schema_transforms.py` (new - 341 lines)
+
+### Next: Sprint 1.3 - Database Migration
+- Migration v5 script (new columns for multi-schema support)
+- Add: schema_variant, sign_in_type, service_principal fields
+- Add: user_id, request_id, mfa_result, latency_ms, device_* fields
+
 ### Key Technical Findings
 1. Graph API Interactive/NonInteractive: 57 columns (not 56 documented)
 2. "Managed Identity type" exists as optional field in ALL Graph API exports

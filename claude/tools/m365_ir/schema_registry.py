@@ -164,10 +164,197 @@ class SchemaDefinition:
     signin_type: SignInType
     field_mappings: dict  # Source field → canonical field
     date_field: str
-    date_format: str
+    date_format: str  # "iso8601" or "au_ambiguous"
     has_user_fields: bool
     has_service_principal_fields: bool
 
 
-# Schema definitions will be added in Sprint 1.2
-# For now, we have detection only
+# =============================================================================
+# Schema Definitions - Field Mappings
+# =============================================================================
+
+# Legacy Portal Export Schema
+LEGACY_PORTAL_SCHEMA = SchemaDefinition(
+    variant=SchemaVariant.LEGACY_PORTAL,
+    signin_type=SignInType.INTERACTIVE,
+    date_field="CreatedDateTime",
+    date_format="au_ambiguous",
+    has_user_fields=True,
+    has_service_principal_fields=False,
+    field_mappings={
+        # Source field → Canonical field
+        "CreatedDateTime": "timestamp",
+        "UserPrincipalName": "user_principal_name",
+        "UserDisplayName": "user_display_name",
+        "AppDisplayName": "app_display_name",
+        "IPAddress": "ip_address",
+        "City": "city",
+        "Country": "country",
+        "Device": "device",
+        "Browser": "browser",
+        "OS": "os",
+        "Status": "status_raw",
+        "RiskState": "risk_state",
+        "RiskLevelDuringSignIn": "risk_level_during_signin",
+        "RiskLevelAggregated": "risk_level_aggregated",
+        "ConditionalAccessStatus": "conditional_access_status"
+    }
+)
+
+# Graph API Interactive SignIns Schema
+GRAPH_INTERACTIVE_SCHEMA = SchemaDefinition(
+    variant=SchemaVariant.GRAPH_INTERACTIVE,
+    signin_type=SignInType.INTERACTIVE,
+    date_field="Date (UTC)",
+    date_format="iso8601",
+    has_user_fields=True,
+    has_service_principal_fields=False,
+    field_mappings={
+        # Core fields
+        "Date (UTC)": "timestamp",
+        "Username": "user_principal_name",
+        "User": "user_display_name",
+        "User ID": "user_id",
+
+        # Application fields
+        "Application": "app_display_name",
+        "Application ID ": "app_id",  # Note trailing space in real data
+        "Client app": "client_app",
+
+        # Location fields
+        "IP address": "ip_address",
+        "Location": "location_raw",  # Needs parsing: "City, State, Country"
+
+        # Status fields
+        "Status": "status_raw",
+        "Sign-in error code": "status_error_code",
+        "Failure reason": "failure_reason",
+
+        # Device fields
+        "Browser": "browser",
+        "Operating System": "os",
+        "Device ID": "device_id",
+        "Compliant": "device_compliant",
+        "Managed": "device_managed",
+        "Join Type": "device_join_type",
+
+        # Authentication fields
+        "Multifactor authentication result": "mfa_result",
+        "Authentication requirement": "auth_requirement",
+        "Conditional Access": "conditional_access_status",
+
+        # Request tracking
+        "Request ID": "request_id",
+        "Correlation ID": "correlation_id",
+        "Session ID": "session_id",
+
+        # Performance
+        "Latency": "latency_ms",
+
+        # Resource fields
+        "Resource": "resource_display_name",
+        "Resource ID ": "resource_id"  # Note trailing space
+    }
+)
+
+# Graph API NonInteractive SignIns Schema
+# Identical to Interactive, only filename differs
+GRAPH_NONINTERACTIVE_SCHEMA = SchemaDefinition(
+    variant=SchemaVariant.GRAPH_NONINTERACTIVE,
+    signin_type=SignInType.NONINTERACTIVE,
+    date_field="Date (UTC)",
+    date_format="iso8601",
+    has_user_fields=True,
+    has_service_principal_fields=False,
+    field_mappings=GRAPH_INTERACTIVE_SCHEMA.field_mappings.copy()  # Identical mappings
+)
+
+# Graph API ApplicationSignIns Schema (Service Principal)
+GRAPH_APPLICATION_SCHEMA = SchemaDefinition(
+    variant=SchemaVariant.GRAPH_APPLICATION,
+    signin_type=SignInType.SERVICE_PRINCIPAL,
+    date_field="Date (UTC)",
+    date_format="iso8601",
+    has_user_fields=False,
+    has_service_principal_fields=True,
+    field_mappings={
+        # Core fields
+        "Date (UTC)": "timestamp",
+
+        # Service principal fields (NO user fields)
+        "Service principal ID": "service_principal_id",
+        "Service principal name": "service_principal_name",
+        "Credential key ID": "credential_key_id",
+        "Credential thumbprint": "credential_thumbprint",
+
+        # Application fields
+        "Application": "app_display_name",
+        "Application ID ": "app_id",
+
+        # Location fields
+        "IP address": "ip_address",
+        "Location": "location_raw",
+
+        # Status fields
+        "Status": "status_raw",
+        "Sign-in error code": "status_error_code",
+        "Failure reason": "failure_reason",
+
+        # Authentication fields
+        "Conditional Access": "conditional_access_status",
+
+        # Request tracking
+        "Request ID": "request_id",
+        "Correlation ID": "correlation_id",
+
+        # Resource fields
+        "Resource": "resource_display_name",
+        "Resource ID ": "resource_id"
+    }
+)
+
+# Graph API MSISignIns Schema (Managed Identity)
+# Identical to ApplicationSignIns, only filename differs
+GRAPH_MSI_SCHEMA = SchemaDefinition(
+    variant=SchemaVariant.GRAPH_MSI,
+    signin_type=SignInType.MANAGED_IDENTITY,
+    date_field="Date (UTC)",
+    date_format="iso8601",
+    has_user_fields=False,
+    has_service_principal_fields=True,
+    field_mappings=GRAPH_APPLICATION_SCHEMA.field_mappings.copy()  # Identical mappings
+)
+
+
+def get_schema_definition(variant: SchemaVariant, signin_type: SignInType = None) -> SchemaDefinition:
+    """
+    Get schema definition for a given variant and sign-in type.
+
+    Args:
+        variant: Schema variant
+        signin_type: Optional sign-in type (distinguishes Interactive vs NonInteractive)
+
+    Returns:
+        SchemaDefinition: Schema definition with field mappings
+
+    Example:
+        >>> schema = get_schema_definition(SchemaVariant.GRAPH_INTERACTIVE)
+        >>> schema.field_mappings["Username"]
+        'user_principal_name'
+    """
+    if variant == SchemaVariant.LEGACY_PORTAL:
+        return LEGACY_PORTAL_SCHEMA
+    elif variant == SchemaVariant.GRAPH_INTERACTIVE:
+        # Check signin_type to distinguish Interactive vs NonInteractive
+        if signin_type == SignInType.NONINTERACTIVE:
+            return GRAPH_NONINTERACTIVE_SCHEMA
+        else:
+            return GRAPH_INTERACTIVE_SCHEMA
+    elif variant == SchemaVariant.GRAPH_NONINTERACTIVE:
+        return GRAPH_NONINTERACTIVE_SCHEMA
+    elif variant == SchemaVariant.GRAPH_APPLICATION:
+        return GRAPH_APPLICATION_SCHEMA
+    elif variant == SchemaVariant.GRAPH_MSI:
+        return GRAPH_MSI_SCHEMA
+    else:
+        raise ValueError(f"Unknown schema variant: {variant}")
