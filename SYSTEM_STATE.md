@@ -69937,3 +69937,37 @@ After compaction, Claude sometimes:
 - TDD discipline maintained (SRE agent auto-restored for code projects)
 - Progress visible via checkpoint context
 - 3-4 auto-checkpoints before typical compaction (at 30 tool interval)
+
+## Phase 264: M365 Multi-Schema ETL Pipeline - Sprint 1.1 (2026-01-11)
+
+**Status**: IN PROGRESS (Sprint 1.1 COMPLETE)
+**Business Driver**: 100 customers to scan in next month using different M365 export methods
+**Completion**: Sprint 1.1 - Schema Detection Foundation
+
+### Sprint 1.1 Deliverables
+- **schema_registry.py**: Schema detection with 5 variants (Legacy Portal, Graph Interactive/NonInteractive/Application/MSI)
+- **test_schema_registry.py**: 36 comprehensive TDD tests (100% passing)
+- **Real data validation**: Verified against PIR-GOOD-SAMARITAN-777777 Graph API exports
+- **Detection logic**: Fingerprint-based with filename support for MSI/Interactive disambiguation
+
+### Key Technical Findings
+1. Graph API Interactive/NonInteractive: 57 columns (not 56 documented)
+2. "Managed Identity type" exists as optional field in ALL Graph API exports
+3. Filename-based detection required for Interactive vs NonInteractive vs MSI
+4. BOM character handling (`\ufeff`) needed for real CSV files
+
+### Test Coverage
+- 36 new tests: Schema detection, fingerprinting, priority resolution
+- 42 existing tests: Zero regressions
+- Real data: 4/4 file types correctly detected
+
+### Files Created
+- `claude/tools/m365_ir/schema_registry.py` (168 lines)
+- `claude/tools/m365_ir/tests/test_schema_registry.py` (407 lines)
+
+### Next: Sprint 1.2 - Schema Definitions
+- Field mappings for each variant
+- Transform functions (parse_iso_datetime, parse_graph_location)
+- SchemaDefinition dataclass population
+
+**Related Phases**: Phase 263 (Pattern matching fix - COMPLETE)
