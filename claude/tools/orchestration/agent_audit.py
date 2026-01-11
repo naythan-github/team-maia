@@ -37,19 +37,20 @@ def has_collaborations_section(agent_file: Path) -> bool:
         agent_file: Path to agent markdown file
 
     Returns:
-        True if agent has ## Collaborations section, False otherwise
+        True if agent has Collaborations defined, False otherwise
     """
     try:
         content = agent_file.read_text()
 
         # Look for collaboration indicators
         # Common patterns:
-        # - "## Collaborations"
+        # - "**Collaborations**:" (inline format in Integration Points)
+        # - "## Collaborations" (standalone header)
         # - "## Agent Collaborations"
-        # - "## Common Collaborations"
         lower_content = content.lower()
 
         return (
+            "**collaborations**:" in lower_content or
             "## collaborations" in lower_content or
             "## agent collaborations" in lower_content or
             "## common collaborations" in lower_content
