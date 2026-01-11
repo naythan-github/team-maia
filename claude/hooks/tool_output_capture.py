@@ -7,7 +7,7 @@ Phase 264.1: Added tool counter auto-checkpoint (PreCompact workaround).
 
 This hook is triggered after each tool execution and:
 1. Captures the output for learning and analysis (UOCS)
-2. Auto-saves checkpoint every CHECKPOINT_INTERVAL tools (default: 50)
+2. Auto-saves checkpoint every CHECKPOINT_INTERVAL tools (default: 30)
 
 The auto-checkpoint compensates for unreliable PreCompact hooks
 (see GitHub issues #13572, #13668, #10814, #16047).
@@ -143,7 +143,7 @@ def capture_to_uocs(input_data: Dict[str, Any]) -> Dict[str, Any]:
 # ============================================================================
 
 COUNTER_DIR = Path.home() / ".maia" / "state"
-CHECKPOINT_INTERVAL = int(os.environ.get('MAIA_CHECKPOINT_INTERVAL', '50'))
+CHECKPOINT_INTERVAL = int(os.environ.get('MAIA_CHECKPOINT_INTERVAL', '30'))
 CHECKPOINT_ENABLED = os.environ.get('MAIA_CHECKPOINT_ENABLED', '1') != '0'
 
 
