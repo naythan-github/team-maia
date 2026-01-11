@@ -833,6 +833,522 @@ def verify_audit_log_operations(db_path: str) -> AuditVerificationSummary:
     )
 
 
+# =============================================================================
+# Phase 264: Multi-Schema Verification (Graph API, Service Principals)
+# =============================================================================
+#
+# Author: Maia System (SRE Principal Engineer Agent)
+# Created: 2026-01-11
+# Purpose: Extend verification for Graph API schemas and service principals
+#
+# Features:
+# - Service principal authentication verification
+# - Latency pattern analysis
+# - Device compliance verification
+# - MFA requirement vs satisfaction verification
+# =============================================================================
+
+@dataclass
+class ServicePrincipalVerificationSummary:
+    """
+    Result of service principal authentication verification.
+
+    Attributes:
+        total_sp_signins: Total service principal sign-ins
+        sp_success_count: Successful SP authentications
+        sp_failure_count: Failed SP authentications
+        sp_success_rate: SP success rate percentage (0-100)
+        total_user_signins: Total user sign-ins (for comparison)
+        unique_service_principals: Count of unique service principals
+        by_application: Breakdown by application
+        warnings: List of warning messages
+        created_at: ISO timestamp of verification
+    """
+    total_sp_signins: int
+    sp_success_count: int
+    sp_failure_count: int
+    sp_success_rate: float
+    total_user_signins: int
+    unique_service_principals: int
+    by_application: Dict[str, Dict[str, int]]
+    warnings: List[str]
+    created_at: str
+
+
+@dataclass
+class LatencyVerificationSummary:
+    """
+    Result of sign-in latency analysis.
+
+    Attributes:
+        total_with_latency: Records with latency data
+        avg_latency_ms: Average latency in milliseconds
+        median_latency_ms: Median latency
+        p95_latency_ms: 95th percentile latency
+        slow_signin_count: Sign-ins >1000ms
+        very_slow_signin_count: Sign-ins >5000ms
+        latency_categories: Breakdown by category (FAST/NORMAL/SLOW/VERY_SLOW)
+        warnings: List of warning messages
+        created_at: ISO timestamp of verification
+    """
+    total_with_latency: int
+    avg_latency_ms: float
+    median_latency_ms: int
+    p95_latency_ms: int
+    slow_signin_count: int
+    very_slow_signin_count: int
+    latency_categories: Dict[str, int]
+    warnings: List[str]
+    created_at: str
+
+
+@dataclass
+class DeviceComplianceVerificationSummary:
+    """
+    Result of device compliance verification.
+
+    Attributes:
+        total_with_device_info: Records with device information
+        compliant_count: Compliant devices
+        noncompliant_count: Non-compliant devices
+        compliance_rate: Compliance rate percentage (0-100)
+        managed_count: Managed devices
+        unmanaged_count: Unmanaged devices
+        warnings: List of warning messages
+        created_at: ISO timestamp of verification
+    """
+    total_with_device_info: int
+    compliant_count: int
+    noncompliant_count: int
+    compliance_rate: float
+    managed_count: int
+    unmanaged_count: int
+    warnings: List[str]
+    created_at: str
+
+
+@dataclass
+class MFAVerificationSummary:
+    """
+    Result of MFA requirement verification.
+
+    Attributes:
+        total_signins: Total sign-ins analyzed
+        mfa_required_count: Sign-ins where MFA was required
+        mfa_satisfied_count: Sign-ins where MFA was satisfied
+        mfa_gap_count: Required but not satisfied (security risk)
+        mfa_satisfaction_rate: MFA satisfaction rate percentage (0-100)
+        by_auth_requirement: Breakdown by auth requirement type
+        warnings: List of warning messages
+        created_at: ISO timestamp of verification
+    """
+    total_signins: int
+    mfa_required_count: int
+    mfa_satisfied_count: int
+    mfa_gap_count: int
+    mfa_satisfaction_rate: float
+    by_auth_requirement: Dict[str, int]
+    warnings: List[str]
+    created_at: str
+
+
+def verify_service_principal_status(db_path: str) -> ServicePrincipalVerificationSummary:
+    """
+    Verify service principal authentication patterns.
+
+    Separates service principal authentications from user authentications to
+    detect automated attack patterns or credential compromise.
+
+    Args:
+        db_path: Path to SQLite database containing sign_in_logs table
+
+    Returns:
+        ServicePrincipalVerificationSummary with SP analysis
+
+    Raises:
+        ValueError: If sign_in_logs table doesn't exist
+
+    Example:
+        >>> result = verify_service_principal_status('case.db')
+        >>> print(f"SP success rate: {result.sp_success_rate:.1f}%")
+    """
+    conn = sqlite3.connect(db_path)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    # Verify table exists
+    cursor.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name='sign_in_logs'"
+    )
+    if not cursor.fetchone():
+        conn.close()
+        raise ValueError("Table sign_in_logs does not exist")
+
+    warnings = []
+
+    # Count service principal sign-ins
+    total_sp_signins = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE is_service_principal = 1"
+    ).fetchone()[0]
+
+    # Count user sign-ins
+    total_user_signins = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE is_service_principal = 0 OR is_service_principal IS NULL"
+    ).fetchone()[0]
+
+    if total_sp_signins == 0:
+        conn.close()
+        return ServicePrincipalVerificationSummary(
+            total_sp_signins=0,
+            sp_success_count=0,
+            sp_failure_count=0,
+            sp_success_rate=0.0,
+            total_user_signins=total_user_signins,
+            unique_service_principals=0,
+            by_application={},
+            warnings=["No service principal sign-ins found"],
+            created_at=datetime.now().isoformat()
+        )
+
+    # Count successful vs failed SP authentications
+    sp_success_count = cursor.execute("""
+        SELECT COUNT(*) FROM sign_in_logs
+        WHERE is_service_principal = 1
+        AND (status_error_code = 0 OR status_error_code IS NULL)
+    """).fetchone()[0]
+
+    sp_failure_count = cursor.execute("""
+        SELECT COUNT(*) FROM sign_in_logs
+        WHERE is_service_principal = 1
+        AND status_error_code != 0
+        AND status_error_code IS NOT NULL
+    """).fetchone()[0]
+
+    sp_success_rate = (sp_success_count / total_sp_signins * 100.0) if total_sp_signins > 0 else 0.0
+
+    # Count unique service principals
+    unique_service_principals = cursor.execute("""
+        SELECT COUNT(DISTINCT service_principal_id)
+        FROM sign_in_logs
+        WHERE is_service_principal = 1
+        AND service_principal_id IS NOT NULL
+    """).fetchone()[0]
+
+    # Breakdown by application
+    by_application = {}
+    app_rows = cursor.execute("""
+        SELECT app_display_name,
+               COUNT(*) as total,
+               SUM(CASE WHEN status_error_code = 0 OR status_error_code IS NULL THEN 1 ELSE 0 END) as success,
+               SUM(CASE WHEN status_error_code != 0 AND status_error_code IS NOT NULL THEN 1 ELSE 0 END) as failure
+        FROM sign_in_logs
+        WHERE is_service_principal = 1
+        AND app_display_name IS NOT NULL
+        GROUP BY app_display_name
+    """).fetchall()
+
+    for row in app_rows:
+        by_application[row['app_display_name']] = {
+            'total': row['total'],
+            'success': row['success'],
+            'failure': row['failure']
+        }
+
+    # Warnings
+    if sp_failure_count > sp_success_count:
+        warnings.append(
+            f"⚠️  High service principal failure rate: {sp_failure_count}/{total_sp_signins} failed "
+            f"({100 - sp_success_rate:.1f}%)"
+        )
+
+    conn.close()
+
+    return ServicePrincipalVerificationSummary(
+        total_sp_signins=total_sp_signins,
+        sp_success_count=sp_success_count,
+        sp_failure_count=sp_failure_count,
+        sp_success_rate=sp_success_rate,
+        total_user_signins=total_user_signins,
+        unique_service_principals=unique_service_principals,
+        by_application=by_application,
+        warnings=warnings,
+        created_at=datetime.now().isoformat()
+    )
+
+
+def verify_latency_patterns(db_path: str) -> LatencyVerificationSummary:
+    """
+    Analyze sign-in latency patterns for anomaly detection.
+
+    Slow sign-ins (>1000ms) may indicate automated attacks or credential stuffing.
+
+    Args:
+        db_path: Path to SQLite database
+
+    Returns:
+        LatencyVerificationSummary with latency analysis
+
+    Example:
+        >>> result = verify_latency_patterns('case.db')
+        >>> print(f"Average latency: {result.avg_latency_ms}ms")
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    warnings = []
+
+    # Count total records with latency data
+    total_with_latency = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE latency_ms IS NOT NULL"
+    ).fetchone()[0]
+
+    if total_with_latency == 0:
+        conn.close()
+        return LatencyVerificationSummary(
+            total_with_latency=0,
+            avg_latency_ms=0.0,
+            median_latency_ms=0,
+            p95_latency_ms=0,
+            slow_signin_count=0,
+            very_slow_signin_count=0,
+            latency_categories={},
+            warnings=["No latency data available"],
+            created_at=datetime.now().isoformat()
+        )
+
+    # Calculate statistics
+    avg_latency = cursor.execute(
+        "SELECT AVG(latency_ms) FROM sign_in_logs WHERE latency_ms IS NOT NULL"
+    ).fetchone()[0]
+
+    # Median (50th percentile)
+    median_latency = cursor.execute(f"""
+        SELECT latency_ms
+        FROM sign_in_logs
+        WHERE latency_ms IS NOT NULL
+        ORDER BY latency_ms
+        LIMIT 1 OFFSET {total_with_latency // 2}
+    """).fetchone()[0]
+
+    # 95th percentile
+    p95_offset = int(total_with_latency * 0.95)
+    p95_latency = cursor.execute(f"""
+        SELECT latency_ms
+        FROM sign_in_logs
+        WHERE latency_ms IS NOT NULL
+        ORDER BY latency_ms
+        LIMIT 1 OFFSET {p95_offset}
+    """).fetchone()[0]
+
+    # Count slow sign-ins
+    slow_signin_count = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE latency_ms > 1000"
+    ).fetchone()[0]
+
+    very_slow_signin_count = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE latency_ms > 5000"
+    ).fetchone()[0]
+
+    # Categorize latency
+    latency_categories = {
+        'FAST': cursor.execute("SELECT COUNT(*) FROM sign_in_logs WHERE latency_ms < 100").fetchone()[0],
+        'NORMAL': cursor.execute("SELECT COUNT(*) FROM sign_in_logs WHERE latency_ms >= 100 AND latency_ms < 500").fetchone()[0],
+        'SLOW': cursor.execute("SELECT COUNT(*) FROM sign_in_logs WHERE latency_ms >= 500 AND latency_ms < 1000").fetchone()[0],
+        'VERY_SLOW': cursor.execute("SELECT COUNT(*) FROM sign_in_logs WHERE latency_ms >= 1000").fetchone()[0],
+    }
+
+    # Warnings
+    if slow_signin_count > (total_with_latency * 0.1):
+        warnings.append(
+            f"⚠️  High slow sign-in rate: {slow_signin_count}/{total_with_latency} "
+            f"({slow_signin_count / total_with_latency * 100:.1f}%) >1000ms"
+        )
+
+    conn.close()
+
+    return LatencyVerificationSummary(
+        total_with_latency=total_with_latency,
+        avg_latency_ms=avg_latency,
+        median_latency_ms=median_latency,
+        p95_latency_ms=p95_latency,
+        slow_signin_count=slow_signin_count,
+        very_slow_signin_count=very_slow_signin_count,
+        latency_categories=latency_categories,
+        warnings=warnings,
+        created_at=datetime.now().isoformat()
+    )
+
+
+def verify_device_compliance(db_path: str) -> DeviceComplianceVerificationSummary:
+    """
+    Verify device compliance rates for sign-ins.
+
+    Non-compliant devices accessing corporate resources are a security risk.
+
+    Args:
+        db_path: Path to SQLite database
+
+    Returns:
+        DeviceComplianceVerificationSummary with compliance analysis
+
+    Example:
+        >>> result = verify_device_compliance('case.db')
+        >>> print(f"Compliance rate: {result.compliance_rate:.1f}%")
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    warnings = []
+
+    # Count records with device info
+    total_with_device_info = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE device_compliant IS NOT NULL"
+    ).fetchone()[0]
+
+    if total_with_device_info == 0:
+        conn.close()
+        return DeviceComplianceVerificationSummary(
+            total_with_device_info=0,
+            compliant_count=0,
+            noncompliant_count=0,
+            compliance_rate=0.0,
+            managed_count=0,
+            unmanaged_count=0,
+            warnings=["No device compliance data available"],
+            created_at=datetime.now().isoformat()
+        )
+
+    # Count compliant vs non-compliant
+    compliant_count = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE device_compliant = 1"
+    ).fetchone()[0]
+
+    noncompliant_count = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE device_compliant = 0"
+    ).fetchone()[0]
+
+    compliance_rate = (compliant_count / total_with_device_info * 100.0) if total_with_device_info > 0 else 0.0
+
+    # Count managed vs unmanaged
+    managed_count = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE device_managed = 1"
+    ).fetchone()[0]
+
+    unmanaged_count = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE device_managed = 0"
+    ).fetchone()[0]
+
+    # Warnings
+    if compliance_rate < 80.0:
+        warnings.append(
+            f"⚠️  Low device compliance rate: {compliance_rate:.1f}% "
+            f"({noncompliant_count}/{total_with_device_info} non-compliant)"
+        )
+
+    conn.close()
+
+    return DeviceComplianceVerificationSummary(
+        total_with_device_info=total_with_device_info,
+        compliant_count=compliant_count,
+        noncompliant_count=noncompliant_count,
+        compliance_rate=compliance_rate,
+        managed_count=managed_count,
+        unmanaged_count=unmanaged_count,
+        warnings=warnings,
+        created_at=datetime.now().isoformat()
+    )
+
+
+def verify_mfa_status(db_path: str) -> MFAVerificationSummary:
+    """
+    Verify MFA requirement vs satisfaction.
+
+    Gap between required and satisfied MFA indicates security policy gaps.
+
+    Args:
+        db_path: Path to SQLite database
+
+    Returns:
+        MFAVerificationSummary with MFA analysis
+
+    Example:
+        >>> result = verify_mfa_status('case.db')
+        >>> print(f"MFA gap: {result.mfa_gap_count} sign-ins")
+    """
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    warnings = []
+
+    # Count total sign-ins with auth requirement data
+    total_signins = cursor.execute(
+        "SELECT COUNT(*) FROM sign_in_logs WHERE auth_requirement IS NOT NULL"
+    ).fetchone()[0]
+
+    if total_signins == 0:
+        conn.close()
+        return MFAVerificationSummary(
+            total_signins=0,
+            mfa_required_count=0,
+            mfa_satisfied_count=0,
+            mfa_gap_count=0,
+            mfa_satisfaction_rate=0.0,
+            by_auth_requirement={},
+            warnings=["No MFA data available"],
+            created_at=datetime.now().isoformat()
+        )
+
+    # Count MFA required (multiFactorAuthentication)
+    mfa_required_count = cursor.execute("""
+        SELECT COUNT(*) FROM sign_in_logs
+        WHERE auth_requirement LIKE '%multiFactorAuthentication%'
+    """).fetchone()[0]
+
+    # Count MFA satisfied
+    mfa_satisfied_count = cursor.execute("""
+        SELECT COUNT(*) FROM sign_in_logs
+        WHERE auth_requirement LIKE '%multiFactorAuthentication%'
+        AND mfa_result = 'satisfied'
+    """).fetchone()[0]
+
+    # Calculate gap (required but not satisfied)
+    mfa_gap_count = mfa_required_count - mfa_satisfied_count
+
+    mfa_satisfaction_rate = (mfa_satisfied_count / mfa_required_count * 100.0) if mfa_required_count > 0 else 0.0
+
+    # Breakdown by auth requirement
+    by_auth_requirement = {}
+    auth_rows = cursor.execute("""
+        SELECT auth_requirement, COUNT(*) as count
+        FROM sign_in_logs
+        WHERE auth_requirement IS NOT NULL
+        GROUP BY auth_requirement
+    """).fetchall()
+
+    for row in auth_rows:
+        by_auth_requirement[row[0]] = row[1]
+
+    # Warnings
+    if mfa_gap_count > 0:
+        warnings.append(
+            f"⚠️  MFA gap detected: {mfa_gap_count} sign-ins required MFA but not satisfied "
+            f"({100 - mfa_satisfaction_rate:.1f}% gap)"
+        )
+
+    conn.close()
+
+    return MFAVerificationSummary(
+        total_signins=total_signins,
+        mfa_required_count=mfa_required_count,
+        mfa_satisfied_count=mfa_satisfied_count,
+        mfa_gap_count=mfa_gap_count,
+        mfa_satisfaction_rate=mfa_satisfaction_rate,
+        by_auth_requirement=by_auth_requirement,
+        warnings=warnings,
+        created_at=datetime.now().isoformat()
+    )
+
+
 if __name__ == "__main__":
     # Demo usage
     import sys
