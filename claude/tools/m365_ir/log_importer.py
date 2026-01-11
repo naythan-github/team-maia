@@ -191,55 +191,72 @@ class LogImporter:
         import_id = cursor.lastrowid
 
         try:
-            with open(source, 'r', encoding='utf-8-sig') as f:
-                reader = csv.DictReader(f)
-                for row_num, row in enumerate(reader, start=2):
-                    try:
-                        # Parse datetime
-                        timestamp = parse_m365_datetime(
-                            row.get('CreatedDateTime', ''),
-                            self._detect_date_format(row.get('CreatedDateTime', ''))
-                        )
+            # Phase 264: Use schema-aware parser
+            parser = M365LogParser()
+            entries = parser.parse_with_schema(source)
 
-                        # INSERT OR IGNORE for deduplication via UNIQUE constraint
-                        cursor.execute("""
-                            INSERT OR IGNORE INTO sign_in_logs
-                            (timestamp, user_principal_name, user_display_name,
-                             ip_address, location_city, location_country,
-                             client_app, app_display_name, browser, os,
-                             status_error_code, conditional_access_status,
-                             risk_level, risk_state, correlation_id,
-                             raw_record, imported_at)
-                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                        """, (
-                            timestamp.isoformat(),
-                            row.get('UserPrincipalName', ''),
-                            row.get('UserDisplayName', ''),
-                            row.get('IPAddress', ''),
-                            row.get('City', ''),
-                            row.get('Country', ''),
-                            row.get('ClientAppUsed', ''),
-                            row.get('AppDisplayName', ''),
-                            row.get('Browser', ''),
-                            row.get('OS', ''),
-                            0 if normalize_status(row.get('Status', '')) == 'success' else 1,
-                            row.get('ConditionalAccessStatus', ''),
-                            row.get('RiskLevelDuringSignIn', ''),
-                            row.get('RiskState', ''),
-                            row.get('CorrelationId', ''),
-                            compress_json(row),
-                            now
-                        ))
-                        # Check if row was actually inserted (rowcount=0 means duplicate)
-                        if cursor.rowcount > 0:
-                            records_imported += 1
-                        else:
-                            records_skipped += 1
+            for entry_num, entry in enumerate(entries, start=1):
+                try:
+                    # INSERT OR IGNORE for deduplication via UNIQUE constraint
+                    cursor.execute("""
+                        INSERT OR IGNORE INTO sign_in_logs
+                        (timestamp, user_principal_name, user_display_name,
+                         ip_address, location_city, location_country,
+                         client_app, app_display_name, browser, os,
+                         status_error_code, conditional_access_status,
+                         risk_level, risk_state, correlation_id,
+                         raw_record, imported_at,
+                         schema_variant, sign_in_type, is_service_principal,
+                         service_principal_id, service_principal_name,
+                         user_id, request_id, auth_requirement, mfa_result,
+                         latency_ms, device_compliant, device_managed,
+                         credential_key_id, resource_id)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        entry.timestamp.isoformat() if entry.timestamp else None,
+                        entry.user_principal_name or '',
+                        entry.user_display_name or '',
+                        entry.ip_address or '',
+                        entry.city or '',
+                        entry.country or '',
+                        getattr(entry, 'client_app', '') or '',
+                        entry.app_display_name or '',
+                        entry.browser or '',
+                        entry.os or '',
+                        getattr(entry, 'status_error_code', 0) or 0,
+                        entry.conditional_access_status or '',
+                        getattr(entry, 'risk_level_during_signin', '') or '',
+                        entry.risk_state or '',
+                        getattr(entry, 'correlation_id', '') or '',
+                        compress_json(getattr(entry, 'raw_data', {})),
+                        now,
+                        # Phase 264: Multi-schema ETL fields
+                        entry.schema_variant or '',
+                        entry.sign_in_type or '',
+                        1 if entry.is_service_principal else 0,
+                        entry.service_principal_id or '',
+                        entry.service_principal_name or '',
+                        entry.user_id or '',
+                        entry.request_id or '',
+                        entry.auth_requirement or '',
+                        entry.mfa_result or '',
+                        entry.latency_ms,
+                        1 if entry.device_compliant else None,
+                        1 if entry.device_managed else None,
+                        entry.credential_key_id or '',
+                        entry.resource_id or ''
+                    ))
+                    # Check if row was actually inserted (rowcount=0 means duplicate)
+                    if cursor.rowcount > 0:
+                        records_imported += 1
+                    else:
+                        records_skipped += 1
 
-                    except Exception as e:
-                        records_failed += 1
-                        errors.append(f"Row {row_num}: {str(e)}")
-                        logger.debug(f"Failed to import row {row_num}: {e}")
+                except Exception as e:
+                    records_failed += 1
+                    errors.append(f"Entry {entry_num}: {str(e)}")
+                    logger.debug(f"Failed to import entry {entry_num}: {e}")
 
             # Update import metadata
             cursor.execute("""

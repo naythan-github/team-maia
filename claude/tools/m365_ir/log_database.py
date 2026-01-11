@@ -186,7 +186,7 @@ class IRLogDatabase:
     def _create_tables(self, cursor: sqlite3.Cursor) -> None:
         """Create all database tables."""
 
-        # Sign-in logs table
+        # Sign-in logs table (Schema v5 - Phase 264 Multi-Schema ETL)
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS sign_in_logs (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -212,7 +212,22 @@ class IRLogDatabase:
                 resource_display_name TEXT,
                 correlation_id TEXT,
                 raw_record BLOB,
-                imported_at TEXT NOT NULL
+                imported_at TEXT NOT NULL,
+                -- Phase 264: Multi-schema ETL columns
+                schema_variant TEXT,
+                sign_in_type TEXT,
+                is_service_principal INTEGER DEFAULT 0,
+                service_principal_id TEXT,
+                service_principal_name TEXT,
+                user_id TEXT,
+                request_id TEXT,
+                auth_requirement TEXT,
+                mfa_result TEXT,
+                latency_ms INTEGER,
+                device_compliant INTEGER,
+                device_managed INTEGER,
+                credential_key_id TEXT,
+                resource_id TEXT
             )
         """)
 
@@ -951,6 +966,19 @@ class IRLogDatabase:
         cursor.execute("""
             CREATE INDEX IF NOT EXISTS idx_signin_country
             ON sign_in_logs(location_country)
+        """)
+        # Phase 264: Multi-schema ETL indexes
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_signin_type
+            ON sign_in_logs(sign_in_type)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_signin_schema
+            ON sign_in_logs(schema_variant)
+        """)
+        cursor.execute("""
+            CREATE INDEX IF NOT EXISTS idx_signin_service_principal
+            ON sign_in_logs(is_service_principal, service_principal_id)
         """)
 
         # UAL indexes
