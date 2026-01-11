@@ -266,31 +266,40 @@ class PreCompactionHook:
         Auto-save durable checkpoint before compaction.
 
         Phase 264: Ensures checkpoint is saved for post-compaction resume.
-        Non-blocking - failures are logged but don't prevent compaction.
+        FAILS LOUDLY if checkpoint cannot be saved - silent failure leads to
+        hours of lost context and degraded code quality.
 
         Args:
             context_id: Claude context window ID
+
+        Raises:
+            Exception: Re-raises if checkpoint save fails (no graceful degradation)
         """
-        try:
-            # Gather current project state
-            state = self.checkpoint_generator.gather_state()
+        # Gather current project state
+        state = self.checkpoint_generator.gather_state()
 
-            # Set auto-detected phase info
-            state.phase_name = "Pre-compaction auto-checkpoint"
-            state.percent_complete = 50  # Unknown, assume mid-project
-            state.tdd_phase = "P4"  # Default to implementation phase
+        # Set auto-detected phase info
+        state.phase_name = "Pre-compaction auto-checkpoint"
+        state.percent_complete = 50  # Unknown, assume mid-project
+        state.tdd_phase = "P4"  # Default to implementation phase
 
-            # Save durable checkpoint
-            result = self.checkpoint_generator.save_durable_checkpoint(state)
+        # Save durable checkpoint - MUST succeed
+        result = self.checkpoint_generator.save_durable_checkpoint(state)
 
-            if result:
-                self._log_debug(f"Pre-compaction checkpoint saved: {result}")
-            else:
-                self._log_debug("Pre-compaction checkpoint save returned None (graceful degradation)")
-
-        except Exception as e:
-            # Non-blocking - log error but don't fail hook
-            self._log_error(f"Pre-compaction checkpoint failed: {type(e).__name__}: {e}")
+        if result:
+            self._log_debug(f"Pre-compaction checkpoint saved: {result}")
+        else:
+            # Checkpoint save returned None - this is a failure
+            error_msg = "CRITICAL: Pre-compaction checkpoint save failed! Context will be lost after compaction."
+            self._log_error(error_msg)
+            # Print to stderr so it's visible
+            import sys
+            print(f"\n{'='*60}", file=sys.stderr)
+            print("WARNING: CHECKPOINT SAVE FAILED", file=sys.stderr)
+            print("Context may be lost after compaction!", file=sys.stderr)
+            print(f"Run '/checkpoint' manually before proceeding.", file=sys.stderr)
+            print(f"{'='*60}\n", file=sys.stderr)
+            raise RuntimeError(error_msg)
 
     def _extract_topics(self, learnings: list) -> list:
         """

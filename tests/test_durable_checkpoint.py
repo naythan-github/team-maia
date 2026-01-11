@@ -384,8 +384,8 @@ class TestPreCompactionCheckpointIntegration:
 
                 mock_save.assert_called_once()
 
-    def test_pre_compaction_checkpoint_is_non_blocking(self, temp_checkpoint_dir):
-        """Pre-compaction checkpoint failures don't block the hook."""
+    def test_pre_compaction_checkpoint_fails_loudly(self, temp_checkpoint_dir):
+        """Pre-compaction checkpoint failures raise exceptions (no silent degradation)."""
         from claude.hooks.pre_compaction_learning_capture import PreCompactionHook
 
         hook = PreCompactionHook()
@@ -395,8 +395,9 @@ class TestPreCompactionCheckpointIntegration:
             hook.checkpoint_generator, 'gather_state',
             side_effect=Exception("Test error")
         ):
-            # Should not raise
-            hook._save_pre_compaction_checkpoint("test_context")
+            # Should raise - no silent failure
+            with pytest.raises(Exception):
+                hook._save_pre_compaction_checkpoint("test_context")
 
     def test_pre_compaction_sets_auto_checkpoint_metadata(self, temp_checkpoint_dir):
         """Pre-compaction checkpoint sets appropriate metadata."""
