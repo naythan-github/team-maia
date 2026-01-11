@@ -947,6 +947,107 @@ class IRLogDatabase:
             ORDER BY te.timestamp
         """)
 
+        # ================================================================
+        # Phase 264: Multi-Schema ETL Views
+        # Views for querying Graph API specific data
+        # ================================================================
+
+        # Graph API Interactive/NonInteractive Sign-ins View
+        cursor.execute("""
+            CREATE VIEW IF NOT EXISTS v_graph_interactive_signins AS
+            SELECT
+                id,
+                timestamp,
+                user_principal_name,
+                user_display_name,
+                user_id,
+                ip_address,
+                location_city,
+                location_country,
+                client_app,
+                app_display_name,
+                browser,
+                os,
+                device_compliant,
+                device_managed,
+                status_error_code,
+                conditional_access_status,
+                auth_requirement,
+                mfa_result,
+                latency_ms,
+                request_id,
+                correlation_id,
+                risk_level,
+                risk_state,
+                resource_id,
+                resource_display_name,
+                schema_variant,
+                sign_in_type,
+                imported_at
+            FROM sign_in_logs
+            WHERE schema_variant IN ('graph_interactive', 'graph_noninteractive')
+            ORDER BY timestamp DESC
+        """)
+
+        # Service Principal Sign-ins View
+        cursor.execute("""
+            CREATE VIEW IF NOT EXISTS v_service_principal_signins AS
+            SELECT
+                id,
+                timestamp,
+                service_principal_id,
+                service_principal_name,
+                app_display_name,
+                ip_address,
+                location_city,
+                location_country,
+                credential_key_id,
+                status_error_code,
+                conditional_access_status,
+                latency_ms,
+                request_id,
+                correlation_id,
+                resource_id,
+                resource_display_name,
+                schema_variant,
+                sign_in_type,
+                imported_at
+            FROM sign_in_logs
+            WHERE is_service_principal = 1
+            ORDER BY timestamp DESC
+        """)
+
+        # Sign-in Performance Analysis View
+        cursor.execute("""
+            CREATE VIEW IF NOT EXISTS v_signin_performance AS
+            SELECT
+                timestamp,
+                user_principal_name,
+                service_principal_name,
+                app_display_name,
+                location_country,
+                schema_variant,
+                sign_in_type,
+                latency_ms,
+                device_compliant,
+                device_managed,
+                status_error_code,
+                CASE
+                    WHEN latency_ms IS NULL THEN 'NO_DATA'
+                    WHEN latency_ms < 100 THEN 'FAST'
+                    WHEN latency_ms < 500 THEN 'NORMAL'
+                    WHEN latency_ms < 1000 THEN 'SLOW'
+                    ELSE 'VERY_SLOW'
+                END as latency_category,
+                CASE
+                    WHEN status_error_code IS NULL OR status_error_code = 0 THEN 1
+                    ELSE 0
+                END as is_success
+            FROM sign_in_logs
+            WHERE latency_ms IS NOT NULL
+            ORDER BY latency_ms DESC
+        """)
+
     def _create_indexes(self, cursor: sqlite3.Cursor) -> None:
         """Create performance indexes on key columns."""
 
