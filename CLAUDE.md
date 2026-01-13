@@ -179,7 +179,7 @@ maia/
 | Capabilities DB (PRIMARY) | `claude/data/databases/system/capabilities.db` - Use for all capability queries |
 | Capabilities Markdown (FALLBACK) | `claude/context/core/capability_index.md` - Auto-fallback if DB unavailable |
 | Azure Environment Discovery | `claude/context/protocols/azure_environment_discovery.md` - Multi-tenant Azure discovery protocol |
-| Handoff System | `claude/tools/orchestration/` - Handoff generator, executor, SwarmOrchestrator |
+| Handoff System | `claude/tools/orchestration/` - handoff_generator.py, handoff_executor.py, swarm_integration.py |
 | Handoff Events | `claude/data/handoff_events.jsonl` - Event log for handoff tracking |
 
 ---
