@@ -130,7 +130,7 @@ copy_dir() {
 
 # Root level files
 echo -e "  ${CYAN}Root files...${NC}"
-for f in CLAUDE.md SYSTEM_STATE.md VERSION CHANGELOG.md requirements.txt requirements-dev.txt .gitignore; do
+for f in CLAUDE.md SYSTEM_STATE.md VERSION CHANGELOG.md requirements.txt requirements-dev.txt .gitignore setup.sh pytest.ini; do
     copy_file "$f" "$f" && echo -e "    ${GREEN}✓${NC} $f"
 done
 
@@ -362,13 +362,13 @@ echo -e "  ${GREEN}✓${NC} Created .gitkeep files"
 echo ""
 echo -e "${YELLOW}Step 8: Final personal data scan...${NC}"
 
-# Patterns to search for
-PERSONAL_PATTERNS="naythandawe|naythan\.dev|naythan\.general|nd25@|/Users/naythan"
+# Patterns to search for (comprehensive from PII_REDACTION_CHECKLIST.md)
+PERSONAL_PATTERNS="naythandawe|naythan\.dev|naythan\.general|naythan\.dawe|naythan\.me|nd25@|/Users/naythan|@orro\.group|Naythan Dawe|\"Naythan\""
 
 # Find any remaining personal data
 FOUND_PERSONAL=$(grep -rlE "$PERSONAL_PATTERNS" "$TARGET_DIR" \
     --include="*.py" --include="*.md" --include="*.json" --include="*.yml" \
-    2>/dev/null | grep -v "CODEOWNERS\|CONTRIBUTING\|MIGRATION_MANIFEST\|\.gitignore" || true)
+    2>/dev/null | grep -v "CODEOWNERS\|CONTRIBUTING\|MIGRATION_MANIFEST\|\.gitignore\|PII_REDACTION" || true)
 
 if [ -n "$FOUND_PERSONAL" ]; then
     echo -e "  ${YELLOW}⚠️  Found personal data in:${NC}"
@@ -378,16 +378,28 @@ if [ -n "$FOUND_PERSONAL" ]; then
     echo ""
     echo -e "  ${YELLOW}Attempting automatic scrub...${NC}"
 
-    # Scrub common patterns (careful replacements)
+    # Scrub common patterns (comprehensive - 16 patterns from checklist)
     find "$TARGET_DIR" -type f \( -name "*.py" -o -name "*.md" -o -name "*.json" \) \
         -exec sed -i '' \
             -e 's/naythandawe/USER/g' \
-            -e 's/naythan\.dev/user@example/g' \
-            -e 's/naythan\.general/user@example/g' \
-            -e 's/nd25@/user@/g' \
+            -e 's/naythan-orro/USER-ORG/g' \
+            -e 's/naythan\.dev+maia@gmail\.com/maia-inbox@example.com/g' \
+            -e 's/naythan\.dev@gmail\.com/user@example.com/g' \
+            -e 's/naythan\.general@icloud\.com/user@example.com/g' \
+            -e 's/naythan\.general@gmail\.com/user@example.com/g' \
+            -e 's/naythan\.dawe@orro\.group/user@company.com/g' \
+            -e 's/naythan\.dawe@nwcomputing\.com\.au/user@company.com/g' \
+            -e 's/naythan\.me@londonxyz\.com/test@example.com/g' \
+            -e 's/nd25@londonxyz\.com/user@example.com/g' \
+            -e 's/@orro\.group/@company.com/g' \
+            -e 's/"Naythan Dawe"/"User Name"/g' \
+            -e 's/"Naythan"/"User"/g' \
+            -e "s/owner=\"Naythan\"/owner=None/g" \
+            -e "s/default=\"Naythan\"/default=None/g" \
+            -e 's/user_id="naythan"/user_id="user"/g' \
             {} \; 2>/dev/null || true
 
-    echo -e "  ${GREEN}✓${NC} Scrubbed personal data patterns"
+    echo -e "  ${GREEN}✓${NC} Scrubbed personal data patterns (16 replacements)"
 else
     echo -e "  ${GREEN}✓${NC} No personal data detected"
 fi
