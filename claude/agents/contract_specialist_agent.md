@@ -206,24 +206,30 @@ RESULT:
 
 ### Contract Sync ETL System (New in v2.4)
 
+#### Environment Setup
+```bash
+# Set SharePoint contracts path (OneDrive synced folder)
+export SHAREPOINT_CONTRACTS_PATH="~/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/"
+```
+
 #### Quick Start
 ```bash
 # Full sync from SharePoint (dry-run preview)
 python3 ~/work_projects/contract_rag_system/contract_sync_etl.py \
-  --source "/Users/naythandawe/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/" \
+  --source "$SHAREPOINT_CONTRACTS_PATH" \
   --target ~/work_projects/customer-contracts/ \
   --db ~/work_projects/contract_rag_system/contracts_db/contract_intelligence.db \
   --dry-run
 
 # Execute full sync (all contracts)
 python3 ~/work_projects/contract_rag_system/contract_sync_etl.py \
-  --source "/Users/naythandawe/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/" \
+  --source "$SHAREPOINT_CONTRACTS_PATH" \
   --target ~/work_projects/customer-contracts/ \
   --db ~/work_projects/contract_rag_system/contracts_db/contract_intelligence.db
 
 # Incremental sync (changes only)
 python3 ~/work_projects/contract_rag_system/contract_sync_etl.py \
-  --source "/Users/naythandawe/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/" \
+  --source "$SHAREPOINT_CONTRACTS_PATH" \
   --target ~/work_projects/customer-contracts/ \
   --db ~/work_projects/contract_rag_system/contracts_db/contract_intelligence.db \
   --incremental
