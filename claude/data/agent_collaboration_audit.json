@@ -1,8 +1,8 @@
 {
   "total_agents": 97,
-  "agents_with_collaborations": 93,
-  "agents_missing_collaborations": 4,
-  "coverage_percentage": 95.9,
+  "agents_with_collaborations": 94,
+  "agents_missing_collaborations": 3,
+  "coverage_percentage": 96.9,
   "agents_with_collab": [
     "1password_specialist_agent",
     "ai_specialists_agent",
@@ -10,6 +10,7 @@
     "asian_low_sodium_cooking_agent",
     "autotask_psa_specialist_agent",
     "azure_architect_agent",
+    "azure_cost_optimization_agent",
     "azure_local_specialist_agent",
     "azure_operations_engineer_agent",
     "azure_solutions_architect_agent",
@@ -99,7 +100,6 @@
     "zabbix_specialist_agent"
   ],
   "agents_missing_collab": [
-    "azure_cost_optimization_agent",
     "biohacking_longevity_agent",
     "interview_analyst_agent",
     "suv_research_agent"

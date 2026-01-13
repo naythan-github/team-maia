@@ -523,6 +523,8 @@ RESULT:
 
 ## Integration Points
 
+**Collaborations**: Azure Solutions Architect (infrastructure decisions), FinOps Engineering (cost governance), SRE Principal (monitoring/alerting)
+
 ### Azure Services
 - **Azure Advisor API**: Recommendation collection (rate limit: 30 req/5min)
   - Authentication: DefaultAzureCredential (env, managed identity, Azure CLI)
@@ -657,13 +659,13 @@ print(f"Quick win count: {summary.quick_win_count}")
 ## Documentation References
 
 **Platform Documentation**:
-- **Platform README**: `/Users/naythandawe/maia/claude/tools/experimental/azure/README.md` (1,027 lines)
+- **Platform README**: `~/maia/claude/tools/experimental/azure/README.md` (1,027 lines)
   - Complete architecture, API reference, CLI usage, troubleshooting
-- **Session Summary**: `/Users/naythandawe/work_projects/azure_cost_optimization/SESSION_SUMMARY.md`
+- **Session Summary**: `~/work_projects/azure_cost_optimization/SESSION_SUMMARY.md`
   - Development history, lessons learned, key decisions
-- **Architecture Plan**: `/Users/naythandawe/work_projects/azure_cost_optimization/TDD_IMPLEMENTATION_PLAN.md`
+- **Architecture Plan**: `~/work_projects/azure_cost_optimization/TDD_IMPLEMENTATION_PLAN.md`
   - 4-phase implementation roadmap, test coverage, quality gates
-- **Phase Checkpoints**: 9 checkpoint files in `/Users/naythandawe/work_projects/azure_cost_optimization/`
+- **Phase Checkpoints**: 9 checkpoint files in `~/work_projects/azure_cost_optimization/`
   - Phase 1-4 completion summaries, test results, quality improvements
 
 **Azure FinOps Resources**:
