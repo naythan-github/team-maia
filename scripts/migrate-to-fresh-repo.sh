@@ -175,11 +175,20 @@ echo -e "  ${CYAN}claude/context/tools/...${NC}"
 copy_dir "claude/context/tools" "claude/context/tools"
 echo -e "    ${GREEN}✓${NC} claude/context/tools/"
 
-# Tools - ALL subdirectories (shared code)
+# Context - PROTOCOLS (shared)
+echo -e "  ${CYAN}claude/context/protocols/...${NC}"
+copy_dir "claude/context/protocols" "claude/context/protocols"
+echo -e "    ${GREEN}✓${NC} claude/context/protocols/"
+
+# Tools - ALL subdirectories (shared code) - dynamically discover all
 echo -e "  ${CYAN}claude/tools/...${NC}"
-for tool_dir in core sre security automation business communication dashboards monitoring servicedesk document_conversion interview scripts ir archive experimental orchestration learning; do
-    if [ -d "$SOURCE_DIR/claude/tools/$tool_dir" ]; then
-        copy_dir "claude/tools/$tool_dir" "claude/tools/$tool_dir"
+for tool_path in "$SOURCE_DIR"/claude/tools/*/; do
+    if [ -d "$tool_path" ]; then
+        tool_dir=$(basename "$tool_path")
+        # Skip __pycache__ and .pytest_cache
+        if [[ "$tool_dir" != "__pycache__" && "$tool_dir" != ".pytest_cache" ]]; then
+            copy_dir "claude/tools/$tool_dir" "claude/tools/$tool_dir"
+        fi
     fi
 done
 # Also copy root-level tools
