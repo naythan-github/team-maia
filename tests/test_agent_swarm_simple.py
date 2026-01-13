@@ -8,17 +8,19 @@ AGENT_EVOLUTION_PROJECT_PLAN.md Phase 1 success criteria
 import sys
 from pathlib import Path
 
-# Add parent directory to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from agent_swarm import (
+from claude.tools.orchestration.agent_swarm import (
     SwarmOrchestrator,
     AgentHandoff,
     AgentResult,
     HandoffParser,
     MaxHandoffsExceeded,
-    AgentNotFoundError
+    AgentNotFound
 )
+# Alias for backwards compatibility with test
+AgentNotFoundError = AgentNotFound
 
 
 def test_agent_handoff():

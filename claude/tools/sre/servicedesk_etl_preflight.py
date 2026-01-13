@@ -29,17 +29,31 @@ import sys
 import importlib
 from typing import Dict, List, Any
 
+# Optional dependencies - graceful degradation for importability
 try:
     import psutil
+    PSUTIL_AVAILABLE = True
 except ImportError:
-    print("ERROR: psutil not installed. Run: pip3 install psutil", file=sys.stderr)
-    sys.exit(1)
+    PSUTIL_AVAILABLE = False
+    psutil = None
 
 try:
     import psycopg2
+    PSYCOPG2_AVAILABLE = True
 except ImportError:
-    print("ERROR: psycopg2 not installed. Run: pip3 install psycopg2-binary", file=sys.stderr)
-    sys.exit(1)
+    PSYCOPG2_AVAILABLE = False
+    psycopg2 = None
+
+
+def _check_preflight_deps():
+    """Raise ImportError if required dependencies are missing."""
+    missing = []
+    if not PSUTIL_AVAILABLE:
+        missing.append("psutil")
+    if not PSYCOPG2_AVAILABLE:
+        missing.append("psycopg2-binary")
+    if missing:
+        raise ImportError(f"Missing dependencies: {', '.join(missing)}. Install with: pip3 install {' '.join(missing)}")
 
 
 def check_disk_space(source_db: str) -> Dict[str, Any]:

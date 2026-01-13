@@ -5,9 +5,11 @@ Focused test of LLM-enhanced dependency scanner on ServiceDesk FOBs only
 
 import sys
 from pathlib import Path
-sys.path.append(str(Path(__file__).parent))
 
-from llm_enhanced_dependency_scanner import LLMEnhancedDependencyScanner
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from claude.tools.governance.llm_enhanced_dependency_scanner import LLMEnhancedDependencyScanner
 
 def test_focused_scan():
     """Test LLM analysis on ServiceDesk FOBs specifically"""

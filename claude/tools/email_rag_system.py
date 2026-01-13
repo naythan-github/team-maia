@@ -33,14 +33,21 @@ import hashlib
 MAIA_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
 
+# Optional dependencies - graceful degradation for importability
 try:
     import chromadb
     from chromadb.config import Settings
     from sentence_transformers import SentenceTransformer
+    RAG_DEPS_AVAILABLE = True
 except ImportError:
-    print("❌ Missing dependencies. Install with:")
-    print("   pip3 install chromadb sentence-transformers")
-    sys.exit(1)
+    RAG_DEPS_AVAILABLE = False
+    chromadb = Settings = SentenceTransformer = None
+
+
+def _check_rag_deps():
+    """Raise ImportError if RAG dependencies are missing."""
+    if not RAG_DEPS_AVAILABLE:
+        raise ImportError("Missing dependencies. Install with: pip3 install chromadb sentence-transformers")
 
 from claude.tools.macos_mail_bridge import MacOSMailBridge
 

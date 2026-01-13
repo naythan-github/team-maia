@@ -18,8 +18,15 @@ from pathlib import Path
 # Add maia root to path
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-# Import M365 client (will need to adjust imports based on actual implementation)
-from claude.tools.mcp.m365_graph_server import M365GraphClient
+# Dependency guard - skip if MCP library not installed
+try:
+    from claude.tools.mcp.m365_graph_server import M365GraphClient
+    MCP_AVAILABLE = True
+except (ImportError, ModuleNotFoundError):
+    MCP_AVAILABLE = False
+
+if not MCP_AVAILABLE:
+    pytest.skip("MCP library not installed", allow_module_level=True)
 
 
 @pytest.fixture

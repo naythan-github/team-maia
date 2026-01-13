@@ -612,7 +612,10 @@ class ReportGenerator:
         markdown_content = self._generate_markdown_report(recommendations, customer_slug)
 
         # Write Markdown to temporary file
-        md_path = Path(f"/Users/naythandawe/work_projects/{customer_slug}_report.md")
+        # Use user's home directory for portability
+        work_projects_dir = Path.home() / "work_projects"
+        work_projects_dir.mkdir(parents=True, exist_ok=True)
+        md_path = work_projects_dir / f"{customer_slug}_report.md"
         md_path.write_text(markdown_content)
 
         # Convert Markdown to DOCX using existing tool

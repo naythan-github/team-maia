@@ -14,11 +14,19 @@ import sys
 MAIA_ROOT = Path(__file__).resolve().parents[2]
 sys.path.append(str(MAIA_ROOT / "claude" / "tools"))
 
+# Optional dependency - graceful degradation for importability
 try:
     from team_profiling_workflow import TeamProfilingWorkflow
+    WORKFLOW_AVAILABLE = True
 except ImportError:
-    print("❌ Team profiling workflow not found")
-    sys.exit(1)
+    WORKFLOW_AVAILABLE = False
+    TeamProfilingWorkflow = None
+
+
+def _check_workflow_available():
+    """Raise ImportError if team_profiling_workflow is not available."""
+    if not WORKFLOW_AVAILABLE:
+        raise ImportError("TeamProfilingWorkflow not found. Ensure team_profiling_workflow.py exists")
 
 def parse_team_list(team_string: str) -> list:
     """Parse team member string into structured data"""

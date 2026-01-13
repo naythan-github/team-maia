@@ -25,12 +25,21 @@ from pathlib import Path
 from typing import Dict, List, Set
 from xml.etree import ElementTree as ET
 
+# Optional dependency - graceful degradation for importability
 try:
     from docx import Document
     from docx.enum.style import WD_STYLE_TYPE
+    DOCX_AVAILABLE = True
 except ImportError:
-    print("ERROR: python-docx not installed. Run: pip install python-docx")
-    sys.exit(1)
+    DOCX_AVAILABLE = False
+    Document = None
+    WD_STYLE_TYPE = None
+
+
+def _check_docx_available():
+    """Raise ImportError if python-docx is not installed."""
+    if not DOCX_AVAILABLE:
+        raise ImportError("python-docx required. Install with: pip install python-docx")
 
 
 # XML namespaces used in .docx files

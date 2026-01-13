@@ -14,8 +14,16 @@ import subprocess
 import sys
 from pathlib import Path
 
-from docx import Document
-from docx.oxml.ns import qn
+# Dependency guard - skip if python-docx not installed
+try:
+    from docx import Document
+    from docx.oxml.ns import qn
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+
+if not DOCX_AVAILABLE:
+    pytest.skip("python-docx not installed", allow_module_level=True)
 
 # Paths - consolidated under claude/tools/document/pir/
 PIR_DIR = Path(__file__).parent.parent / "claude" / "tools" / "document" / "pir"

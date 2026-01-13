@@ -13,13 +13,21 @@ import pytest
 import tempfile
 import shutil
 from pathlib import Path
-
-from docx import Document
-from docx.shared import Inches, Twips
-from docx.oxml.ns import qn
-from docx.oxml import OxmlElement
-
 import sys
+
+# Dependency guard - skip if python-docx not installed
+try:
+    from docx import Document
+    from docx.shared import Inches, Twips
+    from docx.oxml.ns import qn
+    from docx.oxml import OxmlElement
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+
+if not DOCX_AVAILABLE:
+    pytest.skip("python-docx not installed", allow_module_level=True)
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "claude" / "tools" / "document" / "pir"))
 from pir_docx_normalizer import normalize_document, calculate_content_aware_widths
 

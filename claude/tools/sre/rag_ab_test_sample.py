@@ -23,16 +23,24 @@ import time
 MAIA_ROOT = Path(__file__).resolve().parents[3]
 DB_PATH = MAIA_ROOT / "claude/data/servicedesk_tickets.db"
 
+# Optional dependencies - graceful degradation for importability
 try:
     import chromadb
     from chromadb.config import Settings
     import requests
     from sentence_transformers import SentenceTransformer
     import torch
+    RAG_DEPS_AVAILABLE = True
 except ImportError as e:
-    print(f"❌ Missing dependencies: {e}")
-    print("   Install: pip3 install chromadb sentence-transformers torch requests")
-    sys.exit(1)
+    RAG_DEPS_AVAILABLE = False
+    chromadb = Settings = requests = SentenceTransformer = torch = None
+    _RAG_IMPORT_ERROR = str(e)
+
+
+def _check_rag_deps():
+    """Raise ImportError if RAG dependencies are missing."""
+    if not RAG_DEPS_AVAILABLE:
+        raise ImportError(f"Missing dependencies: {_RAG_IMPORT_ERROR}. Install with: pip3 install chromadb sentence-transformers torch requests")
 
 
 class RAGABTestSampler:

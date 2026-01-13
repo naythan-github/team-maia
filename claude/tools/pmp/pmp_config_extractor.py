@@ -26,16 +26,24 @@ from datetime import datetime, timedelta
 from dataclasses import dataclass
 import sys
 
-# Import existing OAuth manager from Phase 187
+# Import existing OAuth manager from Phase 187 - graceful degradation for importability
 try:
     from claude.tools.pmp.pmp_oauth_manager import PMPOAuthManager
+    PMP_OAUTH_AVAILABLE = True
 except ImportError:
     # Try relative import if absolute import fails
     try:
         from pmp_oauth_manager import PMPOAuthManager
+        PMP_OAUTH_AVAILABLE = True
     except ImportError:
-        print("Error: pmp_oauth_manager.py not found. Ensure Phase 187 is complete.")
-        sys.exit(1)
+        PMP_OAUTH_AVAILABLE = False
+        PMPOAuthManager = None
+
+
+def _check_pmp_oauth_available():
+    """Raise ImportError if pmp_oauth_manager is not available."""
+    if not PMP_OAUTH_AVAILABLE:
+        raise ImportError("pmp_oauth_manager.py not found. Ensure Phase 187 is complete.")
 
 # Configure structured logging
 logging.basicConfig(

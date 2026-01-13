@@ -31,12 +31,18 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 MAIA_ROOT = Path(__file__).resolve().parents[3]
 DB_PATH = MAIA_ROOT / "claude/data/servicedesk_tickets.db"
 
+# Dependency check (openpyxl already imported at line 27, this is validation)
 try:
     import openpyxl
+    OPENPYXL_AVAILABLE = True
 except ImportError:
-    print("❌ Missing dependency: openpyxl")
-    print("   Install: pip3 install openpyxl")
-    sys.exit(1)
+    OPENPYXL_AVAILABLE = False
+
+
+def _check_openpyxl_available():
+    """Raise ImportError if openpyxl is not installed."""
+    if not OPENPYXL_AVAILABLE:
+        raise ImportError("openpyxl required. Install with: pip3 install openpyxl")
 
 
 def extract_keywords(text: str, top_n: int = 10) -> str:

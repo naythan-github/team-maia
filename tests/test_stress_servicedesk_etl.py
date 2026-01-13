@@ -21,9 +21,18 @@ import time
 import sqlite3
 import tempfile
 import pytest
-import psutil
 import threading
 from pathlib import Path
+
+# Dependency guard - skip if psutil not installed
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+
+if not PSUTIL_AVAILABLE:
+    pytest.skip("psutil not installed", allow_module_level=True)
 
 # Add project root to path
 MAIA_ROOT = Path(__file__).parent.parent
@@ -33,7 +42,7 @@ from claude.tools.sre.servicedesk_etl_data_profiler import profile_database
 from claude.tools.sre.servicedesk_etl_data_cleaner_enhanced import (
     clean_database, CleaningError
 )
-from conftest import normalize_profiler_result, normalize_cleaner_result, assert_profiler_success, assert_cleaner_success
+from tests.conftest import normalize_profiler_result, normalize_cleaner_result, assert_profiler_success, assert_cleaner_success
 
 
 # ==============================================================================

@@ -33,13 +33,21 @@ from functools import partial
 MAIA_ROOT = Path(__file__).resolve().parents[3]
 DB_PATH = MAIA_ROOT / "claude/data/servicedesk_tickets.db"
 
+# Optional dependencies - graceful degradation for importability
 try:
     import chromadb
     from chromadb.config import Settings
     import requests
+    CHROMADB_AVAILABLE = True
 except ImportError:
-    print("❌ Missing dependencies. Install: pip3 install chromadb requests")
-    sys.exit(1)
+    CHROMADB_AVAILABLE = False
+    chromadb = Settings = requests = None
+
+
+def _check_chromadb_available():
+    """Raise ImportError if dependencies are missing."""
+    if not CHROMADB_AVAILABLE:
+        raise ImportError("Missing dependencies. Install with: pip3 install chromadb requests")
 
 
 class ParallelRAGIndexer:

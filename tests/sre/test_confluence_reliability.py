@@ -18,20 +18,14 @@ STATUS: ⚠️  Keeping for historical reference only - DO NOT USE
 
 import sys
 from pathlib import Path
+import pytest
 
-print("="*70)
-print("⚠️  DEPRECATED TEST - Phase 140")
-print("="*70)
-print()
-print("This test file is obsolete. Use instead:")
-print("  python3 claude/tools/tests/test_confluence_client.py")
-print()
-print("Phase 140 completed TDD implementation of confluence_client.py")
-print("which replaces confluence_html_builder.py and all related tooling.")
-print()
-print("See: claude/documentation/confluence_quick_start.md")
-print("="*70)
-sys.exit(1)
+# Skip entire module - deprecated test file
+pytest.skip(
+    "DEPRECATED: Phase 140 completed TDD implementation. "
+    "Use claude/tools/tests/test_confluence_client.py instead.",
+    allow_module_level=True
+)
 
 
 def test_html_validation() -> bool:

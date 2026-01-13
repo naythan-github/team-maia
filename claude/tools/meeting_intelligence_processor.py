@@ -37,12 +37,19 @@ from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
+# Optional dependency - graceful degradation for importability
 try:
     import requests
+    REQUESTS_AVAILABLE = True
 except ImportError:
-    print("❌ Missing requests library")
-    print("   Install with: pip3 install requests")
-    sys.exit(1)
+    REQUESTS_AVAILABLE = False
+    requests = None
+
+
+def _check_requests_available():
+    """Raise ImportError if requests is not installed."""
+    if not REQUESTS_AVAILABLE:
+        raise ImportError("requests required. Install with: pip3 install requests")
 
 # Add Maia root to path
 MAIA_ROOT = Path(__file__).parent.parent.parent

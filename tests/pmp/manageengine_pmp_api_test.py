@@ -13,28 +13,21 @@ from datetime import datetime
 # Configuration
 import sys
 import getpass
+import pytest
 
 SERVER_URL = "https://patch.manageengine.com.au"
 
-# Get credentials from environment, command line, or prompt
-if len(sys.argv) >= 3:
-    USERNAME = sys.argv[1]
-    PASSWORD = sys.argv[2]
-elif len(sys.argv) == 2:
-    USERNAME = sys.argv[1]
-    PASSWORD = getpass.getpass(f"Enter password for {USERNAME}: ")
-else:
-    USERNAME = os.getenv('PMP_USERNAME')
-    PASSWORD = os.getenv('PMP_PASSWORD')
+# Get credentials from environment only (pytest compatible)
+# For interactive use, run directly: python tests/pmp/manageengine_pmp_api_test.py
+USERNAME = os.getenv('PMP_USERNAME')
+PASSWORD = os.getenv('PMP_PASSWORD')
 
-    if not USERNAME:
-        USERNAME = input("Enter username: ")
-    if not PASSWORD:
-        PASSWORD = getpass.getpass(f"Enter password for {USERNAME}: ")
-
+# Skip tests if credentials not available (don't prompt during pytest collection)
 if not USERNAME or not PASSWORD:
-    print("ERROR: Credentials required")
-    sys.exit(1)
+    pytest.skip(
+        "ManageEngine PMP credentials required. Set PMP_USERNAME and PMP_PASSWORD environment variables.",
+        allow_module_level=True
+    )
 
 # Disable SSL warnings for testing (enable verification in production)
 import urllib3

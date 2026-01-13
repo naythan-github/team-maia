@@ -31,12 +31,19 @@ from typing import List, Dict, Any
 MAIA_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
 
+# Optional dependency - graceful degradation for importability
 try:
     from claude.tools.whisper_meeting_transcriber import MeetingTranscriptionRAG
+    TRANSCRIBER_AVAILABLE = True
 except ImportError:
-    print("❌ Cannot import MeetingTranscriptionRAG")
-    print("   Ensure whisper_meeting_transcriber.py exists")
-    sys.exit(1)
+    TRANSCRIBER_AVAILABLE = False
+    MeetingTranscriptionRAG = None
+
+
+def _check_transcriber_available():
+    """Raise ImportError if whisper_meeting_transcriber is not available."""
+    if not TRANSCRIBER_AVAILABLE:
+        raise ImportError("MeetingTranscriptionRAG not available. Ensure whisper_meeting_transcriber.py exists")
 
 
 def format_result(result: Dict[str, Any], index: int) -> str:

@@ -28,7 +28,7 @@ sys.path.insert(0, str(MAIA_ROOT))
 
 from claude.tools.sre.servicedesk_etl_data_profiler import profile_database
 from claude.tools.sre.servicedesk_etl_data_cleaner_enhanced import clean_database
-from conftest import normalize_profiler_result, normalize_cleaner_result, assert_profiler_success, assert_cleaner_success
+from tests.conftest import normalize_profiler_result, normalize_cleaner_result, assert_profiler_success, assert_cleaner_success
 
 
 # ==============================================================================

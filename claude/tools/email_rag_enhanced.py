@@ -27,12 +27,20 @@ from datetime import datetime
 MAIA_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
 
+# Optional dependency - graceful degradation for importability
 try:
     import chromadb
     from chromadb.config import Settings
+    CHROMADB_AVAILABLE = True
 except ImportError:
-    print("❌ Missing chromadb. Install: pip3 install chromadb")
-    sys.exit(1)
+    CHROMADB_AVAILABLE = False
+    chromadb = Settings = None
+
+
+def _check_chromadb_available():
+    """Raise ImportError if chromadb is not installed."""
+    if not CHROMADB_AVAILABLE:
+        raise ImportError("chromadb required. Install with: pip3 install chromadb")
 
 from claude.tools.macos_mail_bridge import MacOSMailBridge
 

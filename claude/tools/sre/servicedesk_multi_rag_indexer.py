@@ -26,12 +26,20 @@ import time
 MAIA_ROOT = Path(__file__).resolve().parents[3]
 DB_PATH = MAIA_ROOT / "claude/data/servicedesk_tickets.db"
 
+# Optional dependency - graceful degradation for importability
 try:
     import chromadb
     from chromadb.config import Settings
+    CHROMADB_AVAILABLE = True
 except ImportError:
-    print("❌ Missing chromadb. Install: pip3 install chromadb")
-    sys.exit(1)
+    CHROMADB_AVAILABLE = False
+    chromadb = Settings = None
+
+
+def _check_chromadb_available():
+    """Raise ImportError if chromadb is not installed."""
+    if not CHROMADB_AVAILABLE:
+        raise ImportError("chromadb required. Install with: pip3 install chromadb")
 
 
 class ServiceDeskMultiRAGIndexer:

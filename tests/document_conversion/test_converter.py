@@ -11,9 +11,23 @@ Phase: 163 - Production Hardening
 
 import sys
 from pathlib import Path
-from docx import Document
-from docx.shared import RGBColor
-from orro_md_to_docx import convert_md_to_docx
+import pytest
+
+# Dependency guard - skip if python-docx not installed
+try:
+    from docx import Document
+    from docx.shared import RGBColor
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
+
+if not DOCX_AVAILABLE:
+    pytest.skip("python-docx not installed", allow_module_level=True)
+
+try:
+    from orro_md_to_docx import convert_md_to_docx
+except ImportError:
+    pytest.skip("orro_md_to_docx not available", allow_module_level=True)
 
 # Test constants
 ORRO_PURPLE = RGBColor(112, 48, 160)

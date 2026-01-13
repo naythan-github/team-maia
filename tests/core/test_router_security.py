@@ -9,10 +9,10 @@ import asyncio
 import sys
 from pathlib import Path
 
-# Add parent directory to path for imports
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from production_llm_router import (
+from claude.tools.core.production_llm_router import (
     ProductionLLMRouter,
     LocalLLMInterface,
     LLMProvider,
@@ -259,8 +259,10 @@ class TestErrorHandlingSecurity:
             error_msg = str(e)
 
             # Should not contain absolute paths
-            assert "/Users/naythan" not in error_msg, \
-                "Error should not expose user paths"
+            import os
+            home_path = os.path.expanduser("~")
+            assert home_path not in error_msg, \
+                "Error should not expose user home paths"
             assert "/git/maia" not in error_msg, \
                 "Error should not expose project paths"
 

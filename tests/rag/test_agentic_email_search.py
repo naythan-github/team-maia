@@ -6,8 +6,14 @@ Tests the iterative RAG logic with mock data (no Mail.app required).
 """
 
 import unittest
+import sys
+from pathlib import Path
 from unittest.mock import MagicMock, patch
-from agentic_email_search import AgenticEmailSearch, SearchIteration, AgenticSearchResult
+
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from claude.tools.rag.agentic_email_search import AgenticEmailSearch, SearchIteration, AgenticSearchResult
 
 
 class MockRAG:

@@ -10,12 +10,10 @@ import tempfile
 from pathlib import Path
 from datetime import datetime
 
-# Add orchestration directory to path
-_orchestration_dir = Path(__file__).parent
-if str(_orchestration_dir) not in sys.path:
-    sys.path.insert(0, str(_orchestration_dir))
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from agent_chain_orchestrator import (
+from claude.tools.orchestration.agent_chain_orchestrator import (
     AgentChainOrchestrator,
     WorkflowParser,
     ChainValidator,

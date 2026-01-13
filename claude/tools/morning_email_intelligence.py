@@ -22,11 +22,19 @@ from typing import List, Dict, Optional, Any
 MAIA_ROOT = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(MAIA_ROOT))
 
+# Optional dependency - graceful degradation for importability
 try:
     import anthropic
+    ANTHROPIC_AVAILABLE = True
 except ImportError:
-    print("❌ Missing anthropic SDK. Install: pip3 install anthropic")
-    sys.exit(1)
+    ANTHROPIC_AVAILABLE = False
+    anthropic = None
+
+
+def _check_anthropic_available():
+    """Raise ImportError if anthropic SDK is not installed."""
+    if not ANTHROPIC_AVAILABLE:
+        raise ImportError("anthropic SDK required. Install with: pip3 install anthropic")
 
 from claude.tools.email_rag_ollama import EmailRAGOllama
 

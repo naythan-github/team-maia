@@ -23,15 +23,23 @@ from typing import Optional, List, Dict
 from datetime import datetime
 import logging
 
+# Optional dependency - graceful degradation for importability
 try:
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
     from openpyxl.chart import PieChart, LineChart, Reference
     from openpyxl.utils import get_column_letter
+    OPENPYXL_AVAILABLE = True
 except ImportError:
-    print("Error: openpyxl not installed. Run: pip3 install openpyxl")
-    import sys
-    sys.exit(1)
+    OPENPYXL_AVAILABLE = False
+    Workbook = Font = PatternFill = Alignment = Border = Side = None
+    PieChart = LineChart = Reference = get_column_letter = None
+
+
+def _check_openpyxl_available():
+    """Raise ImportError if openpyxl is not installed."""
+    if not OPENPYXL_AVAILABLE:
+        raise ImportError("openpyxl required. Install with: pip3 install openpyxl")
 
 logger = logging.getLogger(__name__)
 

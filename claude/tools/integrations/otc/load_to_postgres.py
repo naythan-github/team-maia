@@ -142,24 +142,19 @@ class OTCPostgresLoader:
             logger.info("Step 2: Transforming and loading to PostgreSQL...")
             cursor = self.conn.cursor()
 
-            # Prepare simple INSERT
-            insert_sql = """
+            # Use upsert to handle duplicates without transaction abort
+            upsert_sql = """
                 INSERT INTO servicedesk.comments (
                     comment_id, ticket_id, comment_text, user_id, user_name,
                     owner_type, created_time, visible_to_customer, comment_type, team
                 )
-                VALUES (
-                    %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                )
-            """
-
-            update_sql = """
-                UPDATE servicedesk.comments SET
-                    comment_text = %s,
-                    visible_to_customer = %s,
-                    comment_type = %s,
-                    team = %s
-                WHERE comment_id = %s
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (comment_id)
+                DO UPDATE SET
+                    comment_text = EXCLUDED.comment_text,
+                    visible_to_customer = EXCLUDED.visible_to_customer,
+                    comment_type = EXCLUDED.comment_type,
+                    team = EXCLUDED.team
             """
 
             batch = []
@@ -184,18 +179,18 @@ class OTCPostgresLoader:
 
                     batch.append(values)
 
-                    # Insert batch when full
+                    # Upsert batch when full
                     if len(batch) >= batch_size:
-                        self._insert_batch(cursor, insert_sql, update_sql, batch)
+                        self._upsert_batch_fast(cursor, upsert_sql, batch)
                         batch = []
 
                 except Exception as e:
                     logger.warning(f"Failed to process comment {i}: {e}")
                     self.stats['errors'] += 1
 
-            # Insert remaining batch
+            # Upsert remaining batch
             if batch:
-                self._insert_batch(cursor, insert_sql, update_sql, batch)
+                self._upsert_batch_fast(cursor, upsert_sql, batch)
 
             cursor.close()
 

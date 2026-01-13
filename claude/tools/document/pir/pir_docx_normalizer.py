@@ -14,14 +14,24 @@ import argparse
 import sys
 from pathlib import Path
 
+# Optional dependency - graceful degradation for importability
 try:
     from docx import Document
     from docx.shared import Pt, Inches, Twips
     from docx.oxml.ns import qn
     from docx.oxml import OxmlElement
+    DOCX_AVAILABLE = True
 except ImportError:
-    print("ERROR: python-docx not installed. Run: pip install python-docx")
-    sys.exit(1)
+    DOCX_AVAILABLE = False
+    Document = None
+    Pt = Inches = Twips = None
+    qn = OxmlElement = None
+
+
+def _check_docx_available():
+    """Raise ImportError if python-docx is not installed."""
+    if not DOCX_AVAILABLE:
+        raise ImportError("python-docx required. Install with: pip install python-docx")
 
 
 def set_table_full_width(table):

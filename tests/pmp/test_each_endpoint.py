@@ -8,8 +8,10 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent))
-from pmp_oauth_manager import PMPOAuthManager
+# Add project root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from claude.tools.pmp.pmp_oauth_manager import PMPOAuthManager
 import requests
 
 

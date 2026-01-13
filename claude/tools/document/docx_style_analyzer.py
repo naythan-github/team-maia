@@ -21,22 +21,34 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+# Optional dependency - graceful degradation for importability
 try:
     from docx import Document
     from docx.styles.style import BaseStyle
     from docx.enum.style import WD_STYLE_TYPE
+    DOCX_AVAILABLE = True
 except ImportError:
-    print("ERROR: python-docx not installed. Run: pip install python-docx")
-    sys.exit(1)
+    DOCX_AVAILABLE = False
+    Document = None
+    BaseStyle = None
+    WD_STYLE_TYPE = None
 
 
-# Style type mapping for readable output
-STYLE_TYPE_NAMES = {
-    WD_STYLE_TYPE.PARAGRAPH: "Paragraph",
-    WD_STYLE_TYPE.CHARACTER: "Character",
-    WD_STYLE_TYPE.TABLE: "Table",
-    WD_STYLE_TYPE.LIST: "List",
-}
+def _check_docx_available():
+    """Raise ImportError if python-docx is not installed."""
+    if not DOCX_AVAILABLE:
+        raise ImportError("python-docx required. Install with: pip install python-docx")
+
+
+def _get_style_type_names() -> dict:
+    """Get style type mapping (deferred to avoid module-level dependency)."""
+    _check_docx_available()
+    return {
+        WD_STYLE_TYPE.PARAGRAPH: "Paragraph",
+        WD_STYLE_TYPE.CHARACTER: "Character",
+        WD_STYLE_TYPE.TABLE: "Table",
+        WD_STYLE_TYPE.LIST: "List",
+    }
 
 
 def get_all_defined_styles(doc: Document) -> Dict[str, dict]:
@@ -45,13 +57,15 @@ def get_all_defined_styles(doc: Document) -> Dict[str, dict]:
 
     Returns dict mapping style_name -> {type, builtin, hidden, base_style}
     """
+    _check_docx_available()
+    style_type_names = _get_style_type_names()
     styles = {}
 
     for style in doc.styles:
         try:
             style_info = {
                 "name": style.name,
-                "type": STYLE_TYPE_NAMES.get(style.type, f"Unknown({style.type})"),
+                "type": style_type_names.get(style.type, f"Unknown({style.type})"),
                 "type_id": style.type,
                 "builtin": style.builtin,
                 "hidden": style.hidden if hasattr(style, 'hidden') else False,

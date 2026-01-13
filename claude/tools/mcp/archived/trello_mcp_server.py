@@ -34,32 +34,46 @@ import time
 from collections import deque
 from dataclasses import dataclass
 
-# Core dependencies (checked at import, not auto-installed)
+# Core dependencies - graceful degradation for importability
 try:
     import requests
+    REQUESTS_AVAILABLE = True
 except ImportError:
-    print("ERROR: Missing required dependency 'requests'")
-    print("Install with: pip3 install requests>=2.32.0")
-    sys.exit(1)
+    REQUESTS_AVAILABLE = False
+    requests = None
 
 try:
     from mcp.server.models import InitializationOptions
     from mcp.server import NotificationOptions, Server
     from mcp.types import Resource, Tool, TextContent, ImageContent, EmbeddedResource
+    MCP_AVAILABLE = True
 except ImportError:
-    print("ERROR: Missing required dependency 'mcp'")
-    print("Install with: pip3 install mcp")
-    sys.exit(1)
+    MCP_AVAILABLE = False
+    InitializationOptions = NotificationOptions = Server = None
+    Resource = Tool = TextContent = ImageContent = EmbeddedResource = None
 
 # Maia security integration
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 try:
     from claude.tools.security.mcp_env_manager import MCPEnvironmentManager
+    MCP_ENV_AVAILABLE = True
 except ImportError:
-    print("ERROR: Cannot import MCPEnvironmentManager")
-    print("Ensure mcp_env_manager.py is properly installed with encryption support")
-    sys.exit(1)
+    MCP_ENV_AVAILABLE = False
+    MCPEnvironmentManager = None
+
+
+def _check_trello_mcp_deps():
+    """Raise ImportError if required dependencies are missing."""
+    missing = []
+    if not REQUESTS_AVAILABLE:
+        missing.append("requests>=2.32.0")
+    if not MCP_AVAILABLE:
+        missing.append("mcp")
+    if not MCP_ENV_AVAILABLE:
+        missing.append("mcp_env_manager (internal)")
+    if missing:
+        raise ImportError(f"Missing dependencies: {', '.join(missing)}. Install with: pip3 install {' '.join(d for d in missing if 'internal' not in d)}")
 
 # Set up logging with security considerations
 logging.basicConfig(

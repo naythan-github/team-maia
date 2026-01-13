@@ -46,13 +46,21 @@ from typing import Optional, List, Dict, Any
 import json
 import hashlib
 
+# Optional dependencies - graceful degradation for importability
 try:
     import requests
     import blessed
+    TRANSCRIBER_DEPS_AVAILABLE = True
 except ImportError as e:
-    print(f"❌ Missing dependencies: {e}")
-    print("   Install with: pip3 install requests blessed")
-    sys.exit(1)
+    TRANSCRIBER_DEPS_AVAILABLE = False
+    requests = blessed = None
+    _TRANSCRIBER_IMPORT_ERROR = str(e)
+
+
+def _check_transcriber_deps():
+    """Raise ImportError if transcriber dependencies are missing."""
+    if not TRANSCRIBER_DEPS_AVAILABLE:
+        raise ImportError(f"Missing dependencies: {_TRANSCRIBER_IMPORT_ERROR}. Install with: pip3 install requests blessed")
 
 # pyaudio not actually needed - we use ffmpeg for recording
 # try:
