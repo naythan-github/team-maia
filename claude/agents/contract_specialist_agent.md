@@ -1,4 +1,4 @@
-# Contract Specialist Agent v2.3
+# Contract Specialist Agent v2.4
 
 ## Agent Overview
 **Purpose**: MSP contract interpretation - scope analysis, service inclusions/exclusions, SLA terms, and definitive answers to "is X in scope?" questions using Contract RAG.
@@ -183,34 +183,134 @@ RESULT:
 
 ### System Location
 ```
-~/work_projects/contract_rag_system/    # RAG system
-├── contract_rag.py                     # CLI tool
+~/work_projects/contract_rag_system/    # RAG system + Sync ETL
+├── contract_rag.py                     # CLI tool for querying
+├── contract_sync_etl.py                # Main sync orchestrator
+├── contract_sync_scanner.py            # SharePoint scanner
+├── contract_classifier.py              # MSA/Schedule classifier
+├── contract_deduplicator.py            # Hash + fuzzy dedup
+├── contract_normalizer.py              # Filename normalization + DOCX→PDF
+├── contract_sync_monitor.py            # Change tracking
+├── contract_sync_rag_integrator.py     # RAG indexer integration
 ├── contracts_db/
 │   ├── contract_intelligence.db        # SQLite metadata
 │   └── chroma/                         # Vector embeddings
 
-~/work_projects/cusomter-contracts/     # Source PDF contracts
+~/work_projects/customer-contracts/     # Source PDF contracts
 ├── PHI Managed Services Provider Agreement.pdf
 ├── GS1 Schedule 1B - Azure Managed Services.pdf
 ├── NQLC Master Services Agreement.pdf
 ├── Oculus - Master Services Agreement.pdf
-└── ... (16 contracts indexed)
+└── ... (contracts indexed)
+```
+
+### Contract Sync ETL System (New in v2.4)
+
+#### Quick Start
+```bash
+# Full sync from SharePoint (dry-run preview)
+python3 ~/work_projects/contract_rag_system/contract_sync_etl.py \
+  --source "/Users/naythandawe/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/" \
+  --target ~/work_projects/customer-contracts/ \
+  --db ~/work_projects/contract_rag_system/contracts_db/contract_intelligence.db \
+  --dry-run
+
+# Execute full sync (all contracts)
+python3 ~/work_projects/contract_rag_system/contract_sync_etl.py \
+  --source "/Users/naythandawe/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/" \
+  --target ~/work_projects/customer-contracts/ \
+  --db ~/work_projects/contract_rag_system/contracts_db/contract_intelligence.db
+
+# Incremental sync (changes only)
+python3 ~/work_projects/contract_rag_system/contract_sync_etl.py \
+  --source "/Users/naythandawe/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/" \
+  --target ~/work_projects/customer-contracts/ \
+  --db ~/work_projects/contract_rag_system/contracts_db/contract_intelligence.db \
+  --incremental
+```
+
+#### Pipeline Stages
+The sync ETL runs through 7 stages:
+
+1. **SCAN** - Discover contracts in SharePoint folder structure
+   - Scans customer subdirectories
+   - Finds PDF and DOCX files
+   - ~0.04s for 68 files
+
+2. **CLASSIFY** - MSA vs Schedule vs non-contract classification
+   - Identifies Master Service Agreements
+   - Identifies Schedules (1A, 1B, 1C, etc.)
+   - Excludes quotes, RFTs, change requests, confidentiality agreements
+   - ~0.10s for 68 files
+
+3. **DEDUPLICATE** - Hash-based + fuzzy filename matching
+   - SHA-256 hash for exact duplicates
+   - Levenshtein distance for filename similarity
+   - Keeps newest version when duplicates found
+   - ~0.08s for 34 unique files
+
+4. **SYNC CHECK** - Incremental change detection (optional)
+   - Compares file hashes against previous sync state
+   - Skips unchanged files
+   - Only processes new/modified contracts
+   - ~0.05s for incremental check
+
+5. **NORMALIZE** - Filename normalization + DOCX→PDF conversion
+   - Standardizes filenames: `{Customer}_{Type}_{Version}.pdf`
+   - Converts DOCX to PDF using LibreOffice
+   - Copies to target directory
+
+6. **RAG INDEX** - Index into vector database
+   - Integrates with existing RAG indexer
+   - Updates SQLite metadata
+   - Generates embeddings in Chroma
+
+7. **UPDATE STATE** - Save sync state
+   - Records file hashes and timestamps
+   - Enables incremental sync on next run
+
+#### Performance Characteristics (Validated Sprint 8)
+- **Full scan**: 0.37s for 68 files (target: <60s) ✅
+- **Incremental sync**: 0.46s (target: <10s) ✅
+- **Single file processing**: <0.01s per file (target: <5s) ✅
+- **Memory usage**: 0.33 MB peak (target: <500 MB) ✅
+
+#### CLI Options
+```bash
+--source PATH         # SharePoint source directory (required)
+--target PATH         # Target directory for normalized contracts (required)
+--db PATH            # SQLite database path (required)
+--state-file PATH    # Sync state JSON file (default: sync_state.json)
+--dry-run            # Preview changes without executing
+--incremental        # Only process changes since last sync
+--force-reindex      # Re-index all contracts even if unchanged
+--verbose, -v        # Enable verbose logging
+--progress           # Show progress bar
+```
+
+#### Monitor Sync Status
+```bash
+# View last sync state
+cat ~/work_projects/contract_rag_system/sync_state.json
+
+# Check sync logs
+tail -f ~/work_projects/contract_rag_system/sync.log
 ```
 
 ### Query Patterns
 ```bash
 # Semantic search (natural language)
-python3 contract_rag.py query "SLA uptime guarantees"
+python3 ~/work_projects/contract_rag_system/contract_rag.py query "SLA uptime guarantees"
 
 # SQL analytics
-python3 contract_rag.py sql "SELECT customer_name, contract_type FROM contracts"
+python3 ~/work_projects/contract_rag_system/contract_rag.py sql "SELECT customer_name, contract_type FROM contracts"
 
 # Customer-specific
-python3 contract_rag.py query "PHI liability cap indemnity"
+python3 ~/work_projects/contract_rag_system/contract_rag.py query "PHI liability cap indemnity"
 ```
 
 ### Indexed Customers
-Query with: `python3 contract_rag.py sql "SELECT DISTINCT customer_name FROM contracts"`
+Query with: `python3 ~/work_projects/contract_rag_system/contract_rag.py sql "SELECT DISTINCT customer_name FROM contracts"`
 
 ---
 
@@ -270,4 +370,4 @@ Key data: {"customers": ["PHI", "GS1", "NQLC"], "scope_categories": 12}
 **Sonnet**: All contract queries | **Opus**: Complex multi-contract analysis, legal interpretation disputes
 
 ## Production Status
-**READY** - v2.3 with Contract RAG integration
+**READY** - v2.4 with Contract RAG integration + Sync ETL system (Sprint 8 validated)

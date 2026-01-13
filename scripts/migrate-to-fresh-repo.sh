@@ -79,7 +79,7 @@ mkdir -p "$TARGET_DIR"/claude/data/{project_status/active,project_status/archive
 mkdir -p "$TARGET_DIR"/claude/data/databases/{system,intelligence,user}
 mkdir -p "$TARGET_DIR"/claude/tools/{core,sre/tests,security,automation,business,communication}
 mkdir -p "$TARGET_DIR"/claude/tools/{dashboards,monitoring,servicedesk,document_conversion}
-mkdir -p "$TARGET_DIR"/claude/tools/{interview,scripts/tests,archive}
+mkdir -p "$TARGET_DIR"/claude/tools/{interview,scripts/tests,archive,orchestration}
 mkdir -p "$TARGET_DIR"/claude/infrastructure
 
 echo -e "  ${GREEN}✓${NC} Created directory structure"
@@ -177,7 +177,7 @@ echo -e "    ${GREEN}✓${NC} claude/context/tools/"
 
 # Tools - ALL subdirectories (shared code)
 echo -e "  ${CYAN}claude/tools/...${NC}"
-for tool_dir in core sre security automation business communication dashboards monitoring servicedesk document_conversion interview scripts ir archive experimental; do
+for tool_dir in core sre security automation business communication dashboards monitoring servicedesk document_conversion interview scripts ir archive experimental orchestration learning; do
     if [ -d "$SOURCE_DIR/claude/tools/$tool_dir" ]; then
         copy_dir "claude/tools/$tool_dir" "claude/tools/$tool_dir"
     fi
