@@ -73,6 +73,20 @@ pytest-cov>=4.1.0
 pytest-asyncio>=0.21.0
 
 # ═══════════════════════════════════════════════════════════════
+# DOCUMENT PROCESSING
+# ═══════════════════════════════════════════════════════════════
+
+python-docx>=0.8.11  # Word document generation
+beautifulsoup4>=4.12.0  # HTML parsing
+lxml>=4.9.0  # XML/HTML parser backend
+
+# ═══════════════════════════════════════════════════════════════
+# SYSTEM UTILITIES
+# ═══════════════════════════════════════════════════════════════
+
+psutil>=5.9.0  # System monitoring
+
+# ═══════════════════════════════════════════════════════════════
 # NOTES
 # ═══════════════════════════════════════════════════════════════
 #
@@ -80,8 +94,3 @@ pytest-asyncio>=0.21.0
 #   brew install ollama
 #   ollama pull nomic-embed-text
 #   ollama serve
-#
-# For full feature support, also install:
-#   pip install python-docx  # Document generation
-#   pip install beautifulsoup4 lxml  # HTML parsing
-#   pip install sentence-transformers  # Alternative embeddings

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(__NEW_LINE_eef4a2d56bfe3459__ echo \"SYSTEM PACKAGES \\(setup.sh installs\\):\")",
+      "Bash(__NEW_LINE_eef4a2d56bfe3459__ echo \"PYTHON PACKAGES \\(requirements.txt\\):\")",
+      "Bash(__NEW_LINE_f5a749e4a7f76389__ echo \"DIRECTORIES \\(setup.sh creates\\):\")",
+      "Bash(__NEW_LINE_e9ea5c442367be3f__ echo \"CONFIG FILES \\(setup.sh creates\\):\")",
+      "Bash(__NEW_LINE_e9ea5c442367be3f__ echo \"ENVIRONMENT SETUP:\")",
+      "Bash(__NEW_LINE_e9ea5c442367be3f__ echo \"=== VERIFICATION COMPLETE ===\")"
+    ]
+  }
+}
