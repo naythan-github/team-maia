@@ -1,0 +1,54 @@
+{
+  "candidates": [
+    {
+      "tool": "pdf_text_extractor.py",
+      "path": "claude/tools/document/",
+      "potential": "high",
+      "audience": "org",
+      "value": "Batch PDF processing with table extraction - saves hours for anyone handling documents",
+      "changes_needed": [
+        "Remove Maia-specific paths",
+        "Add web UI",
+        "Docker packaging"
+      ],
+      "status": "prototype",
+      "dependencies": [],
+      "added": "2026-01-15",
+      "updated": "2026-01-15",
+      "notes": null
+    },
+    {
+      "tool": "convert_md_to_docx.py",
+      "path": "claude/tools/document/",
+      "potential": "medium",
+      "audience": "team",
+      "value": "Corporate document formatting with consistent branding",
+      "changes_needed": [
+        "Configurable branding",
+        "Template system"
+      ],
+      "status": "prototype",
+      "dependencies": [],
+      "added": "2026-01-15",
+      "updated": "2026-01-15",
+      "notes": null
+    },
+    {
+      "tool": "dns_complete_audit.py",
+      "path": "claude/tools/security/",
+      "potential": "medium",
+      "audience": "team",
+      "value": "DNS security audit automation for domain portfolio",
+      "changes_needed": [
+        "Remove Maia deps",
+        "Report templates",
+        "Scheduled scans"
+      ],
+      "status": "idea",
+      "dependencies": [],
+      "added": "2026-01-15",
+      "updated": "2026-01-15",
+      "notes": null
+    }
+  ]
+}
