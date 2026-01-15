@@ -284,5 +284,40 @@ GROUP BY "TKT-Team";
 
 ---
 
+## PMP Intelligence Service ⭐ UNIFIED QUERY INTERFACE
+
+**Tool**: `claude/tools/pmp/pmp_intelligence_service.py`
+
+### Quick Start
+```python
+from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+pmp = PMPIntelligenceService()
+
+# Always check freshness first
+freshness = pmp.get_data_freshness_report()
+
+# Common queries
+result = pmp.get_systems_by_organization("GS1%")
+result = pmp.get_failed_patches(org_pattern="GS1%", os_filter="Windows Server%")
+result = pmp.get_vulnerable_systems(severity=3)
+```
+
+### Key Features
+- **Unified interface**: Single API across pmp_config.db, pmp_systemreports.db
+- **Normalized schema**: `name`, `os`, `health_status` (not raw JSON extraction)
+- **Staleness warnings**: Automatic alerts if data >7 days old
+- **Query templates**: 12 pre-built patterns for common queries
+
+### Health Status Values
+| Value | Meaning |
+|-------|---------|
+| 1 | Healthy |
+| 2 | Moderately Vulnerable |
+| 3 | Highly Vulnerable |
+
+**Reference:** `claude/context/knowledge/pmp/pmp_intelligence_quickstart.md`
+
+---
+
 ## Production Status
-✅ **READY** - v2.4 with OTC ServiceDesk knowledge
+✅ **READY** - v2.5 with OTC ServiceDesk + PMP Intelligence Service
