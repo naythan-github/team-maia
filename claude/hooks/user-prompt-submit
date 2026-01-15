@@ -26,6 +26,15 @@ if [[ -f "$LEARNING_SESSION_START" && -n "$CLAUDE_USER_MESSAGE" ]]; then
     python3 "$LEARNING_SESSION_START" "$CLAUDE_USER_MESSAGE" 2>/dev/null || true
 fi
 
+# Stage 0.06: Prompt Capture (SPRINT-002-PROMPT-CAPTURE)
+# Captures all user prompts to memory.db for learning and team sharing
+# Performance SLA: <50ms, non-blocking, silent
+PROMPT_CAPTURE="$(dirname "$0")/prompt_capture.py"
+if [[ -f "$PROMPT_CAPTURE" && -n "$CLAUDE_USER_MESSAGE" ]]; then
+    export CLAUDE_CONTEXT_ID="${CLAUDE_CONTEXT_ID:-}"
+    python3 "$PROMPT_CAPTURE" <<< "{\"prompt_text\": \"$CLAUDE_USER_MESSAGE\", \"context_id\": \"$CLAUDE_CONTEXT_ID\"}" 2>/dev/null || true
+fi
+
 # Stage 0.0: Prompt Injection Defense (Phase 224 - Security Integration)
 # Screens incoming messages for injection attempts before any processing
 HOOK_INTEGRATION="$MAIA_ROOT/claude/tools/security/hook_integration.py"
