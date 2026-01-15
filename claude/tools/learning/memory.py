@@ -8,6 +8,7 @@ Auto-generates session summaries for cross-session learning:
 - Privacy-first (all data stays in ~/.maia/)
 """
 
+import hashlib
 import json
 import sqlite3
 from datetime import datetime
@@ -54,6 +55,171 @@ class MaiaMemory:
         conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
         return conn
+
+    def _ensure_prompts_initialized(self):
+        """Ensure prompts table exists in database."""
+        from claude.tools.learning.schema import PROMPTS_SCHEMA
+        conn = self._get_conn()
+        conn.executescript(PROMPTS_SCHEMA)
+        conn.commit()
+        conn.close()
+
+    # =========================================================================
+    # Prompt Capture Methods (SPRINT-002-PROMPT-CAPTURE)
+    # =========================================================================
+
+    def capture_prompt(
+        self,
+        session_id: str,
+        context_id: str,
+        prompt_text: str,
+        agent_active: Optional[str] = None
+    ) -> int:
+        """
+        Capture a user prompt.
+
+        Args:
+            session_id: PAI v2 session ID
+            context_id: Claude context window ID
+            prompt_text: The user's prompt text
+            agent_active: Currently active agent (optional)
+
+        Returns:
+            prompt_id: ID of the captured prompt
+        """
+        self._ensure_prompts_initialized()
+
+        conn = self._get_conn()
+
+        # Get next prompt index for this session
+        cursor = conn.execute(
+            "SELECT COALESCE(MAX(prompt_index), -1) + 1 FROM session_prompts WHERE session_id = ?",
+            (session_id,)
+        )
+        prompt_index = cursor.fetchone()[0]
+
+        # Calculate metrics
+        char_count = len(prompt_text)
+        word_count = len(prompt_text.split())
+        prompt_hash = hashlib.sha256(prompt_text.encode()).hexdigest()
+
+        # Insert prompt
+        cursor = conn.execute("""
+            INSERT INTO session_prompts
+            (session_id, context_id, prompt_index, prompt_text, timestamp, char_count, word_count, agent_active, prompt_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            session_id,
+            context_id,
+            prompt_index,
+            prompt_text,
+            datetime.now().isoformat(),
+            char_count,
+            word_count,
+            agent_active,
+            prompt_hash
+        ))
+
+        prompt_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+
+        return prompt_id
+
+    def get_prompts_for_session(self, session_id: str) -> List[Dict[str, Any]]:
+        """
+        Get all prompts for a session.
+
+        Args:
+            session_id: PAI v2 session ID
+
+        Returns:
+            List of prompt records ordered by prompt_index
+        """
+        self._ensure_prompts_initialized()
+
+        conn = self._get_conn()
+        cursor = conn.execute("""
+            SELECT * FROM session_prompts
+            WHERE session_id = ?
+            ORDER BY prompt_index ASC
+        """, (session_id,))
+
+        results = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return results
+
+    def search_prompts(self, query: str, limit: int = 20) -> List[Dict[str, Any]]:
+        """
+        Full-text search across prompts.
+
+        Args:
+            query: Search query (FTS5 syntax supported)
+            limit: Maximum results
+
+        Returns:
+            List of matching prompts with relevance scores
+        """
+        self._ensure_prompts_initialized()
+
+        conn = self._get_conn()
+        cursor = conn.execute("""
+            SELECT p.*, rank
+            FROM session_prompts p
+            JOIN prompts_fts f ON p.prompt_id = f.rowid
+            WHERE prompts_fts MATCH ?
+            ORDER BY rank
+            LIMIT ?
+        """, (query, limit))
+
+        results = []
+        for row in cursor.fetchall():
+            result = dict(row)
+            result['relevance'] = -result.pop('rank')  # FTS5 rank is negative
+            results.append(result)
+
+        conn.close()
+        return results
+
+    def get_prompt_stats(self, session_id: Optional[str] = None) -> Dict[str, Any]:
+        """
+        Get prompt statistics.
+
+        Args:
+            session_id: Optional session filter
+
+        Returns:
+            Statistics dictionary
+        """
+        self._ensure_prompts_initialized()
+
+        conn = self._get_conn()
+
+        if session_id:
+            cursor = conn.execute("""
+                SELECT
+                    COUNT(*) as prompt_count,
+                    COALESCE(SUM(char_count), 0) as total_chars,
+                    COALESCE(SUM(word_count), 0) as total_words,
+                    COALESCE(AVG(char_count), 0) as avg_chars_per_prompt
+                FROM session_prompts
+                WHERE session_id = ?
+            """, (session_id,))
+        else:
+            cursor = conn.execute("""
+                SELECT
+                    COUNT(*) as prompt_count,
+                    COUNT(DISTINCT session_id) as unique_sessions,
+                    COALESCE(SUM(char_count), 0) as total_chars,
+                    COALESCE(SUM(word_count), 0) as total_words,
+                    COALESCE(AVG(char_count), 0) as avg_chars_per_prompt
+                FROM session_prompts
+            """)
+
+        row = cursor.fetchone()
+        conn.close()
+
+        return dict(row)
 
     def start_session(
         self,

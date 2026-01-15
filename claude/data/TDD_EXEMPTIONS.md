@@ -30,6 +30,15 @@ Commit: <commit-hash>
 
 ---
 
+### 2026-01-15
+**File**: `claude/data/databases/system/capabilities.db`
+**Reason**: Pre-commit personal data hook false positive - file contains capability metadata (tool/agent references), not PII
+**Remediation**: N/A - false positive, database contains system capability index
+**Commit**: TBD (SPRINT-002-PROMPT-CAPTURE)
+**Status**: ✅ False positive bypass
+
+---
+
 ### 2025-12-01
 **File**: `claude/hooks/pre_commit_tdd_gate.py`
 **Reason**: Pre-commit hook created during TDD enforcement implementation (Phase 217)

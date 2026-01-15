@@ -61,6 +61,54 @@ CREATE TRIGGER IF NOT EXISTS sessions_au AFTER UPDATE ON sessions BEGIN
 END;
 """
 
+PROMPTS_SCHEMA = """
+-- Session Prompts: Captures all user prompts during sessions
+-- Sprint: SPRINT-002-PROMPT-CAPTURE
+CREATE TABLE IF NOT EXISTS session_prompts (
+    prompt_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    context_id TEXT NOT NULL,
+    prompt_index INTEGER NOT NULL,  -- 0-indexed within session
+    prompt_text TEXT NOT NULL,
+    timestamp TEXT NOT NULL,        -- ISO 8601 format
+    char_count INTEGER NOT NULL,
+    word_count INTEGER NOT NULL,
+    agent_active TEXT,              -- Which agent was active
+    prompt_hash TEXT,               -- SHA256 hash for dedup
+
+    UNIQUE(session_id, prompt_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_prompts_session ON session_prompts(session_id);
+CREATE INDEX IF NOT EXISTS idx_prompts_context ON session_prompts(context_id);
+CREATE INDEX IF NOT EXISTS idx_prompts_timestamp ON session_prompts(timestamp DESC);
+
+-- Full-text search for prompts
+CREATE VIRTUAL TABLE IF NOT EXISTS prompts_fts USING fts5(
+    prompt_text,
+    content=session_prompts,
+    content_rowid=prompt_id
+);
+
+-- Triggers to keep FTS in sync
+CREATE TRIGGER IF NOT EXISTS prompts_fts_ai AFTER INSERT ON session_prompts BEGIN
+    INSERT INTO prompts_fts(rowid, prompt_text)
+    VALUES (new.prompt_id, new.prompt_text);
+END;
+
+CREATE TRIGGER IF NOT EXISTS prompts_fts_au AFTER UPDATE ON session_prompts BEGIN
+    INSERT INTO prompts_fts(prompts_fts, rowid, prompt_text)
+    VALUES ('delete', old.prompt_id, old.prompt_text);
+    INSERT INTO prompts_fts(rowid, prompt_text)
+    VALUES (new.prompt_id, new.prompt_text);
+END;
+
+CREATE TRIGGER IF NOT EXISTS prompts_fts_ad AFTER DELETE ON session_prompts BEGIN
+    INSERT INTO prompts_fts(prompts_fts, rowid, prompt_text)
+    VALUES ('delete', old.prompt_id, old.prompt_text);
+END;
+"""
+
 LEARNING_SCHEMA = """
 -- Patterns: Extracted from sessions
 CREATE TABLE IF NOT EXISTS patterns (
@@ -141,4 +189,21 @@ def init_learning_db(db_path: Path) -> sqlite3.Connection:
     return conn
 
 
-__all__ = ["init_memory_db", "init_learning_db", "MEMORY_SCHEMA", "LEARNING_SCHEMA"]
+def init_prompts_db(db_path: Path) -> sqlite3.Connection:
+    """
+    Initialize prompts tables in memory database.
+
+    Args:
+        db_path: Path to memory.db file
+
+    Returns:
+        Open connection to initialized database
+    """
+    conn = sqlite3.connect(db_path)
+    conn.executescript(PROMPTS_SCHEMA)
+    conn.commit()
+    return conn
+
+
+__all__ = ["init_memory_db", "init_learning_db", "init_prompts_db",
+           "MEMORY_SCHEMA", "LEARNING_SCHEMA", "PROMPTS_SCHEMA"]

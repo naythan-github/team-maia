@@ -121,6 +121,7 @@ maia/
 | 18 | **DB-First Queries** | Capabilities → `find_capability.py`, state → `system_state_queries.py` | - |
 | 19 | **Checkpoints** | Auto every 10 tools, manual via save state | - |
 | 20 | **PAI v2 Learning** | Auto-capture on session, VERIFY+LEARN on close | `claude/tools/learning/` |
+| 25 | **Prompt Capture** | All prompts captured for team sharing + learning | `prompt_capture.py`, `prompt_export.py` |
 | 21 | **Completeness Review** | Pause after tests pass: verify docs updated, integration complete, holistic review (P6.5) | `tdd_development_protocol.md` v2.5 |
 | 22 | **Compaction-Ready** | Checkpoint progress at phase boundaries; if token warning, complete atomic op + save state | `tdd_development_protocol.md` v2.5 |
 | 23 | **Agent Handoffs** | Agents collaborate via Collaborations metadata; transfer_to_X() for handoffs | `agent_handoff_developer_guide.md` |
@@ -237,6 +238,49 @@ result = save_state.validate_repository(force=True)  # ⚠️ Bypasses validatio
 - `tests/test_session_repo_metadata.py` - Session capture tests (4 tests)
 - `tests/test_save_state_validation.py` - Integration tests (6 tests)
 - `tests/integration/test_multi_repo_workflow.py` - E2E tests (6 tests)
+
+---
+
+## Prompt Capture System (Principle #25 Detail)
+
+**SPRINT-002-PROMPT-CAPTURE**: All user prompts are captured for team sharing and learning system enhancement.
+
+### How It Works
+
+- **UserPromptSubmit hook** captures every prompt automatically
+- Stored in `~/.maia/memory/memory.db` → `session_prompts` table
+- Full-text search via FTS5 for cross-session queries
+- Export to JSONL, Markdown, or CSV for team sharing
+
+### Usage
+
+**Search prompts**:
+```python
+from claude.tools.learning.memory import get_memory
+memory = get_memory()
+results = memory.search_prompts("authentication")
+```
+
+**Export session for team sharing**:
+```python
+from claude.tools.learning.prompt_export import export_session_prompts
+print(export_session_prompts("SESSION_ID", format='markdown'))
+```
+
+**Query directly**:
+```bash
+sqlite3 ~/.maia/memory/memory.db "SELECT prompt_text FROM session_prompts ORDER BY timestamp DESC LIMIT 10"
+```
+
+### Technical Implementation
+
+**Files**:
+- `claude/hooks/prompt_capture.py` - UserPromptSubmit hook
+- `claude/tools/learning/prompt_export.py` - Export utilities
+- `claude/tools/learning/memory.py` - Storage APIs
+- `claude/tools/learning/schema.py` - PROMPTS_SCHEMA
+
+**Tests**: `tests/learning/test_prompt_capture.py` (28 tests)
 
 ---
 
