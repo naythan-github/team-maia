@@ -30,6 +30,8 @@ from dataclasses import dataclass
 from datetime import datetime
 import re
 
+from claude.tools.core.paths import get_maia_root
+
 
 @dataclass
 class ChangeAnalysis:
@@ -82,7 +84,7 @@ class SaveState:
     """
 
     def __init__(self, maia_root: Optional[Path] = None):
-        self.maia_root = maia_root or Path(__file__).resolve().parent.parent.parent.parent
+        self.maia_root = maia_root or get_maia_root()
         self.tools_dir = self.maia_root / "claude" / "tools"
         self.agents_dir = self.maia_root / "claude" / "agents"
         self.commands_dir = self.maia_root / "claude" / "commands"

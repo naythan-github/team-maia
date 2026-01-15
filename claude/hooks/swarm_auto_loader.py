@@ -32,8 +32,13 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 import subprocess
 
-# Maia root detection (claude/hooks/swarm_auto_loader.py -> go up 2 levels to repo root)
-MAIA_ROOT = Path(__file__).parent.parent.parent.absolute()
+# Add maia root to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent.parent.absolute()))
+
+from claude.tools.core.paths import get_maia_root
+
+# Maia root detection - dynamic across repositories
+MAIA_ROOT = get_maia_root()
 
 # Phase 228: Capability gap detection file paths
 CAPABILITY_GAPS_FILE = MAIA_ROOT / "claude" / "data" / "capability_gaps.json"
