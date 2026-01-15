@@ -77,6 +77,9 @@ class PMPIntelligenceService(BaseIntelligenceService):
     # Default database path
     DEFAULT_DB_PATH = Path.home() / ".maia" / "databases" / "intelligence"
 
+    # Unified database name (preferred over legacy databases)
+    UNIFIED_DB = "pmp_intelligence.db"
+
     # Staleness threshold in days
     STALENESS_THRESHOLD_DAYS = 7
 
@@ -556,6 +559,188 @@ class PMPIntelligenceService(BaseIntelligenceService):
             import logging
             logging.error(f"PMP refresh failed: {e}")
             return False
+
+    # =========================================================================
+    # UNIFIED DATABASE METHODS (P6)
+    # =========================================================================
+
+    def get_latest_snapshot(self) -> Dict[str, Any]:
+        """
+        Get the most recent successful snapshot metadata.
+
+        Returns:
+            Dictionary with snapshot_id and timestamp
+
+        Raises:
+            ValueError: If unified database not available
+        """
+        if self.UNIFIED_DB not in self.available_databases:
+            raise ValueError(
+                f"Unified database {self.UNIFIED_DB} not available. "
+                f"Available: {self.available_databases}"
+            )
+
+        sql = """
+            SELECT snapshot_id, timestamp
+            FROM snapshots
+            WHERE status = 'success'
+            ORDER BY timestamp DESC
+            LIMIT 1
+        """
+
+        result = self._execute_query(sql, self.UNIFIED_DB)
+
+        if not result.data:
+            return {"snapshot_id": None, "timestamp": None}
+
+        return result.data[0]
+
+    def get_vulnerability_exposure(self, snapshot_id: Optional[int] = None) -> PMPQueryResult:
+        """
+        Get CVE exposure summary from unified database.
+
+        Args:
+            snapshot_id: Optional snapshot ID (defaults to latest)
+
+        Returns:
+            QueryResult with vulnerability data including CVE ID, score, and severity
+        """
+        if self.UNIFIED_DB not in self.available_databases:
+            # Graceful degradation: return empty result if unified DB not available
+            return PMPQueryResult(
+                data=[],
+                source_database="none",
+                extraction_timestamp=datetime.now(),
+                staleness_warning=f"Unified database {self.UNIFIED_DB} not available"
+            )
+
+        # Get latest snapshot if not specified
+        if snapshot_id is None:
+            latest = self.get_latest_snapshot()
+            snapshot_id = latest.get('snapshot_id')
+
+        if snapshot_id is None:
+            return PMPQueryResult(
+                data=[],
+                source_database=self.UNIFIED_DB,
+                extraction_timestamp=datetime.now(),
+                staleness_warning="No successful snapshots found"
+            )
+
+        sql = """
+            SELECT
+                cve_id,
+                cvss_score,
+                cvss_severity
+            FROM vulnerabilities
+            WHERE snapshot_id = ?
+            ORDER BY cvss_score DESC
+        """
+
+        return self._execute_query(sql, self.UNIFIED_DB, (snapshot_id,))
+
+    def get_compliance_status(self, snapshot_id: Optional[int] = None) -> PMPQueryResult:
+        """
+        Get current compliance status from unified database.
+
+        Args:
+            snapshot_id: Optional snapshot ID (defaults to latest)
+
+        Returns:
+            QueryResult with compliance check results
+        """
+        if self.UNIFIED_DB not in self.available_databases:
+            # Graceful degradation: return empty result if unified DB not available
+            return PMPQueryResult(
+                data=[],
+                source_database="none",
+                extraction_timestamp=datetime.now(),
+                staleness_warning=f"Unified database {self.UNIFIED_DB} not available"
+            )
+
+        # Get latest snapshot if not specified
+        if snapshot_id is None:
+            latest = self.get_latest_snapshot()
+            snapshot_id = latest.get('snapshot_id')
+
+        if snapshot_id is None:
+            return PMPQueryResult(
+                data=[],
+                source_database=self.UNIFIED_DB,
+                extraction_timestamp=datetime.now(),
+                staleness_warning="No successful snapshots found"
+            )
+
+        sql = """
+            SELECT
+                check_name,
+                check_category,
+                passed,
+                severity
+            FROM compliance_checks
+            WHERE snapshot_id = ?
+            ORDER BY
+                CASE severity
+                    WHEN 'CRITICAL' THEN 1
+                    WHEN 'HIGH' THEN 2
+                    WHEN 'MEDIUM' THEN 3
+                    WHEN 'LOW' THEN 4
+                END,
+                passed ASC
+        """
+
+        return self._execute_query(sql, self.UNIFIED_DB, (snapshot_id,))
+
+    def get_deployment_history(
+        self,
+        snapshot_id: Optional[int] = None,
+        limit: int = 10
+    ) -> PMPQueryResult:
+        """
+        Get recent deployment task history from unified database.
+
+        Args:
+            snapshot_id: Optional snapshot ID (defaults to latest)
+            limit: Maximum number of tasks to return (default 10)
+
+        Returns:
+            QueryResult with deployment task data
+        """
+        if self.UNIFIED_DB not in self.available_databases:
+            # Graceful degradation: return empty result if unified DB not available
+            return PMPQueryResult(
+                data=[],
+                source_database="none",
+                extraction_timestamp=datetime.now(),
+                staleness_warning=f"Unified database {self.UNIFIED_DB} not available"
+            )
+
+        # Get latest snapshot if not specified
+        if snapshot_id is None:
+            latest = self.get_latest_snapshot()
+            snapshot_id = latest.get('snapshot_id')
+
+        if snapshot_id is None:
+            return PMPQueryResult(
+                data=[],
+                source_database=self.UNIFIED_DB,
+                extraction_timestamp=datetime.now(),
+                staleness_warning="No successful snapshots found"
+            )
+
+        sql = """
+            SELECT
+                task_name,
+                task_status,
+                scheduled_time,
+                executed_time
+            FROM deployment_tasks
+            WHERE snapshot_id = ?
+            ORDER BY executed_time DESC
+            LIMIT ?
+        """
+
+        return self._execute_query(sql, self.UNIFIED_DB, (snapshot_id, limit))
 
 
 # =============================================================================

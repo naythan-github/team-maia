@@ -574,3 +574,248 @@ class TestBaseClassInheritance:
         # Call refresh (should return bool)
         result = service.refresh()
         assert isinstance(result, bool)
+
+
+# =============================================================================
+# NEW TESTS FOR P6: Unified Database Integration (TDD - MUST FAIL FIRST)
+# =============================================================================
+
+@pytest.fixture
+def mock_unified_db(tmp_path):
+    """Create mock pmp_intelligence.db with unified schema."""
+    db_path = tmp_path / "pmp_intelligence.db"
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Create snapshots table (from unified schema)
+    cursor.execute("""
+        CREATE TABLE snapshots (
+            snapshot_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            status TEXT DEFAULT 'success'
+        )
+    """)
+
+    # Create systems table (from unified schema)
+    cursor.execute("""
+        CREATE TABLE systems (
+            system_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_id INTEGER NOT NULL,
+            resource_id TEXT NOT NULL,
+            resource_name TEXT NOT NULL,
+            os_name TEXT,
+            resource_health_status INTEGER,
+            branch_office_name TEXT NOT NULL,
+            FOREIGN KEY (snapshot_id) REFERENCES snapshots(snapshot_id)
+        )
+    """)
+
+    # Create patch_system_mapping table (from unified schema)
+    cursor.execute("""
+        CREATE TABLE patch_system_mapping (
+            mapping_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_id INTEGER NOT NULL,
+            pmp_patch_id TEXT NOT NULL,
+            resource_id TEXT NOT NULL,
+            patch_status INTEGER,
+            patch_deployed INTEGER,
+            patch_name TEXT,
+            FOREIGN KEY (snapshot_id) REFERENCES snapshots(snapshot_id)
+        )
+    """)
+
+    # Create compliance_checks table (from unified schema)
+    cursor.execute("""
+        CREATE TABLE compliance_checks (
+            check_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_id INTEGER NOT NULL,
+            check_name TEXT NOT NULL,
+            check_category TEXT NOT NULL,
+            passed BOOLEAN NOT NULL,
+            severity TEXT NOT NULL,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (snapshot_id) REFERENCES snapshots(snapshot_id)
+        )
+    """)
+
+    # Create deployment_tasks table (from unified schema)
+    cursor.execute("""
+        CREATE TABLE deployment_tasks (
+            task_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_id INTEGER NOT NULL,
+            task_name TEXT,
+            task_status TEXT,
+            scheduled_time INTEGER,
+            executed_time INTEGER,
+            FOREIGN KEY (snapshot_id) REFERENCES snapshots(snapshot_id)
+        )
+    """)
+
+    # Create vulnerabilities table (from unified schema)
+    cursor.execute("""
+        CREATE TABLE vulnerabilities (
+            vulnerability_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            snapshot_id INTEGER NOT NULL,
+            cve_id TEXT NOT NULL,
+            cvss_score REAL,
+            cvss_severity TEXT,
+            FOREIGN KEY (snapshot_id) REFERENCES snapshots(snapshot_id)
+        )
+    """)
+
+    # Insert snapshots (snapshot_id 1 = old, snapshot_id 2 = latest)
+    cursor.execute("INSERT INTO snapshots (snapshot_id, timestamp, status) VALUES (1, datetime('now', '-10 days'), 'success')")
+    cursor.execute("INSERT INTO snapshots (snapshot_id, timestamp, status) VALUES (2, datetime('now'), 'success')")
+
+    # Insert systems into snapshot 2
+    cursor.execute("INSERT INTO systems (snapshot_id, resource_id, resource_name, os_name, resource_health_status, branch_office_name) VALUES (2, 'R001', 'GS1MELB01', 'Windows Server 2019', 1, 'Melbourne')")
+    cursor.execute("INSERT INTO systems (snapshot_id, resource_id, resource_name, os_name, resource_health_status, branch_office_name) VALUES (2, 'R002', 'GS1MELB02', 'Windows Server 2016', 3, 'Melbourne')")
+
+    # Insert patch mappings
+    cursor.execute("INSERT INTO patch_system_mapping (snapshot_id, pmp_patch_id, resource_id, patch_status, patch_deployed, patch_name) VALUES (2, 'P001', 'R001', 206, 0, 'KB5068864')")
+    cursor.execute("INSERT INTO patch_system_mapping (snapshot_id, pmp_patch_id, resource_id, patch_status, patch_deployed, patch_name) VALUES (2, 'P001', 'R002', 206, 0, 'KB5068864')")
+
+    # Insert compliance checks
+    cursor.execute("INSERT INTO compliance_checks (snapshot_id, check_name, check_category, passed, severity) VALUES (2, 'Critical Patch SLA', 'essential_eight', 1, 'HIGH')")
+    cursor.execute("INSERT INTO compliance_checks (snapshot_id, check_name, check_category, passed, severity) VALUES (2, 'Patch Coverage', 'cis', 0, 'CRITICAL')")
+
+    # Insert deployment tasks
+    cursor.execute("INSERT INTO deployment_tasks (snapshot_id, task_name, task_status, scheduled_time, executed_time) VALUES (2, 'Monthly Patching', 'completed', 1705334400, 1705338000)")
+
+    # Insert vulnerabilities
+    cursor.execute("INSERT INTO vulnerabilities (snapshot_id, cve_id, cvss_score, cvss_severity) VALUES (2, 'CVE-2024-0001', 9.8, 'CRITICAL')")
+
+    conn.commit()
+    conn.close()
+    return db_path
+
+
+class TestUnifiedDatabaseIntegration:
+    """Test integration with unified pmp_intelligence.db database."""
+
+    def test_uses_unified_database(self, tmp_path, mock_unified_db):
+        """Service points to pmp_intelligence.db when available."""
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        # Create intel directory with unified DB
+        intel_dir = tmp_path / "intelligence"
+        intel_dir.mkdir()
+        import shutil
+        shutil.copy(mock_unified_db, intel_dir / "pmp_intelligence.db")
+
+        service = PMPIntelligenceService(db_path=intel_dir)
+
+        # Should discover unified database
+        assert "pmp_intelligence.db" in service.available_databases
+
+    def test_queries_with_snapshot_filter(self, tmp_path, mock_unified_db):
+        """Can filter queries by snapshot_id."""
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        intel_dir = tmp_path / "intelligence"
+        intel_dir.mkdir()
+        import shutil
+        shutil.copy(mock_unified_db, intel_dir / "pmp_intelligence.db")
+
+        service = PMPIntelligenceService(db_path=intel_dir)
+
+        # Query with snapshot filter (get latest snapshot data)
+        result = service.query_raw(
+            "SELECT * FROM systems WHERE snapshot_id = (SELECT MAX(snapshot_id) FROM snapshots WHERE status = 'success')",
+            database="pmp_intelligence.db"
+        )
+
+        # Should only return systems from latest snapshot
+        assert len(result.data) == 2  # Two systems in snapshot 2
+
+    def test_get_latest_snapshot(self, tmp_path, mock_unified_db):
+        """Returns most recent snapshot data."""
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        intel_dir = tmp_path / "intelligence"
+        intel_dir.mkdir()
+        import shutil
+        shutil.copy(mock_unified_db, intel_dir / "pmp_intelligence.db")
+
+        service = PMPIntelligenceService(db_path=intel_dir)
+
+        # New method: get_latest_snapshot
+        result = service.get_latest_snapshot()
+
+        # Should return snapshot_id and timestamp
+        assert 'snapshot_id' in result
+        assert 'timestamp' in result
+        assert result['snapshot_id'] == 2  # Latest snapshot
+
+
+class TestNewQueryMethods:
+    """Test new query methods for unified database."""
+
+    def test_get_vulnerability_exposure(self, tmp_path, mock_unified_db):
+        """Returns CVE exposure summary."""
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        intel_dir = tmp_path / "intelligence"
+        intel_dir.mkdir()
+        import shutil
+        shutil.copy(mock_unified_db, intel_dir / "pmp_intelligence.db")
+
+        service = PMPIntelligenceService(db_path=intel_dir)
+
+        # New method: get_vulnerability_exposure
+        result = service.get_vulnerability_exposure()
+
+        # Should return QueryResult with vulnerability data
+        assert hasattr(result, 'data')
+        assert len(result.data) > 0
+
+        # Check structure
+        for vuln in result.data:
+            assert 'cve_id' in vuln
+            assert 'cvss_score' in vuln or 'cvss_severity' in vuln
+
+    def test_get_compliance_status(self, tmp_path, mock_unified_db):
+        """Returns current compliance maturity."""
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        intel_dir = tmp_path / "intelligence"
+        intel_dir.mkdir()
+        import shutil
+        shutil.copy(mock_unified_db, intel_dir / "pmp_intelligence.db")
+
+        service = PMPIntelligenceService(db_path=intel_dir)
+
+        # New method: get_compliance_status
+        result = service.get_compliance_status()
+
+        # Should return QueryResult with compliance data
+        assert hasattr(result, 'data')
+        assert len(result.data) > 0
+
+        # Check structure
+        for check in result.data:
+            assert 'check_name' in check or 'check_category' in check
+            assert 'passed' in check
+
+    def test_get_deployment_history(self, tmp_path, mock_unified_db):
+        """Returns recent deployment tasks."""
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        intel_dir = tmp_path / "intelligence"
+        intel_dir.mkdir()
+        import shutil
+        shutil.copy(mock_unified_db, intel_dir / "pmp_intelligence.db")
+
+        service = PMPIntelligenceService(db_path=intel_dir)
+
+        # New method: get_deployment_history
+        result = service.get_deployment_history()
+
+        # Should return QueryResult with deployment task data
+        assert hasattr(result, 'data')
+        assert len(result.data) > 0
+
+        # Check structure
+        for task in result.data:
+            assert 'task_name' in task
+            assert 'task_status' in task

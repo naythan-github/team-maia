@@ -3,7 +3,7 @@
 **Sprint ID**: SPRINT-PMP-CONSOLIDATE-001
 **Created**: 2026-01-15
 **Author**: SRE Principal Engineer Agent
-**Status**: PENDING APPROVAL
+**Status**: COMPLETE ✅
 **Predecessor**: SPRINT-INTEL-FRAMEWORK-001 (Unified Intelligence Framework)
 
 ---
@@ -96,6 +96,135 @@ Current Architecture (Fragmented):
 
 ---
 
+## Subagent Prompt Template
+
+Each implementation phase (P1-P6) should use this full-context template:
+
+```markdown
+## Agent Context: SRE Principal Engineer
+
+### Core Behavior Principles
+- ✅ Don't stop at identifying problems - implement complete solutions with prevention
+- ✅ Don't stop at mitigation - complete with full test coverage
+- ❌ Never end with "You should investigate further" or partial implementations
+- ❌ Never use placeholder values or TODOs in production code
+
+### TDD Protocol (MANDATORY)
+1. Write ALL tests FIRST (they must fail initially)
+2. Implement minimum code to pass tests
+3. Refactor if needed (tests must still pass)
+4. Run full test suite before declaring complete
+
+### Self-Reflection Checkpoint (MANDATORY before completing)
+Before reporting completion, verify:
+- ✅ All tests pass? (run pytest, show output)
+- ✅ Edge cases covered? (null values, empty results, connection failures)
+- ✅ Error handling complete? (graceful failures, meaningful messages)
+- ✅ No hardcoded values? (paths, credentials, magic numbers)
+- ✅ Follows existing patterns? (check reference files)
+
+### Working Principles
+- Read existing code before writing new code
+- Use existing utilities (don't reinvent)
+- Fix forward (no band-aid solutions)
+- Test before declaring production-ready
+
+---
+
+## Task: {PHASE_NAME}
+
+**Goal**: {GOAL}
+**Files to Create**: {FILES}
+**Reference Patterns**: {REFERENCE_FILES}
+
+### Test Requirements
+{TEST_SPECS}
+
+### Implementation Requirements
+{IMPLEMENTATION_SPECS}
+
+### Gate Criteria
+{GATE} - Must show pytest output proving all tests pass.
+```
+
+### Key Elements Explained
+
+| Element | Purpose | Impact |
+|---------|---------|--------|
+| Core Behavior Principles | Prevents incomplete work | High |
+| TDD Protocol | Ensures tests-first discipline | High |
+| Self-Reflection Checkpoint | Final quality gate before completion | Critical |
+| Reference Patterns | Ensures consistency with codebase | Medium |
+| Gate Criteria | Clear success definition | High |
+
+---
+
+## Python Code Review Integration
+
+### Review Strategy: Critical Phases Only
+
+| Phase | Code Review? | Rationale |
+|-------|--------------|-----------|
+| P1 | ✅ **Yes** | Data migration - integrity critical, SQL complexity |
+| P2 | ❌ No | Metrics calculation - standard aggregations |
+| P3 | ❌ No | API extraction - follows existing patterns |
+| P4 | ✅ **Yes** | Unified extractor - orchestration complexity |
+| P5 | ✅ **Yes** | Compliance checks - accuracy critical for E8 reporting |
+| P6 | ❌ No | Service update - backward compat verified by existing tests |
+
+### Code Review Subagent Prompt
+
+For phases requiring review, add this after implementation completes:
+
+```markdown
+## Agent Context: Python Code Reviewer
+
+### Review Focus Areas
+1. **Code Quality**: PEP 8, type hints, docstrings
+2. **Error Handling**: All failure modes handled gracefully
+3. **SQL Safety**: No injection vulnerabilities, parameterized queries
+4. **Performance**: Efficient queries, appropriate indexing hints
+5. **Data Integrity**: Transactions where needed, no silent data loss
+
+### Review Checklist
+- [ ] No hardcoded credentials or paths
+- [ ] All public functions have docstrings
+- [ ] Error messages are actionable
+- [ ] SQL uses parameterized queries (no f-strings with user input)
+- [ ] Large data operations use batching
+- [ ] Logging at appropriate levels
+
+### Review Output Format
+```
+## Code Review: {PHASE_NAME}
+
+### PASS / MUST-FIX
+
+**MUST-FIX Items** (blocks completion):
+1. {issue}: {file}:{line} - {description}
+
+**Recommendations** (non-blocking):
+1. {suggestion}
+
+### Files Reviewed
+- {file1}: {status}
+- {file2}: {status}
+```
+
+### Review Loop Behavior
+1. Implementation subagent completes phase → triggers review
+2. Reviewer returns MUST-FIX items → implementation subagent fixes
+3. Loop until reviewer returns **PASS** (0 MUST-FIX items)
+4. Only then proceed to next phase
+```
+
+### Gate Modification for Reviewed Phases
+
+**Original Gate**: `8/8 tests pass`
+**With Review**: `8/8 tests pass + Code Review PASS`
+
+---
+
 ## Sprint Phases
 
 ### P0: Schema Design & Migration Planning
@@ -169,7 +298,7 @@ class TestMigrationIntegrity:
         """All FKs resolve to valid records."""
 ```
 
-**Gate**: 8/8 tests pass, data integrity verified
+**Gate**: 8/8 tests pass + **Code Review PASS** (data integrity critical)
 
 ---
 
@@ -324,7 +453,7 @@ class TestSchedulerIntegration:
         """CLI interface matches scheduler config."""
 ```
 
-**Gate**: 12/12 tests pass
+**Gate**: 12/12 tests pass + **Code Review PASS** (orchestration complexity)
 
 ---
 
@@ -332,6 +461,7 @@ class TestSchedulerIntegration:
 **Goal**: Implement Essential Eight compliance evaluation
 **Model**: Sonnet
 **Subagent**: general-purpose (compliance logic accuracy)
+**Code Review**: ✅ Required (E8 accuracy critical)
 
 #### Files to Create
 - `claude/tools/pmp/pmp_compliance_checker.py`
@@ -369,7 +499,7 @@ class TestComplianceReporting:
         """Generates human-readable compliance report."""
 ```
 
-**Gate**: 8/8 tests pass
+**Gate**: 8/8 tests pass + **Code Review PASS** (E8 accuracy critical)
 
 ---
 
@@ -490,6 +620,75 @@ class TestNewQueryMethods:
 | P6 | 1.5 hrs |
 | P7 | 1 hr |
 | **Total** | **~14-15 hours** |
+
+---
+
+## Critical Context (For Post-Compaction Continuity)
+
+### File Paths
+
+**Source Databases** (read-only during migration):
+```
+~/.maia/databases/intelligence/pmp_config.db        (114 MB)
+~/.maia/databases/intelligence/pmp_resilient.db     (1.7 MB)
+~/.maia/databases/intelligence/pmp_systemreports.db (267 MB)
+```
+
+**Target Database** (to be created):
+```
+~/.maia/databases/intelligence/pmp_intelligence.db
+```
+
+**Existing Extractors** (reference patterns):
+```
+claude/tools/pmp/pmp_config_extractor.py
+claude/tools/pmp/pmp_resilient_extractor.py
+claude/tools/pmp/pmp_complete_intelligence_extractor.py
+claude/tools/pmp/pmp_systemreport_extractor.py
+```
+
+**BaseIntelligenceService** (from SPRINT-INTEL-FRAMEWORK-001):
+```
+claude/tools/collection/base_intelligence_service.py
+```
+
+**PMPIntelligenceService** (to be updated in P6):
+```
+claude/tools/pmp/pmp_intelligence_service.py
+```
+
+### PMP API Details
+
+**Base URL**: Stored in environment or config (check existing extractors)
+**Auth**: API key pattern used by existing extractors
+**Key Endpoints**:
+- `/api/1.4/patch/summary` - Aggregate metrics
+- `/api/1.4/patch/allpatches` - All patch definitions
+- `/api/1.4/patch/allsystems` - All system inventory
+- `/api/1.4/patch/scandetails` - Per-system scan results
+- `/api/1.4/patch/vulnerabilities` - CVE mappings (NEW)
+- `/api/1.4/patch/deploymenttasks` - Deployment history (NEW)
+
+### Key Source Table Columns
+
+**pmp_config.db.all_systems**:
+- resource_id, system_name, domain, os_name, organization, resource_health_status
+
+**pmp_config.db.all_patches**:
+- patch_id, patch_name, severity, category, release_date, applicable_systems
+
+**pmp_systemreports.db.system_reports**:
+- resource_id, patch_id, status (missing/installed), scan_date
+
+### How to Resume After Compaction
+
+```
+1. /init sre_principal_engineer_agent
+2. Read: claude/context/plans/pmp_data_consolidation_sprint.md
+3. Check status: Which phase was last completed?
+4. Continue from next incomplete phase
+5. Use subagent prompts from "Subagent Prompt Template" section
+```
 
 ---
 
