@@ -930,6 +930,52 @@ def _start_learning_session(context_id: str, query: str, agent: str, domain: str
         return (None, "")
 
 
+def _get_repository_metadata() -> Dict[str, str]:
+    """
+    Capture current repository metadata for session context.
+
+    SPRINT-001-REPO-SYNC: Capture repository context to prevent cross-repo operations.
+
+    Returns:
+        Dictionary with working_directory, git_remote_url, git_branch
+    """
+    metadata = {
+        "working_directory": str(MAIA_ROOT),
+        "git_remote_url": "",
+        "git_branch": ""
+    }
+
+    try:
+        # Get git remote URL
+        result = subprocess.run(
+            ['git', 'remote', 'get-url', 'origin'],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(MAIA_ROOT)
+        )
+        if result.returncode == 0:
+            metadata["git_remote_url"] = result.stdout.strip()
+    except Exception:
+        pass  # Graceful degradation
+
+    try:
+        # Get current branch
+        result = subprocess.run(
+            ['git', 'branch', '--show-current'],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=str(MAIA_ROOT)
+        )
+        if result.returncode == 0:
+            metadata["git_branch"] = result.stdout.strip()
+    except Exception:
+        pass  # Graceful degradation
+
+    return metadata
+
+
 def create_session_state(
     agent: str,
     domain: str,
@@ -943,6 +989,7 @@ def create_session_state(
     File: ~/.maia/sessions/swarm_session_{context_id}.json (Phase 230: multi-user)
     Phase 232: Also starts PAI v2 learning session for tool output capture.
     Sprint 5: Added handoff support with enable_handoffs parameter.
+    SPRINT-001-REPO-SYNC: Captures repository metadata to prevent cross-repo operations.
 
     Format:
     {
@@ -954,7 +1001,12 @@ def create_session_state(
         "last_classification_confidence": 0.87,
         "query": "Review code for security",
         "handoffs_enabled": true,
-        "version": "1.4"
+        "repository": {
+            "working_directory": "/Users/user/maia",
+            "git_remote_url": "https://github.com/user/maia.git",
+            "git_branch": "main"
+        },
+        "version": "1.5"
     }
 
     Args:
@@ -1003,6 +1055,9 @@ def create_session_state(
         # Agentic AI Phase 2: Load LTM (Long-Term Memory) context
         ltm_context = load_ltm_context()
 
+        # SPRINT-001-REPO-SYNC: Capture repository metadata
+        repository_metadata = _get_repository_metadata()
+
         session_data = {
             "current_agent": agent,
             "session_start": session_start,
@@ -1014,14 +1069,16 @@ def create_session_state(
             "query": query[:200],  # Truncate for file size
             "handoff_reason": classification.get("handoff_reason"),  # Phase 5: Track why handoff occurred
             "created_by": "swarm_auto_loader.py",
-            "version": "1.4",  # Sprint 5: Handoff support
+            "version": "1.5",  # SPRINT-001-REPO-SYNC: Repository metadata support
             "handoffs_enabled": enable_handoffs,  # Sprint 5: Handoff capability flag
             # Phase 221: TDD Feature Tracker Integration
             "tdd_context": tdd_context,
             "tdd_status": format_tdd_context_for_session(tdd_context) if tdd_context else None,
             # Agentic AI Phase 2: Long-Term Memory Integration
             "ltm_context": ltm_context,
-            "user_preferences": ltm_context.get("preferences", []) if ltm_context else []
+            "user_preferences": ltm_context.get("preferences", []) if ltm_context else [],
+            # SPRINT-001-REPO-SYNC: Repository metadata for cross-repo detection
+            "repository": repository_metadata
         }
 
         # Phase 232: Start PAI v2 learning session BEFORE writing (to capture session_id)
