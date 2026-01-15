@@ -170,6 +170,9 @@ class FinishChecker:
                 for pattern in ["**/*.py", "**/*.md"]:
                     for f in core_dir.glob(pattern):
                         if f.is_file() and "__pycache__" not in str(f):
+                            # Exclude claude/commands/ - skill definitions, not capabilities
+                            if "claude/commands/" in str(f):
+                                continue
                             try:
                                 mtime = datetime.fromtimestamp(f.stat().st_mtime)
                                 if mtime > cutoff:

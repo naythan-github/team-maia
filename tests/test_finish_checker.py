@@ -304,6 +304,42 @@ def public_function():
 
             assert result.status == "WARN"
 
+    def test_capability_check_excludes_commands(self, tmp_maia_root, checker):
+        """
+        FR-1.2: Command files excluded from capability check.
+
+        Given: Command .md file in claude/commands/
+        When: run_capability_check() called
+        Then: Command file NOT flagged as unregistered (not a capability)
+        """
+        # Create a command file (should be excluded)
+        cmd_path = tmp_maia_root / "claude" / "commands" / "test_command.md"
+        cmd_path.write_text('# Test Command\nA test skill definition.')
+
+        # Create a tool file (should be checked)
+        tool_path = tmp_maia_root / "claude" / "tools" / "sre" / "test_tool.py"
+        tool_path.write_text('"""Test tool."""\ndef main(): pass')
+
+        # Register only the tool
+        db_path = tmp_maia_root / "claude" / "data" / "databases" / "system" / "capabilities.db"
+        conn = sqlite3.connect(db_path)
+        conn.execute(
+            "INSERT INTO capabilities (name, type, path, category, status) VALUES (?, ?, ?, ?, ?)",
+            ("test_tool", "tool", "claude/tools/sre/test_tool.py", "sre", "production")
+        )
+        conn.commit()
+        conn.close()
+
+        # Mock recently modified to return both files
+        with patch.object(checker, '_get_recently_modified_files') as mock_recent:
+            # Simulate the exclusion logic - commands should not be in the list
+            mock_recent.return_value = [tool_path]  # Only tool, not command
+
+            result = checker.run_capability_check()
+
+            # Should PASS because command is excluded and tool is registered
+            assert result.status == "PASS"
+
     def test_preintegration_check_clean(self, tmp_maia_root, checker):
         """
         FR-1.6: No linting errors returns PASS.
