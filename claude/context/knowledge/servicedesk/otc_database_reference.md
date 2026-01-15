@@ -9,6 +9,20 @@
 ## Quick Start for Analysts
 
 ### Connection
+
+**Infrastructure:** PostgreSQL 15 running in Docker container `servicedesk-postgres`
+
+**Prerequisites:**
+```bash
+# 1. Start Docker Desktop (if not already running)
+open -a Docker
+
+# 2. Verify container status (wait ~5s for Docker to start)
+docker ps --filter "name=servicedesk-postgres"
+# Expected output: servicedesk-postgres   Up XX seconds   0.0.0.0:5432->5432/tcp
+```
+
+**Python Connection:**
 ```python
 import psycopg2
 conn = psycopg2.connect(
@@ -19,6 +33,11 @@ conn = psycopg2.connect(
     password='ServiceDesk2025!SecurePass'
 )
 ```
+
+**Troubleshooting:**
+- **Connection refused** → Docker Desktop not running: `open -a Docker`
+- **Could not connect** → Container still starting, wait 10s and retry
+- **Container not found** → Start container: `docker start servicedesk-postgres`
 
 ### Most Common Queries
 

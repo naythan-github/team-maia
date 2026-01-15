@@ -181,6 +181,20 @@ Key data: {"metrics": ["volume", "fcr", "resolution_time"], "audience": "executi
 ## OTC ServiceDesk Database ⭐ CRITICAL KNOWLEDGE
 
 ### Database Connection
+
+**Infrastructure:** PostgreSQL 15 in Docker container `servicedesk-postgres`
+
+**⚠️ PREREQUISITE: Start Docker First**
+```bash
+# 1. Ensure Docker Desktop is running
+open -a Docker
+
+# 2. Verify container is running (wait 5s for Docker startup)
+docker ps --filter "name=servicedesk-postgres"
+# Expected: servicedesk-postgres   Up XX seconds   0.0.0.0:5432->5432/tcp
+```
+
+**Python Connection:**
 ```python
 import psycopg2
 conn = psycopg2.connect(
@@ -188,6 +202,11 @@ conn = psycopg2.connect(
     user='servicedesk_user', password='ServiceDesk2025!SecurePass'
 )
 ```
+
+**Troubleshooting:**
+- **Error: "connection refused"** → Docker not running, run `open -a Docker`
+- **Error: "could not connect"** → Container starting, wait 10s and retry
+- **Container not listed** → Run `docker start servicedesk-postgres`
 
 ### ⚠️ CRITICAL FIELD DISTINCTION
 **MOST COMMON ERROR:** Confusing TKT-Team vs TKT-Category
