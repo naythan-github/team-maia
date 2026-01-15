@@ -24,6 +24,7 @@ Usage:
 
 import subprocess
 import sys
+import json
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 from dataclasses import dataclass
@@ -31,6 +32,7 @@ from datetime import datetime
 import re
 
 from claude.tools.core.paths import get_maia_root
+from claude.tools.sre.repo_validator import RepositoryValidator, ValidationResult
 
 
 @dataclass
@@ -88,6 +90,89 @@ class SaveState:
         self.tools_dir = self.maia_root / "claude" / "tools"
         self.agents_dir = self.maia_root / "claude" / "agents"
         self.commands_dir = self.maia_root / "claude" / "commands"
+        self.validator = RepositoryValidator()
+
+    def validate_repository(self, force: bool = False) -> ValidationResult:
+        """
+        Validate current repository matches session context.
+
+        SPRINT-001-REPO-SYNC: Prevents cross-repo git operations.
+
+        Args:
+            force: If True, bypass validation failure (with warning)
+
+        Returns:
+            ValidationResult with validation status
+
+        Raises:
+            ValueError: If validation fails and force=False
+        """
+        # Get session file path (from swarm_auto_loader)
+        try:
+            from claude.hooks.swarm_auto_loader import get_session_file_path
+            session_file = get_session_file_path()
+        except (ImportError, Exception):
+            # No session file available - allow operation
+            return ValidationResult(
+                passed=True,
+                reason="No session file available (unrestricted)",
+                warnings=[],
+                current_directory=Path.cwd(),
+                current_remote=self.validator._get_git_remote(),
+                current_branch=self.validator._get_git_branch()
+            )
+
+        # Load session data
+        if not session_file.exists():
+            # No session file - allow operation
+            return ValidationResult(
+                passed=True,
+                reason="No session file exists (unrestricted)",
+                warnings=[],
+                current_directory=Path.cwd(),
+                current_remote=self.validator._get_git_remote(),
+                current_branch=self.validator._get_git_branch()
+            )
+
+        try:
+            with open(session_file, 'r') as f:
+                session_data = json.load(f)
+        except (json.JSONDecodeError, IOError) as e:
+            # Can't read session - allow operation with warning
+            return ValidationResult(
+                passed=True,
+                reason=f"Could not read session file: {e}",
+                warnings=["Session file unreadable - validation skipped"],
+                current_directory=Path.cwd(),
+                current_remote=self.validator._get_git_remote(),
+                current_branch=self.validator._get_git_branch()
+            )
+
+        # Validate using RepositoryValidator
+        result = self.validator.validate_session_repo(session_data)
+
+        # If force flag is set, convert failure to warning
+        if force and not result.passed:
+            result.warnings.append(f"FORCED: {result.reason}")
+            result.passed = True
+            result.reason = "Validation bypassed with force flag"
+            return result
+
+        # If validation failed and not forced, raise error
+        if not result.passed:
+            raise ValueError(
+                f"Repository validation failed: {result.reason}\n"
+                f"Session expects: {session_data.get('repository', {})}\n"
+                f"Current state: dir={result.current_directory}, "
+                f"remote={result.current_remote}, branch={result.current_branch}\n"
+                f"Use force=True to bypass this check."
+            )
+
+        # Print warnings if any (branch mismatch, etc.)
+        for warning in result.warnings:
+            print(f"⚠️  Warning: {warning}", file=sys.stderr)
+
+        return result
 
     def analyze_changes(self) -> ChangeAnalysis:
         """

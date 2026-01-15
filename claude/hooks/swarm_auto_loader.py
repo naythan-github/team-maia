@@ -1002,8 +1002,8 @@ def create_session_state(
         "query": "Review code for security",
         "handoffs_enabled": true,
         "repository": {
-            "working_directory": "/Users/user/maia",
-            "git_remote_url": "https://github.com/user/maia.git",
+            "working_directory": "<MAIA_ROOT>",
+            "git_remote_url": "https://github.com/username/maia.git",
             "git_branch": "main"
         },
         "version": "1.5"
