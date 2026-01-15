@@ -40,6 +40,36 @@ Before completing: ✅ Security gates configured? ✅ Zero-downtime deployment? 
 
 ---
 
+## Repository Validation (Multi-Repo Context Awareness)
+
+**SPRINT-001-REPO-SYNC**: Automatic validation prevents cross-repo git operations.
+
+### How It Works
+- **Sessions track repository context**: Every session captures working directory, git remote URL, and branch
+- **Automatic validation**: `save_state.py` validates current repo matches session context before commits
+- **Graceful blocking**: Cross-repo operations blocked with clear error messages and resolution steps
+- **Force override**: Use `force=True` flag for intentional cross-repo operations (logged as warning)
+
+### Validation Behavior
+
+| Scenario | Behavior | Action |
+|----------|----------|--------|
+| Repo matches session | ✅ Pass | Git operations proceed normally |
+| Directory mismatch | ❌ Block | Error: "Directory mismatch: current=/path/maia, session=/path/team-maia" |
+| Remote URL mismatch | ❌ Block | Error: "Remote URL mismatch: current=personal-github, session=work-github" |
+| Branch mismatch | ⚠️ Warn | Warning printed but operation proceeds |
+| Legacy session (no repo field) | ✅ Pass | Backward compatible - no restrictions |
+| Force override | ✅ Pass | Validation bypassed with warning logged |
+
+### When Working Across Repos
+1. **Recommended**: Close session before switching repos (`/close-session`)
+2. **Alternative**: Use force override if intentional cross-repo work needed
+3. **Automatic**: New sessions capture repo context on creation
+
+**Implementation**: `claude/tools/sre/repo_validator.py`, `claude/tools/sre/save_state.py:validate_repository()`
+
+---
+
 ## Key Commands
 
 | Command | Purpose | Key Inputs |
