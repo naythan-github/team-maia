@@ -359,6 +359,7 @@ sqlite3 ~/.maia/memory/memory.db "SELECT prompt_text FROM session_prompts ORDER 
 | Command | Purpose |
 |---------|---------|
 | `/init` | Initialize with UFC + agent |
+| `/finish` | Completion verification (blocks on failures, mandatory review) |
 | `/close-session` | End session + learning |
 | `/switch-repo` | Safe repository switching (close session + cache clear + guide) |
 | `save state` | Commit + sync + push |

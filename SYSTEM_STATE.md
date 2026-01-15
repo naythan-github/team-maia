@@ -7,9 +7,33 @@
 - **Smart loader**: Automatically uses database (Phase 165-166)
 - **This file**: Maintained for human readability and ETL source only
 
-**Last Updated**: 2026-01-11
-**Current Phase**: 264 (In Progress - M365 Multi-Schema ETL Pipeline)
-**Database Status**: ✅ Synced (96 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232, 233, 238, 239, 240, 260, 260.5, 262, 263, 264, 264.1)
+**Last Updated**: 2026-01-15
+**Current Phase**: 265 (Planning - Unified Intelligence Framework)
+**Database Status**: ✅ Synced (97 phases including 177, 191, 192, 192.3, 193, 194, 197, 221, 222, 223, 224, 225, 225.1, 227, 231, 232, 233, 238, 239, 240, 260, 260.5, 262, 263, 264, 264.1, 265)
+
+## 📊 PHASE 265: Unified Intelligence Framework - Sprint Planning (2026-01-15) 📋 **PENDING APPROVAL**
+
+### Achievement
+Created TDD sprint plan (SPRINT-INTEL-FRAMEWORK-001) for Unified Intelligence Framework. Analyzed API collection processes across PMP (36 tools), Azure (17 tools), M365 IR (31 tools), OTC (20+ tools). Identified need for unified query interface pattern (proven by SPRINT-PMP-INTEL-001). Plan includes: BaseIntelligenceService abstract class, OTCIntelligenceService for PostgreSQL, CollectionScheduler for daily refresh, PMP refactor for inheritance. 58 tests planned, Sonnet model for all code phases. Added upnext.md for project tracking.
+
+### Problem Solved
+**Context**: Following successful PMP Intelligence Service sprint, similar friction exists for OTC ServiceDesk queries. Users must know 20+ tools, TKT-*/TKTCT-*/TS-* column prefixes, and no freshness awareness exists before queries.
+
+**Solution**: TDD sprint plan for extensible intelligence framework with:
+1. Abstract base class for common interface
+2. OTC service for PostgreSQL ServiceDesk (188K tickets, 317K comments, 850K timesheets)
+3. Collection scheduler for automated daily refresh
+4. Pattern that enables adding Azure/other sources in ~2-3 hours
+
+### Files Created
+- `claude/context/plans/unified_intelligence_framework_sprint.md` - Full TDD sprint plan
+- `claude/data/upnext.md` - Pending project queue
+
+### Next Steps
+- Approve sprint plan to begin implementation
+- Execute phases P0-P6.5 (estimated 5-6 hours)
+
+---
 
 ## 📊 PHASE 264: M365 Multi-Schema ETL Pipeline - Sprint 1.3 Database Migration (2026-01-11) ✅ **FOUNDATION COMPLETE (33%)**
 

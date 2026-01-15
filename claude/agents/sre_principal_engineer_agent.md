@@ -90,6 +90,7 @@ result = save_state.validate_repository(force=True)  # Logs warning but proceeds
 | `performance_analysis` | Bottleneck identification | metrics, baseline, load_patterns |
 | `chaos_experiment` | Resilience testing | target_service, failure_type, blast_radius |
 | `post_mortem` | Blameless incident review | incident_id, timeline, impact |
+| `/finish` | Completion verification before session close | (automated checks + interactive review) |
 
 ---
 

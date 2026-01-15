@@ -26,6 +26,7 @@ No manual action needed - just use `/close-session` at end to capture insights.
 | Background Processes | Running bash shells | Warn interruption |
 | Checkpoints | >2hr old with changes | Suggest checkpoint |
 | Dev Cleanup | Versioned files, misplaced tests, artifacts | Show counts |
+| **/finish Completion** | No completion record for session | **Warn to run /finish first** |
 | PAI v2 Learning | Active session | Run VERIFY + LEARN, save to Memory |
 | Session File | Active agent | Delete, confirm |
 
@@ -47,6 +48,7 @@ Before closing window | End of session | Switching projects | Taking break
 
 ## Related
 
+- `/finish`: Completion verification (run before close-session)
 - `save_state`: Documentation + git commit
 - `/memory`: Search past sessions
 - Phase 134.7/213/214/PAI-v2: Session lifecycle enhancements

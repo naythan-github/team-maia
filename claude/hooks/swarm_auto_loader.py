@@ -1550,6 +1550,43 @@ def _check_development_cleanup() -> dict:
     return result
 
 
+def _check_finish_completion() -> tuple:
+    """
+    Check if /finish was run during this session.
+
+    Phase: /finish Skill Integration
+    Sprint: Completion Verification
+
+    Returns:
+        tuple: (has_issues: bool, warning_message: str or None)
+    """
+    try:
+        from claude.tools.sre.finish_checker import FinishChecker
+
+        # Get current session context
+        context_id = get_context_id()
+        if not context_id:
+            return (False, None)
+
+        checker = FinishChecker(maia_root=MAIA_ROOT)
+
+        # Query for completion records for this session
+        session_data = {"session_id": str(context_id), "context_id": str(context_id)}
+        warning = checker.check_finish_before_close(session_data)
+
+        if warning:
+            return (True, warning)
+
+        return (False, None)
+
+    except ImportError:
+        # finish_checker not available - skip check
+        return (False, None)
+    except Exception:
+        # Graceful degradation
+        return (False, None)
+
+
 def _cleanup_session(session_file: Path) -> bool:
     """
     Capture session memory and delete session file.
@@ -1697,6 +1734,15 @@ def close_session():
                 print(f"      ... and {len(build_artifacts) - 3} more")
 
         print(f"   💡 Tip: These accumulate during development and should be cleaned periodically")
+        print()
+
+    # Check 6: /finish Completion Verification
+    has_finish_issues, finish_warning = _check_finish_completion()
+    if has_finish_issues:
+        issues_found.append("finish")
+        print("⚠️  /finish not run for this session")
+        print("   Run /finish to verify completion before closing.")
+        print("   This ensures documentation, tests, and integrations are complete.")
         print()
 
     # Offer to run save_state if issues found
