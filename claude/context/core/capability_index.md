@@ -511,13 +511,14 @@
 | `quick_capture.py` | import os import sys import argparse from pathlib import Path from datetime impo... |
 | `swarm_conversation_bridge.py` | Swarm Conversation Bridge for Claude Code Integration Bridges Swarm Handoff Fram... |
 
-### DOCUMENT (`claude/tools/document/`) - 4 tools
+### DOCUMENT (`claude/tools/document/`) - 5 tools
 
 | Tool | Purpose |
 |------|---------|
 | `convert_md_to_docx.py` | Orro corporate MD→DOCX converter - Applies purple headings RGB(112,48,160), Apto... |
 | `decision_intelligence.py` | Decision Intelligence Agent - Phase 2 Session 3 Systematic decision capture with... |
 | `file_categorizer.py` | Categorize file based on path and content analysis |
+| `pdf_text_extractor.py` | PDF text extraction using pdfplumber - batch processing, table extraction, OCR fallback. Use for business docs, correspondence. See also: cv_parser.py (CVs), receipt_ocr.py (scanned receipts) |
 | `validate_context_files.py` | Context File Validator Purpose: Verify all referenced context files actually exi... |
 
 ### GENERAL (`claude/tools/general/`) - 43 tools
@@ -750,6 +751,7 @@
 | Email search | `email_rag` |
 | Security analysis | `dns_complete_audit`, `ir_knowledge` |
 | Document conversion | `convert_md_to_docx` |
+| PDF extraction | `pdf_text_extractor` (general), `cv_parser` (CVs), `receipt_ocr` (scanned) |
 | Context loading | `smart_context_loader` |
 | Phase history | `system_state_queries` |
 | Health monitoring | `automated_health_monitor` |
@@ -762,4 +764,4 @@
 
 ---
 
-*v3.2 | Complete registry (505 tools + 95 agents) | Database-synced | Phase 237: Pre-Compaction Learning Capture*
+*v3.3 | Complete registry (506 tools + 95 agents) | Database-synced | Phase 237: Pre-Compaction Learning Capture + PDF Text Extractor*

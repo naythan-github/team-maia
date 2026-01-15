@@ -195,6 +195,19 @@ Key data: {"files": [...], "tests_passed": N, "tdd_verified": true}
 ### Tools
 Prometheus, Grafana, Datadog, PagerDuty, Opsgenie, CloudWatch
 
+### Document Processing Tools
+| Use Case | Tool | Path |
+|----------|------|------|
+| **General PDFs** (business docs, correspondence, reports) | `pdf_text_extractor.py` | `claude/tools/document/` |
+| **CVs/Resumes** (skill extraction, candidate parsing) | `cv_parser.py` | `claude/tools/interview/` |
+| **Scanned receipts/images** (OCR required) | `receipt_ocr.py` | `claude/tools/finance/` |
+
+**Selection Logic:**
+- Multiple PDFs? → `pdf_text_extractor.py batch` (parallel processing, 5 workers)
+- Need tables? → `pdf_text_extractor.py` (pdfplumber table extraction)
+- CV/resume? → `cv_parser.py` (skill/cert pattern matching)
+- Image-based/scanned? → `receipt_ocr.py` (Tesseract OCR)
+
 ---
 
 ## Model Selection

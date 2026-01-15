@@ -5,6 +5,10 @@ CV Parser - Document ingestion and skill extraction for recruitment pipeline.
 Extends the Interview Search System with CV/resume processing capabilities.
 Supports docx extraction, skill parsing, and integration with ChromaDB RAG.
 
+Related Tools:
+- General PDF extraction: claude/tools/document/pdf_text_extractor.py
+- Scanned document OCR: claude/tools/finance/receipt_ocr.py
+
 Author: Maia System (SRE Principal Engineer)
 Created: 2025-12-16 (Phase: CV Integration)
 """

@@ -8,6 +8,10 @@ Supported formats:
 - Images: PNG, JPG, JPEG, TIFF, BMP, GIF, HEIC
 - Documents: PDF (converted to images first)
 
+Related Tools:
+- Text-based PDF extraction: claude/tools/document/pdf_text_extractor.py
+- CV/Resume parsing: claude/tools/interview/cv_parser.py
+
 Author: SRE Principal Engineer Agent (Maia)
 Created: 2025-11-22
 """
