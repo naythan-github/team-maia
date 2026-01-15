@@ -3,7 +3,7 @@
 PMP Intelligence Service - Unified query interface for PMP databases.
 
 Sprint: SPRINT-PMP-INTEL-001
-Phase: P2 - Core Implementation
+Phase: P5 - BaseIntelligenceService Integration
 
 Provides:
 - Single query interface across pmp_config.db, pmp_systemreports.db, pmp_resilient.db
@@ -11,10 +11,11 @@ Provides:
 - Automatic database selection based on query type
 - Timestamp normalization (Unix ms/s → ISO 8601)
 - Data freshness tracking with staleness warnings (>7 days = stale)
+- Inherits from BaseIntelligenceService for unified intelligence framework
 
 Author: Data Analyst Agent
 Date: 2026-01-15
-Version: 1.0
+Version: 2.0
 """
 
 import json
@@ -25,37 +26,41 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from claude.tools.collection.base_intelligence_service import (
+    BaseIntelligenceService,
+    QueryResult,
+    FreshnessInfo,
+)
+
 
 # =============================================================================
-# DATA CLASSES
+# BACKWARD COMPATIBILITY ALIASES
 # =============================================================================
 
-@dataclass
-class PMPQueryResult:
-    """Standardized query result with metadata."""
+# PMPQueryResult extends QueryResult for backward compatibility
+class PMPQueryResult(QueryResult):
+    """Backward compatible PMPQueryResult that extends QueryResult.
 
-    data: List[Dict[str, Any]]
-    source_database: str
-    extraction_timestamp: datetime
-    is_stale: bool = False
-    staleness_warning: Optional[str] = None
-    query_time_ms: int = 0
+    Maps source_database -> source for backward compatibility.
+    """
 
-    def __post_init__(self):
-        """Validate and set staleness based on extraction timestamp."""
-        if self.extraction_timestamp:
-            days_old = (datetime.now() - self.extraction_timestamp).days
-            if days_old > 7:
-                self.is_stale = True
-                if not self.staleness_warning:
-                    self.staleness_warning = f"Data is {days_old} days old (extracted {self.extraction_timestamp.isoformat()})"
+    def __init__(self, data, source_database=None, source=None, **kwargs):
+        # Accept both source_database and source for backward compatibility
+        if source_database is not None:
+            source = source_database
+        super().__init__(data=data, source=source, **kwargs)
+
+    @property
+    def source_database(self):
+        """Backward compatible property for source."""
+        return self.source
 
 
 # =============================================================================
 # MAIN SERVICE CLASS
 # =============================================================================
 
-class PMPIntelligenceService:
+class PMPIntelligenceService(BaseIntelligenceService):
     """
     Unified interface for PMP database queries.
 
@@ -252,7 +257,7 @@ class PMPIntelligenceService:
             org_pattern: SQL LIKE pattern (e.g., "GS1%")
 
         Returns:
-            PMPQueryResult with normalized system data
+            QueryResult with normalized system data
         """
         # Try pmp_config.db first (has JSON raw_data)
         if "pmp_config.db" in self.available_databases:
@@ -316,7 +321,7 @@ class PMPIntelligenceService:
             os_filter: Optional OS filter (SQL LIKE)
 
         Returns:
-            PMPQueryResult with failed patch data
+            QueryResult with failed patch data
         """
         database = self._detect_best_database("patch_aggregates")
 
@@ -363,7 +368,7 @@ class PMPIntelligenceService:
             severity: Minimum severity (1=healthy, 2=moderate, 3=highly vulnerable)
 
         Returns:
-            PMPQueryResult with vulnerable system data
+            QueryResult with vulnerable system data
         """
         if "pmp_config.db" in self.available_databases:
             sql = """
@@ -413,7 +418,7 @@ class PMPIntelligenceService:
             patch_id: Patch identifier (KB number or bulletin ID)
 
         Returns:
-            PMPQueryResult with deployment status
+            QueryResult with deployment status
         """
         database = self._detect_best_database("deployment_status")
 
@@ -443,12 +448,12 @@ class PMPIntelligenceService:
             staleness_warning="pmp_systemreports.db not available"
         )
 
-    def get_data_freshness_report(self) -> Dict[str, Dict[str, Any]]:
+    def get_data_freshness_report(self) -> Dict[str, FreshnessInfo]:
         """
         Get freshness report for all available databases.
 
         Returns:
-            Dict mapping database name to freshness info
+            Dict mapping database name to FreshnessInfo
         """
         report = {}
 
@@ -457,12 +462,32 @@ class PMPIntelligenceService:
             days_old = (datetime.now() - extraction_ts).days if extraction_ts else 0
             is_stale = days_old > self.STALENESS_THRESHOLD_DAYS
 
-            report[db_name] = {
-                "last_extraction": extraction_ts.isoformat() if extraction_ts else None,
-                "days_old": days_old,
-                "is_stale": is_stale,
-                "warning": f"Data is {days_old} days old" if is_stale else None
-            }
+            # Get record count for this database
+            try:
+                conn = self._get_connection(db_name)
+                cursor = conn.cursor()
+
+                # Try different table names to get record count
+                record_count = 0
+                for table in ["all_systems", "systems", "missing_patches"]:
+                    try:
+                        cursor.execute(f"SELECT COUNT(*) FROM {table}")
+                        count = cursor.fetchone()[0]
+                        record_count += count
+                    except sqlite3.OperationalError:
+                        continue
+
+                conn.close()
+            except Exception:
+                record_count = 0
+
+            report[db_name] = FreshnessInfo(
+                last_refresh=extraction_ts,
+                days_old=days_old,
+                is_stale=is_stale,
+                record_count=record_count,
+                warning=f"Data is {days_old} days old" if is_stale else None
+            )
 
         return report
 
@@ -479,7 +504,7 @@ class PMPIntelligenceService:
             database: Database name or "auto" for automatic selection
 
         Returns:
-            PMPQueryResult
+            QueryResult
         """
         if database == "auto":
             # Try to detect based on table names in query
@@ -491,6 +516,46 @@ class PMPIntelligenceService:
                 database = self._detect_best_database("system_inventory")
 
         return self._execute_query(sql, database)
+
+    def refresh(self) -> bool:
+        """
+        Refresh PMP intelligence data by running the resilient extractor.
+
+        Returns:
+            True if refresh successful, False otherwise
+        """
+        try:
+            # Import the extractor dynamically to avoid circular dependencies
+            import sys
+            from claude.tools.pmp.pmp_resilient_extractor import PMPResilientExtractor
+
+            # Initialize extractor
+            # Use the first available database path as the target
+            target_db = None
+            if "pmp_resilient.db" in self.available_databases:
+                target_db = self._db_connections.get("pmp_resilient.db")
+            elif "pmp_config.db" in self.available_databases:
+                target_db = self._db_connections.get("pmp_config.db")
+
+            if not target_db:
+                return False
+
+            extractor = PMPResilientExtractor(db_path=str(target_db))
+
+            # Run extraction
+            result = extractor.extract_batch()
+
+            # Check if successful
+            if result.get('status') in ['target_met', 'batch_complete']:
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            # Log error but don't crash
+            import logging
+            logging.error(f"PMP refresh failed: {e}")
+            return False
 
 
 # =============================================================================
@@ -511,8 +576,8 @@ if __name__ == "__main__":
         # Show freshness report
         print("Data Freshness Report:")
         for db_name, info in service.get_data_freshness_report().items():
-            status = "STALE" if info['is_stale'] else "OK"
-            print(f"  {db_name}: {status} ({info['days_old']} days old)")
+            status = "STALE" if info.is_stale else "OK"
+            print(f"  {db_name}: {status} ({info.days_old} days old)")
 
         print()
 
@@ -521,7 +586,7 @@ if __name__ == "__main__":
             org_pattern = sys.argv[1]
             print(f"Querying systems matching: {org_pattern}")
             result = service.get_systems_by_organization(org_pattern)
-            print(f"Found {len(result.data)} systems (source: {result.source_database})")
+            print(f"Found {len(result.data)} systems (source: {result.source})")
             for sys_info in result.data[:5]:
                 print(f"  - {sys_info.get('name', 'N/A')}: {sys_info.get('os', 'N/A')}")
 

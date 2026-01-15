@@ -401,9 +401,9 @@ class TestStalenessDetection:
         service = PMPIntelligenceService(db_path=intel_dir)
         result = service.get_data_freshness_report()
 
-        # Should indicate staleness
-        assert result['pmp_config.db']['is_stale'] is True
-        assert 'days old' in result['pmp_config.db']['warning'].lower()
+        # Should indicate staleness (now returns FreshnessInfo objects)
+        assert result['pmp_config.db'].is_stale is True
+        assert 'days old' in result['pmp_config.db'].warning.lower()
 
     def test_fresh_data_no_warning(self, mock_db_directory):
         """Fresh data (<7 days) should not have staleness warning."""
@@ -412,10 +412,10 @@ class TestStalenessDetection:
         service = PMPIntelligenceService(db_path=mock_db_directory)
         result = service.get_data_freshness_report()
 
-        # Mock data was just created, should be fresh
+        # Mock data was just created, should be fresh (now returns FreshnessInfo objects)
         for db_name, info in result.items():
-            if info.get('last_extraction'):
-                assert info['is_stale'] is False
+            if info.last_refresh:
+                assert info.is_stale is False
 
 
 class TestDatabaseAutoSelection:
@@ -512,3 +512,65 @@ class TestQueryPerformance:
         assert hasattr(result, 'query_time_ms')
         assert isinstance(result.query_time_ms, int)
         assert result.query_time_ms >= 0
+
+
+class TestBaseClassInheritance:
+    """Test BaseIntelligenceService inheritance (TDD for P5)."""
+
+    def test_inherits_base_class(self):
+        """PMPIntelligenceService inherits BaseIntelligenceService."""
+        from claude.tools.collection.base_intelligence_service import BaseIntelligenceService
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        assert issubclass(PMPIntelligenceService, BaseIntelligenceService)
+
+    def test_returns_query_result_type(self, mock_db_directory):
+        """Methods return QueryResult (not PMPQueryResult)."""
+        from claude.tools.collection.base_intelligence_service import QueryResult
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        service = PMPIntelligenceService(db_path=mock_db_directory)
+        result = service.get_systems_by_organization("GS1%")
+
+        # Should be instance of base QueryResult type
+        assert isinstance(result, QueryResult)
+
+        # Test other query methods return QueryResult
+        result2 = service.get_failed_patches()
+        assert isinstance(result2, QueryResult)
+
+        result3 = service.get_vulnerable_systems()
+        assert isinstance(result3, QueryResult)
+
+    def test_freshness_returns_freshness_info(self, mock_db_directory):
+        """get_data_freshness_report returns FreshnessInfo objects."""
+        from claude.tools.collection.base_intelligence_service import FreshnessInfo
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        service = PMPIntelligenceService(db_path=mock_db_directory)
+        report = service.get_data_freshness_report()
+
+        # Report should be dict mapping to FreshnessInfo instances
+        assert isinstance(report, dict)
+        assert len(report) > 0
+
+        for db_name, info in report.items():
+            assert isinstance(info, FreshnessInfo)
+            assert hasattr(info, 'last_refresh')
+            assert hasattr(info, 'days_old')
+            assert hasattr(info, 'is_stale')
+            assert hasattr(info, 'record_count')
+
+    def test_refresh_method_exists(self, mock_db_directory):
+        """refresh() method is implemented."""
+        from claude.tools.pmp.pmp_intelligence_service import PMPIntelligenceService
+
+        service = PMPIntelligenceService(db_path=mock_db_directory)
+
+        # Method should exist and be callable
+        assert hasattr(service, 'refresh')
+        assert callable(service.refresh)
+
+        # Call refresh (should return bool)
+        result = service.refresh()
+        assert isinstance(result, bool)

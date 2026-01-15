@@ -319,5 +319,213 @@ result = pmp.get_vulnerable_systems(severity=3)
 
 ---
 
+---
+
+## OTC Intelligence Service ⭐ UNIFIED QUERY INTERFACE
+
+**Tool**: `claude/tools/collection/otc_intelligence_service.py`
+
+### When to Use It
+
+Use the OTC Intelligence Service whenever you need to:
+- Analyze ServiceDesk ticket patterns and trends
+- Generate team workload reports
+- Track user activity and productivity
+- Identify automation opportunities
+- Check data freshness before analysis
+- Run custom SQL queries with automatic column normalization
+
+**DO NOT** query the PostgreSQL database directly - always use this service for:
+- Automatic data freshness checking
+- Column name normalization (TKT-Ticket ID → ticket_id)
+- Staleness warnings
+- Consistent error handling
+
+### Quick Start
+
+```python
+from claude.tools.collection.otc_intelligence_service import OTCIntelligenceService
+
+# Initialize service
+service = OTCIntelligenceService()
+
+# Always check freshness first
+freshness = service.get_data_freshness_report()
+for source, info in freshness.items():
+    if info.is_stale:
+        print(f"⚠️  {source}: {info.warning}")
+
+# Query team tickets
+result = service.get_tickets_by_team("Cloud - Infrastructure")
+print(f"Found {len(result.data)} tickets in {result.query_time_ms}ms")
+
+# Process normalized field names
+for ticket in result.data:
+    print(f"{ticket['ticket_id']}: {ticket['title']} ({ticket['status']})")
+```
+
+### Key Methods
+
+#### Team Queries
+```python
+# Team tickets
+result = service.get_tickets_by_team("Cloud - Infrastructure")
+
+# Team backlog (unassigned tickets)
+backlog = service.get_team_backlog("Cloud - Security")
+
+# Team health (status breakdown)
+health = service.get_team_health_summary("Cloud - L3 Escalation")
+```
+
+#### User Queries
+```python
+# User workload (open tickets)
+workload = service.get_user_workload("Dion Jewell")
+
+# 30-day activity summary
+activity = service.get_user_activity("Trevor Harte")
+# Returns: tickets_updated, comments_added, hours_logged
+```
+
+#### Status Queries
+```python
+# All open tickets (excludes Closed, Incident Resolved)
+open_tickets = service.get_open_tickets()
+
+# Unassigned tickets (PendingAssignment)
+unassigned = service.get_unassigned_tickets()
+```
+
+#### Raw SQL
+```python
+# Custom queries with parameter binding
+sql = """
+    SELECT "TKT-Team", COUNT(*) as count
+    FROM servicedesk.tickets
+    WHERE "TKT-Status" = %s
+    GROUP BY "TKT-Team"
+"""
+result = service.query_raw(sql, ("Open",))
+
+# Automatic column normalization
+# TKT-Team → team, TKT-Status → status
+for row in result.data:
+    print(f"{row['team']}: {row['count']}")
+```
+
+### Example Queries
+
+#### Team Workload Analysis
+```python
+# Get all engineering team metrics
+teams = ["Cloud - Infrastructure", "Cloud - Security", "Cloud - L3 Escalation"]
+
+for team in teams:
+    result = service.get_tickets_by_team(team)
+    backlog = service.get_team_backlog(team)
+
+    open_count = len([t for t in result.data if t['status'] not in ['Closed', 'Incident Resolved']])
+
+    print(f"{team}:")
+    print(f"  Total: {len(result.data)}")
+    print(f"  Open: {open_count}")
+    print(f"  Backlog: {len(backlog.data)}")
+```
+
+#### User Workload Distribution
+```python
+# Engineering team members
+engineers = ["Dion Jewell", "Trevor Harte", "Llewellyn Booth", "Michael Villaflor"]
+
+for user in engineers:
+    workload = service.get_user_workload(user)
+    activity = service.get_user_activity(user)
+
+    print(f"{user}:")
+    print(f"  Open tickets: {len(workload.data)}")
+    for row in activity.data:
+        print(f"  30-day activity: {row['tickets_updated']} tickets, {row['hours_logged']} hours")
+```
+
+#### Automation Opportunity Detection
+```python
+# Find high-volume, quick-resolution ticket categories
+sql = """
+    SELECT
+        "TKT-Category",
+        COUNT(*) as volume,
+        AVG(EXTRACT(EPOCH FROM ("TKT-Closed Time" - "TKT-Created Time"))/60) as avg_minutes
+    FROM servicedesk.tickets
+    WHERE "TKT-Status" IN ('Closed', 'Incident Resolved')
+        AND "TKT-Closed Time" IS NOT NULL
+        AND "TKT-Created Time" > NOW() - INTERVAL '90 days'
+    GROUP BY "TKT-Category"
+    HAVING COUNT(*) > 50
+    ORDER BY volume DESC
+"""
+result = service.query_raw(sql)
+
+# Analyze for automation potential
+for row in result.data:
+    if row['avg_minutes'] < 30 and row['volume'] > 100:
+        print(f"Automation candidate: {row['category']}")
+        print(f"  Volume: {row['volume']}, Avg time: {row['avg_minutes']:.1f} min")
+```
+
+### Normalized Field Reference
+
+| Original | Normalized | Type |
+|----------|-----------|------|
+| `TKT-Ticket ID` | `ticket_id` | str |
+| `TKT-Title` | `title` | str |
+| `TKT-Team` | `team` | str |
+| `TKT-Status` | `status` | str |
+| `TKT-Assigned To User` | `assignee` | str |
+| `TKT-Created Time` | `created_time` | datetime |
+| `TKT-Category` | `category` | str |
+| `TKT-Severity` | `priority` | str |
+| `TKT-Account Name` | `account` | str |
+
+**Always use normalized names** in your analysis code - the service handles mapping automatically.
+
+### Data Freshness Protocol
+
+**MANDATORY**: Always check freshness before analysis decisions:
+
+```python
+freshness = service.get_data_freshness_report()
+
+tickets_info = freshness.get("tickets")
+if tickets_info and tickets_info.is_stale:
+    print(f"⚠️  WARNING: Data is {tickets_info.days_old} days old")
+    # Consider triggering refresh
+    service.refresh()
+```
+
+### Integration with Query Templates
+
+Use pre-built templates for common patterns:
+
+```python
+from claude.tools.collection.otc_query_templates import execute_template, describe_templates
+
+# List available templates
+print(describe_templates())
+
+# Execute template
+result = execute_template(
+    "team_workload",
+    {"team_name": "Cloud - Infrastructure"},
+    service
+)
+```
+
+**Available templates**: team_workload, team_backlog, engineering_summary, user_workload, user_activity, ticket_age_distribution, open_tickets_by_priority, recent_tickets, orphaned_data_summary
+
+**Reference**: `claude/context/knowledge/servicedesk/otc_intelligence_quickstart.md`
+
+---
+
 ## Production Status
-✅ **READY** - v2.5 with OTC ServiceDesk + PMP Intelligence Service
+✅ **READY** - v2.6 with OTC Intelligence Service + PMP Intelligence Service
