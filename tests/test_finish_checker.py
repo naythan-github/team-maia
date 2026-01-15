@@ -73,7 +73,7 @@ def mock_session():
     """Mock session manager for learning capture tests."""
     with patch('claude.tools.sre.finish_checker.get_session_manager') as mock:
         manager = MagicMock()
-        manager.current_session = True
+        manager.active_session_id = "test_session"
         manager.active_session_id = "test_session_123"
         mock.return_value = manager
         yield manager
@@ -280,7 +280,7 @@ def public_function():
         When: run_learning_check() called
         Then: Returns CheckResult with status=PASS
         """
-        mock_session.current_session = True
+        mock_session.active_session_id = "test_session"
 
         result = checker.run_learning_check()
 
@@ -297,7 +297,7 @@ def public_function():
         """
         with patch('claude.tools.sre.finish_checker.get_session_manager') as mock:
             manager = MagicMock()
-            manager.current_session = None
+            manager.active_session_id = None
             mock.return_value = manager
 
             result = checker.run_learning_check()

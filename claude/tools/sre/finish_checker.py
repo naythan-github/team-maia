@@ -418,7 +418,7 @@ class FinishChecker:
         """
         try:
             manager = get_session_manager()
-            if manager and manager.current_session:
+            if manager and manager.active_session_id:
                 return CheckResult(
                     name="learning",
                     status="PASS",
