@@ -96,7 +96,7 @@ mv claude/tools/confluence_formatter_v2.py claude/tools/deprecated/
 """Confluence Reliability Test - Post-Consolidation Validation"""
 
 import sys
-sys.path.insert(0, '/Users/naythandawe/git/maia')
+sys.path.insert(0, '/Users/YOUR_USERNAME/git/maia')
 
 from claude.tools.reliable_confluence_client import ReliableConfluenceClient
 from claude.tools.confluence_html_builder import ConfluencePageBuilder, validate_confluence_html
@@ -384,12 +384,12 @@ if __name__ == "__main__":
 ## 🔗 References
 
 ### Production Tools
-- `/Users/naythandawe/git/maia/claude/tools/reliable_confluence_client.py`
-- `/Users/naythandawe/git/maia/claude/tools/confluence_html_builder.py`
+- `/Users/YOUR_USERNAME/git/maia/claude/tools/reliable_confluence_client.py`
+- `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_html_builder.py`
 
 ### Documentation
-- `/Users/naythandawe/git/maia/claude/documentation/confluence_html_conversion_best_practices.md`
-- `/Users/naythandawe/git/maia/claude/documentation/CONFLUENCE_TOOLING_AUDIT_REPORT.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/documentation/confluence_html_conversion_best_practices.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/documentation/CONFLUENCE_TOOLING_AUDIT_REPORT.md`
 
 ### Related Incidents
 - **Phase 122**: Abdullah Kazim interview prep malformed HTML

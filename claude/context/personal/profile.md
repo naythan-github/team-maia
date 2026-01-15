@@ -5,7 +5,7 @@
 - **Location**: Perth, Australia
 - **Role**: Engineering Manager (Cloud) at Orro Group
 - **Contact**: nd25@londonxyz.com | +61 (0)483 20 44 17
-- **LinkedIn**: https://www.linkedin.com/in/naythandawe/
+- **LinkedIn**: https://www.linkedin.com/in/YOUR_USERNAME/
 
 ## Professional Focus
 - Engineering management and cloud practice leadership
@@ -41,7 +41,7 @@
 - **Engineering excellence** - values clean, well-structured systems that prevent future problems
 
 ## Working Directories
-- **Recruitment**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles`
+- **Recruitment**: `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Roles`
   - Active recruitment roles organized by position (Senior Endpoint Engineer, Senior IAM Engineer, Senior Wintel Engineer)
   - Contains CVs, interview notes, VTT transcripts, candidate assessments
   - Default location for all recruitment-related searches and file operations

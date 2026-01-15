@@ -42,7 +42,7 @@ docker ps | grep servicedesk
 
 ```bash
 # 1. Navigate to dashboard directory
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 
 # 2. Verify Grafana is running
 curl http://localhost:3000/api/health
@@ -137,7 +137,7 @@ open http://localhost:3000
 **Create import script**:
 ```bash
 # Create script file
-cat > /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh << 'EOF'
+cat > /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh << 'EOF'
 #!/bin/bash
 
 # ServiceDesk Dashboard Import Script
@@ -147,7 +147,7 @@ GRAFANA_URL="http://localhost:3000"
 GRAFANA_USER="admin"
 GRAFANA_PASSWORD="${GRAFANA_ADMIN_PASSWORD:-admin}"  # From .env or default
 
-DASHBOARD_DIR="/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards"
+DASHBOARD_DIR="/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards"
 
 echo "Starting dashboard import..."
 
@@ -168,7 +168,7 @@ echo "Import complete! Access dashboards at $GRAFANA_URL"
 EOF
 
 # Make executable
-chmod +x /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh
+chmod +x /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh
 
 # Run import
 ./scripts/import_dashboards.sh
@@ -240,7 +240,7 @@ docker-compose restart grafana
 **Verify PostgreSQL data source**:
 ```bash
 # Check data source configuration
-cat /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/provisioning/datasources/postgres.yml
+cat /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/provisioning/datasources/postgres.yml
 ```
 
 **Expected content**:

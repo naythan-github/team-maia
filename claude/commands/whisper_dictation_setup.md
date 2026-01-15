@@ -43,7 +43,7 @@ python3 claude/tools/whisper_dictation.py
 2. Add **Run Shell Script** action
 3. Script content:
    ```bash
-   cd /Users/naythandawe/git/maia
+   cd /Users/YOUR_USERNAME/git/maia
    /opt/homebrew/bin/python3 claude/tools/whisper_dictation.py
    ```
 4. Save as "Whisper Dictation"
@@ -56,7 +56,7 @@ python3 claude/tools/whisper_dictation.py
 3. Action: Execute Terminal Command
 4. Command:
    ```bash
-   cd /Users/naythandawe/git/maia && python3 claude/tools/whisper_dictation.py
+   cd /Users/YOUR_USERNAME/git/maia && python3 claude/tools/whisper_dictation.py
    ```
 
 ## Technical Details

@@ -482,7 +482,7 @@ FROM test;
 # Extract datasource UID from dashboard JSON
 python3 << 'EOF'
 import json
-data = json.load(open('/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json'))
+data = json.load(open('/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json'))
 panels = [p for p in data['dashboard']['panels'] if p.get('type') != 'row']
 for p in panels[:3]:
     uid = p['targets'][0]['datasource']['uid'] if 'targets' in p and p['targets'] else 'NONE'
@@ -505,7 +505,7 @@ EOF
 2. Verify column names: Match exactly (case-sensitive with quotes)
 3. Test via Grafana API (not just PostgreSQL):
    ```bash
-   bash /Users/naythandawe/git/maia/tests/test_dashboard_7_panels_data.sh
+   bash /Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_panels_data.sh
    ```
 
 **Solution**: Run integration tests to identify exact failure point
@@ -536,10 +536,10 @@ EOF
 
 ## References
 
-- **Dashboard JSON**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json`
-- **Implementation Report**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/DASHBOARD_7_IMPLEMENTATION_REPORT.md`
-- **Unit Tests**: `/Users/naythandawe/git/maia/tests/test_dashboard_7_sentiment.sh`
-- **Integration Tests**: `/Users/naythandawe/git/maia/tests/test_dashboard_7_panels_data.sh`
+- **Dashboard JSON**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json`
+- **Implementation Report**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/DASHBOARD_7_IMPLEMENTATION_REPORT.md`
+- **Unit Tests**: `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_sentiment.sh`
+- **Integration Tests**: `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_panels_data.sh`
 
 ---
 

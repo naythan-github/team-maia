@@ -23,7 +23,7 @@
 Paste this exact script into the text box:
 
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 /opt/homebrew/bin/python3 claude/tools/whisper_dictation_server.py
 ```
 
@@ -116,7 +116,7 @@ If you use Keyboard Maestro instead:
 3. Action: Execute Shell Script
 4. Script:
    ```bash
-   cd /Users/naythandawe/git/maia && /opt/homebrew/bin/python3 claude/tools/whisper_dictation_server.py
+   cd /Users/YOUR_USERNAME/git/maia && /opt/homebrew/bin/python3 claude/tools/whisper_dictation_server.py
    ```
 5. Enable macro
 

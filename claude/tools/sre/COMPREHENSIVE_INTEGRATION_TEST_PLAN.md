@@ -137,7 +137,7 @@ sqlite3 ~/.maia/databases/intelligence/pmp_config.db "SELECT COUNT(*) FROM lates
 **Tests**:
 ```bash
 # T1.3.1 - Root Directory Compliance (4 core files + 3 dirs)
-ls -1 /Users/naythandawe/git/maia/ | wc -l  # Should be ≤10
+ls -1 /Users/YOUR_USERNAME/git/maia/ | wc -l  # Should be ≤10
 
 # T1.3.2 - UFC Structure Validation
 test -d claude/agents && test -d claude/tools && test -d claude/commands && echo "✅ T1.3.2: UFC structure valid"
@@ -1083,7 +1083,7 @@ cd ~/work_projects/maia_test_results/$(date +%Y%m%d)
 # Initialize test log
 echo "Maia Comprehensive Integration Test Run" > test_log.txt
 echo "Started: $(date)" >> test_log.txt
-echo "Context ID: $(python3 /Users/naythandawe/git/maia/claude/hooks/swarm_auto_loader.py get_context_id)" >> test_log.txt
+echo "Context ID: $(python3 /Users/YOUR_USERNAME/git/maia/claude/hooks/swarm_auto_loader.py get_context_id)" >> test_log.txt
 ```
 
 ### Phase 2: Core Infrastructure Tests (30 min)
@@ -1100,7 +1100,7 @@ echo "=== Category 2: Agent System ===" | tee -a test_log.txt
 bash -c "$(grep -A 30 '# T2.1.1' COMPREHENSIVE_INTEGRATION_TEST_PLAN.md | grep '^python3\|^test\|^ls')" 2>&1 | tee -a test_log.txt
 
 echo "=== Category 3: Tool Ecosystem ===" | tee -a test_log.txt
-python3 /Users/naythandawe/git/maia/claude/tools/sre/maia_comprehensive_test_suite.py --output tool_tests.json 2>&1 | tee -a test_log.txt
+python3 /Users/YOUR_USERNAME/git/maia/claude/tools/sre/maia_comprehensive_test_suite.py --output tool_tests.json 2>&1 | tee -a test_log.txt
 ```
 
 ### Phase 4: Data & Intelligence Tests (30 min)

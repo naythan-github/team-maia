@@ -15,7 +15,7 @@ Successfully implemented Phase 1 of the Weekly Maia Journey Narrative System: a 
 
 ### 1. Core Implementation
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/conversation_logger.py` (400 lines)
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/conversation_logger.py` (400 lines)
 
 **Features**:
 - ✅ Complete database schema (13 fields including schema_version)
@@ -27,12 +27,12 @@ Successfully implemented Phase 1 of the Weekly Maia Journey Narrative System: a 
 - ✅ Graceful degradation (never blocks user workflow)
 - ✅ CLI interface for testing and manual operations
 
-**Database Location**: `/Users/naythandawe/git/maia/claude/data/databases/system/conversations.db`
+**Database Location**: `/Users/YOUR_USERNAME/git/maia/claude/data/databases/system/conversations.db`
 **Pre-commit Hook**: ✅ COMPLIANT (enforced by `claude/hooks/pre_commit_file_organization.py`)
 
 ### 2. Comprehensive Test Suite
 
-**File**: `/Users/naythandawe/git/maia/tests/test_conversation_logger.py` (650 lines)
+**File**: `/Users/YOUR_USERNAME/git/maia/tests/test_conversation_logger.py` (650 lines)
 
 **Test Coverage**:
 - ✅ Database schema validation (3 tests)
@@ -49,7 +49,7 @@ Successfully implemented Phase 1 of the Weekly Maia Journey Narrative System: a 
 
 ### 3. Integration Guide
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/conversation_logger_README.md` (600 lines)
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/conversation_logger_README.md` (600 lines)
 
 **Contents**:
 - Complete usage examples (basic lifecycle, weekly retrieval, CLI)
@@ -61,7 +61,7 @@ Successfully implemented Phase 1 of the Weekly Maia Journey Narrative System: a 
 
 ### 4. Privacy Filtering Guide
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/conversation_logger_privacy_guide.md` (450 lines)
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/conversation_logger_privacy_guide.md` (450 lines)
 
 **Contents**:
 - Privacy decision framework (quick decision matrix)
@@ -270,7 +270,7 @@ $ python3 claude/hooks/pre_commit_file_organization.py
 
 ### Database Path
 
-**Correct Path**: `/Users/naythandawe/git/maia/claude/data/databases/system/conversations.db`
+**Correct Path**: `/Users/YOUR_USERNAME/git/maia/claude/data/databases/system/conversations.db`
 
 **Directory Structure**:
 ```
@@ -417,11 +417,11 @@ Delivered production-ready conversation logger with:
 - Phase 2: Narrative synthesis (Team Knowledge Sharing Agent)
 
 **Files Created**:
-1. `/Users/naythandawe/git/maia/claude/tools/conversation_logger.py`
-2. `/Users/naythandawe/git/maia/tests/test_conversation_logger.py`
-3. `/Users/naythandawe/git/maia/claude/tools/conversation_logger_README.md`
-4. `/Users/naythandawe/git/maia/claude/tools/conversation_logger_privacy_guide.md`
-5. `/Users/naythandawe/git/maia/claude/data/databases/system/conversations.db`
+1. `/Users/YOUR_USERNAME/git/maia/claude/tools/conversation_logger.py`
+2. `/Users/YOUR_USERNAME/git/maia/tests/test_conversation_logger.py`
+3. `/Users/YOUR_USERNAME/git/maia/claude/tools/conversation_logger_README.md`
+4. `/Users/YOUR_USERNAME/git/maia/claude/tools/conversation_logger_privacy_guide.md`
+5. `/Users/YOUR_USERNAME/git/maia/claude/data/databases/system/conversations.db`
 
 **Next Step**: Integrate with Information Management Orchestrator and Team Knowledge Sharing Agent for Phase 2 narrative synthesis.
 

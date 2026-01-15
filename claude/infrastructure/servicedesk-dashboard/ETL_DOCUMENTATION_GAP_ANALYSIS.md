@@ -162,7 +162,7 @@ migrate_sqlite_to_postgres_enhanced.py
 
 **Actual Path**:
 ```
-/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_postgres_enhanced.py
+/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_postgres_enhanced.py
 ```
 
 **Issue**: No path shown in ARCHITECTURE.md flow diagram
@@ -309,7 +309,7 @@ migrate_sqlite_to_postgres_enhanced.py
 
 ## ETL Tool Inventory (Complete List)
 
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 ### Core ETL Pipeline (Required)
 

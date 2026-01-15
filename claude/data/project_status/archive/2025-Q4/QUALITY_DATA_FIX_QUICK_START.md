@@ -13,7 +13,7 @@ Quality Dashboard shows uniform 3.0 scores because 96.5% of the October 14 analy
 ## One-Command Fix (Recommended)
 
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # Run complete quality analyzer (4-6 hours, can run overnight)
 python3 claude/tools/sre/servicedesk_complete_quality_analyzer.py \
@@ -57,14 +57,14 @@ python3 migration/migrate_sqlite_to_postgres.py
 
 **Check current state:**
 ```bash
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db \
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db \
   "SELECT COUNT(DISTINCT professionalism_score) FROM comment_quality;"
 # Should return: 1 (BAD - means all same value)
 ```
 
 **After re-analysis:**
 ```bash
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db \
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db \
   "SELECT COUNT(DISTINCT professionalism_score) FROM comment_quality;"
 # Should return: >5 (GOOD - means real variation)
 ```
@@ -88,7 +88,7 @@ Trade-off: Only 10K comments analyzed vs 100K, but faster validation.
 
 ## Full Details
 
-See: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_QUALITY_DATA_ISSUE.md`
+See: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_QUALITY_DATA_ISSUE.md`
 
 ---
 

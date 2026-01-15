@@ -322,12 +322,12 @@ Result: 8,079 alerts (61.0%)
 
 **Confluence Report**: https://vivoemc.atlassian.net/wiki/spaces/Orro/pages/3129999361/ServiceDesk+Alert+Analysis+Automation+Roadmap
 
-**Database Location**: `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`
+**Database Location**: `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`
 
 **Analysis Files**:
-- `/Users/naythandawe/git/maia/claude/context/knowledge/servicedesk/servicedesk_automation_analysis.json`
-- `/Users/naythandawe/git/maia/claude/context/knowledge/servicedesk/servicedesk_detailed_analysis_summary.md`
-- `/Users/naythandawe/git/maia/claude/context/knowledge/servicedesk/data_analysis_findings_2025_10_05.md` (this file)
+- `/Users/YOUR_USERNAME/git/maia/claude/context/knowledge/servicedesk/servicedesk_automation_analysis.json`
+- `/Users/YOUR_USERNAME/git/maia/claude/context/knowledge/servicedesk/servicedesk_detailed_analysis_summary.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/context/knowledge/servicedesk/data_analysis_findings_2025_10_05.md` (this file)
 
 ---
 

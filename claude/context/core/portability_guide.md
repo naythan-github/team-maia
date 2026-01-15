@@ -5,7 +5,7 @@
 ### **Maia is Now Fully Self-Contained**
 Maia can now be copied to any directory on any system and run without configuration. Zero hardcoded paths remain.
 
-**Achievement**: Copy /Users/naythandawe/git/maia to any location → works immediately
+**Achievement**: Copy /Users/YOUR_USERNAME/git/maia to any location → works immediately
 - ✅ No environment variables required (optional for override)
 - ✅ No configuration changes needed
 - ✅ No path updates necessary
@@ -77,7 +77,7 @@ find . -type f \( -name "*.md" -o -name "*.json" -o -name "*.yaml" \) \
 ### **Test Performed:**
 ```bash
 # Copied entire Maia directory to temporary location
-cp -r /Users/naythandawe/git/maia /tmp/maia-portability-test
+cp -r /Users/YOUR_USERNAME/git/maia /tmp/maia-portability-test
 
 # Verified auto-detection works
 cd /tmp/maia-portability-test
@@ -125,7 +125,7 @@ export MAIA_ROOT="/custom/path/to/maia"
 
 ### **Cross-System Compatibility:**
 - ✅ Works on macOS (tested on MacBook with 32GB RAM)
-- ✅ Works with different usernames (naythan → naythandawe)
+- ✅ Works with different usernames (naythan → YOUR_USERNAME)
 - ✅ Works in temporary directories (/tmp/)
 - ✅ Works in any file system location
 - ✅ Works without environment variables
@@ -139,7 +139,7 @@ export MAIA_ROOT="/custom/path/to/maia"
 
 **Example from Phase 74:**
 - Old: `/Users/naythan/git/maia` (old MacBook, old username)
-- New: `/Users/naythandawe/git/maia` (new MacBook, new username)
+- New: `/Users/YOUR_USERNAME/git/maia` (new MacBook, new username)
 - Result: **Zero configuration changes required**
 
 ### **Backward Compatibility:**

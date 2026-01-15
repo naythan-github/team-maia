@@ -112,7 +112,7 @@ mkdir -p ~/development
 cd ~/development
 
 # Clone Maia repository
-git clone https://github.com/naythandawe/maia.git
+git clone https://github.com/YOUR_USERNAME/maia.git
 cd maia
 
 # Verify UFC structure

@@ -24,7 +24,7 @@ Delivered **5 comprehensive Grafana dashboards** analyzing 10,939 ServiceDesk ti
 
 ### 1. Dashboard JSON Files (5 files - Ready to Import)
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/`
 
 | # | File | Panels | Size | Purpose |
 |---|------|--------|------|---------|
@@ -255,7 +255,7 @@ Delivered **5 comprehensive Grafana dashboards** analyzing 10,939 ServiceDesk ti
 
 ```bash
 # Navigate to dashboard directory
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 
 # Create and run import script
 cat > scripts/import_dashboards.sh << 'EOF'
@@ -550,7 +550,7 @@ sed -i '' 's/ \* 80 / * 100 /g' *.json
 
 **Dashboard JSON** (5 files):
 ```
-/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/
+/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/
 ├── 1_automation_executive_overview.json
 ├── 2_alert_analysis_deepdive.json
 ├── 3_support_pattern_analysis.json
@@ -560,7 +560,7 @@ sed -i '' 's/ \* 80 / * 100 /g' *.json
 
 **Documentation** (4 files):
 ```
-/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/
+/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/
 ├── DASHBOARD_DELIVERY_SUMMARY.md (this file)
 ├── DASHBOARD_SQL_QUERIES_DOCUMENTATION.md (SQL reference, performance optimization)
 ├── DASHBOARD_INSTALLATION_GUIDE.md (installation, configuration, customization)
@@ -667,7 +667,7 @@ sed -i '' 's/ \* 80 / * 100 /g' *.json
 **Infrastructure**:
 - Grafana: http://localhost:3000 (servicedesk-grafana container)
 - PostgreSQL: localhost:5432/servicedesk (servicedesk-postgres container)
-- Dashboard Files: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/`
+- Dashboard Files: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/`
 
 For technical support, refer to the comprehensive documentation files included with this delivery.
 

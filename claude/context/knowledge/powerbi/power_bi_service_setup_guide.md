@@ -268,7 +268,7 @@ Measures = {1}
 
 ## 🎯 Use Case: Implementing Cloud Billing Dashboard
 
-**Reference Implementation**: [PowerBI_Implementation_Guide.md](../../../Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/PowerBI_Implementation_Guide.md)
+**Reference Implementation**: [PowerBI_Implementation_Guide.md](../../../Library/CloudStorage/OneDrive-YOUR_ORG/Documents/PowerBI_Implementation_Guide.md)
 
 **Files Available**:
 - `Cloud_Billing_PowerPivot.xlsx` - Power Pivot model (ready to import)

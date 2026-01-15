@@ -25,7 +25,7 @@ Phase 1 successfully established the foundation for anti-sprawl protection:
 
 ### 1.2: Create immutable_paths.json ✅
 - **Status**: Complete
-- **Location**: `/Users/naythandawe/git/maia/claude/data/immutable_paths.json`
+- **Location**: `/Users/YOUR_USERNAME/git/maia/claude/data/immutable_paths.json`
 - **Configuration**:
   - Absolute immutability: 9 core files (identity.md, ufc_system.md, etc.)
   - High immutability: 4 protected directories (core/, hooks/, etc.)

@@ -4,7 +4,7 @@
 Standardized format for post-interview analysis and documentation in Confluence.
 
 ## Template Location
-**Python Tool**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Templates/interview_review_confluence_template.py`
+**Python Tool**: `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Templates/interview_review_confluence_template.py`
 
 ## Standard Format
 

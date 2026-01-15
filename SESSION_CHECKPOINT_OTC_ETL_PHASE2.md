@@ -201,7 +201,7 @@ class TestPhase2Performance:
 
 ## Files Modified
 
-### `/Users/naythandawe/maia/claude/tools/integrations/otc/load_to_postgres.py`
+### `/Users/YOUR_USERNAME/maia/claude/tools/integrations/otc/load_to_postgres.py`
 
 **Lines Added:** ~50
 **Changes:**
@@ -244,7 +244,7 @@ def _upsert_batch_fast(self, cursor, upsert_sql: str, batch: List):
                 self.stats['errors'] += 1
 ```
 
-### `/Users/naythandawe/maia/tests/integrations/test_otc_schema_improvements.py`
+### `/Users/YOUR_USERNAME/maia/tests/integrations/test_otc_schema_improvements.py`
 
 **Lines Added:** ~78
 **Changes:**

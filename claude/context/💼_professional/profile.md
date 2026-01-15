@@ -5,7 +5,7 @@
 - **Location**: Perth, Australia
 - **Role**: Engineering Manager (Cloud) at Orro Group
 - **Contact**: nd25@londonxyz.com | +61 (0)483 20 44 17
-- **LinkedIn**: https://www.linkedin.com/in/naythandawe/
+- **LinkedIn**: https://www.linkedin.com/in/YOUR_USERNAME/
 
 ## Professional Focus
 - Engineering management and cloud practice leadership

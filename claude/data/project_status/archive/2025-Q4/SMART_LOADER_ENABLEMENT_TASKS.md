@@ -28,7 +28,7 @@
 
 ### Task 1: Update smart_context_loading.md (5 min)
 
-**File**: `/Users/naythandawe/git/maia/claude/context/core/smart_context_loading.md`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/context/core/smart_context_loading.md`
 **Line**: 21
 **Issue**: Currently references static `${MAIA_ROOT}/SYSTEM_STATE.md` Read
 
@@ -65,7 +65,7 @@
 **Verification**:
 ```bash
 # After editing, verify line 21 changed
-grep -n "Smart SYSTEM_STATE Loading" /Users/naythandawe/git/maia/claude/context/core/smart_context_loading.md
+grep -n "Smart SYSTEM_STATE Loading" /Users/YOUR_USERNAME/git/maia/claude/context/core/smart_context_loading.md
 ```
 
 ---
@@ -99,7 +99,7 @@ python3 claude/tools/sre/smart_context_loader.py "agent status" | head -100
 
 ### Task 3: Document Manual Usage in CLAUDE.md (3 min)
 
-**File**: `/Users/naythandawe/git/maia/CLAUDE.md`
+**File**: `/Users/YOUR_USERNAME/git/maia/CLAUDE.md`
 **Section**: Critical File Locations (already has smart loader mention at line 70)
 
 **Current Content** (Lines 70-73):
@@ -131,7 +131,7 @@ python3 claude/tools/sre/smart_context_loader.py "agent status" | head -100
 **Verification**:
 ```bash
 # After editing, verify addition
-grep -A 10 "Manual CLI Usage" /Users/naythandawe/git/maia/CLAUDE.md
+grep -A 10 "Manual CLI Usage" /Users/YOUR_USERNAME/git/maia/CLAUDE.md
 ```
 
 ---
@@ -140,7 +140,7 @@ grep -A 10 "Manual CLI Usage" /Users/naythandawe/git/maia/CLAUDE.md
 
 ### Task 4: Create Smart Loader Bash Wrapper (15 min)
 
-**File**: `/Users/naythandawe/git/maia/claude/hooks/load_system_state_smart.sh` (NEW)
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/load_system_state_smart.sh` (NEW)
 **Purpose**: Simple wrapper for context loading hooks to invoke smart loader
 
 **Content**:
@@ -193,18 +193,18 @@ exit 0
 
 **Make Executable**:
 ```bash
-chmod +x /Users/naythandawe/git/maia/claude/hooks/load_system_state_smart.sh
+chmod +x /Users/YOUR_USERNAME/git/maia/claude/hooks/load_system_state_smart.sh
 ```
 
 **Testing**:
 ```bash
 # Test wrapper works
-/Users/naythandawe/git/maia/claude/hooks/load_system_state_smart.sh "agent enhancement status" | head -50
+/Users/YOUR_USERNAME/git/maia/claude/hooks/load_system_state_smart.sh "agent enhancement status" | head -50
 
 # Test fallback (temporarily rename smart_context_loader.py)
-mv /Users/naythandawe/git/maia/claude/tools/sre/smart_context_loader.py /tmp/test_smart_loader.py
-/Users/naythandawe/git/maia/claude/hooks/load_system_state_smart.sh "test" | head -20
-mv /tmp/test_smart_loader.py /Users/naythandawe/git/maia/claude/tools/sre/smart_context_loader.py
+mv /Users/YOUR_USERNAME/git/maia/claude/tools/sre/smart_context_loader.py /tmp/test_smart_loader.py
+/Users/YOUR_USERNAME/git/maia/claude/hooks/load_system_state_smart.sh "test" | head -20
+mv /tmp/test_smart_loader.py /Users/YOUR_USERNAME/git/maia/claude/tools/sre/smart_context_loader.py
 ```
 
 **Expected Results**:
@@ -216,21 +216,21 @@ mv /tmp/test_smart_loader.py /Users/naythandawe/git/maia/claude/tools/sre/smart_
 
 ### Task 5: Update dynamic_context_loader.py (30 min)
 
-**File**: `/Users/naythandawe/git/maia/claude/hooks/dynamic_context_loader.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/dynamic_context_loader.py`
 **Current State**: No SYSTEM_STATE loading logic (only loads other context files)
 **Required**: Add smart loader invocation for SYSTEM_STATE
 
 **Step 5.1**: Read current file structure (5 min)
 ```bash
 # Examine current structure
-head -100 /Users/naythandawe/git/maia/claude/hooks/dynamic_context_loader.py
-grep -n "def.*load\|class.*Loader" /Users/naythandawe/git/maia/claude/hooks/dynamic_context_loader.py
+head -100 /Users/YOUR_USERNAME/git/maia/claude/hooks/dynamic_context_loader.py
+grep -n "def.*load\|class.*Loader" /Users/YOUR_USERNAME/git/maia/claude/hooks/dynamic_context_loader.py
 ```
 
 **Step 5.2**: Identify where SYSTEM_STATE should be loaded (5 min)
 ```bash
 # Find where context files are loaded
-grep -n "CORE.*FILES\|mandatory.*files\|always.*load" /Users/naythandawe/git/maia/claude/hooks/dynamic_context_loader.py
+grep -n "CORE.*FILES\|mandatory.*files\|always.*load" /Users/YOUR_USERNAME/git/maia/claude/hooks/dynamic_context_loader.py
 ```
 
 **Step 5.3**: Add SYSTEM_STATE smart loading function (15 min)
@@ -317,12 +317,12 @@ MANDATORY_CORE_FILES = [
 **Step 5.5**: Test integration (5 min)
 ```bash
 # Test the updated dynamic_context_loader.py
-python3 /Users/naythandawe/git/maia/claude/hooks/dynamic_context_loader.py analyze "Continue agent enhancement"
+python3 /Users/YOUR_USERNAME/git/maia/claude/hooks/dynamic_context_loader.py analyze "Continue agent enhancement"
 
 # Verify SYSTEM_STATE smart loading works
 python3 -c "
 import sys
-sys.path.insert(0, '/Users/naythandawe/git/maia/claude/hooks')
+sys.path.insert(0, '/Users/YOUR_USERNAME/git/maia/claude/hooks')
 from dynamic_context_loader import load_system_state_smart
 content = load_system_state_smart('agent status')
 print(f'Loaded {len(content)} chars')
@@ -334,15 +334,15 @@ print(content[:500])
 
 ### Task 6: Update context_auto_loader.py (30 min)
 
-**File**: `/Users/naythandawe/git/maia/claude/hooks/context_auto_loader.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/context_auto_loader.py`
 **Purpose**: Auto-recovery system when context loading fails
 **Required**: Add smart loader to auto-recovery sequence
 
 **Step 6.1**: Read current structure (5 min)
 ```bash
 # Examine current auto-loader
-head -100 /Users/naythandawe/git/maia/claude/hooks/context_auto_loader.py
-grep -n "SYSTEM_STATE\|system_state" /Users/naythandawe/git/maia/claude/hooks/context_auto_loader.py
+head -100 /Users/YOUR_USERNAME/git/maia/claude/hooks/context_auto_loader.py
+grep -n "SYSTEM_STATE\|system_state" /Users/YOUR_USERNAME/git/maia/claude/hooks/context_auto_loader.py
 ```
 
 **Step 6.2**: Add SYSTEM_STATE smart loading to recovery sequence (20 min)
@@ -401,7 +401,7 @@ def load_system_state_smart_wrapper():
 **Step 6.3**: Test auto-recovery with smart loader (5 min)
 ```bash
 # Test context auto-loader
-python3 /Users/naythandawe/git/maia/claude/hooks/context_auto_loader.py
+python3 /Users/YOUR_USERNAME/git/maia/claude/hooks/context_auto_loader.py
 
 # Verify SYSTEM_STATE loaded via smart loader
 ```
@@ -522,12 +522,12 @@ print('✅ PASS' if has_smart_loader else '❌ FAIL')
 
 ```bash
 # Load this enablement task file
-Read /Users/naythandawe/git/maia/claude/data/SMART_LOADER_ENABLEMENT_TASKS.md
+Read /Users/YOUR_USERNAME/git/maia/claude/data/SMART_LOADER_ENABLEMENT_TASKS.md
 
 # Check what's already done
-grep -n "Smart SYSTEM_STATE Loading" /Users/naythandawe/git/maia/claude/context/core/smart_context_loading.md
-ls -la /Users/naythandawe/git/maia/claude/hooks/load_system_state_smart.sh
-grep -n "load_system_state_smart" /Users/naythandawe/git/maia/claude/hooks/dynamic_context_loader.py
+grep -n "Smart SYSTEM_STATE Loading" /Users/YOUR_USERNAME/git/maia/claude/context/core/smart_context_loading.md
+ls -la /Users/YOUR_USERNAME/git/maia/claude/hooks/load_system_state_smart.sh
+grep -n "load_system_state_smart" /Users/YOUR_USERNAME/git/maia/claude/hooks/dynamic_context_loader.py
 
 # Continue from first incomplete task
 ```

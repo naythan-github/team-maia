@@ -6,7 +6,7 @@
 
 **OneDrive Path:**
 ```
-/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/remote-shared/maia-windows-installation/
+/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/remote-shared/maia-windows-installation/
 ```
 
 **Windows Network Path:**

@@ -77,7 +77,7 @@ RAG searches content similarity only - no quality-aware filtering:
 
 **1.1 Update RAG Indexer Schema** (2 hours)
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py`
 
 **Changes Required**:
 ```python
@@ -144,7 +144,7 @@ def _index_comments(self):
 
 **1.2 Create Re-Indexing Workflow** (1 hour)
 
-**New Script**: `/Users/naythandawe/git/maia/claude/tools/sre/reindex_comments_with_quality.py`
+**New Script**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/reindex_comments_with_quality.py`
 
 ```python
 #!/usr/bin/env python3
@@ -386,7 +386,7 @@ Quality analyzer says "Your empathy score is 2.1/5" with **zero guidance** on ho
 
 **2.1 Agent Quality Report Generator** (4 hours)
 
-**New Script**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py`
+**New Script**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py`
 
 ```python
 #!/usr/bin/env python3
@@ -411,7 +411,7 @@ class AgentQualityCoach:
     """Generate coaching reports with RAG-sourced examples"""
 
     def __init__(self):
-        self.db_path = '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
+        self.db_path = '/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db'
         self.rag_indexer = ServiceDeskGPURAGIndexer()
 
     def generate_agent_report(self, agent_name: str, period_days: int = 30) -> Dict:
@@ -801,7 +801,7 @@ if __name__ == '__main__':
 
 **2.3 Best Practice Library** (2 hours)
 
-**New Script**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_best_practice_library.py`
+**New Script**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_best_practice_library.py`
 
 ```python
 #!/usr/bin/env python3
@@ -1008,7 +1008,7 @@ Quality insights are isolated - SDM Agent has no memory of quality issues/soluti
 
 **3.1 Quality Monitoring Service** (3 hours)
 
-**New Script**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_quality_monitor.py`
+**New Script**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_quality_monitor.py`
 
 ```python
 #!/usr/bin/env python3
@@ -1042,7 +1042,7 @@ class QualityMonitor:
     }
 
     def __init__(self):
-        self.db_path = '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
+        self.db_path = '/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db'
         self.ops_intel = get_ops_intel_helper()
 
     def run_quality_checks(self):
@@ -1245,7 +1245,7 @@ if __name__ == '__main__':
 
 **3.2 Quality Outcome Tracker** (2 hours)
 
-**New Functions**: Add to `/Users/naythandawe/git/maia/claude/tools/sre/sdm_agent_ops_intel_integration.py`
+**New Functions**: Add to `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/sdm_agent_ops_intel_integration.py`
 
 ```python
 def track_quality_training_outcome(
@@ -1324,7 +1324,7 @@ def track_quality_training_outcome(
 
 python3 << 'EOF'
 import sys
-sys.path.insert(0, '/Users/naythandawe/git/maia/claude/tools/sre')
+sys.path.insert(0, '/Users/YOUR_USERNAME/git/maia/claude/tools/sre')
 
 from servicedesk_quality_monitor import QualityMonitor
 from sdm_agent_ops_intel_integration import get_ops_intel_helper
@@ -1364,7 +1364,7 @@ EOF
 
 **3.4 SDM Agent Integration** (2 hours)
 
-**Update**: `/Users/naythandawe/git/maia/claude/agents/service_desk_manager_agent.md`
+**Update**: `/Users/YOUR_USERNAME/git/maia/claude/agents/service_desk_manager_agent.md`
 
 Add to **Core Behavior Principles**:
 ```markdown
@@ -1427,7 +1427,7 @@ Automatically detect and exclude system accounts from quality analysis for accur
 
 **4.1 System Account Detection** (1 hour)
 
-**New Script**: `/Users/naythandawe/git/maia/claude/tools/sre/detect_system_accounts.py`
+**New Script**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/detect_system_accounts.py`
 
 ```python
 #!/usr/bin/env python3
@@ -1453,7 +1453,7 @@ class SystemAccountDetector:
     }
 
     def __init__(self):
-        self.db_path = '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
+        self.db_path = '/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db'
 
     def detect_system_accounts(self) -> list:
         """
@@ -1634,7 +1634,7 @@ if __name__ == '__main__':
 
 **4.2 Update Quality Analyzer** (30 min)
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_complete_quality_analyzer.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_complete_quality_analyzer.py`
 
 **Change**: Add filter to exclude system accounts
 
@@ -1719,13 +1719,13 @@ Add production resilience patterns to prevent common failure modes and ensure op
 
 **Implementation**:
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/reindex_comments_with_quality.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/reindex_comments_with_quality.py`
 
 ```python
 class ResumableReIndexer:
     """Re-index with checkpoint support for failure recovery"""
 
-    CHECKPOINT_FILE = '/Users/naythandawe/git/maia/claude/data/.reindex_checkpoint.json'
+    CHECKPOINT_FILE = '/Users/YOUR_USERNAME/git/maia/claude/data/.reindex_checkpoint.json'
     CHECKPOINT_INTERVAL = 1000  # Save every 1000 documents
 
     def reindex_with_checkpoints(self):
@@ -1824,7 +1824,7 @@ python3 reindex_comments_with_quality.py --mode full
 
 **Implementation**:
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py`
 
 ```python
 class CoachingOutputValidator:
@@ -1992,7 +1992,7 @@ print('✅ Corruption detection working')
 
 **Implementation**:
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_quality_monitor.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_quality_monitor.py`
 
 ```python
 class SLOBasedQualityMonitor:
@@ -2128,7 +2128,7 @@ python3 servicedesk_quality_monitor.py --run-once --slo-mode
 
 **Implementation**:
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_ops_intel_retention.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_ops_intel_retention.py`
 
 ```python
 #!/usr/bin/env python3
@@ -2167,10 +2167,10 @@ class OpsIntelRetentionPolicy:
         }
     }
 
-    ARCHIVE_PATH = '/Users/naythandawe/git/maia/claude/data/ops_intel_archive/'
+    ARCHIVE_PATH = '/Users/YOUR_USERNAME/git/maia/claude/data/ops_intel_archive/'
 
     def __init__(self):
-        self.db_path = '/Users/naythandawe/git/maia/claude/data/servicedesk_operations_intelligence.db'
+        self.db_path = '/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_operations_intelligence.db'
         Path(self.ARCHIVE_PATH).mkdir(exist_ok=True)
 
     def apply_retention_policy(self, dry_run: bool = True):
@@ -2307,7 +2307,7 @@ ls -lh claude/data/ops_intel_archive/
 
 **Implementation**:
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_quality_ab_test.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_quality_ab_test.py`
 
 ```python
 #!/usr/bin/env python3
@@ -2700,31 +2700,31 @@ EOF
 
 ### Code Files
 - **Phase 1**:
-  - `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py` (update)
-  - `/Users/naythandawe/git/maia/claude/tools/sre/reindex_comments_with_quality.py` (new)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py` (update)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/reindex_comments_with_quality.py` (new)
 
 - **Phase 2**:
-  - `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py` (new)
-  - `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_complete_quality_analyzer.py` (update)
-  - `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_best_practice_library.py` (new)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py` (new)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_complete_quality_analyzer.py` (update)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_best_practice_library.py` (new)
 
 - **Phase 3**:
-  - `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_quality_monitor.py` (new)
-  - `/Users/naythandawe/git/maia/claude/tools/sre/sdm_agent_ops_intel_integration.py` (update)
-  - `/Users/naythandawe/git/maia/claude/agents/service_desk_manager_agent.md` (update)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_quality_monitor.py` (new)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/sdm_agent_ops_intel_integration.py` (update)
+  - `/Users/YOUR_USERNAME/git/maia/claude/agents/service_desk_manager_agent.md` (update)
 
 - **Phase 4**:
-  - `/Users/naythandawe/git/maia/claude/tools/sre/detect_system_accounts.py` (new)
+  - `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/detect_system_accounts.py` (new)
 
 ### Database Files
-- `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db` (SQLite - 1.24GB)
+- `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db` (SQLite - 1.24GB)
 - `~/.maia/servicedesk_rag/` (ChromaDB - 753MB)
-- `/Users/naythandawe/git/maia/claude/data/servicedesk_operations_intelligence.db` (Ops Intel - 112KB)
+- `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_operations_intelligence.db` (Ops Intel - 112KB)
 
 ### Documentation Files
-- `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_QUALITY_INTELLIGENCE_ROADMAP.md` (this file)
-- `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_RAG_QUALITY_UPGRADE_PROJECT.md` (Phase 118.3)
-- `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_OPERATIONS_INTELLIGENCE_PROJECT.md` (Phase 130)
+- `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_QUALITY_INTELLIGENCE_ROADMAP.md` (this file)
+- `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_RAG_QUALITY_UPGRADE_PROJECT.md` (Phase 118.3)
+- `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_OPERATIONS_INTELLIGENCE_PROJECT.md` (Phase 130)
 
 ---
 

@@ -1001,7 +1001,7 @@ python3 ~/git/maia/claude/tools/sre/automated_health_monitor.py --dashboard
 **Step 2: Disaster Recovery Restoration**
 ```bash
 # If recent backup exists:
-cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/
+cd ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/
 ls -lt | head -5
 
 # Find most recent backup

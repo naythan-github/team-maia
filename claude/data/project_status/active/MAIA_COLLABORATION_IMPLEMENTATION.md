@@ -210,7 +210,7 @@ jobs:
       - name: Check for personal data
         run: |
           echo "🔍 Scanning for personal data..."
-          if grep -rE "(naythandawe|/Users/naythan|/home/naythan)" \
+          if grep -rE "(YOUR_USERNAME|/Users/naythan|/home/naythan)" \
              claude/ --include="*.py" --include="*.md" 2>/dev/null | \
              grep -v "CODEOWNERS\|CONTRIBUTING\|\.gitignore"; then
             echo "::error::Personal data detected in source files"
@@ -529,7 +529,7 @@ class ContributionReviewer:
 
     # Personal data patterns
     PERSONAL_PATTERNS = [
-        r'naythandawe',
+        r'YOUR_USERNAME',
         r'naythan',
         r'/Users/naythan',
         r'/home/naythan',
@@ -1004,7 +1004,7 @@ MAIA_ROOT="$(git rev-parse --show-toplevel)"
 # ───────────────────────────────────────────────────────────────
 echo "  Checking for personal data..."
 if git diff --cached --name-only | xargs grep -l \
-   "naythandawe\|/Users/naythan\|/home/naythan" 2>/dev/null | \
+   "YOUR_USERNAME\|/Users/naythan\|/home/naythan" 2>/dev/null | \
    grep -v "CODEOWNERS\|CONTRIBUTING"; then
     echo "❌ BLOCKED: Personal data detected in staged files"
     echo "   Remove personal identifiers before committing"
@@ -1398,11 +1398,11 @@ if __name__ == "__main__":
 
 | Tool | Current Path | Fix |
 |------|--------------|-----|
-| `claude/tools/dns_audit_route53.py:347-348` | `/Users/naythandawe/Library/CloudStorage/...` | Use CLI arg or config |
-| `claude/tools/document_conversion/create_clean_orro_template.py:33` | `/Users/naythandawe/work_projects/...` | Use `PathManager.get_work_projects_path()` |
-| `claude/tools/dns_complete_audit.py:348-349` | `/Users/naythandawe/Library/CloudStorage/...` | Use CLI arg or config |
-| `claude/tools/intelligent_product_grouper.py:211,233` | `/Users/naythandawe/Library/CloudStorage/...` | Use CLI arg or config |
-| `claude/tools/interview/test_cv_parser.py:283` | `/Users/naythandawe/Library/CloudStorage/...` | Use test fixtures |
+| `claude/tools/dns_audit_route53.py:347-348` | `/Users/YOUR_USERNAME/Library/CloudStorage/...` | Use CLI arg or config |
+| `claude/tools/document_conversion/create_clean_orro_template.py:33` | `/Users/YOUR_USERNAME/work_projects/...` | Use `PathManager.get_work_projects_path()` |
+| `claude/tools/dns_complete_audit.py:348-349` | `/Users/YOUR_USERNAME/Library/CloudStorage/...` | Use CLI arg or config |
+| `claude/tools/intelligent_product_grouper.py:211,233` | `/Users/YOUR_USERNAME/Library/CloudStorage/...` | Use CLI arg or config |
+| `claude/tools/interview/test_cv_parser.py:283` | `/Users/YOUR_USERNAME/Library/CloudStorage/...` | Use test fixtures |
 | `claude/tools/monitoring/health_check.py:15` | `/Users/naythan/Library/Mobile Documents/...` | Use `PathManager` |
 | `claude/tools/morning_email_intelligence_local.py` | Various | Use `PathManager` |
 | `claude/tools/personal_knowledge_graph.py` | Various | Use `PathManager.get_user_db_path()` |
@@ -1410,7 +1410,7 @@ if __name__ == "__main__":
 **Pattern for each fix**:
 ```python
 # Before
-OUTPUT_PATH = "/Users/naythandawe/work_projects/foo"
+OUTPUT_PATH = "/Users/YOUR_USERNAME/work_projects/foo"
 
 # After
 from claude.tools.core.paths import PathManager
@@ -2698,7 +2698,7 @@ Be respectful. Help each other. Build great tools.
 |------|---------------|-----------------|------|
 | Fresh clone works | `git clone`, `./scripts/setup-team-member.sh` | Completes without error | [x] |
 | Maia loads | Type `load` in Claude Code | UFC system loaded | [x] |
-| Pre-commit blocks personal data | Add `naythandawe` to file, commit | Hook blocks | [x] |
+| Pre-commit blocks personal data | Add `YOUR_USERNAME` to file, commit | Hook blocks | [x] |
 | Pre-push blocks main | `git push origin main` | Hook blocks | [x] |
 | CI runs on PR | Create test PR | All jobs pass | [ ] |
 | Auto-labeler works | PR modifies `claude/tools/sre/` | `sre` label added | [ ] |
@@ -2772,7 +2772,7 @@ Week 2:
 - [ ] Emergency rollback tested (requires GitHub repo)
 - [ ] 2-3 team members successfully onboarded (pending)
 - [x] Performance baselines established
-- [x] Migration script creates clean repo (verified at /Users/naythandawe/team-maia)
+- [x] Migration script creates clean repo (verified at /Users/YOUR_USERNAME/team-maia)
 - [x] Session paths updated to ~/.maia/sessions/
 
 ---

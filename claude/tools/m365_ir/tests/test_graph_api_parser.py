@@ -710,7 +710,7 @@ class TestRealDataIntegration:
     """Test against real PIR-GOOD-SAMARITAN-777777 CSV files."""
 
     # Real data files location
-    REAL_DATA_BASE = Path('/Users/naythandawe/work_projects/ir_cases/PIR-GOOD-SAMARITAN-777777/source-files')
+    REAL_DATA_BASE = Path('/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-GOOD-SAMARITAN-777777/source-files')
     ZIP_FILE = REAL_DATA_BASE / 'SGS_2025-11-04_2025-12-04_1_1.zip'
 
     @pytest.fixture

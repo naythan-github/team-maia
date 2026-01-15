@@ -496,7 +496,7 @@ window = ContextWindow(
 ### Running Tests
 
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 python3 claude/tools/orchestration/test_context_management.py
 ```
 

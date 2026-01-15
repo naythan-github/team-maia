@@ -106,10 +106,10 @@ Build enterprise-grade ETL quality pipeline for ServiceDesk data to prevent data
 
 ### Related Documentation
 
-- **Project Context**: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_AUTOMATION_PROJECT_CONTEXT.md`
-- **Recovery Plan**: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_XLSX_REIMPORT_PLAN.md` (10-step)
-- **Current ETL Tool**: `/Users/naythandawe/git/maia/claude/tools/sre/incremental_import_servicedesk.py` (242 lines)
-- **RAG Indexer**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py` (17KB)
+- **Project Context**: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_AUTOMATION_PROJECT_CONTEXT.md`
+- **Recovery Plan**: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_XLSX_REIMPORT_PLAN.md` (10-step)
+- **Current ETL Tool**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/incremental_import_servicedesk.py` (242 lines)
+- **RAG Indexer**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py` (17KB)
 - **Phase Tracking**: `SYSTEM_STATE.md` (Phase 118.3 - ServiceDesk RAG Quality Upgrade)
 
 ### Key Stakeholders
@@ -729,8 +729,8 @@ RECOMMENDATION
 
 ```bash
 # Backup current corrupted database
-cp /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db \
-   /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db.backup_$(date +%Y%m%d_%H%M%S)
+cp /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db \
+   /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db.backup_$(date +%Y%m%d_%H%M%S)
 ```
 
 #### Task 6.3: Full Import with Validation (1 hour)
@@ -856,7 +856,7 @@ import chromadb
 from chromadb.config import Settings
 
 client = chromadb.PersistentClient(
-    path="/Users/naythandawe/.maia/servicedesk_rag",
+    path="/Users/YOUR_USERNAME/.maia/servicedesk_rag",
     settings=Settings(anonymized_telemetry=False)
 )
 
@@ -878,7 +878,7 @@ python3 claude/tools/sre/servicedesk_gpu_rag_indexer.py \
 watch -n 30 'python3 -c "
 import chromadb
 from chromadb.config import Settings
-client = chromadb.PersistentClient(path=\"/Users/naythandawe/.maia/servicedesk_rag\", settings=Settings(anonymized_telemetry=False))
+client = chromadb.PersistentClient(path=\"/Users/YOUR_USERNAME/.maia/servicedesk_rag\", settings=Settings(anonymized_telemetry=False))
 for coll in client.list_collections():
     print(f\"{coll.name}: {coll.count():,} docs\")
 "'

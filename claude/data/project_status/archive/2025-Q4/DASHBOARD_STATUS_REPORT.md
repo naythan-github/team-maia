@@ -156,9 +156,9 @@ open http://localhost:8051  # Team Intelligence
 ### Launch What Works
 ```bash
 # Start the 3 working dashboards
-PYTHONPATH=/Users/naythandawe/git/maia python3 claude/tools/monitoring/ai_business_intelligence_dashboard.py &
-PYTHONPATH=/Users/naythandawe/git/maia python3 claude/tools/monitoring/dora_metrics_dashboard.py &
-PYTHONPATH=/Users/naythandawe/git/maia python3 claude/tools/monitoring/team_intelligence_dashboard.py &
+PYTHONPATH=/Users/YOUR_USERNAME/git/maia python3 claude/tools/monitoring/ai_business_intelligence_dashboard.py &
+PYTHONPATH=/Users/YOUR_USERNAME/git/maia python3 claude/tools/monitoring/dora_metrics_dashboard.py &
+PYTHONPATH=/Users/YOUR_USERNAME/git/maia python3 claude/tools/monitoring/team_intelligence_dashboard.py &
 
 # Access dashboards
 open http://localhost:8050  # AI Business

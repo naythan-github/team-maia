@@ -65,7 +65,7 @@ PHI – what are we actually doing for them on their tickets
 
 Missing quality data
 
- /Users/naythandawe/git/maia/claude/data/SERVICEDESK_QUALITY_DATA_ISSUE.md
+ /Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_QUALITY_DATA_ISSUE.md
 
  
 

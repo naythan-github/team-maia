@@ -1,7 +1,7 @@
 {
   "meetings": {
     "Intune_Dicker_AWA_summary": {
-      "file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Intune_Dicker_AWA_summary.md",
+      "file": "/Users/YOUR_USERNAME/git/maia/claude/data/transcript_summaries/Intune_Dicker_AWA_summary.md",
       "processed_at": "2025-10-03T19:22:47.165869",
       "results": {
         "action_items": [
@@ -165,7 +165,7 @@
       }
     },
     "Catch-up part 2 _-)_summary": {
-      "file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Catch-up part 2 _-)_summary.md",
+      "file": "/Users/YOUR_USERNAME/git/maia/claude/data/transcript_summaries/Catch-up part 2 _-)_summary.md",
       "processed_at": "2025-10-06T21:08:08.042512",
       "results": {
         "action_items": [],
@@ -176,7 +176,7 @@
       }
     },
     "Intune, Dicker, AWA (1)_summary": {
-      "file": "/Users/naythandawe/git/maia/claude/data/transcript_summaries/Intune, Dicker, AWA (1)_summary.md",
+      "file": "/Users/YOUR_USERNAME/git/maia/claude/data/transcript_summaries/Intune, Dicker, AWA (1)_summary.md",
       "processed_at": "2025-10-06T21:14:27.255806",
       "results": {
         "action_items": [],

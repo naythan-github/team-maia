@@ -178,7 +178,7 @@ Switch to Claude or GPT-4:
 ## Current Database State
 
 ### SQLite
-**Path**: `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`
+**Path**: `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`
 **Size**: 1.2GB
 **comment_quality table**: 890 rows (from latest FIXED run)
 
@@ -433,7 +433,7 @@ Multiple stale bash shell trackers reporting as "running" when actually complete
 - Test suites: `tests/test_*_servicedesk_etl.py`
 
 **Databases**:
-- SQLite: `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`
+- SQLite: `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`
 - PostgreSQL: `localhost:5432/servicedesk`
 - RAG: `~/.maia/servicedesk_rag/`
 

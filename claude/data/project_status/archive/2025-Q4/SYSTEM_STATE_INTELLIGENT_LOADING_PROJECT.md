@@ -218,7 +218,7 @@ class SmartContextLoader:
 **Current** (static loading):
 ```python
 # Load SYSTEM_STATE.md
-Read("/Users/naythandawe/git/maia/SYSTEM_STATE.md")
+Read("/Users/YOUR_USERNAME/git/maia/SYSTEM_STATE.md")
 ```
 
 **New** (intelligent loading):

@@ -105,7 +105,7 @@ Data analysis → servicedesk_multi_rag_indexer.py
   → Search: "service desk" → Found: servicedesk_multi_rag_indexer.py
 ```
 
-**Output**: `/Users/naythandawe/git/maia/claude/context/core/capability_index.md`
+**Output**: `/Users/YOUR_USERNAME/git/maia/claude/context/core/capability_index.md`
 
 ---
 

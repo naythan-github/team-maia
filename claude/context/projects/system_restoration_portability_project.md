@@ -356,7 +356,7 @@ Maia achieved 95% portability in Phase 74 with zero-configuration path managemen
 | **Overall** | 95% | ⚠️ 4 gaps preventing full restoration |
 
 ### Files Requiring Attention
-- **178 occurrences** of `/Users/naythandawe` across 72 files (cosmetic, non-blocking)
+- **178 occurrences** of `/Users/YOUR_USERNAME` across 72 files (cosmetic, non-blocking)
 - **0 requirements.txt** files (blocking)
 - **0 credential documentation** (blocking)
 - **Database backups**: Manual only (blocking)
@@ -384,6 +384,6 @@ Maia achieved 95% portability in Phase 74 with zero-configuration path managemen
 ---
 
 **Project Owner**: Maia System
-**Stakeholder**: User (naythandawe)
+**Stakeholder**: User (YOUR_USERNAME)
 **Priority**: HIGH
 **Status**: Planning Complete → Ready for Execution

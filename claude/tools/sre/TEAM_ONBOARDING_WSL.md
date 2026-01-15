@@ -28,7 +28,7 @@ Before starting, you'll need:
 
 - [ ] **Windows 10 version 2004+** or **Windows 11**
 - [ ] **Administrator access** on your laptop
-- [ ] **OneDrive access** with ORROPTYLTD organization
+- [ ] **OneDrive access** with YOUR_ORG organization
 - [ ] **Internet connection** (for downloading components)
 - [ ] **~5 GB free disk space** (WSL + Ubuntu + Maia + dependencies)
 
@@ -41,7 +41,7 @@ We have a PowerShell script that checks and installs all prerequisites automatic
 ### Download the Setup Script
 
 **Option A: From OneDrive** (if you have access to the Maia repository backup):
-1. Navigate to: `OneDrive - ORROPTYLTD\MaiaBackups\latest_backup\`
+1. Navigate to: `OneDrive - YOUR_ORG\MaiaBackups\latest_backup\`
 2. Look for: `setup_wsl_prerequisites.ps1`
 3. Copy to your Desktop
 
@@ -122,7 +122,7 @@ Maia WSL Prerequisites Setup
 ✅ pip found in WSL: pip 22.0.2
 
 6️⃣  Checking OneDrive Sync...
-✅ OneDrive found at: C:\Users\YourName\OneDrive - ORROPTYLTD
+✅ OneDrive found at: C:\Users\YourName\OneDrive - YOUR_ORG
 ✅ Found 5 Maia backup(s)
 
 7️⃣  Checking Git in WSL...
@@ -191,7 +191,7 @@ If WSL was just installed, you'll need to complete Ubuntu setup:
 1. **Open File Explorer**
 
 2. **Navigate to OneDrive**:
-   - `OneDrive - ORROPTYLTD\MaiaBackups\`
+   - `OneDrive - YOUR_ORG\MaiaBackups\`
 
 3. **Find the latest backup** (sorted by date):
    - Format: `full_YYYYMMDD_HHMMSS`
@@ -228,12 +228,12 @@ wsl
 Replace `YOUR_USERNAME` and `full_YYYYMMDD_HHMMSS` with your values:
 
 ```bash
-cd "/mnt/c/Users/YOUR_USERNAME/OneDrive - ORROPTYLTD/MaiaBackups/full_YYYYMMDD_HHMMSS"
+cd "/mnt/c/Users/YOUR_USERNAME/OneDrive - YOUR_ORG/MaiaBackups/full_YYYYMMDD_HHMMSS"
 ```
 
 **Example**:
 ```bash
-cd "/mnt/c/Users/jsmith/OneDrive - ORROPTYLTD/MaiaBackups/full_20251021_182032"
+cd "/mnt/c/Users/jsmith/OneDrive - YOUR_ORG/MaiaBackups/full_20251021_182032"
 ```
 
 **Tip**: Use Tab completion to avoid typing the full path!
@@ -270,7 +270,7 @@ The script will:
    🔍 Detecting system environment...
      Platform: Windows Subsystem for Linux (WSL)
      Windows User: jsmith
-     OneDrive: /mnt/c/Users/jsmith/OneDrive - ORROPTYLTD
+     OneDrive: /mnt/c/Users/jsmith/OneDrive - YOUR_ORG
    ```
 
 2. **Ask where to install Maia**:
@@ -504,7 +504,7 @@ crontab -e
 **Important**: Backup target must be Windows OneDrive path for sync to work:
 
 ```bash
-export MAIA_ONEDRIVE_PATH="/mnt/c/Users/YOUR_USERNAME/OneDrive - ORROPTYLTD"
+export MAIA_ONEDRIVE_PATH="/mnt/c/Users/YOUR_USERNAME/OneDrive - YOUR_ORG"
 python3 claude/tools/sre/disaster_recovery_system.py backup
 ```
 
@@ -528,7 +528,7 @@ chmod +x restore_maia.sh
 1. Verify OneDrive is running in Windows (system tray icon)
 2. Check OneDrive folder exists:
    ```bash
-   ls "/mnt/c/Users/$USER/OneDrive - ORROPTYLTD"
+   ls "/mnt/c/Users/$USER/OneDrive - YOUR_ORG"
    ```
 3. If using personal OneDrive:
    ```bash

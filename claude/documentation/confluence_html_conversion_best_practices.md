@@ -573,7 +573,7 @@ def hello():
 - [Confluence Storage Format Documentation](https://confluence.atlassian.com/doc/confluence-storage-format-790796544.html)
 - [Confluence Macros Reference](https://confluence.atlassian.com/spaces/CONF50/pages/329980084/Confluence+Storage+Format+for+Macros)
 - Phase 122: Recruitment Tracking Database & Automation (incident source)
-- ReliableConfluenceClient: `/Users/naythandawe/git/maia/claude/tools/reliable_confluence_client.py`
+- ReliableConfluenceClient: `/Users/YOUR_USERNAME/git/maia/claude/tools/reliable_confluence_client.py`
 
 ---
 

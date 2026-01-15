@@ -191,8 +191,8 @@ PASSWORD_PATTERNS: List[Tuple[str, str]] = [
 
 # Hardcoded path patterns to fix
 PATH_PATTERNS: List[Tuple[str, str]] = [
-    (r"/Users/naythandawe/git/maia", "${MAIA_ROOT}"),
-    (r"/Users/naythandawe", "${HOME}"),
+    (r"/Users/YOUR_USERNAME/git/maia", "${MAIA_ROOT}"),
+    (r"/Users/YOUR_USERNAME", "${HOME}"),
     (r"/Users/naythan/git/maia", "${MAIA_ROOT}"),
 ]
 
@@ -312,18 +312,18 @@ tests/                          @naythan-orro/maia-maintainers
 # ═══════════════════════════════════════════════════════════════
 
 # System behavior & identity
-CLAUDE.md                       @naythandawe
-claude/context/core/            @naythandawe
-claude/context/ufc_system.md    @naythandawe
+CLAUDE.md                       @YOUR_USERNAME
+claude/context/core/            @YOUR_USERNAME
+claude/context/ufc_system.md    @YOUR_USERNAME
 
 # Enforcement & hooks
-claude/hooks/                   @naythandawe
+claude/hooks/                   @YOUR_USERNAME
 
 # CI/CD & governance
-.github/                        @naythandawe
+.github/                        @YOUR_USERNAME
 
 # RFCs
-claude/rfcs/                    @naythandawe
+claude/rfcs/                    @YOUR_USERNAME
 """,
 
     ".github/PULL_REQUEST_TEMPLATE.md": """## Summary

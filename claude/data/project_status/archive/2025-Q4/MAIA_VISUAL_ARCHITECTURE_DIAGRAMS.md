@@ -1764,7 +1764,7 @@ Enforcement Flow:
 
 ### Version Control
 
-**File Location**: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+**File Location**: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 
 **Change Log**:
 - 2025-10-15: Initial creation (all 8 diagrams)

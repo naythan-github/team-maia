@@ -871,7 +871,7 @@ Command-line interface for all platform operations.
 
 ### Checkpoints
 
-Complete development checkpoints are available in `/Users/naythandawe/work_projects/azure_cost_optimization/`:
+Complete development checkpoints are available in `/Users/YOUR_USERNAME/work_projects/azure_cost_optimization/`:
 
 - `CHECKPOINT_PHASE1_COMPLETE.md` - Foundation (103 tests)
 - `CHECKPOINT_PHASE2_COMPLETE.md` - Analysis Engines (101 tests)

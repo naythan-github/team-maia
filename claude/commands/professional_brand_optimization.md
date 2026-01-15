@@ -210,7 +210,7 @@ Comprehensive professional brand enhancement across all digital touchpoints usin
 │   │   └── Color palette: Professional blue/grey with accent colors
 │   └── SEO Optimizer: Keyword optimization complete
 │       ├── Target keywords: "Business Relationship Manager Perth", "Digital Transformation"
-│       ├── Profile URL: linkedin.com/in/naythandawe-brm-perth
+│       ├── Profile URL: linkedin.com/in/YOUR_USERNAME-brm-perth
 │       └── Search optimization: 89% keyword coverage achieved
 │
 ├── 📝 Stage 4: Content Creation Pipeline (Parallel)

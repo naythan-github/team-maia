@@ -1,7 +1,7 @@
 # TDD Test Plan: Project Backlog Dashboard
 **Date**: 2025-10-27
 **Agents**: Domain Specialist (Streamlit) + SRE Principal Engineer
-**Target**: `/Users/naythandawe/git/maia/claude/tools/project_management/project_backlog_dashboard.py`
+**Target**: `/Users/YOUR_USERNAME/git/maia/claude/tools/project_management/project_backlog_dashboard.py`
 
 ---
 
@@ -314,7 +314,7 @@ class TestEndToEndWorkflow:
 
 ### Test File Structure
 ```
-/Users/naythandawe/git/maia/tests/
+/Users/YOUR_USERNAME/git/maia/tests/
 ├── test_project_backlog_dashboard.py          # Main test file
 ├── test_project_backlog_dashboard_integration.py  # Integration tests
 ├── test_project_backlog_dashboard_e2e.py      # End-to-end tests

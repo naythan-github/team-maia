@@ -20,7 +20,7 @@ cd C:\MaiaScripts
 
 Copy this entire script and paste into VM PowerShell, save as `Setup-SandboxVMIdleShutdown.ps1`:
 
-**File location on Mac**: `/Users/naythandawe/maia/claude/tools/sre/Setup-SandboxVMIdleShutdown.ps1`
+**File location on Mac**: `/Users/YOUR_USERNAME/maia/claude/tools/sre/Setup-SandboxVMIdleShutdown.ps1`
 
 ```powershell
 # Run this to create the file on VM

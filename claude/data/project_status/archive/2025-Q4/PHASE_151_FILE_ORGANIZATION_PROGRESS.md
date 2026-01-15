@@ -484,7 +484,7 @@ To: `claude/data/project_status/archive/2025-Q3/`
 
 ### Pre-Commit Hook Status: ✅ **ACTIVE**
 
-**Hook Location**: `/Users/naythandawe/git/.git/hooks/pre-commit` (composite hook)
+**Hook Location**: `/Users/YOUR_USERNAME/git/.git/hooks/pre-commit` (composite hook)
 
 **Components**:
 1. **Phase 127**: Hook performance regression testing
@@ -497,8 +497,8 @@ To: `claude/data/project_status/archive/2025-Q3/`
 - ✅ Databases outside claude/data/databases/{category}/
 
 **Installation Path Discovery**:
-- Git repository root: `/Users/naythandawe/git/` (NOT `/Users/naythandawe/git/maia/`)
-- Hook must be at `/Users/naythandawe/git/.git/hooks/pre-commit`
+- Git repository root: `/Users/YOUR_USERNAME/git/` (NOT `/Users/YOUR_USERNAME/git/maia/`)
+- Hook must be at `/Users/YOUR_USERNAME/git/.git/hooks/pre-commit`
 - Initial installation at wrong location (maia/.git/hooks/) didn't work
 
 **Fix Applied**:

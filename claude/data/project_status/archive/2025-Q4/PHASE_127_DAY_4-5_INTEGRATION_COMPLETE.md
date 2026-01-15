@@ -203,7 +203,7 @@ cd ~/git/maia && python3 claude/tools/sre/incremental_import_servicedesk.py impo
 
 ### Tools Enhanced (Day 4-5)
 ```
-/Users/naythandawe/git/maia/claude/tools/sre/
+/Users/YOUR_USERNAME/git/maia/claude/tools/sre/
 ├── servicedesk_etl_validator.py            (792 lines) ✅ TESTED
 ├── servicedesk_etl_cleaner.py              (612 lines) ✅ FIXED + TESTED
 ├── servicedesk_quality_scorer.py           (705 lines) ✅ FIXED + TESTED
@@ -213,7 +213,7 @@ cd ~/git/maia && python3 claude/tools/sre/incremental_import_servicedesk.py impo
 
 ### Documentation (Days 1-5)
 ```
-/Users/naythandawe/git/maia/claude/data/
+/Users/YOUR_USERNAME/git/maia/claude/data/
 ├── SERVICEDESK_ETL_QUALITY_ENHANCEMENT_PROJECT.md  (Full 7-day plan)
 ├── ROOT_CAUSE_ANALYSIS_ServiceDesk_ETL_Quality.md  (Day 1-2 findings)
 ├── PHASE_127_DAY_3_COMPLETE.md                     (Day 3 design specs)

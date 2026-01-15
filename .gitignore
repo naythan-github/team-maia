@@ -154,3 +154,36 @@ claude/data/databases/intelligence/*.db-*
 maia_*.json
 *_session_*.json
 checkpoint_*.json
+
+# Personal/Sensitive Data (added by team prep script)
+claude/tools/production_api_credentials.py
+credentials.vault.enc
+.env
+claude/infrastructure/**/.env
+*.pem
+*.key
+
+# Personal Configurations
+.claude/settings.local.json
+.claude/hooks.local.json
+
+# Databases
+claude/data/*.db
+claude/data/*.db-shm
+claude/data/*.db-wal
+
+# Logs
+claude/logs/**/*.log
+claude/logs/**/*.json
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store

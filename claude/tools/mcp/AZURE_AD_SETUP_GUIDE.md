@@ -97,7 +97,7 @@ source ~/.maia/config/m365/.env
 
 #### Device Code Flow (Default - Interactive)
 ```bash
-python3 /Users/naythandawe/git/maia/claude/tools/mcp/m365_graph_server.py
+python3 /Users/YOUR_USERNAME/git/maia/claude/tools/mcp/m365_graph_server.py
 ```
 
 Expected output:

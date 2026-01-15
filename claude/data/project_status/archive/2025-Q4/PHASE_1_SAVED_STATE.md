@@ -63,7 +63,7 @@
 
 ### **Start Infrastructure**
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 docker compose up -d
 ```
 
@@ -152,7 +152,7 @@ docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c "SEL
 open -a Docker
 
 # Navigate to project
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 
 # Start services (if stopped)
 docker compose up -d
@@ -163,7 +163,7 @@ docker ps | grep servicedesk
 
 ### **To Stop Infrastructure** (when not in use)
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 docker compose down
 # Data preserved in volumes, will restore on next "docker compose up -d"
 ```

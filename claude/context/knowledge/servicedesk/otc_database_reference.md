@@ -414,7 +414,7 @@ python3 -m claude.tools.integrations.otc.load_to_postgres timesheets
 
 ## Engineering Team Configuration
 
-**Team Members:** (from `/Users/naythandawe/maia/claude/data/user_preferences.json`)
+**Team Members:** (from `/Users/YOUR_USERNAME/maia/claude/data/user_preferences.json`)
 - Trevor Harte
 - Llewellyn Booth
 - Dion Jewell
@@ -459,4 +459,4 @@ WHERE "TKT-Assigned To User" = 'Dion Jewell'
 - **Data Models:** `claude/tools/integrations/otc/models.py`
 - **View Definitions:** `claude/tools/integrations/otc/views.py`
 - **Tests:** `tests/integrations/test_otc_schema_improvements.py`
-- **Schema Documentation:** `/Users/naythandawe/Downloads/otc_api_exports/IMPLEMENTATION_COMPLETE.md`
+- **Schema Documentation:** `/Users/YOUR_USERNAME/Downloads/otc_api_exports/IMPLEMENTATION_COMPLETE.md`

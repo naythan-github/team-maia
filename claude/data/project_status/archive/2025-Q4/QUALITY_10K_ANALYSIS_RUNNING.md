@@ -28,11 +28,11 @@ ps aux | grep "20386" | grep -v grep
 tail -f /tmp/quality_10k_final.log
 
 # Check database progress
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db \
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db \
   "SELECT COUNT(*) as analyzed FROM comment_quality;"
 
 # Monitor with watch (updates every 5 seconds)
-watch -n 5 'sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db \
+watch -n 5 'sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db \
   "SELECT COUNT(*) as analyzed FROM comment_quality;"'
 ```
 
@@ -43,7 +43,7 @@ watch -n 5 'sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.
 ### Step 1: Validate Results
 
 ```bash
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
 SELECT
   COUNT(*) as total,
   COUNT(DISTINCT professionalism_score) as unique_prof,
@@ -81,7 +81,7 @@ EOF
 **If results show variation** (not all uniform 3.0 scores):
 
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 
 # Clear old failed data
 docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c \
@@ -227,7 +227,7 @@ python3 claude/tools/sre/servicedesk_gpu_rag_indexer.py --all
 ## Files Reference
 
 **Analyzer**: `claude/tools/sre/servicedesk_comment_quality_analyzer.py` (FIXED)
-**Database**: `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`
+**Database**: `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`
 **Log**: `/tmp/quality_10k_final.log`
 **Process**: PID 20386
 

@@ -425,7 +425,7 @@ Data Analyst verified:
 - Status: ✅ Ready for handoff
 
 **2. SESSION_CHECKPOINT_TEAM_MANAGEMENT_DB_PLANNING.md** (this file)
-- Location: `/Users/naythandawe/maia/`
+- Location: `/Users/YOUR_USERNAME/maia/`
 - Purpose: Session checkpoint before compaction
 - Status: ✅ Complete
 

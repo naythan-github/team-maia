@@ -54,7 +54,7 @@ Successfully implemented **Dashboard #7: Customer Sentiment & Team Performance**
 
 ### ✅ Phase 2: Test Suite Design
 
-**Created**: `/Users/naythandawe/git/maia/tests/test_dashboard_7_sentiment.sh`
+**Created**: `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_sentiment.sh`
 
 **Test Coverage** (12 tests):
 1. ✅ Customer-facing comments exist (16,620 found)
@@ -144,7 +144,7 @@ composite_score = (sla_percentage * 0.3) +
 
 ### ✅ Phase 6: End-to-End Verification
 
-**Integration Test Suite Created**: `/Users/naythandawe/git/maia/tests/test_dashboard_7_panels_data.sh`
+**Integration Test Suite Created**: `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_panels_data.sh`
 
 **Integration Tests** (8 tests via Grafana API):
 1. ✅ Panel 1: Total Customer-Facing Comments (1 row returned)
@@ -315,26 +315,26 @@ composite_score = (sla_percentage * 0.3) +
 ### Dashboard Implementation
 
 1. **Dashboard JSON**:
-   - `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json`
+   - `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json`
    - Size: 22 KB
    - Panels: 11 visualization panels + 5 row panels
 
 ### Test Suites
 
 2. **Unit Test Suite**:
-   - `/Users/naythandawe/git/maia/tests/test_dashboard_7_sentiment.sh`
+   - `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_sentiment.sh`
    - Tests: 12 (data validation, JSON structure, import)
    - Status: 12/12 passing ✅
 
 3. **Integration Test Suite**:
-   - `/Users/naythandawe/git/maia/tests/test_dashboard_7_panels_data.sh`
+   - `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_panels_data.sh`
    - Tests: 8 (Grafana API queries)
    - Status: 8/8 passing ✅
 
 ### Documentation
 
 4. **Implementation Report**:
-   - `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/DASHBOARD_7_IMPLEMENTATION_REPORT.md`
+   - `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/DASHBOARD_7_IMPLEMENTATION_REPORT.md`
    - This document
 
 ---
@@ -344,7 +344,7 @@ composite_score = (sla_percentage * 0.3) +
 ### Automatic Import (Recommended)
 
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 bash scripts/import_dashboards.sh
 ```
 
@@ -356,7 +356,7 @@ bash scripts/import_dashboards.sh
 curl -X POST \
   -H "Content-Type: application/json" \
   -u "admin:Grafana2025!SecureAdmin" \
-  -d @/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json \
+  -d @/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/7_customer_sentiment_team_performance.json \
   http://localhost:3000/api/dashboards/db
 ```
 
@@ -364,10 +364,10 @@ curl -X POST \
 
 ```bash
 # Run unit tests
-bash /Users/naythandawe/git/maia/tests/test_dashboard_7_sentiment.sh
+bash /Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_sentiment.sh
 
 # Run integration tests
-bash /Users/naythandawe/git/maia/tests/test_dashboard_7_panels_data.sh
+bash /Users/YOUR_USERNAME/git/maia/tests/test_dashboard_7_panels_data.sh
 
 # Visual verification
 open http://localhost:3000/d/servicedesk-sentiment-team-performance

@@ -466,7 +466,7 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/... python3 pmp_dcapi_patch_extractor.
 **Cron Configuration**:
 ```cron
 # PMP DCAPI Resilient Extraction (every 6 hours)
-0 */6 * * * cd /Users/naythandawe/git/maia && python3 claude/tools/pmp/pmp_dcapi_patch_extractor.py >> /tmp/pmp_dcapi_extraction.log 2>&1
+0 */6 * * * cd /Users/YOUR_USERNAME/git/maia && python3 claude/tools/pmp/pmp_dcapi_patch_extractor.py >> /tmp/pmp_dcapi_extraction.log 2>&1
 ```
 
 ### Monitoring

@@ -12,7 +12,7 @@
 ### Import All Dashboards (2 minutes)
 
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 ./scripts/import_dashboards.sh
 ```
 
@@ -317,7 +317,7 @@ Or use relative: `from: "now-6M"`, `to: "now"`
 
 **Quick Start Command**:
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 ./scripts/import_dashboards.sh
 open http://localhost:3000
 ```

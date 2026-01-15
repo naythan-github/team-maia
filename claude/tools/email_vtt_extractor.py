@@ -20,7 +20,7 @@ from macos_mail_bridge import MacOSMailBridge
 class EmailVTTExtractor:
     def __init__(self):
         self.mail_bridge = MacOSMailBridge()
-        self.vtt_folder = Path.home() / "Library" / "CloudStorage" / "OneDrive-ORROPTYLTD" / "Documents" / "1-VTT"
+        self.vtt_folder = Path.home() / "Library" / "CloudStorage" / "OneDrive-YOUR_ORG" / "Documents" / "1-VTT"
         self.state_file = Path.home() / ".maia" / "email_vtt_extractor_state.json"
         self.state = self._load_state()
 

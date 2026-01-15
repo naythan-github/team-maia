@@ -35,7 +35,7 @@
 **Fixed Files**:
 
 #### 1.1 servicedesk_etl_validator.py (792 lines)
-- **Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_etl_validator.py`
+- **Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_etl_validator.py`
 - **Changes**: Updated 20+ column references across 6 validation methods
 - **Key Fixes**:
   - `_validate_data_types()`: ID columns (CT-COMMENT-ID, TKT-Ticket ID, TS-Title)
@@ -47,7 +47,7 @@
   - `_validate_text_integrity()`: Text column (CT-COMMENT)
 
 #### 1.2 servicedesk_etl_cleaner.py (612 lines)
-- **Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_etl_cleaner.py`
+- **Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_etl_cleaner.py`
 - **Changes**: Updated 15+ column references across 5 cleaning operations
 - **Key Fixes**:
   - `CleaningConfig.reject_null_fields`: Critical field list (CT-COMMENT-ID, CT-TKT-ID, etc.)
@@ -59,7 +59,7 @@
   - `_impute_missing_values()`: Special case (TS-Crm ID NULL → 0)
 
 #### 1.3 servicedesk_quality_scorer.py (705 lines)
-- **Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_quality_scorer.py`
+- **Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_quality_scorer.py`
 - **Changes**: Updated 25+ column references across 5 scoring dimensions
 - **Key Fixes**:
   - `ScoringConfig.completeness_weights`: All weight mappings (40 points across 3 entities)
@@ -71,7 +71,7 @@
   - `_score_integrity()`: FK checks (CT-TKT-ID, TKT-Ticket ID, TS-Crm ID)
 
 #### 1.4 servicedesk_column_mappings.py (139 lines) - Already Existed
-- **Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_column_mappings.py`
+- **Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_column_mappings.py`
 - **Status**: ✅ Already created with correct mappings
 - **Contents**: XLSX→Database mappings, helper functions, required column lists
 
@@ -173,7 +173,7 @@ Validation Results by Category:
 
 ### Fixed Tools (Day 4)
 ```
-/Users/naythandawe/git/maia/claude/tools/sre/
+/Users/YOUR_USERNAME/git/maia/claude/tools/sre/
 ├── servicedesk_etl_validator.py        (792 lines) ✅ FIXED
 ├── servicedesk_etl_cleaner.py          (612 lines) ✅ FIXED
 ├── servicedesk_quality_scorer.py       (705 lines) ✅ FIXED
@@ -182,7 +182,7 @@ Validation Results by Category:
 
 ### Documentation (Days 1-4)
 ```
-/Users/naythandawe/git/maia/claude/data/
+/Users/YOUR_USERNAME/git/maia/claude/data/
 ├── SERVICEDESK_ETL_QUALITY_ENHANCEMENT_PROJECT.md  (Full 7-day plan)
 ├── ROOT_CAUSE_ANALYSIS_ServiceDesk_ETL_Quality.md  (Day 1-2 findings)
 ├── PHASE_127_DAY_3_COMPLETE.md                     (Day 3 design specs)

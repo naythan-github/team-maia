@@ -2,7 +2,7 @@
 
 ## Repository
 **GitHub**: https://github.com/naythan-orro/maia
-**Version Control**: Git repository at `/Users/naythandawe/git/`
+**Version Control**: Git repository at `/Users/YOUR_USERNAME/git/`
 
 ## Overview
 Maia is a personal AI infrastructure system featuring sophisticated workflow orchestrations that leverage a multi-agent system and advanced automation capabilities. Commands follow enterprise-grade design principles:

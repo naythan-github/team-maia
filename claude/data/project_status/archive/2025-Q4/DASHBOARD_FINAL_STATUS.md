@@ -105,7 +105,7 @@ sys.path.insert(0, str(MAIA_ROOT))
 
 **Issue**: Python module imports require `__init__.py` in package directories
 
-**Fix**: Created `/Users/naythandawe/git/maia/claude/__init__.py` with comment
+**Fix**: Created `/Users/YOUR_USERNAME/git/maia/claude/__init__.py` with comment
 
 **Impact**: Enables `from claude.tools.*` imports across all dashboards
 

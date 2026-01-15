@@ -28,7 +28,7 @@ else
 fi
 
 echo ""
-echo "📁 Monitoring: ~/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT"
+echo "📁 Monitoring: ~/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/1-VTT"
 echo "📊 Output: $MAIA_ROOT/claude/data/transcript_summaries/"
 echo ""
 

@@ -282,10 +282,10 @@ ls -lh claude/data/project_registry.db
 echo $MAIA_ROOT
 
 # Set MAIA_ROOT if not set
-export MAIA_ROOT=/Users/naythandawe/git/maia
+export MAIA_ROOT=/Users/YOUR_USERNAME/git/maia
 
 # Verify from correct directory
-pwd  # Should be: /Users/naythandawe/git/maia
+pwd  # Should be: /Users/YOUR_USERNAME/git/maia
 ```
 
 ### Issue 3: Hub Not Running
@@ -383,7 +383,7 @@ ls -l claude/data/project_registry.db
 
 ## File Locations
 
-All paths relative to MAIA root: `/Users/naythandawe/git/maia`
+All paths relative to MAIA root: `/Users/YOUR_USERNAME/git/maia`
 
 ### Dashboard Files
 - **Main Dashboard**: `claude/tools/project_management/project_backlog_dashboard.py` (834 lines)

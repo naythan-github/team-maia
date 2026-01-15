@@ -204,7 +204,7 @@ nginx                 # Reverse proxy
   "python_version": "3.9.6",
   "python_path": "/usr/local/bin/python3",
   "hostname": "Naythans-MacBook-Pro.local",
-  "username": "naythandawe",
+  "username": "YOUR_USERNAME",
   "maia_phase": "Phase 112",
   "backup_created": "2025-10-13T03:00:00Z"
 }
@@ -864,7 +864,7 @@ if __name__ == "__main__":
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>/Users/naythandawe/git/maia/claude/tools/sre/disaster_recovery_system.py</string>
+        <string>/Users/YOUR_USERNAME/git/maia/claude/tools/sre/disaster_recovery_system.py</string>
         <string>backup</string>
         <string>--vault-password</string>
         <string>ENV:MAIA_VAULT_PASSWORD</string>
@@ -873,7 +873,7 @@ if __name__ == "__main__":
     <key>EnvironmentVariables</key>
     <dict>
         <key>PYTHONPATH</key>
-        <string>/Users/naythandawe/git/maia</string>
+        <string>/Users/YOUR_USERNAME/git/maia</string>
         <key>MAIA_VAULT_PASSWORD</key>
         <string>YOUR_VAULT_PASSWORD_HERE</string>
     </dict>
@@ -887,13 +887,13 @@ if __name__ == "__main__":
     </dict>
 
     <key>StandardOutPath</key>
-    <string>/Users/naythandawe/git/maia/claude/logs/production/disaster_recovery.log</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/logs/production/disaster_recovery.log</string>
 
     <key>StandardErrorPath</key>
-    <string>/Users/naythandawe/git/maia/claude/logs/production/disaster_recovery.error.log</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/logs/production/disaster_recovery.error.log</string>
 
     <key>WorkingDirectory</key>
-    <string>/Users/naythandawe/git/maia</string>
+    <string>/Users/YOUR_USERNAME/git/maia</string>
 
     <key>RunAtLoad</key>
     <false/>
@@ -1134,7 +1134,7 @@ if __name__ == "__main__":
    ```
 3. **Review test backups**:
    ```bash
-   ls -la ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/
+   ls -la ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/
    ```
 4. **Check LaunchAgent status**:
    ```bash

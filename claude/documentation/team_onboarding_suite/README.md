@@ -328,7 +328,7 @@ This comprehensive documentation suite transforms the Maia AI system's technical
 
 ### Version Control
 All documents in git repository:
-- **Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+- **Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 - **Tracking**: Git commit history shows all changes
 - **Collaboration**: Standard PR workflow for updates
 
@@ -385,7 +385,7 @@ All documents in git repository:
 
 ## Support & Resources
 
-**Documentation Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Documentation Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **Related Resources**:
 - **SYSTEM_STATE.md**: Complete 120-phase evolution history

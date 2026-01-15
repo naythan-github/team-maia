@@ -591,7 +591,7 @@ This Executive Overview is Part 1 of 8-document suite:
 
 ## Contact & Resources
 
-**System Documentation**: `/Users/naythandawe/git/maia/`
+**System Documentation**: `/Users/YOUR_USERNAME/git/maia/`
 **SYSTEM_STATE.md**: Complete 120+ phase evolution history
 **Capability Index**: `/claude/context/core/capability_index.md` (352 tools, 53 agents)
 

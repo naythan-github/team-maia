@@ -32,7 +32,7 @@ Built enterprise-grade ETL quality pipeline (2,360 lines across 5 tools) with au
 
 ## 🛠️ Pipeline Tools (5 Files)
 
-Located in: `/Users/naythandawe/git/maia/claude/tools/sre/`
+Located in: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 1. **servicedesk_etl_validator.py** (792 lines) - Pre-import validation
 2. **servicedesk_etl_cleaner.py** (612 lines) - Data cleaning

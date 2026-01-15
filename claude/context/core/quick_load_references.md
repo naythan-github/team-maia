@@ -9,7 +9,7 @@ This file provides shorthand references for quickly loading frequently-used agen
 **Load Command**: `load PA` or `load personal assistant`
 
 **Files to Load**:
-- `/Users/naythandawe/git/maia/claude/agents/personal_assistant_agent.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/agents/personal_assistant_agent.md`
 
 **Context Bundle**: Personal productivity and executive support
 - Daily executive briefing
@@ -34,7 +34,7 @@ This file provides shorthand references for quickly loading frequently-used agen
 **Load Command**: `load EM` or `load engineering manager`
 
 **Files to Load**:
-- `/Users/naythandawe/git/maia/claude/agents/engineering_manager_cloud_mentor.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/agents/engineering_manager_cloud_mentor.md`
 
 **Context Bundle**: Cloud MSP strategic leadership and team management
 - Strategic decision-making
@@ -49,7 +49,7 @@ This file provides shorthand references for quickly loading frequently-used agen
 **Load Command**: `load SDM` or `load service desk manager`
 
 **Files to Load**:
-- `/Users/naythandawe/git/maia/claude/agents/service_desk_manager_agent.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/agents/service_desk_manager_agent.md`
 
 **Context Bundle**: Service desk operations and escalation intelligence
 - Complaint analysis
@@ -64,7 +64,7 @@ This file provides shorthand references for quickly loading frequently-used agen
 **Load Command**: `load TR` or `load technical recruitment`
 
 **Files to Load**:
-- `/Users/naythandawe/git/maia/claude/agents/technical_recruitment_agent.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/agents/technical_recruitment_agent.md`
 
 **Context Bundle**: MSP/Cloud technical hiring
 - CV screening (100-point framework)
@@ -78,7 +78,7 @@ This file provides shorthand references for quickly loading frequently-used agen
 **Load Command**: `load DA` or `load data analyst`
 
 **Files to Load**:
-- `/Users/naythandawe/git/maia/claude/agents/data_analyst_agent.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/agents/data_analyst_agent.md`
 
 **Context Bundle**: Business intelligence and data analysis
 - Statistical analysis
@@ -94,11 +94,11 @@ This file provides shorthand references for quickly loading frequently-used agen
 **Load Command**: `load full context`
 
 **Files to Load** (in order):
-1. `/Users/naythandawe/git/maia/claude/context/ufc_system.md` (mandatory first)
-2. `/Users/naythandawe/git/maia/claude/context/core/identity.md`
-3. `/Users/naythandawe/git/maia/claude/context/core/systematic_thinking_protocol.md`
-4. `/Users/naythandawe/git/maia/claude/context/core/model_selection_strategy.md`
-5. `/Users/naythandawe/git/maia/SYSTEM_STATE.md`
+1. `/Users/YOUR_USERNAME/git/maia/claude/context/ufc_system.md` (mandatory first)
+2. `/Users/YOUR_USERNAME/git/maia/claude/context/core/identity.md`
+3. `/Users/YOUR_USERNAME/git/maia/claude/context/core/systematic_thinking_protocol.md`
+4. `/Users/YOUR_USERNAME/git/maia/claude/context/core/model_selection_strategy.md`
+5. `/Users/YOUR_USERNAME/git/maia/SYSTEM_STATE.md`
 
 ---
 
@@ -118,7 +118,7 @@ This file provides shorthand references for quickly loading frequently-used agen
 **Load Command**: `load orro context`
 
 **Files to Load**:
-- `/Users/naythandawe/git/maia/claude/context/projects/orro/`
+- `/Users/YOUR_USERNAME/git/maia/claude/context/projects/orro/`
 - Engineering Manager Agent (for MSP/Cloud context)
 - Service Desk Manager Agent (for operations context)
 

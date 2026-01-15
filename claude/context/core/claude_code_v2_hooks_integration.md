@@ -28,8 +28,8 @@
       "description": "Auto-route tasks to local LLMs for 99.3% cost savings",
       "enabled": true,
       "environment": {
-        "MAIA_ROOT": "/Users/naythandawe/git/maia",
-        "PYTHONPATH": "/Users/naythandawe/git/maia"
+        "MAIA_ROOT": "/Users/YOUR_USERNAME/git/maia",
+        "PYTHONPATH": "/Users/YOUR_USERNAME/git/maia"
       }
     }
   }

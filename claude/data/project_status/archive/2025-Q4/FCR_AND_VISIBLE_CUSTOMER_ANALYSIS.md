@@ -27,7 +27,7 @@
 **FINDING**: The `CT-VISIBLE-CUSTOMER` field **exists** in the source Excel file (`comments.xlsx`) but is **97.5% NULL**.
 
 #### Data Quality Analysis
-**Source File**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Projects/Servicedesk/comments.xlsx`
+**Source File**: `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Projects/Servicedesk/comments.xlsx`
 
 **Sample Analysis (First 1,000 rows)**:
 - Total rows: 1,000

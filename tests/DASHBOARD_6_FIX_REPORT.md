@@ -13,7 +13,7 @@
 ## Problem Statement
 
 User reported: "Dashboard #6 widgets are ALL not working"
-- Dashboard: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/6_incident_classification_breakdown.json`
+- Dashboard: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/6_incident_classification_breakdown.json`
 - Previous tests claimed to pass, but widgets showed "No data" in browser
 - **Critical Gap**: Tests only validated JSON syntax, not actual panel data
 
@@ -109,7 +109,7 @@ Changed to: `"TKT-Severity"` (actual column name)
 
 ## REAL Test Suite Created
 
-**File**: `/Users/naythandawe/git/maia/tests/test_dashboard_6_panels_data.sh`
+**File**: `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_6_panels_data.sh`
 
 ### What Makes This a "REAL" Test?
 
@@ -251,11 +251,11 @@ Ticket  | Title                                              | Created          
 ## Files Modified
 
 1. **Dashboard JSON** (Fixed):
-   - `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/6_incident_classification_breakdown.json`
+   - `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/6_incident_classification_breakdown.json`
    - Changes: Data source UID (10 panels), Column names (3 panels)
 
 2. **Test Suite** (Created):
-   - `/Users/naythandawe/git/maia/tests/test_dashboard_6_panels_data.sh`
+   - `/Users/YOUR_USERNAME/git/maia/tests/test_dashboard_6_panels_data.sh`
    - Purpose: REAL panel data validation via Grafana API
 
 ---

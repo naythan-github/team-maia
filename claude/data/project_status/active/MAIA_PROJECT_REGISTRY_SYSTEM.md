@@ -602,7 +602,7 @@ Database: claude/data/project_registry.db (184 KB)
 ```bash
 # Backup database to OneDrive
 cp claude/data/project_registry.db \
-   ~/Library/CloudStorage/OneDrive-ORROPTYLTD/Maia-Backups/project_registry_$(date +%Y%m%d).db
+   ~/Library/CloudStorage/OneDrive-YOUR_ORG/Maia-Backups/project_registry_$(date +%Y%m%d).db
 ```
 
 **Export**: Auto-regenerate markdown on every update
@@ -792,7 +792,7 @@ def _auto_export():
 
 **Database**:
 - `claude/data/project_registry.db` (primary)
-- `~/Library/CloudStorage/OneDrive-ORROPTYLTD/Maia-Backups/project_registry_*.db` (backups)
+- `~/Library/CloudStorage/OneDrive-YOUR_ORG/Maia-Backups/project_registry_*.db` (backups)
 
 **CLI Tools**:
 - `claude/tools/project_management/project_registry.py` (main tool)
@@ -929,7 +929,7 @@ sqlite3 claude/data/project_registry.db "PRAGMA integrity_check;"
 
 **Backup Validation** (test restore):
 ```bash
-cp ~/Library/CloudStorage/OneDrive-ORROPTYLTD/Maia-Backups/project_registry_latest.db \
+cp ~/Library/CloudStorage/OneDrive-YOUR_ORG/Maia-Backups/project_registry_latest.db \
    /tmp/test_restore.db
 sqlite3 /tmp/test_restore.db "SELECT COUNT(*) FROM projects;"
 ```

@@ -126,7 +126,7 @@ EOF
 
 **Command**:
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # Clear old test data
 sqlite3 claude/data/servicedesk_tickets.db "DELETE FROM comment_quality;"
@@ -167,7 +167,7 @@ EOF
 
 **Commands**:
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 
 # Truncate old failed data
 docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c \
@@ -237,7 +237,7 @@ Testing Results (500 technical comments):
 
 ### Database Schema
 
-**SQLite**: `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`
+**SQLite**: `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`
 ```sql
 CREATE TABLE comment_quality (
     comment_id TEXT PRIMARY KEY,
@@ -354,7 +354,7 @@ curl -X POST http://localhost:11434/api/generate \
 
 ```bash
 # 1. Navigate to project
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # 2. Check if 10K analysis completed
 sqlite3 claude/data/servicedesk_tickets.db \

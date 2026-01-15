@@ -297,7 +297,7 @@ Category Breakdown:
 ### Common Issues
 
 **Issue**: `ImportError: No module named 'claude'`
-**Solution**: Run from Maia root directory: `cd /Users/naythandawe/git/maia`
+**Solution**: Run from Maia root directory: `cd /Users/YOUR_USERNAME/git/maia`
 
 **Issue**: `sqlite3.OperationalError: database is locked`
 **Solution**: Close other processes accessing databases, retry
@@ -426,7 +426,7 @@ jobs:
 ### Cron Schedule (Production Monitoring)
 ```bash
 # Add to crontab for daily validation
-0 2 * * * cd /Users/naythandawe/git/maia && python3 claude/tools/sre/run_comprehensive_tests.py --quick
+0 2 * * * cd /Users/YOUR_USERNAME/git/maia && python3 claude/tools/sre/run_comprehensive_tests.py --quick
 ```
 
 ---

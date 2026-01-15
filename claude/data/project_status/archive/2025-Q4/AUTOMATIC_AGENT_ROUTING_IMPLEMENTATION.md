@@ -57,7 +57,7 @@ Execute with appropriate agent(s)
 
 ### Phase 1: Add Hook Stage (20 min)
 
-**File**: `/Users/naythandawe/git/maia/claude/hooks/user-prompt-submit`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/user-prompt-submit`
 
 **Add after Stage 0.7 (Capability Check)**:
 
@@ -94,7 +94,7 @@ echo ""
 
 ### Phase 2: Coordinator CLI Integration (15 min)
 
-**File**: `/Users/naythandawe/git/maia/claude/tools/orchestration/coordinator_agent.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/orchestration/coordinator_agent.py`
 
 **Add CLI Interface**:
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
 
 **Make executable**:
 ```bash
-chmod +x /Users/naythandawe/git/maia/claude/tools/orchestration/coordinator_agent.py
+chmod +x /Users/YOUR_USERNAME/git/maia/claude/tools/orchestration/coordinator_agent.py
 ```
 
 ---

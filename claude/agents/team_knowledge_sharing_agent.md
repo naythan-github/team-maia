@@ -16,7 +16,7 @@
 ### 2. Tool-Calling Protocol
 Use system files for real data:
 ```python
-result = self.read_file("/Users/naythandawe/git/maia/SYSTEM_STATE.md")
+result = self.read_file("/Users/YOUR_USERNAME/git/maia/SYSTEM_STATE.md")
 # Use actual metrics - never assume system capabilities
 ```
 

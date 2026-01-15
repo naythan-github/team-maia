@@ -10,7 +10,7 @@
 **Date**: 2025-10-20
 **Duration**: ~4 hours (analysis + development + validation)
 **Status**: ✅ **PRODUCTION READY**
-**Location**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Projects/datto-rmm/`
+**Location**: `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Projects/datto-rmm/`
 
 ### Overview
 Built comprehensive automated migration tool to transform Kaseya VSA policies and procedures into Datto RMM component packs (.cpt files).
@@ -213,7 +213,7 @@ This project can be reused for:
 
 ### Files & Locations
 
-**Project Directory**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Projects/datto-rmm/`
+**Project Directory**: `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Projects/datto-rmm/`
 
 **Key Files**:
 - `kaseya_to_datto_transformer.py` - Main transformation tool

@@ -1626,7 +1626,7 @@ if __name__ == "__main__":
     <key>ProgramArguments</key>
     <array>
         <string>/usr/local/bin/python3</string>
-        <string>/Users/naythandawe/git/maia/claude/tools/security/security_orchestration_service.py</string>
+        <string>/Users/YOUR_USERNAME/git/maia/claude/tools/security/security_orchestration_service.py</string>
     </array>
 
     <key>StartCalendarInterval</key>
@@ -1638,7 +1638,7 @@ if __name__ == "__main__":
     </dict>
 
     <key>StandardOutPath</key>
-    <string>/Users/naythandawe/git/maia/claude/data/logs/security_monitor.log</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/data/logs/security_monitor.log</string>
 </dict>
 </plist>
 ```
@@ -1935,7 +1935,7 @@ def sync_to_onedrive(backup_dir: Path):
     """
     # Auto-detect OneDrive path
     onedrive_candidates = [
-        Path.home() / 'Library/CloudStorage/OneDrive-ORROPTYLTD',
+        Path.home() / 'Library/CloudStorage/OneDrive-YOUR_ORG',
         Path.home() / 'Library/CloudStorage/OneDrive-Personal',
         Path.home() / 'OneDrive'
     ]
@@ -1959,7 +1959,7 @@ def sync_to_onedrive(backup_dir: Path):
 **Recovery Process**:
 ```bash
 # On new hardware after OneDrive sync
-cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251015_030000/
+cd ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_20251015_030000/
 ./restore_maia.sh
 
 # Prompts for vault password

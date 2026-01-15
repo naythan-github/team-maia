@@ -85,7 +85,7 @@ WHERE "TKT-Created Time" >= '2025-07-01' AND "TKT-Created Time" <= '2025-10-13';
 ## Phase 2: Test Case Design
 
 ### Test Suite Created
-**Location**: `/Users/naythandawe/git/maia/tests/test_dashboards.sh`
+**Location**: `/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh`
 
 **Test Cases** (12 total):
 
@@ -147,7 +147,7 @@ if echo "$health_response" | jq -e '.database == "ok"' > /dev/null 2>&1; then
 ### Fix 2: Import Script - Load Password from .env
 **Commit**: Added .env file sourcing to import script
 
-**File**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh`
 
 **Change**:
 ```bash
@@ -344,14 +344,14 @@ BACKUP_SCHEDULE=0 2 * * *  # Line 13 (cron syntax with spaces)
 
 ## Deliverables Summary
 
-### 1. ✅ Test Suite (`/Users/naythandawe/git/maia/tests/test_dashboards.sh`)
+### 1. ✅ Test Suite (`/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh`)
 - 12 automated test cases
 - 100% pass rate
 - Idempotent (can run multiple times)
 - Execution time: ~8 seconds
 
 ### 2. ✅ Fixed Import Script
-**File**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh`
 
 **Changes**:
 - Loads `GRAFANA_ADMIN_PASSWORD` from `.env`
@@ -411,7 +411,7 @@ Add test suite to pre-commit hooks:
 ```bash
 #!/bin/bash
 # .git/hooks/pre-commit
-/Users/naythandawe/git/maia/tests/test_dashboards.sh
+/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh
 ```
 
 ### 2. CI/CD Integration

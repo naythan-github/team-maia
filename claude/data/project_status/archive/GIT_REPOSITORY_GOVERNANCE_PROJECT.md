@@ -129,13 +129,13 @@ maia/
 **File**: `CODEOWNERS`
 ```
 # Core Maia - Owner approval required
-/claude/context/core/          @naythandawe
-/claude/agents/                @naythandawe
-/CLAUDE.md                     @naythandawe
-/SYSTEM_STATE.md               @naythandawe
+/claude/context/core/          @YOUR_USERNAME
+/claude/agents/                @YOUR_USERNAME
+/CLAUDE.md                     @YOUR_USERNAME
+/SYSTEM_STATE.md               @YOUR_USERNAME
 
 # Tools - Automated review OR owner discretion
-/claude/tools/                 @maia-bot @naythandawe
+/claude/tools/                 @maia-bot @YOUR_USERNAME
 
 # Extensions - Anyone can contribute
 /claude/extensions/            # No review required
@@ -362,7 +362,7 @@ jobs:
         run: |
           # Slack notification to #maia-core-changes
           # Include: Author, files changed, PR link, diff summary
-          # Tag: @naythandawe for awareness
+          # Tag: @YOUR_USERNAME for awareness
 
           echo "🚨 Core change detected in PR #${{ github.event.pull_request.number }}"
           echo "Author: ${{ github.event.pull_request.user.login }}"
@@ -493,7 +493,7 @@ jobs:
 - Update this runbook if needed
 
 ## Emergency Contacts
-- Primary: @naythandawe
+- Primary: @YOUR_USERNAME
 - Backup: @senior-team-member
 - Slack Channel: #maia-incidents
 ```
@@ -525,7 +525,7 @@ jobs:
 ❌ Allow deletions (DISABLED)
 
 ✅ Restrict who can push to matching branches
-   - @naythandawe (owner)
+   - @YOUR_USERNAME (owner)
    - @maia-bot (CI/CD automation)
 ```
 
@@ -962,7 +962,7 @@ jobs:
 ║ HELP & SUPPORT                                             ║
 ║   📚 Docs: /docs/CONTRIBUTING.md                           ║
 ║   💬 Slack: #maia-support                                  ║
-║   🆘 Emergency: @naythandawe                               ║
+║   🆘 Emergency: @YOUR_USERNAME                               ║
 ╚════════════════════════════════════════════════════════════╝
 ```
 
@@ -1195,10 +1195,10 @@ jobs:
 
 ### Appendix C: Contact Information
 
-**Project Owner**: Naythan Dawe (@naythandawe)
+**Project Owner**: Naythan Dawe (@YOUR_USERNAME)
 
 **Emergency Contacts**:
-- Primary: @naythandawe
+- Primary: @YOUR_USERNAME
 - Backup: [Senior Team Member TBD]
 
 **Support Channels**:

@@ -477,7 +477,7 @@ Maia is a personal AI infrastructure (556 tools, 91 agents) currently designed f
 | Test | Steps | Expected Result | Pass/Fail |
 |------|-------|-----------------|-----------|
 | Fresh clone works | `git clone`, `./scripts/setup-team-member.sh`, type `load` | Maia loads in <30 min | [ ] |
-| Personal data blocked locally | Add `naythandawe` to file, `git commit` | Pre-commit hook blocks | [ ] |
+| Personal data blocked locally | Add `YOUR_USERNAME` to file, `git commit` | Pre-commit hook blocks | [ ] |
 | Personal data blocked in CI | Force-push PR with personal data | CI fails, merge blocked | [ ] |
 | Hardcoded paths blocked | Add `/Users/test/` to .py file | CI fails | [ ] |
 | Secrets blocked | Add fake API key to file | Trufflehog catches | [ ] |
@@ -568,4 +568,4 @@ Let's build!
 
 **Document Status**: Ready for team review and approval
 **Next Step**: Phase 1 implementation (Day 1)
-**Owner**: @naythandawe
+**Owner**: @YOUR_USERNAME

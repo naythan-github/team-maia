@@ -116,7 +116,7 @@ intent_summary = "Analysis failed - manual review needed"
 You have **3 quality analyzer tools** available:
 
 #### **Option 1: Complete Quality Analyzer with RAG Deduplication** ⭐ **RECOMMENDED**
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_complete_quality_analyzer.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_complete_quality_analyzer.py`
 
 **Capabilities**:
 - ✅ 100% coverage (analyzes all 108K comments)
@@ -134,7 +134,7 @@ You have **3 quality analyzer tools** available:
 
 **Command**:
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 python3 claude/tools/sre/servicedesk_complete_quality_analyzer.py \
   --full \
   --similarity 0.95 \
@@ -144,7 +144,7 @@ python3 claude/tools/sre/servicedesk_complete_quality_analyzer.py \
 ---
 
 #### **Option 2: Basic Comment Quality Analyzer** (Faster, Less Complete)
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_comment_quality_analyzer.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_comment_quality_analyzer.py`
 
 **Capabilities**:
 - Stratified sampling (default 3,300 comments, configurable)
@@ -170,7 +170,7 @@ python3 claude/tools/sre/servicedesk_comment_quality_analyzer.py \
 ---
 
 #### **Option 3: Agent Quality Coach** (Post-Analysis Tool)
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py`
 
 **Purpose**: Generates coaching reports AFTER quality data exists
 **Status**: Cannot use until quality data is regenerated
@@ -184,7 +184,7 @@ python3 claude/tools/sre/servicedesk_comment_quality_analyzer.py \
 
 ```bash
 # Navigate to project root
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # Run complete quality analyzer with RAG deduplication
 python3 claude/tools/sre/servicedesk_complete_quality_analyzer.py \
@@ -209,7 +209,7 @@ tail -f /path/to/analyzer/log  # if logs exist
 
 ```bash
 # Check completion and score variation
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
 SELECT
   COUNT(*) as total_analyzed,
   COUNT(DISTINCT professionalism_score) as unique_prof,
@@ -223,7 +223,7 @@ FROM comment_quality;
 EOF
 
 # Check quality tier distribution
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
 SELECT
   quality_tier,
   COUNT(*) as count,
@@ -258,7 +258,7 @@ EOF
 
 ```bash
 # Navigate to infrastructure directory
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 
 # Clear old PostgreSQL quality data
 docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c \
@@ -326,7 +326,7 @@ With real data, you can:
 
 ### Current Database State
 
-**SQLite Source** (`/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`):
+**SQLite Source** (`/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`):
 - Last modified: 2025-10-19 10:34
 - Size: 1.2GB
 - `comment_quality` table: 517 rows (96.5% failed analysis)
@@ -338,7 +338,7 @@ With real data, you can:
 - Data: Uniform 3.0 scores (failed analysis data)
 
 ### Migration Script
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_postgres.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_postgres.py`
 
 **Behavior**: Simple copy from SQLite → PostgreSQL
 - No validation
@@ -394,7 +394,7 @@ With real data, you can:
 **Debug Steps**:
 ```bash
 # Check SQLite has data
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db \
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db \
   "SELECT COUNT(*) FROM comment_quality;"
 
 # Check PostgreSQL connection
@@ -458,9 +458,9 @@ Phase 2 (Dashboard Design) discovered the issue when:
 ## References
 
 **Documentation**:
-- Phase 2 Handoff Brief: `/Users/naythandawe/git/maia/claude/data/PHASE_2_HANDOFF_BRIEF.md`
-- Metrics Catalog: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_METRICS_CATALOG.md`
-- Phase 2 Complete: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_DASHBOARD_PHASE_2_COMPLETE.md`
+- Phase 2 Handoff Brief: `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_2_HANDOFF_BRIEF.md`
+- Metrics Catalog: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_METRICS_CATALOG.md`
+- Phase 2 Complete: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_DASHBOARD_PHASE_2_COMPLETE.md`
 
 **Tools**:
 - Complete Quality Analyzer: `claude/tools/sre/servicedesk_complete_quality_analyzer.py`
@@ -468,7 +468,7 @@ Phase 2 (Dashboard Design) discovered the issue when:
 - Migration Script: `claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_postgres.py`
 
 **Databases**:
-- SQLite: `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`
+- SQLite: `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`
 - PostgreSQL: `localhost:5432/servicedesk` (servicedesk schema)
 - RAG Database: `~/.maia/servicedesk_rag/` (ChromaDB)
 

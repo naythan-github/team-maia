@@ -11,7 +11,7 @@
 
 **Created**: 2025-10-17 (Phase 127)
 **Status**: ⚠️ ARCHIVED (Superseded by PostgreSQL pipeline)
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 ---
 
@@ -251,7 +251,7 @@ SERVICEDESK DATA IMPORT - Enhanced with Quality Validation (Phase 127)
    Decision: PROCEED WITH IMPORT
 ================================================================================
 
-💬 STEP 1: Importing comments from: /Users/naythandawe/Downloads/comments.xlsx
+💬 STEP 1: Importing comments from: /Users/YOUR_USERNAME/Downloads/comments.xlsx
    Loaded 204,625 rows
    ✅ Filtered to 176,637 rows (July 1+ only)
    📋 Cloud roster: 48 members
@@ -260,13 +260,13 @@ SERVICEDESK DATA IMPORT - Enhanced with Quality Validation (Phase 127)
    ✅ Imported as import_id=14
    📅 Date range: 2025-07-03 to 2025-10-14
 
-📋 STEP 2: Importing tickets from: /Users/naythandawe/Downloads/tickets.xlsx
+📋 STEP 2: Importing tickets from: /Users/YOUR_USERNAME/Downloads/tickets.xlsx
    Loaded 652,681 rows
    🎯 Cloud-touched tickets: 10,939 rows
    ✅ Imported as import_id=15
    📅 Date range: 2025-07-03 to 2025-10-13
 
-⏱️  STEP 3: Importing timesheets from: /Users/naythandawe/Downloads/timesheets.xlsx
+⏱️  STEP 3: Importing timesheets from: /Users/YOUR_USERNAME/Downloads/timesheets.xlsx
    Loaded 732,959 rows
    ✅ Filtered to 141,062 rows (July 1+ only)
    ⚠️  Found 128,007 orphaned timesheet entries (90.7%)

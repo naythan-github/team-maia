@@ -214,9 +214,9 @@ Multiple components access shared resources:
 claude/tools/intelligent_downloads_router.py
 claude/tools/downloads_vtt_mover.py
 claude/commands/organize_downloads.py
-/Users/naythandawe/Library/LaunchAgents/com.maia.intelligent-downloads-router.plist
-/Users/naythandawe/Library/LaunchAgents/com.maia.downloads-vtt-mover.plist
-/Users/naythandawe/Library/LaunchAgents/com.maia.downloads-organizer-scheduler.plist
+/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.intelligent-downloads-router.plist
+/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.downloads-vtt-mover.plist
+/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.downloads-organizer-scheduler.plist
 ```
 
 ---

@@ -72,7 +72,7 @@ $ sqlite3 ~/maia_test/claude/data/servicedesk_tickets.db "SELECT COUNT(*) FROM t
 
 **Path Hardcoding Issues**:
 ```bash
-$ grep -r "/Users/naythandawe/git/maia" claude/tools/sre/*.py
+$ grep -r "/Users/YOUR_USERNAME/git/maia" claude/tools/sre/*.py
 ```
 
 **Files with hardcoded paths**:
@@ -103,7 +103,7 @@ maia_root = get_maia_root()  # ✅ Works anywhere
 **Example of BAD (hardcoded) code**:
 ```python
 def __init__(self, db_path=None):
-    self.db_path = db_path or '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
+    self.db_path = db_path or '/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db'
     # ❌ Hardcoded path as default
 ```
 
@@ -114,7 +114,7 @@ def __init__(self, db_path=None):
 **1. LaunchAgents**
 ```bash
 $ cat ~/Library/LaunchAgents/com.maia.disaster-recovery.plist
-<string>cd /Users/naythandawe/git/maia &amp;&amp; python3 ...</string>
+<string>cd /Users/YOUR_USERNAME/git/maia &amp;&amp; python3 ...</string>
 ```
 ❌ **HARDCODED** - LaunchAgents point to original location
 
@@ -217,7 +217,7 @@ python3 claude/tools/sre/disaster_recovery_system.py list
 **Solution**:
 ```bash
 # Update LaunchAgents
-sed -i '' 's|/Users/naythandawe/git/maia|/Users/naythandawe/maia_test|g' \
+sed -i '' 's|/Users/YOUR_USERNAME/git/maia|/Users/YOUR_USERNAME/maia_test|g' \
   ~/Library/LaunchAgents/com.maia.*.plist
 
 # Reload LaunchAgents
@@ -239,7 +239,7 @@ git init
 
 **1. Restore to test location**
 ```bash
-BACKUP_DIR="$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251020_181623"
+BACKUP_DIR="$HOME/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_20251020_181623"
 RESTORE_DIR="$HOME/maia_test"
 
 mkdir -p "$RESTORE_DIR" && cd "$RESTORE_DIR"
@@ -301,7 +301,7 @@ python3 claude/tools/sre/disaster_recovery_system.py list
 ```python
 # Replace hardcoded defaults with dynamic resolution
 # Before:
-self.db_path = db_path or '/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db'
+self.db_path = db_path or '/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db'
 
 # After:
 maia_root = Path(__file__).parent.parent.parent

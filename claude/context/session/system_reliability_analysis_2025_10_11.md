@@ -150,7 +150,7 @@ Critical Phantoms: 4 with 5+ references each
 ```bash
 # intelligent_downloads_router_stderr.log (1.2 MB of errors)
 PermissionError: [Errno 1] Operation not permitted:
-'/Users/naythandawe/Downloads/Route53 domains - 2025.10.10 1.xlsx'
+'/Users/YOUR_USERNAME/Downloads/Route53 domains - 2025.10.10 1.xlsx'
 
 # Error pattern repeats for every file
 2025-10-11 09:02:49,793 - ERROR - Failed to move Route53 domains...
@@ -554,14 +554,14 @@ def move_with_permissions(source: Path, destination: Path):
     <key>PATH</key>
     <string>/usr/local/bin:/usr/bin:/bin</string>
     <key>HOME</key>
-    <string>/Users/naythandawe</string>
+    <string>/Users/YOUR_USERNAME</string>
 </dict>
 
 <!-- Add FDA-aware wrapper -->
 <key>ProgramArguments</key>
 <array>
     <string>/usr/bin/python3</string>  <!-- System Python with FDA -->
-    <string>/Users/naythandawe/git/maia/claude/tools/intelligent_downloads_router.py</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/tools/intelligent_downloads_router.py</string>
 </array>
 ```
 
@@ -735,7 +735,7 @@ def restore_rag_from_backup(health_data):
     <key>ProgramArguments</key>
     <array>
         <string>/usr/bin/python3</string>
-        <string>/Users/naythandawe/git/maia/claude/tools/sre/health_monitor_with_recovery.py</string>
+        <string>/Users/YOUR_USERNAME/git/maia/claude/tools/sre/health_monitor_with_recovery.py</string>
         <string>--monitor-and-recover</string>
     </array>
 
@@ -743,7 +743,7 @@ def restore_rag_from_backup(health_data):
     <integer>300</integer>  <!-- Every 5 minutes -->
 
     <key>StandardOutPath</key>
-    <string>/Users/naythandawe/.maia/logs/health_monitor_recovery.log</string>
+    <string>/Users/YOUR_USERNAME/.maia/logs/health_monitor_recovery.log</string>
 </dict>
 </plist>
 ```

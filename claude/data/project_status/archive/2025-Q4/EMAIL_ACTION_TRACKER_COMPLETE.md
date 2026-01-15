@@ -225,14 +225,14 @@ CANCELLED → (terminal state)
 <key>ProgramArguments</key>
 <array>
     <string>/usr/bin/python3</string>
-    <string>/Users/naythandawe/git/maia/claude/tools/morning_email_intelligence_local.py</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/tools/morning_email_intelligence_local.py</string>
 </array>
 
 <key>StandardOutPath</key>
-<string>/Users/naythandawe/.maia/logs/morning_email.log</string>
+<string>/Users/YOUR_USERNAME/.maia/logs/morning_email.log</string>
 
 <key>StandardErrorPath</key>
-<string>/Users/naythandawe/.maia/logs/morning_email.error.log</string>
+<string>/Users/YOUR_USERNAME/.maia/logs/morning_email.error.log</string>
 ```
 
 **Reload Command**:
@@ -379,7 +379,7 @@ All 9 functional requirements from [email_action_tracker_REQUIREMENTS.md](claude
 
 1. **Thread Matching**: Relies on "Re: Subject" prefix or thread_id - may miss replies with modified subjects
 2. **Intent Confidence**: Requires ≥0.7 confidence for auto-status change - ambiguous replies remain REPLIED
-3. **Single User**: Designed for personal email (naythandawe@orro.co.nz), no multi-user support
+3. **Single User**: Designed for personal email (YOUR_USERNAME@orro.co.nz), no multi-user support
 4. **No Calendar Integration**: Deadlines extracted from email text, not synced with calendar
 5. **Manual Completion**: Can only be completed via reply or manual status update (no UI for bulk operations)
 

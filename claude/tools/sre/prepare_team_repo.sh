@@ -18,8 +18,8 @@ DEFAULT_MAIA_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 # Configuration
 ORIGINAL_REPO="${1:-${MAIA_ROOT:-$DEFAULT_MAIA_ROOT}}"
 CLEAN_REPO="${2:-$HOME/maia-team-share}"
-YOUR_NAME="${3:-naythandawe}"
-YOUR_ORG="${4:-ORROPTYLTD}"
+YOUR_NAME="${3:-YOUR_USERNAME}"
+YOUR_ORG="${4:-YOUR_ORG}"
 
 echo "📁 Source Repository: $ORIGINAL_REPO"
 echo "📁 Clean Repository: $CLEAN_REPO"

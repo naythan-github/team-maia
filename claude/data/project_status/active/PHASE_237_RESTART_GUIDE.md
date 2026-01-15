@@ -39,12 +39,12 @@
 After restart, `/compact` succeeded but hook didn't execute. Diagnosis revealed:
 - Hook configuration used `$MAIA_ROOT` environment variable
 - Environment variables NOT available in Claude Code hook execution context
-- Resulted in invalid path: `/claude/hooks/...` instead of `/Users/naythandawe/maia/claude/hooks/...`
+- Resulted in invalid path: `/claude/hooks/...` instead of `/Users/YOUR_USERNAME/maia/claude/hooks/...`
 
 ### Fix Applied
 Updated `~/.claude/settings.local.json` to use **absolute paths** for all hooks:
-- PreCompact hook: `/Users/naythandawe/maia/claude/hooks/pre_compaction_learning_capture.py`
-- WebFetch security hooks: `/Users/naythandawe/maia/claude/tools/security/...`
+- PreCompact hook: `/Users/YOUR_USERNAME/maia/claude/hooks/pre_compaction_learning_capture.py`
+- WebFetch security hooks: `/Users/YOUR_USERNAME/maia/claude/tools/security/...`
 - Production config updated: `claude/config/precompact_hook_config.json`
 
 **IMPORTANT**: Claude Code restart required to load updated hook configuration.
@@ -67,7 +67,7 @@ Expected output:
     "hooks": [
       {
         "type": "command",
-        "command": "python3 /Users/naythandawe/maia/claude/hooks/pre_compaction_learning_capture.py",
+        "command": "python3 /Users/YOUR_USERNAME/maia/claude/hooks/pre_compaction_learning_capture.py",
         "timeout": 5000
       }
     ]
@@ -161,7 +161,7 @@ Phase 237 Day 1 is **COMPLETE** when:
 1. **Verify environment variable**:
    ```bash
    echo $MAIA_ROOT
-   # Should output: /Users/naythandawe/maia
+   # Should output: /Users/YOUR_USERNAME/maia
 
    # If hook uses $CLAUDE_PROJECT_DIR, update to $MAIA_ROOT:
    sed -i.bak 's/\$CLAUDE_PROJECT_DIR/\$MAIA_ROOT/g' ~/.claude/settings.local.json

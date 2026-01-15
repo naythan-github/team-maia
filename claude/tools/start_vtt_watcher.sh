@@ -29,6 +29,6 @@ PID=$!
 echo $PID > "$PID_FILE"
 
 echo "✅ VTT Watcher started (PID: $PID)"
-echo "📁 Monitoring: ~/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT"
+echo "📁 Monitoring: ~/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/1-VTT"
 echo "📊 Summaries: $MAIA_ROOT/claude/data/transcript_summaries"
 echo "📝 Logs: $LOG_FILE"

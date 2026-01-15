@@ -31,14 +31,14 @@
 
 #### Step 1: Backup Current Database
 ```bash
-cp /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db \
-   /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db.backup_$(date +%Y%m%d_%H%M%S)
+cp /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db \
+   /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db.backup_$(date +%Y%m%d_%H%M%S)
 ```
 **Safety**: Can rollback if import fails
 
 #### Step 2: Drop Corrupted Tables
 ```bash
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
 DROP TABLE IF EXISTS comments;
 DROP TABLE IF EXISTS tickets;
 DROP TABLE IF EXISTS timesheets;
@@ -70,7 +70,7 @@ GROUP BY visible_to_customer;
 
 #### Step 6: Validate Data Quality
 ```bash
-sqlite3 /Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
+sqlite3 /Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db << 'EOF'
 -- Record counts
 SELECT 'comments' as table_name, COUNT(*) as count FROM comments
 UNION ALL SELECT 'tickets', COUNT(*) FROM tickets
@@ -108,7 +108,7 @@ import chromadb
 from chromadb.config import Settings
 
 client = chromadb.PersistentClient(
-    path="/Users/naythandawe/.maia/servicedesk_rag",
+    path="/Users/YOUR_USERNAME/.maia/servicedesk_rag",
     settings=Settings(anonymized_telemetry=False)
 )
 
@@ -156,7 +156,7 @@ Total: ~183 min (3.05 hours)
 watch -n 30 'python3 -c "
 import chromadb
 from chromadb.config import Settings
-client = chromadb.PersistentClient(path=\"/Users/naythandawe/.maia/servicedesk_rag\", settings=Settings(anonymized_telemetry=False))
+client = chromadb.PersistentClient(path=\"/Users/YOUR_USERNAME/.maia/servicedesk_rag\", settings=Settings(anonymized_telemetry=False))
 for coll in client.list_collections():
     print(f\"{coll.name}: {coll.count():,} docs\")
 "'
@@ -169,7 +169,7 @@ import chromadb
 from chromadb.config import Settings
 
 client = chromadb.PersistentClient(
-    path="/Users/naythandawe/.maia/servicedesk_rag",
+    path="/Users/YOUR_USERNAME/.maia/servicedesk_rag",
     settings=Settings(anonymized_telemetry=False)
 )
 
@@ -334,16 +334,16 @@ Expected: ~88.4% FCR (previous baseline)
 
 ## 🔗 Related Files
 
-**Import Tool**: `/Users/naythandawe/git/maia/claude/tools/sre/incremental_import_servicedesk.py`
-**RAG Indexer**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py`
-**Database**: `/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db`
-**ChromaDB**: `/Users/naythandawe/.maia/servicedesk_rag/`
-**Context File**: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_AUTOMATION_PROJECT_CONTEXT.md`
+**Import Tool**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/incremental_import_servicedesk.py`
+**RAG Indexer**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_gpu_rag_indexer.py`
+**Database**: `/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db`
+**ChromaDB**: `/Users/YOUR_USERNAME/.maia/servicedesk_rag/`
+**Context File**: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_AUTOMATION_PROJECT_CONTEXT.md`
 
 **XLSX Files**:
-- `/Users/naythandawe/Downloads/comments.xlsx` (88MB)
-- `/Users/naythandawe/Downloads/tickets.xlsx` (322MB)
-- `/Users/naythandawe/Downloads/timesheets.xlsx` (104MB)
+- `/Users/YOUR_USERNAME/Downloads/comments.xlsx` (88MB)
+- `/Users/YOUR_USERNAME/Downloads/tickets.xlsx` (322MB)
+- `/Users/YOUR_USERNAME/Downloads/timesheets.xlsx` (104MB)
 
 ---
 

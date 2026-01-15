@@ -183,7 +183,7 @@ python3 ~/maia/claude/tools/m365_ir/m365_ir_cli.py backfill-risk-levels <CASE_ID
 # Apply Phase 261.4 - Duplicate handling
 python3 << 'EOF'
 import sys
-sys.path.insert(0, '/Users/naythandawe/maia')
+sys.path.insert(0, '/Users/YOUR_USERNAME/maia')
 from claude.tools.m365_ir.duplicate_handler import add_merge_columns, create_active_view
 
 add_merge_columns('<CASE_ID>_logs.db')

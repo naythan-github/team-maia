@@ -413,7 +413,7 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/... python3 pmp_resilient_extractor.py
 **Cron Configuration**:
 ```cron
 # PMP Resilient Extraction (every 6 hours)
-0 */6 * * * cd /Users/naythandawe/git/maia && python3 claude/tools/pmp/pmp_resilient_extractor.py >> /tmp/pmp_extraction.log 2>&1
+0 */6 * * * cd /Users/YOUR_USERNAME/git/maia && python3 claude/tools/pmp/pmp_resilient_extractor.py >> /tmp/pmp_extraction.log 2>&1
 ```
 
 ### Monitoring

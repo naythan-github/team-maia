@@ -234,7 +234,7 @@ claude/tools/m365_ir/
 
 From PIR-GOOD-SAMARITAN-777777:
 ```
-/Users/naythandawe/work_projects/ir_cases/PIR-GOOD-SAMARITAN-777777/source-files/
+/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-GOOD-SAMARITAN-777777/source-files/
 ├── SGS_2025-11-04_2025-12-04_1_1.zip  (moved, Graph API format)
 ├── SGS_2025-11-04_2025-12-04_extracted.zip
 └── SGS_2025-11-28_2025-12-05_1.zip

@@ -32,7 +32,7 @@ Add to crontab for automated convergence:
 
 ```cron
 # Run every 6 hours until 95% coverage achieved
-0 */6 * * * cd /Users/naythandawe/git/maia && python3 claude/tools/pmp/pmp_resilient_extractor.py >> /tmp/pmp_extraction.log 2>&1
+0 */6 * * * cd /Users/YOUR_USERNAME/git/maia && python3 claude/tools/pmp/pmp_resilient_extractor.py >> /tmp/pmp_extraction.log 2>&1
 ```
 
 **Convergence Timeline**:

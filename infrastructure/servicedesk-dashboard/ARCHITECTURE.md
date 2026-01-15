@@ -255,7 +255,7 @@ python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
 
 ### Core ETL Pipeline (Required for Data Import)
 
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 | Script | Purpose | Execution Time | When to Use |
 |--------|---------|----------------|-------------|
@@ -270,7 +270,7 @@ python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
 **Usage**:
 ```bash
 # Complete ETL pipeline (sequential execution)
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # Gate 0: Prerequisites
 python3 claude/tools/sre/servicedesk_etl_preflight.py --source /path/to/servicedesk_tickets.db
@@ -290,7 +290,7 @@ python3 claude/infrastructure/servicedesk-dashboard/migration/migrate_sqlite_to_
 
 ### Quality Analysis Tools (Optional Post-Migration)
 
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 | Script | Purpose | Execution Time | When to Use |
 |--------|---------|----------------|-------------|
@@ -311,7 +311,7 @@ python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
 
 ### Support & Analysis Tools (Ad-hoc Operations)
 
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 | Script | Purpose | When to Use |
 |--------|---------|-------------|
@@ -325,7 +325,7 @@ python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
 
 ### ETL Infrastructure (Embedded in Core Tools)
 
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 | Script | Purpose | Called By |
 |--------|---------|-----------|
@@ -339,7 +339,7 @@ python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
 
 ### Migration Scripts
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/migration/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/migration/`
 
 | Script | Purpose | Size | Status |
 |--------|---------|------|--------|
@@ -350,7 +350,7 @@ python3 claude/tools/sre/servicedesk_quality_analyzer_postgres.py \
 
 ### RAG & Indexing Tools (Experimental)
 
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/`
 
 | Script | Purpose | Size |
 |--------|---------|------|
@@ -805,7 +805,7 @@ docker exec servicedesk-postgres psql \
 
 ### Dashboard Files on Disk
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/`
 
 **Phase 2 Dashboards** (4 files):
 - `executive_dashboard.json` (293 lines)
@@ -831,7 +831,7 @@ docker exec servicedesk-postgres psql \
 
 **Automated Import** (All dashboards):
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 bash scripts/import_dashboards.sh
 ```
 

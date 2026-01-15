@@ -101,9 +101,9 @@ If the 8.3% quality loss is unacceptable for critical use cases:
 
 ## Supporting Data
 
-**Test Results**: `/Users/naythandawe/git/maia/claude/data/rag_quality_test_results.json`
+**Test Results**: `/Users/YOUR_USERNAME/git/maia/claude/data/rag_quality_test_results.json`
 
-**Detailed Report**: `/Users/naythandawe/git/maia/claude/data/RAG_EMBEDDING_QUALITY_REPORT.md`
+**Detailed Report**: `/Users/YOUR_USERNAME/git/maia/claude/data/RAG_EMBEDDING_QUALITY_REPORT.md`
 
 **Test Scripts**:
 - Quality test: `claude/tools/sre/rag_quality_test_sampled.py`

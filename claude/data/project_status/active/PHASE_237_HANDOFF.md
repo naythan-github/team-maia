@@ -717,7 +717,7 @@ def test_monitor_recovery_after_capture_failure():
 ### Setup
 ```bash
 # Initialize development
-cd /Users/naythandawe/maia
+cd /Users/YOUR_USERNAME/maia
 
 # Verify current state
 pytest tests/learning/ -v

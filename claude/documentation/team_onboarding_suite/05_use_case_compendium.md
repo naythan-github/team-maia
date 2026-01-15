@@ -445,7 +445,7 @@ python3 ~/git/maia/claude/tools/sre/disaster_recovery_system.py backup \
 # ✅ Restoration script: Generated (restore_maia.sh)
 #
 # 📤 Syncing to OneDrive...
-# ✅ Synced to: ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/
+# ✅ Synced to: ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/
 #
 # Backup complete: 421MB total, <5 min
 
@@ -453,7 +453,7 @@ python3 ~/git/maia/claude/tools/sre/disaster_recovery_system.py backup \
 # Step 1: Wait for OneDrive sync (automatic)
 # Step 2: Run restoration script
 
-cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251015_143022/
+cd ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_20251015_143022/
 ./restore_maia.sh
 
 # Output:

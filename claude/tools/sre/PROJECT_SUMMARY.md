@@ -50,7 +50,7 @@ A complete **Azure VM idle shutdown automation system** that monitors VM activit
 
 ### Primary Location
 ```
-/Users/naythandawe/maia/claude/tools/sre/
+/Users/YOUR_USERNAME/maia/claude/tools/sre/
 ```
 
 ### OneDrive (Synced to Windows VM)

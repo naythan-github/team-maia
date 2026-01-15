@@ -207,7 +207,7 @@ Complete LinkedIn transformation positioning Naythan Dawe as "AI Augmentation Le
 │   ├── Technical SEO Optimizer: AI leadership keyword optimization complete
 │   │   ├── Primary Keywords: "AI Leadership", "Enterprise AI", "Business AI Implementation"
 │   │   ├── Long-tail Keywords: "AI Augmentation Leader Australia", "Business AI Strategy"
-│   │   └── Profile URL: linkedin.com/in/naythandawe-ai-leader
+│   │   └── Profile URL: linkedin.com/in/YOUR_USERNAME-ai-leader
 │   └── Visual AI Brand Designer: AI leadership visual identity created
 │       ├── Banner: "Building AI Systems That Augment Human Capability"
 │       ├── Visual Theme: Innovation + Technical Authority + Business Acumen

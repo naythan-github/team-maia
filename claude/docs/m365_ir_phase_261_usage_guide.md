@@ -232,7 +232,7 @@ PYTHONPATH=~/maia python3 ~/maia/claude/tools/m365_ir/migrations/backfill_risk_l
 # Step 4: Apply Phase 261.4 - Add merge columns and active view
 python3 << 'EOF'
 import sys
-sys.path.insert(0, '/Users/naythandawe/maia')
+sys.path.insert(0, '/Users/YOUR_USERNAME/maia')
 from claude.tools.m365_ir.duplicate_handler import add_merge_columns, create_active_view
 
 db_path = '<CASE_ID>_logs.db'

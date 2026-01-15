@@ -93,7 +93,7 @@ All 8 new log types fully implemented with:
 
 New M365 export tool (v2.1.0-Production) provides 7 additional log types plus chain-of-custody metadata. These enhance IR capability with security configuration baselines, access mapping, and **active exfiltration detection**.
 
-**Source Files Location**: `/Users/naythandawe/work_projects/ir_cases/PIR-FYNA-2025-12-08/source-files/fyna-2.zip`
+**Source Files Location**: `/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-FYNA-2025-12-08/source-files/fyna-2.zip`
 **Extracted Sample**: `/tmp/fyna_extract/TenantWide_Investigation_20260108_083839/`
 
 ---
@@ -646,10 +646,10 @@ cat claude/data/project_status/active/IR_NEW_LOG_TYPES_IMPLEMENTATION.md
 ls -la /tmp/fyna_extract/TenantWide_Investigation_20260108_083839/
 
 # If sample data gone, re-extract
-unzip -o /Users/naythandawe/work_projects/ir_cases/PIR-FYNA-2025-12-08/source-files/fyna-2.zip -d /tmp/fyna_extract
+unzip -o /Users/YOUR_USERNAME/work_projects/ir_cases/PIR-FYNA-2025-12-08/source-files/fyna-2.zip -d /tmp/fyna_extract
 
 # Start implementation
-cd /Users/naythandawe/maia
+cd /Users/YOUR_USERNAME/maia
 # Read existing parser structure
 cat claude/tools/m365_ir/m365_log_parser.py | head -100
 cat claude/tools/m365_ir/log_database.py | head -100

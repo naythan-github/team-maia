@@ -27,7 +27,7 @@
 
 ### Primary Failure: Configuration Path Mismatch
 **Defect**: All 22 LaunchAgent plist files referenced non-existent directory `~/git/restored-maia`
-**Correct Path**: `/Users/naythandawe/git/maia`
+**Correct Path**: `/Users/YOUR_USERNAME/git/maia`
 **Impact**: 100% service failure - zero services could start
 
 **Contributing Factors**:
@@ -49,10 +49,10 @@ mkdir -p ~/git/maia/claude/data/backups/launchagents_20251020_114300
 cp ~/Library/LaunchAgents/com.maia.*.plist [backup_dir]/
 
 # 2. Fixed path references (restored-maia → maia)
-sed -i '' 's|~/git/restored-maia|/Users/naythandawe/git/maia|g' *.plist
+sed -i '' 's|~/git/restored-maia|/Users/YOUR_USERNAME/git/maia|g' *.plist
 
 # 3. Expanded tilde to absolute paths
-sed -i '' 's|~/git/maia|/Users/naythandawe/git/maia|g' *.plist
+sed -i '' 's|~/git/maia|/Users/YOUR_USERNAME/git/maia|g' *.plist
 ```
 
 **Result**: Path configuration corrected in all 22 plist files
@@ -247,7 +247,7 @@ launchctl list | grep com.maia
 tail -50 ~/.maia/logs/[service_name].log
 
 # Test service manually
-python3 /Users/naythandawe/git/maia/claude/tools/[script_name].py
+python3 /Users/YOUR_USERNAME/git/maia/claude/tools/[script_name].py
 
 # Reload specific service
 launchctl unload ~/Library/LaunchAgents/com.maia.[service].plist

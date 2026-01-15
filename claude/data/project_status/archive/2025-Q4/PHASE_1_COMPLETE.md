@@ -290,7 +290,7 @@ Total Analyzed: 0 comments
 ```bash
 python3 << 'EOF'
 import chromadb
-client = chromadb.PersistentClient(path="/Users/naythandawe/.maia/servicedesk_rag")
+client = chromadb.PersistentClient(path="/Users/YOUR_USERNAME/.maia/servicedesk_rag")
 collection = client.get_collection("servicedesk_comments")
 print(f"Collection: {collection.name}")
 print(f"Count: {collection.count()}")

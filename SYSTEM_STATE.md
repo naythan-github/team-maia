@@ -1159,7 +1159,7 @@ if result_key is None and import_result is None:
 - **`tests/m365_ir/test_phase238_integration.py`** (NEW) - 3 integration tests
 - **`claude/tools/m365_ir/IR_PLAYBOOK.md`** - Phase 238 section
 - **`claude/agents/m365_incident_response_agent.md`** - v2.8 → v2.9, Phase 238 documentation
-- **`/Users/naythandawe/work_projects/ir_cases/PIR-OCULUS-2025-12-19/reports/IMPORT_ISSUE_HANDOVER.md`** - Technical handover document
+- **`/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-OCULUS-2025-12-19/reports/IMPORT_ISSUE_HANDOVER.md`** - Technical handover document
 
 ### Metrics
 | Metric | Value |
@@ -3568,7 +3568,7 @@ Added working files configuration to Technical Recruitment Agent, establishing d
 
 ### Problem Solved
 - **Before**: Recruitment agent had no configured working directory, required manual path specification for every operation
-- **After**: Agent knows default base path `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles` and expected directory structure
+- **After**: Agent knows default base path `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Roles` and expected directory structure
 
 ### Implementation Summary
 **Configuration Added**:
@@ -8571,7 +8571,7 @@ Added working files configuration to Technical Recruitment Agent, establishing d
 
 ### Problem Solved
 - **Before**: Recruitment agent had no configured working directory, required manual path specification for every operation
-- **After**: Agent knows default base path `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles` and expected directory structure
+- **After**: Agent knows default base path `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Roles` and expected directory structure
 
 ### Implementation Summary
 **Configuration Added**:
@@ -14206,7 +14206,7 @@ Added working files configuration to Technical Recruitment Agent, establishing d
 
 ### Problem Solved
 - **Before**: Recruitment agent had no configured working directory, required manual path specification for every operation
-- **After**: Agent knows default base path `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles` and expected directory structure
+- **After**: Agent knows default base path `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Roles` and expected directory structure
 
 ### Implementation Summary
 **Configuration Added**:
@@ -19209,7 +19209,7 @@ Added working files configuration to Technical Recruitment Agent, establishing d
 
 ### Problem Solved
 - **Before**: Recruitment agent had no configured working directory, required manual path specification for every operation
-- **After**: Agent knows default base path `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles` and expected directory structure
+- **After**: Agent knows default base path `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Roles` and expected directory structure
 
 ### Implementation Summary
 **Configuration Added**:
@@ -23891,7 +23891,7 @@ Three major deliverables: (1) Production-hardened generic markdown→DOCX conver
 **Pod Structure Job Descriptions**:
 
 **8 New Job Descriptions Created** (OneDrive location):
-- `~/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles/Role descriptions/`
+- `~/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Roles/Role descriptions/`
 
 **Cloud Services Pod** (Azure, M365, cloud infrastructure):
 1. Associate Cloud Engineer - Orro Cloud.docx
@@ -28257,7 +28257,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -28282,7 +28282,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -28389,7 +28389,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -28436,8 +28436,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -28508,7 +28508,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -30876,7 +30876,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -30890,7 +30890,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -31000,8 +31000,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -32318,7 +32318,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -32343,7 +32343,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -32450,7 +32450,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -32497,8 +32497,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -32569,7 +32569,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -34887,7 +34887,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -34901,7 +34901,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -35011,8 +35011,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -36329,7 +36329,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -36354,7 +36354,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -36461,7 +36461,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -36508,8 +36508,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -36580,7 +36580,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -38898,7 +38898,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -38912,7 +38912,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -39022,8 +39022,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -40340,7 +40340,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -40365,7 +40365,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -40472,7 +40472,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -40519,8 +40519,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -40591,7 +40591,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -42909,7 +42909,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -42923,7 +42923,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -43033,8 +43033,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -44351,7 +44351,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -44376,7 +44376,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -44483,7 +44483,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -44530,8 +44530,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -44602,7 +44602,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -46920,7 +46920,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -46934,7 +46934,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -47044,8 +47044,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -48362,7 +48362,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -48387,7 +48387,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -48494,7 +48494,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -48541,8 +48541,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -48613,7 +48613,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -50931,7 +50931,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -50945,7 +50945,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -51055,8 +51055,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -52373,7 +52373,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -52398,7 +52398,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -52505,7 +52505,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -52552,8 +52552,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -52624,7 +52624,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -54942,7 +54942,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -54956,7 +54956,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -55066,8 +55066,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -56384,7 +56384,7 @@ end repeat
 **5. LaunchAgent Path Corruption Fix**:
 ```bash
 # Fixed all 20 plists with corrected paths
-sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
+sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' \
   ~/Library/LaunchAgents/*.plist
 ```
 
@@ -56409,7 +56409,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
    - Added mailbox loop for message search
 
 3. **~/Library/LaunchAgents/*.plist** (20 files):
-   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/naythandawe/git/maia/`
+   - Fixed all path references from `/tmp/maia-restore-test-final/` to `/Users/YOUR_USERNAME/git/maia/`
 
 4. **tests/test_email_rag_reliability.py** (new):
    - 15 test cases covering production failure scenarios
@@ -56516,7 +56516,7 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Upgrading from Pre-Phase 136**:
 1. Pull latest code: `git pull origin main`
 2. Stop LaunchAgent: `launchctl unload ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
-3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' ~/Library/LaunchAgents/*.plist`
+3. Fix paths (if needed): `sed -i '' 's|/tmp/maia-restore-test-final|/Users/YOUR_USERNAME/git/maia|g' ~/Library/LaunchAgents/*.plist`
 4. Clear database: `rm -rf ~/.maia/email_rag_ollama/chroma.sqlite3`
 5. Full reindex: `python3 ~/git/maia/claude/tools/email_rag_ollama.py`
 6. Restart LaunchAgent: `launchctl load ~/Library/LaunchAgents/com.maia.email-rag-indexer.plist`
@@ -56563,8 +56563,8 @@ sed -i '' 's|/tmp/maia-restore-test-final|/Users/naythandawe/git/maia|g' \
 **Restoration Script** (restore_maia.sh - enhanced with WSL detection):
 - **Auto-detects environment**: Checks `/proc/version` + `/mnt/c/Windows` for WSL
 - **Platform-adaptive paths**:
-  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-ORROPTYLTD`
-  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`
+  - macOS: `~/git/maia` | OneDrive: `~/Library/CloudStorage/OneDrive-YOUR_ORG`
+  - WSL: `~/maia` (recommended) or `/mnt/c/Users/{user}/maia` | OneDrive: `/mnt/c/Users/{user}/OneDrive - YOUR_ORG`
 - **Component skipping on WSL**:
   - ✅ Code, databases, credentials, Python deps (cross-platform)
   - ⏭️ LaunchAgents, Homebrew, macOS shell configs (WSL uses cron, apt, bash)
@@ -56635,7 +56635,7 @@ fi
 **Script Enhancements**:
 - ✅ WSL auto-detection (`/proc/version` + `/mnt/c/Windows` checks)
 - ✅ Windows username detection (`ls /mnt/c/Users/`)
-- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - ORROPTYLTD`)
+- ✅ OneDrive path detection (`/mnt/c/Users/{user}/OneDrive - YOUR_ORG`)
 - ✅ Platform-adaptive path selection (3 options for WSL)
 - ✅ Component skipping (LaunchAgents, Homebrew, shell configs on WSL)
 - ✅ VSCode integration instructions (`code ~/maia`, environment setup)
@@ -58953,7 +58953,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -58967,7 +58967,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -59077,8 +59077,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -60683,7 +60683,7 @@ python3 enhanced_daily_briefing_strategic.py
 
 **Component 1: Disaster Recovery Orchestrator** (`claude/tools/sre/disaster_recovery_system.py` - 750 lines)
 - **8 Backup Components**: Code (62MB), small databases (528KB, 38 DBs), large databases chunked (348MB → 7×50MB), LaunchAgents (19 agents), dependencies (pip/brew), shell configs, encrypted credentials, restoration script
-- **OneDrive Auto-Detection**: Tries multiple paths (ORROPTYLTD, SharedLibraries, personal), org-agnostic
+- **OneDrive Auto-Detection**: Tries multiple paths (YOUR_ORG, SharedLibraries, personal), org-agnostic
 - **Large Database Chunking**: 50MB chunks for parallel sync (servicedesk_tickets.db: 348MB → 7 chunks)
 - **Encrypted Credentials**: AES-256-CBC with master password (production_api_credentials.py + LaunchAgent env vars)
 - **CLI**: `backup`, `list`, `prune` commands
@@ -60796,7 +60796,7 @@ python3 enhanced_daily_briefing_strategic.py
 - save_state workflow: Could integrate pre-save backup
 
 **OneDrive**:
-- Path: ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/
+- Path: ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/
 - Auto-syncs: Backups appear in OneDrive web UI
 - Storage: <5GB with retention policy (23 backups max)
 
@@ -60805,8 +60805,8 @@ python3 enhanced_daily_briefing_strategic.py
 **Created**:
 - `claude/tools/sre/disaster_recovery_system.py` (750 lines)
 - `claude/data/DISASTER_RECOVERY_IMPLEMENTATION_PLAN.md` (1,050 lines)
-- `/Users/naythandawe/Library/LaunchAgents/com.maia.disaster-recovery.plist` (38 lines)
-- `~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251013_182019/` (backup directory)
+- `/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.disaster-recovery.plist` (38 lines)
+- `~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_20251013_182019/` (backup directory)
   - backup_manifest.json (metadata)
   - maia_code.tar.gz (62MB)
   - maia_data_small.tar.gz (528KB)
@@ -60897,7 +60897,7 @@ python3 enhanced_daily_briefing_strategic.py
 **Recovery Command**:
 ```bash
 # On new hardware after OneDrive sync
-cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251013_182019/
+cd ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_20251013_182019/
 ./restore_maia.sh
 ```
 
@@ -62261,7 +62261,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 
 ### Documentation Suite Deliverables
 
-**Location**: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
 
 **9 Documents** (276KB, 8,414 lines):
 1. **Executive Overview** (27KB) - Business case, ROI, strategic value
@@ -62275,7 +62275,7 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 9. **README.md** - Suite navigation and audience-specific reading paths
 
 **Visual Diagrams** (38KB, 1,350+ lines):
-- Location: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- Location: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - 8 diagrams: System architecture, UFC context management, agent ecosystem, tool infrastructure, multi-LLM routing, data systems, orchestration, security
 - Formats: Mermaid + ASCII + design specs per diagram
 
@@ -62385,8 +62385,8 @@ User actively interviewing for team positions (Endpoint Engineer, IDAM Engineer,
 5. Complete documentation package delivered
 
 **Files Created**:
-- 9 documentation files: `/Users/naythandawe/git/maia/claude/documentation/team_onboarding_suite/`
-- 1 visual diagrams file: `/Users/naythandawe/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
+- 9 documentation files: `/Users/YOUR_USERNAME/git/maia/claude/documentation/team_onboarding_suite/`
+- 1 visual diagrams file: `/Users/YOUR_USERNAME/git/maia/claude/data/MAIA_VISUAL_ARCHITECTURE_DIAGRAMS.md`
 - Total: 10 files, 314KB, 9,764+ lines
 
 **Quality Features**:
@@ -63991,7 +63991,7 @@ python3 enhanced_daily_briefing_strategic.py
 
 **Component 1: Disaster Recovery Orchestrator** (`claude/tools/sre/disaster_recovery_system.py` - 750 lines)
 - **8 Backup Components**: Code (62MB), small databases (528KB, 38 DBs), large databases chunked (348MB → 7×50MB), LaunchAgents (19 agents), dependencies (pip/brew), shell configs, encrypted credentials, restoration script
-- **OneDrive Auto-Detection**: Tries multiple paths (ORROPTYLTD, SharedLibraries, personal), org-agnostic
+- **OneDrive Auto-Detection**: Tries multiple paths (YOUR_ORG, SharedLibraries, personal), org-agnostic
 - **Large Database Chunking**: 50MB chunks for parallel sync (servicedesk_tickets.db: 348MB → 7 chunks)
 - **Encrypted Credentials**: AES-256-CBC with master password (production_api_credentials.py + LaunchAgent env vars)
 - **CLI**: `backup`, `list`, `prune` commands
@@ -64104,7 +64104,7 @@ python3 enhanced_daily_briefing_strategic.py
 - save_state workflow: Could integrate pre-save backup
 
 **OneDrive**:
-- Path: ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/
+- Path: ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/
 - Auto-syncs: Backups appear in OneDrive web UI
 - Storage: <5GB with retention policy (23 backups max)
 
@@ -64113,8 +64113,8 @@ python3 enhanced_daily_briefing_strategic.py
 **Created**:
 - `claude/tools/sre/disaster_recovery_system.py` (750 lines)
 - `claude/data/DISASTER_RECOVERY_IMPLEMENTATION_PLAN.md` (1,050 lines)
-- `/Users/naythandawe/Library/LaunchAgents/com.maia.disaster-recovery.plist` (38 lines)
-- `~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251013_182019/` (backup directory)
+- `/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.disaster-recovery.plist` (38 lines)
+- `~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_20251013_182019/` (backup directory)
   - backup_manifest.json (metadata)
   - maia_code.tar.gz (62MB)
   - maia_data_small.tar.gz (528KB)
@@ -64205,7 +64205,7 @@ python3 enhanced_daily_briefing_strategic.py
 **Recovery Command**:
 ```bash
 # On new hardware after OneDrive sync
-cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251013_182019/
+cd ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_20251013_182019/
 ./restore_maia.sh
 ```
 
@@ -64286,9 +64286,9 @@ cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251013_182019/
 ### Implementation Details
 
 **Components Created**:
-1. **LaunchAgent Configuration** (`/Users/naythandawe/Library/LaunchAgents/com.maia.health_monitor.plist`)
+1. **LaunchAgent Configuration** (`/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.health_monitor.plist`)
    - Label: com.maia.health_monitor
-   - Environment: PYTHONPATH=/Users/naythandawe/git/maia, MAIA_ENV=production
+   - Environment: PYTHONPATH=/Users/YOUR_USERNAME/git/maia, MAIA_ENV=production
    - Auto-start: RunAtLoad=true
    - Auto-restart: KeepAlive=true
    - Logging: stdout/stderr to claude/logs/production/
@@ -64305,7 +64305,7 @@ cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_20251013_182019/
 - **Status**: Running
 - **Logs**: claude/logs/production/health.log, health_monitor.stdout.log, health_monitor.stderr.log
 - **Check Interval**: 60 seconds
-- **Working Directory**: /Users/naythandawe/git/maia
+- **Working Directory**: /Users/YOUR_USERNAME/git/maia
 
 ### Integration
 - Registered in launchd service list
@@ -67302,8 +67302,8 @@ bash ~/git/maia/claude/commands/whisper_dictation_status.sh
 ### Files Created
 
 **LaunchAgents** (2):
-- `/Users/naythandawe/Library/LaunchAgents/com.maia.whisper-server.plist`
-- `/Users/naythandawe/Library/LaunchAgents/com.maia.whisper-health.plist`
+- `/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.whisper-server.plist`
+- `/Users/YOUR_USERNAME/Library/LaunchAgents/com.maia.whisper-health.plist`
 
 **Scripts** (4):
 - `claude/tools/whisper_dictation_vad_ffmpeg.py` (main client with auto-typing)
@@ -68113,7 +68113,7 @@ User reported "local processes that should be scanning folders, email, etc are n
 
 **Root Cause Remediation**:
 1. Backed up all 22 plist files to `claude/data/backups/launchagents_20251020_114300/`
-2. Fixed path references: `sed 's|~/git/restored-maia|/Users/naythandawe/git/maia|g'` (all plists)
+2. Fixed path references: `sed 's|~/git/restored-maia|/Users/YOUR_USERNAME/git/maia|g'` (all plists)
 3. Expanded tilde to absolute paths (launchd requirement)
 4. Reloaded all services: `launchctl unload/load` cycle
 
@@ -68837,7 +68837,7 @@ pytest PHASE_192_INTEGRATION_TESTS.py::TestSmartContextLoaderIntegration -v  # 3
 3. `claude/tools/sre/smart_context_loader.py`
    - Line 538: Added discovery hint to guaranteed minimum
 
-4. `/Users/naythandawe/work_projects/maia_system_improvements/PHASE_192_INTEGRATION_TESTS.py`
+4. `/Users/YOUR_USERNAME/work_projects/maia_system_improvements/PHASE_192_INTEGRATION_TESTS.py`
    - Line 60: Fixed test threshold (500 → 450 tools)
 
 **Project Artifacts** (External):
@@ -69439,7 +69439,7 @@ python3 claude/tools/m365_ir/migrations/migrate_phase_261.py <case_db>.db
 ### Documentation
 
 - **Analyst guide**: `claude/docs/m365_ir_phase_261_usage_guide.md` (comprehensive)
-- **Requirements**: `/Users/naythandawe/work_projects/ir_cases/PIR-SGS-4241809/reports/PHASE_261_REQUIREMENTS_v2.md`
+- **Requirements**: `/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-SGS-4241809/reports/PHASE_261_REQUIREMENTS_v2.md`
 - **Checkpoint**: `/tmp/CHECKPOINT_PHASE_261.md`
 
 ### Key Learnings
@@ -69642,9 +69642,9 @@ def test_password_threshold_70_percent_is_critical():
 3. `tests/fixtures/test_db_helpers.py` (347 lines) - Test fixtures
 
 **Documentation**:
-4. `/Users/naythandawe/work_projects/ir_cases/PIR-SGS-4234543/TDD_IMPLEMENTATION_PLAN.md` - 4-sprint plan
-5. `/Users/naythandawe/work_projects/ir_cases/PIR-SGS-4234543/SWARM_ANALYSIS_REPORT.md` - Swarm findings
-6. `/Users/naythandawe/work_projects/ir_cases/PIR-SGS-4234543/LESSONS_LEARNED_DETAILED.md` - Source analysis
+4. `/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-SGS-4234543/TDD_IMPLEMENTATION_PLAN.md` - 4-sprint plan
+5. `/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-SGS-4234543/SWARM_ANALYSIS_REPORT.md` - Swarm findings
+6. `/Users/YOUR_USERNAME/work_projects/ir_cases/PIR-SGS-4234543/LESSONS_LEARNED_DETAILED.md` - Source analysis
 
 ### Status: Sprint 1 Complete (100%)
 
@@ -69871,9 +69871,9 @@ PreCompact hooks have a known bug (Claude Code Issues #13572, #13668) - they don
 
 **Usage**:
 ```bash
-PYTHONPATH=/Users/naythandawe/maia python3 -m claude.tools.learning.continuous_capture.installer install [180]
-PYTHONPATH=/Users/naythandawe/maia python3 -m claude.tools.learning.continuous_capture.installer status
-PYTHONPATH=/Users/naythandawe/maia python3 -m claude.tools.learning.continuous_capture.installer uninstall
+PYTHONPATH=/Users/YOUR_USERNAME/maia python3 -m claude.tools.learning.continuous_capture.installer install [180]
+PYTHONPATH=/Users/YOUR_USERNAME/maia python3 -m claude.tools.learning.continuous_capture.installer status
+PYTHONPATH=/Users/YOUR_USERNAME/maia python3 -m claude.tools.learning.continuous_capture.installer uninstall
 ```
 
 ### Phase 8: Integration Tests ✅
@@ -69912,8 +69912,8 @@ Breakdown:
 **Deployed**: 2026-01-10 14:23 AWST  
 **Status**: ✅ Daemon running and operational  
 **Projects Monitored**: 2 Claude Code projects
-- `-Users-naythandawe-maia` (974 messages tracked)
-- `-Users-naythandawe-git-maia`
+- `-Users-YOUR_USERNAME-maia` (974 messages tracked)
+- `-Users-YOUR_USERNAME-git-maia`
 
 **Scan Interval**: 180 seconds (3 minutes)  
 **Logs**: `~/.maia/logs/continuous_capture_stderr.log`
@@ -69922,7 +69922,7 @@ Breakdown:
 1. **PYTHONPATH Issue**: Created `daemon_runner.py` wrapper script to set sys.path before imports
 2. **Transcript Discovery**: Fixed to scan for UUID-named `.jsonl` files (not hardcoded `transcript.jsonl`)
 3. **Module Imports**: Added sys.path manipulation for LaunchAgent compatibility
-4. **Installer Updates**: Added PYTHONPATH to plist, updated MAIA_ROOT calculation to `/Users/naythandawe/maia`
+4. **Installer Updates**: Added PYTHONPATH to plist, updated MAIA_ROOT calculation to `/Users/YOUR_USERNAME/maia`
 
 ## Acceptance Criteria Status
 | Criteria | Status |
@@ -70007,7 +70007,7 @@ python3 claude/tools/learning/continuous_capture/daemon_runner.py
 tail -f ~/.maia/logs/continuous_capture_stderr.log
 
 # Check state tracking
-cat ~/.maia/capture_state/-Users-naythandawe-maia.json | python3 -m json.tool
+cat ~/.maia/capture_state/-Users-YOUR_USERNAME-maia.json | python3 -m json.tool
 
 # Check queue status
 ls -lh ~/.maia/learning_queue/

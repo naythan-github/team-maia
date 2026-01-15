@@ -11,7 +11,7 @@ All Windows installation scripts and documentation are now stored in:
 
 **OneDrive Path:**
 ```
-/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/remote-shared/maia-windows-installation/
+/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/remote-shared/maia-windows-installation/
 ```
 
 **Network Access (from Windows RDP/VMs):**
@@ -62,7 +62,7 @@ cd Z:\maia-windows-installation
 .\Install-MaiaEnvironment-v3.1-FIXED.ps1
 ```
 
-For detailed instructions, see the [README.md](../../Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/remote-shared/maia-windows-installation/README.md) in the OneDrive location.
+For detailed instructions, see the [README.md](../../Library/CloudStorage/OneDrive-YOUR_ORG/Documents/remote-shared/maia-windows-installation/README.md) in the OneDrive location.
 
 ---
 
@@ -90,7 +90,7 @@ When updating installation scripts:
 2. Copy updated files to OneDrive:
    ```bash
    cp claude/tools/sre/Install-MaiaEnvironment-v3.1-FIXED.ps1 \
-      "/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/remote-shared/maia-windows-installation/"
+      "/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/remote-shared/maia-windows-installation/"
    ```
 
 3. Update version numbers and dates in README.md

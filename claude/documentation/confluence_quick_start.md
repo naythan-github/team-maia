@@ -348,7 +348,7 @@ The client converts markdown to Confluence storage format HTML automatically.
 **Solution**: Add to Python path:
 ```python
 import sys
-sys.path.insert(0, '/Users/naythandawe/git/maia/claude/tools')
+sys.path.insert(0, '/Users/YOUR_USERNAME/git/maia/claude/tools')
 from confluence_client import ConfluenceClient
 ```
 

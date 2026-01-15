@@ -15,7 +15,7 @@ Successfully implemented the **Agent Quality Coaching** engine as the first deli
 ## Deliverables
 
 ### 1. Agent Quality Coach Script
-**File**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py` (695 lines)
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py` (695 lines)
 
 **Capabilities**:
 - Generate personalized coaching reports for any agent
@@ -165,8 +165,8 @@ python3 servicedesk_agent_quality_coach.py --agent "brian" --period 30
 ## Files Modified/Created
 
 ### Created
-- `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py` (695 lines)
-- `/Users/naythandawe/git/maia/claude/data/PHASE_2_PART_1_COMPLETE.md` (this file)
+- `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_agent_quality_coach.py` (695 lines)
+- `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_2_PART_1_COMPLETE.md` (this file)
 
 ### No Commits Yet
 - Need to commit once Phase 2 Part 1 is confirmed working

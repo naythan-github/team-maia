@@ -183,11 +183,11 @@ The feature is complete, tested, and production-ready.
 
 ## Files Created
 
-- `/Users/naythandawe/maia/claude/tools/orchestration/tests/test_integration_workflows.py` (4 tests)
-- `/Users/naythandawe/maia/claude/tools/orchestration/tests/test_session_integrity.py` (4 tests)
-- `/Users/naythandawe/maia/claude/tools/orchestration/tests/test_learning_integration.py` (4 tests)
-- `/Users/naythandawe/maia/claude/tools/orchestration/tests/test_performance.py` (5 tests)
-- `/Users/naythandawe/maia/claude/tools/orchestration/tests/SPRINT_6_SUMMARY.md` (this file)
+- `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/test_integration_workflows.py` (4 tests)
+- `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/test_session_integrity.py` (4 tests)
+- `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/test_learning_integration.py` (4 tests)
+- `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/test_performance.py` (5 tests)
+- `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/SPRINT_6_SUMMARY.md` (this file)
 
 ---
 

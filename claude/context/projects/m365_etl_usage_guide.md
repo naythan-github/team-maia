@@ -112,7 +112,7 @@ conn.close()
 #### Step 1: Extract Export Files
 
 ```bash
-cd /Users/naythandawe/work_projects/ir_cases/PIR-GOOD-SAMARITAN-777777/source-files
+cd /Users/YOUR_USERNAME/work_projects/ir_cases/PIR-GOOD-SAMARITAN-777777/source-files
 unzip SGS_2025-11-04_2025-12-04_1_1.zip -d extracted/
 ```
 

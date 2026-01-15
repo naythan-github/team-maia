@@ -167,7 +167,7 @@ python3 ~/git/maia/claude/tools/sre/incremental_import_servicedesk.py import \
 SERVICEDESK DATA IMPORT - Cloud-Touched Logic
 ================================================================================
 
-💬 STEP 1: Importing comments from: /Users/naythandawe/Downloads/comments.csv
+💬 STEP 1: Importing comments from: /Users/YOUR_USERNAME/Downloads/comments.csv
    Loaded 204,625 rows
    ✅ Filtered to 176,637 rows (July 1+ only)
    📋 Cloud roster: 48 members
@@ -176,13 +176,13 @@ SERVICEDESK DATA IMPORT - Cloud-Touched Logic
    ✅ Imported as import_id=10
    📅 Date range: 2025-07-03 to 2025-10-14
 
-📋 STEP 2: Importing tickets from: /Users/naythandawe/Downloads/all-tickets.csv
+📋 STEP 2: Importing tickets from: /Users/YOUR_USERNAME/Downloads/all-tickets.csv
    Loaded 652,681 rows
    🎯 Cloud-touched tickets: 10,939 rows (no date filter - filtered by Cloud activity)
    ✅ Imported as import_id=11
    📅 Date range: 2025-07-03 to 2025-10-13
 
-⏱️  STEP 3: Importing timesheets from: /Users/naythandawe/Downloads/timesheets.csv
+⏱️  STEP 3: Importing timesheets from: /Users/YOUR_USERNAME/Downloads/timesheets.csv
    Loaded 732,959 rows
    ✅ Filtered to 141,062 rows (July 1+ only)
    ⚠️  Found 128,007 orphaned timesheet entries (90.7%)

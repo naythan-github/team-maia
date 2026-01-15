@@ -73,7 +73,7 @@ OneDrive is mounted in WSL at `/mnt/c/Users/{username}/OneDrive/`:
 ls /mnt/c/Users/
 
 # Navigate to OneDrive backups
-cd "/mnt/c/Users/YOUR_USERNAME/OneDrive - ORROPTYLTD/MaiaBackups"
+cd "/mnt/c/Users/YOUR_USERNAME/OneDrive - YOUR_ORG/MaiaBackups"
 
 # Or Personal OneDrive:
 cd "/mnt/c/Users/YOUR_USERNAME/OneDrive/MaiaBackups"
@@ -112,7 +112,7 @@ The script will detect WSL and offer these options:
 🔍 Detecting system environment...
   Platform: Windows Subsystem for Linux (WSL)
   Windows User: YourUsername
-  OneDrive: /mnt/c/Users/YourUsername/OneDrive - ORROPTYLTD
+  OneDrive: /mnt/c/Users/YourUsername/OneDrive - YOUR_ORG
 
 📁 Where should Maia be installed?
   1. ~/maia (WSL home directory - recommended for VSCode)
@@ -395,7 +395,7 @@ Could not resolve path: /home/username/maia
 **Solution**:
 ```bash
 # Option 1: Backup to OneDrive path (Windows filesystem)
-export MAIA_ONEDRIVE_PATH="/mnt/c/Users/YOUR_USERNAME/OneDrive - ORROPTYLTD"
+export MAIA_ONEDRIVE_PATH="/mnt/c/Users/YOUR_USERNAME/OneDrive - YOUR_ORG"
 python3 claude/tools/sre/disaster_recovery_system.py backup
 
 # Option 2: Create backup in WSL, manually copy to OneDrive
@@ -432,7 +432,7 @@ cd ~/maia
 python3 claude/tools/sre/disaster_recovery_system.py backup
 
 # Backup will be created at:
-# /mnt/c/Users/YOUR_USERNAME/OneDrive - ORROPTYLTD/MaiaBackups/full_YYYYMMDD_HHMMSS/
+# /mnt/c/Users/YOUR_USERNAME/OneDrive - YOUR_ORG/MaiaBackups/full_YYYYMMDD_HHMMSS/
 ```
 
 **Important**: Backup target must be Windows OneDrive path (`/mnt/c/...`) for OneDrive sync to work.
@@ -464,7 +464,7 @@ cd /mnt/c/Users/YOUR_USERNAME
 
 ```bash
 # Navigate to backup
-cd "/mnt/c/Users/YOUR_USERNAME/OneDrive - ORROPTYLTD/MaiaBackups/full_20251021_182032"
+cd "/mnt/c/Users/YOUR_USERNAME/OneDrive - YOUR_ORG/MaiaBackups/full_20251021_182032"
 
 # Run restore
 ./restore_maia.sh
@@ -500,7 +500,7 @@ pip3 list
 | **Backup Creation** | disaster_recovery_system.py | disaster_recovery_system.py (same) |
 | **Backup Format** | tar.gz | tar.gz (same) |
 | **Restoration Script** | restore_maia.sh | restore_maia.sh (auto-detects WSL) |
-| **OneDrive Path** | ~/Library/CloudStorage/OneDrive-ORROPTYLTD | /mnt/c/Users/{user}/OneDrive - ORROPTYLTD |
+| **OneDrive Path** | ~/Library/CloudStorage/OneDrive-YOUR_ORG | /mnt/c/Users/{user}/OneDrive - YOUR_ORG |
 | **Automation** | LaunchAgents | cron |
 | **Shell** | zsh / bash | bash |
 | **Package Manager** | Homebrew (brew) | APT (apt) |

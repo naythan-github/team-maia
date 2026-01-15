@@ -30,7 +30,7 @@ python3 claude/tools/sre/disaster_recovery_system.py prune
 **Restoration**:
 ```bash
 # On new hardware after OneDrive sync
-cd ~/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/full_YYYYMMDD_HHMMSS/
+cd ~/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/full_YYYYMMDD_HHMMSS/
 ./restore_maia.sh
 ```
 
@@ -106,7 +106,7 @@ These tools are always available for use:
 ### VTT Meeting Intelligence System ⭐ **NEW - PHASE 83 PRODUCTION READY**
 - **VTT Watcher**: Automated meeting transcript analysis with FOB templates
   - **File**: `claude/tools/vtt_watcher.py` (459 lines)
-  - **Monitoring**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/1-VTT`
+  - **Monitoring**: `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/1-VTT`
   - **Output**: `~/git/maia/claude/data/transcript_summaries/`
   - **Auto-Start**: macOS LaunchAgent (com.maia.vtt-watcher) - survives reboots
 - **FOB Template System**: 6 meeting-type specific frameworks

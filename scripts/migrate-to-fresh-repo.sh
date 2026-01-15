@@ -372,7 +372,7 @@ echo ""
 echo -e "${YELLOW}Step 8: Final personal data scan...${NC}"
 
 # Patterns to search for (comprehensive from PII_REDACTION_CHECKLIST.md)
-PERSONAL_PATTERNS="naythandawe|naythan\.dev|naythan\.general|naythan\.dawe|naythan\.me|nd25@|/Users/naythan|@orro\.group|Naythan Dawe|\"Naythan\""
+PERSONAL_PATTERNS="YOUR_USERNAME|naythan\.dev|naythan\.general|naythan\.dawe|naythan\.me|nd25@|/Users/naythan|@orro\.group|Naythan Dawe|\"Naythan\""
 
 # Find any remaining personal data
 FOUND_PERSONAL=$(grep -rlE "$PERSONAL_PATTERNS" "$TARGET_DIR" \
@@ -390,7 +390,7 @@ if [ -n "$FOUND_PERSONAL" ]; then
     # Scrub common patterns (comprehensive - 16 patterns from checklist)
     find "$TARGET_DIR" -type f \( -name "*.py" -o -name "*.md" -o -name "*.json" \) \
         -exec sed -i '' \
-            -e 's/naythandawe/USER/g' \
+            -e 's/YOUR_USERNAME/USER/g' \
             -e 's/naythan-orro/USER-ORG/g' \
             -e 's/naythan\.dev+maia@gmail\.com/maia-inbox@example.com/g' \
             -e 's/naythan\.dev@gmail\.com/user@example.com/g' \

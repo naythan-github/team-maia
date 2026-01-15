@@ -429,7 +429,7 @@ set -e
 echo "🔍 Running pre-commit checks..."
 
 # Check 1: No personal data in staged files
-if git diff --cached --name-only | xargs grep -l "naythandawe\|/Users/naythan" 2>/dev/null; then
+if git diff --cached --name-only | xargs grep -l "YOUR_USERNAME\|/Users/naythan" 2>/dev/null; then
     echo "❌ BLOCKED: Personal data detected in staged files"
     echo "   Remove personal paths/usernames before committing"
     exit 1
@@ -559,7 +559,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Check for personal data
         run: |
-          if grep -rE "naythandawe|/Users/naythan" claude/ --include="*.py" --include="*.md"; then
+          if grep -rE "YOUR_USERNAME|/Users/naythan" claude/ --include="*.py" --include="*.md"; then
             echo "❌ Personal data found"
             exit 1
           fi
@@ -812,14 +812,14 @@ If multi-user setup causes issues:
 # .github/CODEOWNERS
 
 # Default owner for everything
-* @naythandawe
+* @YOUR_USERNAME
 
 # Core system - require owner approval
-/CLAUDE.md @naythandawe
-/SYSTEM_STATE.md @naythandawe
-/claude/context/core/ @naythandawe
-/claude/hooks/ @naythandawe
-/claude/tools/core/ @naythandawe
+/CLAUDE.md @YOUR_USERNAME
+/SYSTEM_STATE.md @YOUR_USERNAME
+/claude/context/core/ @YOUR_USERNAME
+/claude/hooks/ @YOUR_USERNAME
+/claude/tools/core/ @YOUR_USERNAME
 
 # Domain areas - can expand ownership later
 # /claude/tools/security/ @security-lead
@@ -827,7 +827,7 @@ If multi-user setup causes issues:
 # /claude/agents/*security* @security-lead
 
 # Tests - broader approval
-/tests/ @naythandawe
+/tests/ @YOUR_USERNAME
 ```
 
 ### A.2 PR Template
@@ -943,7 +943,7 @@ Follow conventional commits:
 
 - Check existing documentation first
 - Ask in team chat
-- Tag @naythandawe for architectural questions
+- Tag @YOUR_USERNAME for architectural questions
 
 ## Code of Conduct
 
@@ -996,7 +996,7 @@ jobs:
       - name: Check for personal data
         run: |
           echo "Scanning for personal data..."
-          if grep -rE "(naythandawe|/Users/naythan)" claude/ --include="*.py" --include="*.md" 2>/dev/null | grep -v ".gitignore"; then
+          if grep -rE "(YOUR_USERNAME|/Users/naythan)" claude/ --include="*.py" --include="*.md" 2>/dev/null | grep -v ".gitignore"; then
             echo "❌ Personal data found in code"
             exit 1
           fi
@@ -1119,7 +1119,7 @@ set -e
 echo "🔍 Running pre-commit checks..."
 
 # Check for personal data
-if git diff --cached --name-only | xargs grep -l "naythandawe\|/Users/naythan" 2>/dev/null; then
+if git diff --cached --name-only | xargs grep -l "YOUR_USERNAME\|/Users/naythan" 2>/dev/null; then
     echo "❌ Personal data detected in staged files"
     exit 1
 fi

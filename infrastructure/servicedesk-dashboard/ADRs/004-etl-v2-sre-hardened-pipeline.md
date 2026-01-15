@@ -506,7 +506,7 @@ Gate 3: PostgreSQL Migration (5 min)
 **Documented**: 2025-10-21 (ADR-004)
 
 **Decision Maker**: SRE Principal Engineer Agent
-**Stakeholder**: User (naythandawe)
+**Stakeholder**: User (YOUR_USERNAME)
 **Reviewers**: N/A (single-developer project)
 
 **Supersedes**: ETL V1 (incremental_import_servicedesk.py)

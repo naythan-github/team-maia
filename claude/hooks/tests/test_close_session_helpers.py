@@ -417,7 +417,7 @@ class TestCategorizeUncommittedFiles:
 
         result = _categorize_uncommitted_files(
             uncommitted_files=[' M claude/tools/foo.py'],
-            files_touched=['/Users/naythandawe/maia/claude/tools/foo.py']
+            files_touched=['/Users/YOUR_USERNAME/maia/claude/tools/foo.py']
         )
         # Should match even with absolute path
         assert 'claude/tools/foo.py' in result['this_session']

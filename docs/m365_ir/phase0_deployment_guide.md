@@ -403,7 +403,7 @@ fi
 
 ### Getting Help
 
-- **Documentation**: `/Users/naythandawe/maia/docs/m365_ir/`
+- **Documentation**: `/Users/YOUR_USERNAME/maia/docs/m365_ir/`
 - **GitHub Issues**: https://github.com/naythan-orro/maia/issues
 - **Test Suite**: Run `pytest -v` to verify functionality
 

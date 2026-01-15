@@ -898,7 +898,7 @@ class TestBackwardCompatibility:
             ],
             capture_output=True,
             text=True,
-            cwd='/Users/naythandawe/maia'
+            cwd='/Users/YOUR_USERNAME/maia'
         )
 
         print(f"\n🔄 Backward Compatibility Check:")

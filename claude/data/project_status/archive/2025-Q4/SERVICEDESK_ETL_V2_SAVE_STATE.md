@@ -393,7 +393,7 @@ Gate 3: PostgreSQL Migration (Phase 3)
 
 ```bash
 # Resume from current state
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # Verify Phase 0 tests still pass
 PYTHONPATH=. pytest tests/test_servicedesk_etl_*.py -v

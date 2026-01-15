@@ -16,7 +16,7 @@
 load the sre agent
 ```
 
-**File Location**: `/Users/naythandawe/git/maia/claude/agents/sre_principal_engineer_agent.md`
+**File Location**: `/Users/YOUR_USERNAME/git/maia/claude/agents/sre_principal_engineer_agent.md`
 
 **Why This Matters**: SRE systematic approach ensures production-grade reliability
 
@@ -243,7 +243,7 @@ git commit -m "Dashboard Remediation Phase A: Automated Test Suite"
 
 2. **Review Project State**
    ```
-   read /Users/naythandawe/git/maia/claude/data/DASHBOARD_REMEDIATION_PROJECT.md
+   read /Users/YOUR_USERNAME/git/maia/claude/data/DASHBOARD_REMEDIATION_PROJECT.md
    ```
 
 3. **Check Current Phase**

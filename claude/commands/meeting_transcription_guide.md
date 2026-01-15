@@ -50,7 +50,7 @@ Transcripts saved to: `~/git/maia/claude/data/transcripts/`
 🎤 Meeting Transcription - Live Session
 ════════════════════════════════════════════════════════════════════════════════
 Session ID: 20251029_154500
-Output: /Users/naythandawe/git/maia/claude/data/transcripts/meeting_20251029_154500.md
+Output: /Users/YOUR_USERNAME/git/maia/claude/data/transcripts/meeting_20251029_154500.md
 Started: 2025-10-29 15:45:00
 ────────────────────────────────────────────────────────────────────────────────
 Status: RECORDING | Chunks: 3 | Duration: 00:01:30
@@ -264,7 +264,7 @@ Create `~/Library/LaunchAgents/com.maia.meeting-transcriber.plist`:
     <key>ProgramArguments</key>
     <array>
         <string>/opt/homebrew/bin/python3</string>
-        <string>/Users/naythandawe/git/maia/claude/tools/whisper_meeting_transcriber.py</string>
+        <string>/Users/YOUR_USERNAME/git/maia/claude/tools/whisper_meeting_transcriber.py</string>
         <string>--title</string>
         <string>Auto Meeting</string>
     </array>

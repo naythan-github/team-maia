@@ -7,7 +7,7 @@
 ---
 
 ## Working Files Configuration
-**Base Path**: `/Users/naythandawe/Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/Recruitment/Roles`
+**Base Path**: `/Users/YOUR_USERNAME/Library/CloudStorage/OneDrive-YOUR_ORG/Documents/Recruitment/Roles`
 
 **Directory Structure**:
 - CVs and candidate files: `{Base Path}/{Role Name}/candidates/`

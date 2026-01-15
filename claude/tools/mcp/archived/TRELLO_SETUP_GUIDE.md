@@ -122,7 +122,7 @@ source ~/.bashrc
 pip3 install mcp py-trello requests
 
 # Or from Maia root
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 pip3 install -r requirements.txt  # If Trello dependencies added
 ```
 
@@ -132,7 +132,7 @@ pip3 install -r requirements.txt  # If Trello dependencies added
 
 ```bash
 # Test server initialization
-python3 /Users/naythandawe/git/maia/claude/tools/mcp/trello_mcp_server.py
+python3 /Users/YOUR_USERNAME/git/maia/claude/tools/mcp/trello_mcp_server.py
 ```
 
 ### 4.2 Quick Validation Script
@@ -207,7 +207,7 @@ Add to your Claude Desktop MCP configuration:
     "trello": {
       "command": "python3",
       "args": [
-        "/Users/naythandawe/git/maia/claude/tools/mcp/trello_mcp_server.py"
+        "/Users/YOUR_USERNAME/git/maia/claude/tools/mcp/trello_mcp_server.py"
       ],
       "env": {
         "TRELLO_API_KEY": "your_api_key_here",
@@ -227,7 +227,7 @@ Add to your Claude Desktop MCP configuration:
     "trello": {
       "command": "python3",
       "args": [
-        "/Users/naythandawe/git/maia/claude/tools/mcp/trello_mcp_server.py"
+        "/Users/YOUR_USERNAME/git/maia/claude/tools/mcp/trello_mcp_server.py"
       ]
     }
   }

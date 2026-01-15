@@ -16,7 +16,7 @@
 load the sre agent
 ```
 
-**File Location**: `/Users/naythandawe/git/maia/claude/agents/sre_principal_engineer_agent.md`
+**File Location**: `/Users/YOUR_USERNAME/git/maia/claude/agents/sre_principal_engineer_agent.md`
 
 **Why This Matters**:
 - ❌ **Without SRE Agent**: Generic analysis, missed optimization opportunities, incomplete solutions
@@ -206,7 +206,7 @@ User: resume phase 127 architecture review
 - **Mitigation**: 99% of messages are "normal" (93ms), so average user experience unaffected
 
 **Task 5: Pre-Commit Performance Gates** ✅
-- **File Created**: `/Users/naythandawe/git/.git/hooks/pre-commit`
+- **File Created**: `/Users/YOUR_USERNAME/git/.git/hooks/pre-commit`
 - **Trigger**: Runs only when `user-prompt-submit` hook is modified
 - **Action**: Executes `test_hook_performance.sh` before allowing commit
 - **Behavior**: Blocks commits that violate performance budget
@@ -224,7 +224,7 @@ User: resume phase 127 architecture review
 2. `claude/tests/test_hook_performance.sh` (60 lines)
 3. `claude/tools/sre/hook_performance_profiler.py` (360 lines)
 4. `performance_metrics.db` (SQLite database)
-5. `/Users/naythandawe/git/.git/hooks/pre-commit` (pre-commit gate)
+5. `/Users/YOUR_USERNAME/git/.git/hooks/pre-commit` (pre-commit gate)
 
 **Validation**:
 - ✅ All tests pass current performance
@@ -436,21 +436,21 @@ User: resume phase 127 architecture review
 ## 🗂️ Key Files & Locations
 
 ### Project Documentation
-- **This File**: `/Users/naythandawe/git/maia/claude/data/PHASE_127_ARCHITECTURE_REVIEW_PROJECT.md`
-- **Phase 126 Findings**: `/Users/naythandawe/git/maia/claude/data/PHASE_126_FINDINGS_PERFORMANCE_DEGRADATION.md`
+- **This File**: `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_127_ARCHITECTURE_REVIEW_PROJECT.md`
+- **Phase 126 Findings**: `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_126_FINDINGS_PERFORMANCE_DEGRADATION.md`
 - **SRE Review**: Embedded in Phase 126 findings document (bottom section)
 
 ### Agent Definition
-- **SRE Agent**: `/Users/naythandawe/git/maia/claude/agents/sre_principal_engineer_agent.md`
+- **SRE Agent**: `/Users/YOUR_USERNAME/git/maia/claude/agents/sre_principal_engineer_agent.md`
 
 ### Target Files for Optimization
-- **user-prompt-submit hook**: `/Users/naythandawe/git/maia/claude/hooks/user-prompt-submit`
-- **documentation_enforcement_hook**: `/Users/naythandawe/git/maia/claude/hooks/documentation_enforcement_hook.py`
-- **systematic_thinking_enforcement_webhook**: `/Users/naythandawe/git/maia/claude/hooks/systematic_thinking_enforcement_webhook.py`
-- **conversation_detector**: `/Users/naythandawe/git/maia/claude/hooks/conversation_detector.py`
-- **capability_checker**: `/Users/naythandawe/git/maia/claude/tools/capability_checker.py`
-- **coordinator_agent**: `/Users/naythandawe/git/maia/claude/tools/orchestration/coordinator_agent.py`
-- **smart_context_loader**: `/Users/naythandawe/git/maia/claude/tools/sre/smart_context_loader.py`
+- **user-prompt-submit hook**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/user-prompt-submit`
+- **documentation_enforcement_hook**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/documentation_enforcement_hook.py`
+- **systematic_thinking_enforcement_webhook**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/systematic_thinking_enforcement_webhook.py`
+- **conversation_detector**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/conversation_detector.py`
+- **capability_checker**: `/Users/YOUR_USERNAME/git/maia/claude/tools/capability_checker.py`
+- **coordinator_agent**: `/Users/YOUR_USERNAME/git/maia/claude/tools/orchestration/coordinator_agent.py`
+- **smart_context_loader**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/smart_context_loader.py`
 
 ### New Files to Create
 - **Phase 1**: None (modifications only)
@@ -528,7 +528,7 @@ Per-100-Messages Budget:
 
 2. **Review Project State**
    ```
-   read /Users/naythandawe/git/maia/claude/data/PHASE_127_ARCHITECTURE_REVIEW_PROJECT.md
+   read /Users/YOUR_USERNAME/git/maia/claude/data/PHASE_127_ARCHITECTURE_REVIEW_PROJECT.md
    ```
 
 3. **Check Current Phase**
@@ -664,16 +664,16 @@ Every optimization must:
 ## 🔗 Related Context Files
 
 ### Always Load
-- SRE Agent: `/Users/naythandawe/git/maia/claude/agents/sre_principal_engineer_agent.md`
+- SRE Agent: `/Users/YOUR_USERNAME/git/maia/claude/agents/sre_principal_engineer_agent.md`
 
 ### Phase-Specific
-- Phase 126 Findings: `/Users/naythandawe/git/maia/claude/data/PHASE_126_FINDINGS_PERFORMANCE_DEGRADATION.md`
-- UFC System: `/Users/naythandawe/git/maia/claude/context/ufc_system.md`
-- Capability Index: `/Users/naythandawe/git/maia/claude/context/core/capability_index.md`
+- Phase 126 Findings: `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_126_FINDINGS_PERFORMANCE_DEGRADATION.md`
+- UFC System: `/Users/YOUR_USERNAME/git/maia/claude/context/ufc_system.md`
+- Capability Index: `/Users/YOUR_USERNAME/git/maia/claude/context/core/capability_index.md`
 
 ### Reference
-- Systematic Thinking Protocol: `/Users/naythandawe/git/maia/claude/context/core/systematic_thinking_protocol.md`
-- Anti-Breakage Protocol: `/Users/naythandawe/git/maia/claude/context/core/anti_breakage_protocol.md`
+- Systematic Thinking Protocol: `/Users/YOUR_USERNAME/git/maia/claude/context/core/systematic_thinking_protocol.md`
+- Anti-Breakage Protocol: `/Users/YOUR_USERNAME/git/maia/claude/context/core/anti_breakage_protocol.md`
 
 ---
 
@@ -682,7 +682,7 @@ Every optimization must:
 **When you resume this project, do the following IN ORDER**:
 
 1. ☐ Load SRE agent: `load the sre agent`
-2. ☐ Read this file: `/Users/naythandawe/git/maia/claude/data/PHASE_127_ARCHITECTURE_REVIEW_PROJECT.md`
+2. ☐ Read this file: `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_127_ARCHITECTURE_REVIEW_PROJECT.md`
 3. ☐ Check "Current Status" section
 4. ☐ Identify next pending task in priority order
 5. ☐ Ask user for confirmation to proceed

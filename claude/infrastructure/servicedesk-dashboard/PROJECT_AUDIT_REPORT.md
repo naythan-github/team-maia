@@ -29,7 +29,7 @@
 
 ### Docker Containers (2 Services)
 
-**File**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/docker-compose.yml`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/docker-compose.yml`
 
 | Service | Image | Port | Volume | Status |
 |---------|-------|------|--------|--------|
@@ -103,13 +103,13 @@
 **Purpose**: Automation opportunity analysis, ROI tracking, sentiment analysis
 
 **Missing from Grafana**: Dashboard 4 (Team Performance & Task-Level)
-- **File exists**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/4_team_performance_tasklevel.json` (548 lines)
+- **File exists**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/4_team_performance_tasklevel.json` (548 lines)
 - **Status**: Not imported (file present, but not in Grafana API response)
 - **Action Required**: Re-import Dashboard 4
 
 ### Dashboard Files on Disk (11 Total)
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards/`
 
 | File | Lines | Status |
 |------|-------|--------|
@@ -135,7 +135,7 @@
 
 ### Python Tools (20+ Scripts)
 
-**Location**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_*.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_*.py`
 
 #### Core ETL Scripts
 
@@ -186,7 +186,7 @@
 
 ### Migration Scripts
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/migration/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/migration/`
 
 | Script | Size | Purpose |
 |--------|------|---------|
@@ -206,7 +206,7 @@
 
 ### Project Documentation (7 Files)
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/`
 
 | File | Size | Purpose | Status |
 |------|------|---------|--------|
@@ -220,7 +220,7 @@
 
 ### ADRs (Architectural Decision Records)
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/ADRs/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/ADRs/`
 
 | ADR | Title | Status | Date |
 |-----|-------|--------|------|
@@ -233,7 +233,7 @@
 
 ### Core Documentation
 
-**Location**: `/Users/naythandawe/git/maia/claude/data/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/data/`
 
 | File | Purpose | Status |
 |------|---------|--------|
@@ -247,7 +247,7 @@
 
 ### Provisioning Configuration
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/provisioning/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/grafana/provisioning/`
 
 #### Data Sources
 
@@ -275,7 +275,7 @@ datasources:
 
 ### Scripts
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/`
 
 | Script | Purpose | Status |
 |--------|---------|--------|
@@ -283,7 +283,7 @@ datasources:
 
 ### Testing
 
-**Location**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/testing/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/testing/`
 
 | Script | Purpose | Status |
 |--------|---------|--------|
@@ -345,7 +345,7 @@ datasources:
 ### Complete File Tree
 
 ```
-/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/
+/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/
 ├── docker-compose.yml                          # Container orchestration
 ├── .env                                        # Secrets (gitignored)
 │
@@ -474,7 +474,7 @@ datasources:
 
 2. **⚠️ MEDIUM PRIORITY: Re-import Dashboard 4**
    ```bash
-   cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+   cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
    bash scripts/import_dashboards.sh
    ```
    - Verify via Grafana API
@@ -636,7 +636,7 @@ datasources:
 
 ### Unit Tests ✅ COMPREHENSIVE
 
-**Location**: `/Users/naythandawe/git/maia/tests/`
+**Location**: `/Users/YOUR_USERNAME/git/maia/tests/`
 
 | Test Suite | Tests | Pass Rate | Coverage |
 |------------|-------|-----------|----------|

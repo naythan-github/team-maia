@@ -11,7 +11,7 @@ import json
 import os
 import re
 
-DASHBOARD_DIR = "/Users/naythandawe/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards"
+DASHBOARD_DIR = "/Users/YOUR_USERNAME/maia/claude/infrastructure/servicedesk-dashboard/grafana/dashboards"
 
 # The datasource variable template
 DATASOURCE_VAR = {

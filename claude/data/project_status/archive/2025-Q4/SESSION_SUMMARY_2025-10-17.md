@@ -151,7 +151,7 @@ except ImportError:
 6. `claude/tests/test_hook_performance.sh` (NEW - 60 lines)
 7. `claude/hooks/capability_check_enforcer.py` (MODIFIED - uses cache)
 8. `performance_metrics.db` (NEW - SQLite database)
-9. `/Users/naythandawe/git/.git/hooks/pre-commit` (NEW - performance gate)
+9. `/Users/YOUR_USERNAME/git/.git/hooks/pre-commit` (NEW - performance gate)
 10. `claude/data/PHASE_127_ARCHITECTURE_REVIEW_PROJECT.md` (UPDATED)
 11. `claude/data/capability_cache.json` (NEW - generated cache)
 
@@ -179,12 +179,12 @@ except ImportError:
 
 2. **Read Session Summary**:
    ```
-   read /Users/naythandawe/git/maia/claude/data/SESSION_SUMMARY_2025-10-17.md
+   read /Users/YOUR_USERNAME/git/maia/claude/data/SESSION_SUMMARY_2025-10-17.md
    ```
 
 3. **Read Corrected Baseline**:
    ```
-   read /Users/naythandawe/git/maia/claude/data/DASHBOARD_CORRECTED_BASELINE.md
+   read /Users/YOUR_USERNAME/git/maia/claude/data/DASHBOARD_CORRECTED_BASELINE.md
    ```
 
 ### Current State

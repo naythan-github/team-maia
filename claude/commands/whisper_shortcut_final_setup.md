@@ -29,7 +29,7 @@
 Click in the script box and paste this **exact text**:
 
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 /opt/homebrew/bin/python3 claude/tools/whisper_dictation_server.py
 ```
 

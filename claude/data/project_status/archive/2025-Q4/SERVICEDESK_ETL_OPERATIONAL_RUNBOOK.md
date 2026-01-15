@@ -654,9 +654,9 @@ df -h / | grep -v tmpfs
 ### Support Resources
 
 - **Runbook**: This document
-- **Architecture Docs**: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_ETL_ENHANCEMENT_PROJECT_V2_SRE_HARDENED.md`
-- **Monitoring Guide**: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_ETL_MONITORING_GUIDE.md`
-- **Best Practices**: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_ETL_BEST_PRACTICES.md`
+- **Architecture Docs**: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_ETL_ENHANCEMENT_PROJECT_V2_SRE_HARDENED.md`
+- **Monitoring Guide**: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_ETL_MONITORING_GUIDE.md`
+- **Best Practices**: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_ETL_BEST_PRACTICES.md`
 
 ---
 

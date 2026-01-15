@@ -73,9 +73,9 @@ class EnhancedDisasterRecoverySystem:
         if cloudstorage.exists():
             onedrive_dirs = list(cloudstorage.glob("OneDrive-*"))
             if onedrive_dirs:
-                # Prefer work OneDrive (ORROPTYLTD) over personal
+                # Prefer work OneDrive (YOUR_ORG) over personal
                 for od in onedrive_dirs:
-                    if 'ORROPTYLTD' in od.name:
+                    if 'YOUR_ORG' in od.name:
                         return str(od)
                 return str(onedrive_dirs[0])
 

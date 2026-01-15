@@ -237,37 +237,37 @@ maia/                                    # Shared Git repository
 # ═══════════════════════════════════════════════════════════
 
 # Core system files
-/CLAUDE.md                              @naythandawe
-/SYSTEM_STATE.md                        @naythandawe
-/CODEOWNERS                             @naythandawe
+/CLAUDE.md                              @YOUR_USERNAME
+/SYSTEM_STATE.md                        @YOUR_USERNAME
+/CODEOWNERS                             @YOUR_USERNAME
 
 # Core context (identity, protocols)
-/claude/context/core/                   @naythandawe
+/claude/context/core/                   @YOUR_USERNAME
 
 # All agents
-/claude/agents/                         @naythandawe
+/claude/agents/                         @YOUR_USERNAME
 
 # System hooks
-/claude/hooks/                          @naythandawe
+/claude/hooks/                          @YOUR_USERNAME
 
 # Core tools (path resolution, system utilities)
-/claude/tools/core/                     @naythandawe
+/claude/tools/core/                     @YOUR_USERNAME
 
 # ═══════════════════════════════════════════════════════════
 # TIER 2: TEAM-WRITABLE - Automated or owner review
 # ═══════════════════════════════════════════════════════════
 
 # Domain tools - owner has visibility, automated gates primary
-/claude/tools/sre/                      @naythandawe
-/claude/tools/security/                 @naythandawe
-/claude/tools/productivity/             @naythandawe
-/claude/tools/servicedesk/              @naythandawe
+/claude/tools/sre/                      @YOUR_USERNAME
+/claude/tools/security/                 @YOUR_USERNAME
+/claude/tools/productivity/             @YOUR_USERNAME
+/claude/tools/servicedesk/              @YOUR_USERNAME
 
 # Commands
-/claude/commands/                       @naythandawe
+/claude/commands/                       @YOUR_USERNAME
 
 # Tests - broader approval OK
-/tests/                                 @naythandawe
+/tests/                                 @YOUR_USERNAME
 
 # ═══════════════════════════════════════════════════════════
 # TIER 3: OPEN - No review required
@@ -432,7 +432,7 @@ jobs:
       - name: Check for personal data
         run: |
           echo "🔍 Scanning for personal data..."
-          if grep -rE "(naythandawe|/Users/naythan|/home/naythan)" \
+          if grep -rE "(YOUR_USERNAME|/Users/naythan|/home/naythan)" \
              claude/ --include="*.py" --include="*.md" 2>/dev/null | \
              grep -v ".gitignore" | grep -v "CODEOWNERS"; then
             echo "❌ Personal data found in code"
@@ -602,7 +602,7 @@ jobs:
           echo "Files changed in protected paths:"
           git diff --name-only origin/main..HEAD | grep -E "^(claude/context/core|claude/agents|claude/hooks|CLAUDE.md|SYSTEM_STATE.md)" || echo "  (none)"
           echo ""
-          echo "Review required from: @naythandawe"
+          echo "Review required from: @YOUR_USERNAME"
 ```
 
 ### Performance Baseline Workflow
@@ -665,7 +665,7 @@ echo "🔍 Running pre-commit checks..."
 # ─────────────────────────────────────────────────────
 echo "  Checking for personal data..."
 if git diff --cached --name-only | xargs grep -l \
-   "naythandawe\|/Users/naythan\|/home/naythan" 2>/dev/null; then
+   "YOUR_USERNAME\|/Users/naythan\|/home/naythan" 2>/dev/null; then
     echo "❌ BLOCKED: Personal data detected in staged files"
     echo "   Remove personal paths/usernames before committing"
     exit 1
@@ -883,7 +883,7 @@ class ContributionReviewer:
 
     def check_no_personal_data(self, files: List[Path]) -> CheckResult:
         """Check for personal data."""
-        patterns = ["naythandawe", "/Users/naythan", "/home/naythan"]
+        patterns = ["YOUR_USERNAME", "/Users/naythan", "/home/naythan"]
 
         violations = []
         for file in files:
@@ -1282,7 +1282,7 @@ Trigger emergency rollback when:
 
 | Role | Contact | Availability |
 |------|---------|--------------|
-| Primary | @naythandawe | Business hours |
+| Primary | @YOUR_USERNAME | Business hours |
 | Backup | [TBD] | After hours |
 
 ## Manual Rollback (If Workflow Fails)
@@ -1570,7 +1570,7 @@ set -e
 echo "🔍 Running pre-commit checks..."
 
 # Check for personal data
-if git diff --cached --name-only | xargs grep -l "naythandawe\|/Users/naythan" 2>/dev/null; then
+if git diff --cached --name-only | xargs grep -l "YOUR_USERNAME\|/Users/naythan" 2>/dev/null; then
     echo "❌ Personal data detected in staged files"
     exit 1
 fi

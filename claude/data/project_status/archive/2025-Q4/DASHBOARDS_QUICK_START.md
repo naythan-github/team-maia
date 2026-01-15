@@ -115,7 +115,7 @@ open http://localhost:8504
 ```bash
 # Just the essentials
 python3 claude/tools/monitoring/unified_dashboard_platform.py &
-export PATH="/Users/naythandawe/Library/Python/3.9/bin:$PATH"
+export PATH="/Users/YOUR_USERNAME/Library/Python/3.9/bin:$PATH"
 streamlit run claude/tools/system_status_dashboard.py --server.port 8504 &
 ```
 
@@ -157,7 +157,7 @@ chmod +x launch_all_dashboards.sh
 ### Streamlit Not Found
 ```bash
 # Add to PATH (add to ~/.zshrc for persistence)
-export PATH="/Users/naythandawe/Library/Python/3.9/bin:$PATH"
+export PATH="/Users/YOUR_USERNAME/Library/Python/3.9/bin:$PATH"
 ```
 
 ## 📈 Dashboard Features

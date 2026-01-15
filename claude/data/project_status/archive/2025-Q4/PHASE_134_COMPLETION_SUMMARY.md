@@ -313,7 +313,7 @@ $ launchctl list | grep -E "(disaster-recovery|backup-pruning)"
 ### Immediate (Tonight)
 1. **Optional**: Run keychain setup for credential encryption
    ```bash
-   /Users/naythandawe/git/maia/claude/tools/sre/setup_backup_keychain.sh
+   /Users/YOUR_USERNAME/git/maia/claude/tools/sre/setup_backup_keychain.sh
    ```
    (If skipped, backups will run without credential encryption - still operational)
 

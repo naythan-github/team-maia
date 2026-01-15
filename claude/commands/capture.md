@@ -54,7 +54,7 @@ tail -3 ~/.maia/logs/pre_compaction_debug.log
 
 **Check daemon status**:
 ```bash
-PYTHONPATH=/Users/naythandawe/maia python3 -m claude.tools.learning.continuous_capture.installer status
+PYTHONPATH=/Users/YOUR_USERNAME/maia python3 -m claude.tools.learning.continuous_capture.installer status
 ```
 
 **View daemon logs**:

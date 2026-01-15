@@ -209,7 +209,7 @@ RESULT:
 #### Environment Setup
 ```bash
 # Set SharePoint contracts path (OneDrive synced folder)
-export SHAREPOINT_CONTRACTS_PATH="~/Library/CloudStorage/OneDrive-SharedLibraries-ORROPTYLTD/Orro - Enterprise Services-Cloud - SMO - Customers/"
+export SHAREPOINT_CONTRACTS_PATH="~/Library/CloudStorage/OneDrive-SharedLibraries-YOUR_ORG/Orro - Enterprise Services-Cloud - SMO - Customers/"
 ```
 
 #### Quick Start

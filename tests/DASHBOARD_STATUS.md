@@ -44,7 +44,7 @@ Dashboards were not working due to authentication failure in import script.
 Import script defaulted to password `admin` instead of loading actual password `Grafana2025!SecureAdmin` from `.env` file.
 
 ### Solution
-Updated `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh` to:
+Updated `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh` to:
 1. Load `.env` file
 2. Export `GRAFANA_ADMIN_PASSWORD` variable
 3. Use correct password for dashboard imports
@@ -54,12 +54,12 @@ Updated `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
 ## Test Suite
 
 ### Location
-`/Users/naythandawe/git/maia/tests/test_dashboards.sh`
+`/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh`
 
 ### Usage
 ```bash
 # Run all tests
-/Users/naythandawe/git/maia/tests/test_dashboards.sh
+/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh
 
 # Expected output
 Tests Run:    12
@@ -105,7 +105,7 @@ WHERE "TKT-Created Time" >= '2025-07-01'
 
 ### Command
 ```bash
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 bash scripts/import_dashboards.sh
 ```
 
@@ -137,17 +137,17 @@ bash scripts/import_dashboards.sh
 
 3. Run test suite:
    ```bash
-   /Users/naythandawe/git/maia/tests/test_dashboards.sh
+   /Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh
    ```
 
 4. Re-import dashboards:
    ```bash
-   cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+   cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
    bash scripts/import_dashboards.sh
    ```
 
 ### If authentication fails
-- Check `.env` file exists: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/.env`
+- Check `.env` file exists: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/.env`
 - Verify password: `grep GRAFANA_ADMIN_PASSWORD .env`
 - Expected: `GRAFANA_ADMIN_PASSWORD=Grafana2025!SecureAdmin`
 
@@ -165,7 +165,7 @@ docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c \
   "SELECT COUNT(*) FROM servicedesk.tickets;"
 
 # 3. Full test suite
-/Users/naythandawe/git/maia/tests/test_dashboards.sh
+/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh
 ```
 
 ---
@@ -173,20 +173,20 @@ docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c \
 ## Files Changed
 
 ### Modified
-1. `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh`
+1. `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/scripts/import_dashboards.sh`
    - Added `.env` file loading
    - Exports `GRAFANA_ADMIN_PASSWORD` variable
 
 ### Created
-1. `/Users/naythandawe/git/maia/tests/test_dashboards.sh`
+1. `/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh`
    - Comprehensive test suite (12 tests)
    - Automated validation of all components
 
-2. `/Users/naythandawe/git/maia/tests/DASHBOARD_FIX_REPORT.md`
+2. `/Users/YOUR_USERNAME/git/maia/tests/DASHBOARD_FIX_REPORT.md`
    - Detailed TDD methodology documentation
    - Root cause analysis and fixes
 
-3. `/Users/naythandawe/git/maia/tests/DASHBOARD_STATUS.md`
+3. `/Users/YOUR_USERNAME/git/maia/tests/DASHBOARD_STATUS.md`
    - This file (quick reference)
 
 ---
@@ -213,7 +213,7 @@ docker exec servicedesk-postgres psql -U servicedesk_user -d servicedesk -c \
 4. All panels should show data immediately
 
 ### For Developers
-1. Run test suite before changes: `/Users/naythandawe/git/maia/tests/test_dashboards.sh`
+1. Run test suite before changes: `/Users/YOUR_USERNAME/git/maia/tests/test_dashboards.sh`
 2. Make changes to dashboards
 3. Re-run test suite to verify
 4. Re-import: `bash scripts/import_dashboards.sh`

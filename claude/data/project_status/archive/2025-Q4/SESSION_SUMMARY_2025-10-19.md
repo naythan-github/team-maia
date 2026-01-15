@@ -137,7 +137,7 @@ From Phase 118.3 comprehensive testing on 500 technical ServiceDesk comments:
 
 **Run 10K Sample**:
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 sqlite3 claude/data/servicedesk_tickets.db "DELETE FROM comment_quality;"
 python3 claude/tools/sre/servicedesk_comment_quality_analyzer.py \
   --full --sample-size 10000 --batch-size 10
@@ -269,7 +269,7 @@ Writing comprehensive test suites (1,680 lines) before API is finalized creates 
 
 ```bash
 # 1. Navigate to project
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # 2. Check quality data status
 sqlite3 claude/data/servicedesk_tickets.db \

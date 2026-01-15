@@ -118,7 +118,7 @@ cat > ~/Library/LaunchAgents/com.maia.whisper.plist << 'EOF'
   <key>ProgramArguments</key>
   <array>
     <string>/usr/bin/python3</string>
-    <string>/Users/naythandawe/git/maia/claude/tools/whisper_server.py</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/tools/whisper_server.py</string>
   </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>

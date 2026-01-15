@@ -331,7 +331,7 @@ class AutomatedHealthMonitor:
             onedrive_dirs = list(cloudstorage.glob("OneDrive-*"))
             if onedrive_dirs:
                 for od in onedrive_dirs:
-                    if 'ORROPTYLTD' in od.name:
+                    if 'YOUR_ORG' in od.name:
                         return str(od)
                 return str(onedrive_dirs[0])
 

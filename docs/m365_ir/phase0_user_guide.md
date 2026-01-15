@@ -299,7 +299,7 @@ Total checks run: 7
 
 For issues or questions:
 - GitHub: https://github.com/naythan-orro/maia/issues
-- Documentation: `/Users/naythandawe/maia/docs/m365_ir/`
+- Documentation: `/Users/YOUR_USERNAME/maia/docs/m365_ir/`
 
 ---
 

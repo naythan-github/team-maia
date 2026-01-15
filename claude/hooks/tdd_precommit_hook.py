@@ -14,7 +14,7 @@ MAIA_ROOT="$(git rev-parse --show-toplevel)"
 # ───────────────────────────────────────────────────────────────
 echo "  Checking for personal data..."
 if git diff --cached --name-only | xargs grep -l \
-   "naythandawe\|/Users/naythan\|/home/naythan" 2>/dev/null | \
+   "YOUR_USERNAME\|/Users/naythan\|/home/naythan" 2>/dev/null | \
    grep -v "CODEOWNERS\|CONTRIBUTING"; then
     echo "❌ BLOCKED: Personal data detected in staged files"
     echo "   Remove personal identifiers before committing"

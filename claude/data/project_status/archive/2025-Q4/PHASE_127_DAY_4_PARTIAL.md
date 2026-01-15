@@ -210,14 +210,14 @@ COLUMN_MAPPINGS = {
 ## 📁 File Locations
 
 ### Created Tools (Day 4)
-- **Validator**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_etl_validator.py` (440 lines)
-- **Cleaner**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_etl_cleaner.py` (370 lines)
-- **Scorer**: `/Users/naythandawe/git/maia/claude/tools/sre/servicedesk_quality_scorer.py` (300 lines)
+- **Validator**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_etl_validator.py` (440 lines)
+- **Cleaner**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_etl_cleaner.py` (370 lines)
+- **Scorer**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/servicedesk_quality_scorer.py` (300 lines)
 
 ### Reference Files
-- **Existing ETL**: `/Users/naythandawe/git/maia/claude/tools/sre/incremental_import_servicedesk.py` (242 lines, has correct column mappings)
-- **Day 3 Design**: `/Users/naythandawe/git/maia/claude/data/PHASE_127_DAY_3_COMPLETE.md`
-- **Recovery State**: `/Users/naythandawe/git/maia/claude/data/PHASE_127_RECOVERY_STATE.md`
+- **Existing ETL**: `/Users/YOUR_USERNAME/git/maia/claude/tools/sre/incremental_import_servicedesk.py` (242 lines, has correct column mappings)
+- **Day 3 Design**: `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_127_DAY_3_COMPLETE.md`
+- **Recovery State**: `/Users/YOUR_USERNAME/git/maia/claude/data/PHASE_127_RECOVERY_STATE.md`
 
 ### Source Data
 - **Comments**: `~/Downloads/comments.xlsx` (204,625 rows, 10 columns)

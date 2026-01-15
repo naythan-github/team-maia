@@ -387,7 +387,7 @@ class TestDataMigration:
 
         # Load source JSON
         import json
-        with open('/Users/naythandawe/maia/claude/data/user_preferences.json', 'r') as f:
+        with open('/Users/YOUR_USERNAME/maia/claude/data/user_preferences.json', 'r') as f:
             prefs = json.load(f)
 
         source_members = prefs['analysis_preferences']['otc_servicedesk']['teams']['engineering']['members']
@@ -721,7 +721,7 @@ class TestTeamManagementFunctions:
         export_teams_to_json()
 
         # Verify JSON updated
-        with open('/Users/naythandawe/maia/claude/data/user_preferences.json', 'r') as f:
+        with open('/Users/YOUR_USERNAME/maia/claude/data/user_preferences.json', 'r') as f:
             prefs = json.load(f)
 
         members = prefs['analysis_preferences']['otc_servicedesk']['teams']['engineering']['members']

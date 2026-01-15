@@ -183,7 +183,7 @@ class MorningEmailIntelligence:
     def _is_from_me(self, email: Dict) -> bool:
         """Check if email is from me (sent by me)"""
         sender = email.get("from", "").lower()
-        my_addresses = ["naythan.dawe@", "naythan.general@", "naythandawe@"]
+        my_addresses = ["naythan.dawe@", "naythan.general@", "YOUR_USERNAME@"]
         return any(addr in sender for addr in my_addresses)
 
     def _get_thread_states(self, emails: List[Dict]) -> Dict[str, Dict]:

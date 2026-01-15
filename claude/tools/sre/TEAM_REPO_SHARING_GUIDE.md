@@ -59,9 +59,9 @@ cd /tmp/maia-team-share
 - ❌ Swap files (`*.swp`)
 
 ### 5. Personal References
-- ❌ Your name (`naythandawe` → `YOUR_USERNAME`)
-- ❌ Organization name (`ORROPTYLTD` → `YOUR_ORG`)
-- ❌ Full paths (`/Users/naythandawe/` → `/Users/YOUR_USERNAME/`)
+- ❌ Your name (`YOUR_USERNAME` → `YOUR_USERNAME`)
+- ❌ Organization name (`YOUR_ORG` → `YOUR_ORG`)
+- ❌ Full paths (`/Users/YOUR_USERNAME/` → `/Users/YOUR_USERNAME/`)
 
 ---
 
@@ -114,17 +114,17 @@ chmod +x claude/tools/sre/prepare_team_repo.sh
 
 # Advanced usage (custom paths/names)
 ./claude/tools/sre/prepare_team_repo.sh \
-    /Users/naythandawe/git/maia \
+    /Users/YOUR_USERNAME/git/maia \
     /tmp/maia-team-share \
-    naythandawe \
-    ORROPTYLTD
+    YOUR_USERNAME \
+    YOUR_ORG
 ```
 
 **Parameters**:
-- `$1` - Source repository path (default: `/Users/naythandawe/git/maia`)
+- `$1` - Source repository path (default: `/Users/YOUR_USERNAME/git/maia`)
 - `$2` - Clean repository path (default: `/tmp/maia-team-share`)
-- `$3` - Your username to replace (default: `naythandawe`)
-- `$4` - Your organization to replace (default: `ORROPTYLTD`)
+- `$3` - Your username to replace (default: `YOUR_USERNAME`)
+- `$4` - Your organization to replace (default: `YOUR_ORG`)
 
 ---
 
@@ -134,8 +134,8 @@ chmod +x claude/tools/sre/prepare_team_repo.sh
 cd /tmp/maia-team-share
 
 # Check for any remaining personal data
-grep -r "naythandawe" . 2>/dev/null | grep -v ".git"
-grep -r "ORROPTYLTD" . 2>/dev/null | grep -v ".git"
+grep -r "YOUR_USERNAME" . 2>/dev/null | grep -v ".git"
+grep -r "YOUR_ORG" . 2>/dev/null | grep -v ".git"
 
 # Verify sensitive files removed
 ls -la claude/tools/production_api_credentials.py  # Should show placeholder
@@ -313,15 +313,15 @@ find claude/logs -type f -delete
 ```bash
 # Replace your name
 find . -type f \( -name "*.py" -o -name "*.md" \) \
-    -exec sed -i '' 's/naythandawe/YOUR_USERNAME/g' {} \;
+    -exec sed -i '' 's/YOUR_USERNAME/YOUR_USERNAME/g' {} \;
 
 # Replace org
 find . -type f \( -name "*.py" -o -name "*.md" \) \
-    -exec sed -i '' 's/ORROPTYLTD/YOUR_ORG/g' {} \;
+    -exec sed -i '' 's/YOUR_ORG/YOUR_ORG/g' {} \;
 
 # Replace paths
 find . -type f \( -name "*.py" -o -name "*.md" \) \
-    -exec sed -i '' 's|/Users/naythandawe|/Users/YOUR_USERNAME|g' {} \;
+    -exec sed -i '' 's|/Users/YOUR_USERNAME|/Users/YOUR_USERNAME|g' {} \;
 ```
 
 ---

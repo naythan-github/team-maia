@@ -112,7 +112,7 @@ tail -f ~/git/maia/claude/data/logs/whisper-health-monitor.log
 **Purpose:** Global keyboard shortcut daemon
 **Configuration:**
 - Hotkey: `Cmd+Shift+Space`
-- Command: `/opt/homebrew/bin/python3 /Users/naythandawe/git/maia/claude/tools/whisper_dictation_server.py`
+- Command: `/opt/homebrew/bin/python3 /Users/YOUR_USERNAME/git/maia/claude/tools/whisper_dictation_server.py`
 
 **Management:**
 ```bash

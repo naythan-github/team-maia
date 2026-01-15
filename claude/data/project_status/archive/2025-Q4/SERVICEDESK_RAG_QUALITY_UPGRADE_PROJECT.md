@@ -176,7 +176,7 @@ import chromadb
 from chromadb.config import Settings
 
 client = chromadb.PersistentClient(
-    path="/Users/naythandawe/.maia/servicedesk_rag",
+    path="/Users/YOUR_USERNAME/.maia/servicedesk_rag",
     settings=Settings(anonymized_telemetry=False)
 )
 
@@ -349,7 +349,7 @@ python3 -c "
 import chromadb
 from chromadb.config import Settings
 client = chromadb.PersistentClient(
-    path='/Users/naythandawe/.maia/servicedesk_rag',
+    path='/Users/YOUR_USERNAME/.maia/servicedesk_rag',
     settings=Settings(anonymized_telemetry=False)
 )
 for coll in client.list_collections():

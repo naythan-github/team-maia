@@ -97,9 +97,9 @@ Phase 1 complete when:
 
 ## Notes
 
-- SRE implementation plan: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_DASHBOARD_IMPLEMENTATION_PLAN.md`
-- Metrics catalog reference: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_METRICS_CATALOG.md`
-- Dashboard design reference: `/Users/naythandawe/git/maia/claude/data/SERVICEDESK_DASHBOARD_DESIGN.md`
+- SRE implementation plan: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_DASHBOARD_IMPLEMENTATION_PLAN.md`
+- Metrics catalog reference: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_METRICS_CATALOG.md`
+- Dashboard design reference: `/Users/YOUR_USERNAME/git/maia/claude/data/SERVICEDESK_DASHBOARD_DESIGN.md`
 
 ---
 

@@ -55,7 +55,7 @@
 **Last Successful Backup**: Oct 15 03:00 (5 days ago)
 ```
 Backup ID: full_20251015_030001
-Location: OneDrive-ORROPTYLTD/MaiaBackups/full_20251015_030001
+Location: OneDrive-YOUR_ORG/MaiaBackups/full_20251015_030001
 Size: 1.39 GB (187 MB code + 811 KB small DBs + 1.2 GB servicedesk_tickets.db)
 Components: 38 small DBs, 1 large DB (25 chunks), 23 LaunchAgents, credentials vault
 Status: ✅ Complete (manual execution)
@@ -64,7 +64,7 @@ Status: ✅ Complete (manual execution)
 **Broken LaunchAgent**:
 ```xml
 <!-- CURRENT (BROKEN) -->
-<string>python3 /Users/naythandawe/git/maia/claude/tools/sre/get_vault_password.sh)"</string>
+<string>python3 /Users/YOUR_USERNAME/git/maia/claude/tools/sre/get_vault_password.sh)"</string>
 
 Issues:
 1. Unmatched closing parenthesis )"
@@ -278,13 +278,13 @@ security find-generic-password -w -s "maia_vault_password" -a "$(whoami)"
     <array>
         <string>/bin/bash</string>
         <string>-c</string>
-        <string>cd /Users/naythandawe/git/maia &amp;&amp; python3 claude/tools/sre/disaster_recovery_system.py backup --vault-password $(security find-generic-password -w -s "maia_vault_password" -a "$(whoami)")</string>
+        <string>cd /Users/YOUR_USERNAME/git/maia &amp;&amp; python3 claude/tools/sre/disaster_recovery_system.py backup --vault-password $(security find-generic-password -w -s "maia_vault_password" -a "$(whoami)")</string>
     </array>
 
     <key>EnvironmentVariables</key>
     <dict>
         <key>PYTHONPATH</key>
-        <string>/Users/naythandawe/git/maia</string>
+        <string>/Users/YOUR_USERNAME/git/maia</string>
         <key>PATH</key>
         <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
     </dict>
@@ -298,13 +298,13 @@ security find-generic-password -w -s "maia_vault_password" -a "$(whoami)"
     </dict>
 
     <key>StandardOutPath</key>
-    <string>/Users/naythandawe/git/maia/claude/logs/production/disaster_recovery.log</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/logs/production/disaster_recovery.log</string>
 
     <key>StandardErrorPath</key>
-    <string>/Users/naythandawe/git/maia/claude/logs/production/disaster_recovery.error.log</string>
+    <string>/Users/YOUR_USERNAME/git/maia/claude/logs/production/disaster_recovery.error.log</string>
 
     <key>WorkingDirectory</key>
-    <string>/Users/naythandawe/git/maia</string>
+    <string>/Users/YOUR_USERNAME/git/maia</string>
 
     <key>RunAtLoad</key>
     <false/>
@@ -322,7 +322,7 @@ security find-generic-password -w -s "maia_vault_password" -a "$(whoami)"
 launchctl unload ~/Library/LaunchAgents/com.maia.disaster-recovery.plist
 
 # Test manual execution
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 python3 claude/tools/sre/disaster_recovery_system.py backup \
   --vault-password $(security find-generic-password -w -s "maia_vault_password" -a "$(whoami)")
 
@@ -479,7 +479,7 @@ Dashboard: http://localhost:8065/backup-health
 
 **Command**:
 ```bash
-python3 /Users/naythandawe/git/maia/claude/tools/sre/disaster_recovery_system.py prune
+python3 /Users/YOUR_USERNAME/git/maia/claude/tools/sre/disaster_recovery_system.py prune
 ```
 
 ---

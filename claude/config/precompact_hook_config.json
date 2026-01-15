@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 /Users/naythandawe/maia/claude/hooks/pre_compaction_learning_capture.py",
+            "command": "python3 /Users/YOUR_USERNAME/maia/claude/hooks/pre_compaction_learning_capture.py",
             "timeout": 5000
           }
         ]

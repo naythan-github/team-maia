@@ -19,7 +19,7 @@ Sprint 5 integrated the automatic agent handoffs system into the production swar
 - Backwards compatible - existing sessions continue to work
 
 **Files Modified**:
-- `/Users/naythandawe/maia/claude/hooks/swarm_auto_loader.py`
+- `/Users/YOUR_USERNAME/maia/claude/hooks/swarm_auto_loader.py`
 
 **Tests**:
 - `test_hook_imports_swarm_integration()` - Verifies import compatibility
@@ -157,19 +157,19 @@ Sprint 5 integrated the automatic agent handoffs system into the production swar
 
 ## Files Created
 
-1. `/Users/naythandawe/maia/claude/tools/orchestration/feature_flags.py` (122 lines)
-2. `/Users/naythandawe/maia/claude/tools/orchestration/api_wrapper.py` (149 lines)
-3. `/Users/naythandawe/maia/claude/tools/orchestration/agent_audit.py` (219 lines)
-4. `/Users/naythandawe/maia/claude/hooks/tests/test_swarm_hook_integration.py` (56 lines)
-5. `/Users/naythandawe/maia/claude/tools/orchestration/tests/test_agent_audit.py` (36 lines)
-6. `/Users/naythandawe/maia/claude/tools/orchestration/tests/test_api_integration.py` (39 lines)
-7. `/Users/naythandawe/maia/claude/tools/orchestration/tests/test_feature_flags.py` (45 lines)
+1. `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/feature_flags.py` (122 lines)
+2. `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/api_wrapper.py` (149 lines)
+3. `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/agent_audit.py` (219 lines)
+4. `/Users/YOUR_USERNAME/maia/claude/hooks/tests/test_swarm_hook_integration.py` (56 lines)
+5. `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/test_agent_audit.py` (36 lines)
+6. `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/test_api_integration.py` (39 lines)
+7. `/Users/YOUR_USERNAME/maia/claude/tools/orchestration/tests/test_feature_flags.py` (45 lines)
 
 **Total New Code**: ~666 lines (implementation + tests)
 
 ## Files Modified
 
-1. `/Users/naythandawe/maia/claude/hooks/swarm_auto_loader.py`
+1. `/Users/YOUR_USERNAME/maia/claude/hooks/swarm_auto_loader.py`
    - Added `enable_handoffs` parameter to `create_session_state()`
    - Updated session version to "1.4"
    - Added `handoffs_enabled` to session data

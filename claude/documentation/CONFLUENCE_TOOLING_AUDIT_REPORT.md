@@ -27,7 +27,7 @@
 
 #### 1. **reliable_confluence_client.py** (740 lines) ⭐ RECOMMENDED
 **Status**: Production-ready, SRE-hardened (Phase 122 enhanced)
-**Location**: `/Users/naythandawe/git/maia/claude/tools/reliable_confluence_client.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/reliable_confluence_client.py`
 
 **Capabilities**:
 - ✅ `create_page(space_key, title, content, parent_id=None, validate_html=True)` - Primary page creation
@@ -66,7 +66,7 @@
 
 #### 2. **confluence_html_builder.py** (532 lines) ⭐ RECOMMENDED
 **Status**: Production-ready, validation-focused (Phase 122 created)
-**Location**: `/Users/naythandawe/git/maia/claude/tools/confluence_html_builder.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_html_builder.py`
 
 **Purpose**: Generate validated Confluence storage format HTML
 
@@ -106,7 +106,7 @@
 
 #### 3. **confluence_formatter.py** (210 lines)
 **Status**: Legacy markdown converter
-**Location**: `/Users/naythandawe/git/maia/claude/tools/confluence_formatter.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_formatter.py`
 
 **Capabilities**:
 - `markdown_to_confluence_storage(markdown_text)` - Naive string replacement converter
@@ -125,7 +125,7 @@
 
 #### 4. **confluence_formatter_v2.py** (212 lines)
 **Status**: Legacy markdown converter (v2)
-**Location**: `/Users/naythandawe/git/maia/claude/tools/confluence_formatter_v2.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_formatter_v2.py`
 
 **Issues**:
 - ❌ Similar to v1, suggests failed improvement attempt
@@ -138,7 +138,7 @@
 
 #### 5. **confluence_organization_manager.py** (740 lines)
 **Status**: Specialized bulk operations tool
-**Location**: `/Users/naythandawe/git/maia/claude/tools/confluence_organization_manager.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_organization_manager.py`
 
 **Purpose**: Space/page organization and bulk operations
 
@@ -159,7 +159,7 @@
 
 #### 6. **confluence_intelligence_processor.py** (406 lines)
 **Status**: Analytics/processing tool
-**Location**: `/Users/naythandawe/git/maia/claude/tools/confluence_intelligence_processor.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_intelligence_processor.py`
 
 **Purpose**: Content analysis and intelligence extraction
 
@@ -173,7 +173,7 @@
 
 #### 7. **confluence_auto_sync.py** (192 lines)
 **Status**: Synchronization automation
-**Location**: `/Users/naythandawe/git/maia/claude/tools/confluence_auto_sync.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_auto_sync.py`
 
 **Purpose**: Automated content synchronization
 
@@ -187,7 +187,7 @@
 
 #### 8. **create_azure_lighthouse_confluence_pages.py** (382 lines)
 **Status**: Single-purpose migration script
-**Location**: `/Users/naythandawe/git/maia/claude/tools/create_azure_lighthouse_confluence_pages.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/create_azure_lighthouse_confluence_pages.py`
 
 **Purpose**: One-time Azure Lighthouse documentation migration
 
@@ -202,7 +202,7 @@
 
 #### 9. **confluence_to_trello.py** (147 lines)
 **Status**: Integration bridge tool
-**Location**: `/Users/naythandawe/git/maia/claude/tools/confluence_to_trello.py`
+**Location**: `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_to_trello.py`
 
 **Purpose**: Confluence → Trello integration
 
@@ -490,12 +490,12 @@ Deprecated (3):
 ## 📚 References
 
 **Production Tools**:
-- `/Users/naythandawe/git/maia/claude/tools/reliable_confluence_client.py`
-- `/Users/naythandawe/git/maia/claude/tools/confluence_html_builder.py`
+- `/Users/YOUR_USERNAME/git/maia/claude/tools/reliable_confluence_client.py`
+- `/Users/YOUR_USERNAME/git/maia/claude/tools/confluence_html_builder.py`
 
 **Documentation**:
-- `/Users/naythandawe/git/maia/claude/documentation/confluence_html_conversion_best_practices.md`
-- `/Users/naythandawe/git/maia/claude/context/core/capability_index.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/documentation/confluence_html_conversion_best_practices.md`
+- `/Users/YOUR_USERNAME/git/maia/claude/context/core/capability_index.md`
 
 **Phase 122 Incident**:
 - SYSTEM_STATE.md - Phase 122: Recruitment Tracking Database & Automation

@@ -40,7 +40,7 @@ Phase 1 infrastructure is **operational and validated**. Production-grade Grafan
 
 ### **2. Database Migration Complete**
 
-**Source**: SQLite (`/Users/naythandawe/git/maia/claude/data/servicedesk_tickets.db` - 1.2GB)
+**Source**: SQLite (`/Users/YOUR_USERNAME/git/maia/claude/data/servicedesk_tickets.db` - 1.2GB)
 **Target**: PostgreSQL 15 (`servicedesk` database)
 **Migration Time**: **11.7 seconds**
 **Success Rate**: **100%** (all tables, zero errors)
@@ -168,7 +168,7 @@ WHERE "TKT-SLA Met" IS NOT NULL;
 
 ### **Secrets Management**
 
-**File**: `/Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/.env`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/.env`
 **Permissions**: `600` (owner read/write only)
 **Git Status**: ✅ **Excluded** (in .gitignore)
 
@@ -243,7 +243,7 @@ WHERE "TKT-SLA Met" IS NOT NULL;
 
 ```bash
 # Navigate to project directory
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard
 
 # Start all services
 docker compose up -d
@@ -318,7 +318,7 @@ docker exec servicedesk-postgres psql -U servicedesk_user -d postgres -c "DROP D
 docker exec servicedesk-postgres psql -U servicedesk_user -d postgres -c "CREATE DATABASE servicedesk;"
 
 # Re-run migration
-cd /Users/naythandawe/git/maia/claude/infrastructure/servicedesk-dashboard/migration
+cd /Users/YOUR_USERNAME/git/maia/claude/infrastructure/servicedesk-dashboard/migration
 python3 migrate_sqlite_to_postgres.py
 ```
 

@@ -1,6 +1,6 @@
 {
   "timestamp": "2025-12-16T14:36:22.905607",
-  "base_path": "/Users/naythandawe/maia",
+  "base_path": "/Users/YOUR_USERNAME/maia",
   "checks": {
     "Python Import Validation": {
       "total_files": 532,
@@ -14152,7 +14152,7 @@
         },
         {
           "source": "claude/context/knowledge/powerbi/power_bi_service_setup_guide.md",
-          "missing_file": "../../../Library/CloudStorage/OneDrive-ORROPTYLTD/Documents/PowerBI_Implementation_Guide.md"
+          "missing_file": "../../../Library/CloudStorage/OneDrive-YOUR_ORG/Documents/PowerBI_Implementation_Guide.md"
         },
         {
           "source": "claude/context/orchestration/phase_111_integration_guide.md",

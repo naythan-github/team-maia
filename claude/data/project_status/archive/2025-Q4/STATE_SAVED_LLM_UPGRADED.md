@@ -92,7 +92,7 @@ Tested 5 different ServiceDesk comments across 3 models:
 ### Step 1: Run 10K Quality Analysis (2-3 hours)
 
 ```bash
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # Clear old test data
 sqlite3 claude/data/servicedesk_tickets.db "DELETE FROM comment_quality; VACUUM;"
@@ -285,7 +285,7 @@ ollama serve
 
 ```bash
 # 1. Navigate to project
-cd /Users/naythandawe/git/maia
+cd /Users/YOUR_USERNAME/git/maia
 
 # 2. Clear old data
 sqlite3 claude/data/servicedesk_tickets.db "DELETE FROM comment_quality;"

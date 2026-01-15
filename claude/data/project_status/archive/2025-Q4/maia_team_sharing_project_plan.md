@@ -12,7 +12,7 @@
 
 Maia currently has:
 1. **Nested repo structure**: `/git/` is repo root, `/git/maia/` is project folder
-2. **136 files with hardcoded paths**: `/Users/naythandawe/git/maia/...`
+2. **136 files with hardcoded paths**: `/Users/YOUR_USERNAME/git/maia/...`
 3. **44 code occurrences** that will break on teammates' machines
 
 These must be fixed before team can use Maia.
@@ -60,10 +60,10 @@ MAIA_ROOT = get_maia_root()
 
 | Pattern | Replacement | Count |
 |---------|-------------|-------|
-| `/Users/naythandawe/git/maia/claude/data/` | `MAIA_ROOT / "claude/data/"` | ~15 |
-| `/Users/naythandawe/git/maia/claude/tools/` | `MAIA_ROOT / "claude/tools/"` | ~10 |
-| `/Users/naythandawe/git/maia/claude/` | `MAIA_ROOT / "claude/"` | ~10 |
-| `/Users/naythandawe/git/maia` (base) | `MAIA_ROOT` | ~9 |
+| `/Users/YOUR_USERNAME/git/maia/claude/data/` | `MAIA_ROOT / "claude/data/"` | ~15 |
+| `/Users/YOUR_USERNAME/git/maia/claude/tools/` | `MAIA_ROOT / "claude/tools/"` | ~10 |
+| `/Users/YOUR_USERNAME/git/maia/claude/` | `MAIA_ROOT / "claude/"` | ~10 |
+| `/Users/YOUR_USERNAME/git/maia` (base) | `MAIA_ROOT` | ~9 |
 
 ### Step 1.3: Files requiring manual review
 
@@ -107,14 +107,14 @@ pip install git-filter-repo
 ### Step 2.2: Create backup
 
 ```bash
-cd /Users/naythandawe/git
+cd /Users/YOUR_USERNAME/git
 cp -r . ../git-backup-$(date +%Y%m%d)
 ```
 
 ### Step 2.3: Run filter-repo
 
 ```bash
-cd /Users/naythandawe/git
+cd /Users/YOUR_USERNAME/git
 git filter-repo --subdirectory-filter maia/ --force
 ```
 
@@ -235,14 +235,14 @@ git checkout -- .  # Revert all changes
 ### If Phase 2 breaks things
 ```bash
 # Restore from backup
-rm -rf /Users/naythandawe/git
-mv /Users/naythandawe/git-backup-YYYYMMDD /Users/naythandawe/git
+rm -rf /Users/YOUR_USERNAME/git
+mv /Users/YOUR_USERNAME/git-backup-YYYYMMDD /Users/YOUR_USERNAME/git
 ```
 
 ### If remote is broken
 ```bash
 # Force push backup
-cd /Users/naythandawe/git-backup-YYYYMMDD
+cd /Users/YOUR_USERNAME/git-backup-YYYYMMDD
 git push --force origin main
 ```
 
@@ -284,17 +284,17 @@ claude/documentation/*.md (92 occurrences - bulk sed replace)
 
 ### Bulk replace in docs (Phase 1)
 ```bash
-find claude/documentation -name "*.md" -exec sed -i '' 's|/Users/naythandawe/git/maia|$MAIA_ROOT|g' {} \;
+find claude/documentation -name "*.md" -exec sed -i '' 's|/Users/YOUR_USERNAME/git/maia|$MAIA_ROOT|g' {} \;
 ```
 
 ### Count remaining hardcoded paths
 ```bash
-grep -r "/Users/naythandawe" --include="*.py" --include="*.sh" | wc -l
+grep -r "/Users/YOUR_USERNAME" --include="*.py" --include="*.sh" | wc -l
 ```
 
 ### Verify no hardcoded paths remain
 ```bash
-grep -r "/Users/naythandawe" --include="*.py" --include="*.sh" --include="*.plist"
+grep -r "/Users/YOUR_USERNAME" --include="*.py" --include="*.sh" --include="*.plist"
 # Should return empty
 ```
 
@@ -315,5 +315,5 @@ grep -r "/Users/naythandawe" --include="*.py" --include="*.sh" --include="*.plis
 
 1. Teammate can clone and run `./setup.sh` in <5 minutes
 2. All tools work without modification
-3. No `/Users/naythandawe` in any code file
+3. No `/Users/YOUR_USERNAME` in any code file
 4. Test suite passes on fresh clone

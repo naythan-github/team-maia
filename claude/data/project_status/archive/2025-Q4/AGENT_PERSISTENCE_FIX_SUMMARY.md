@@ -183,7 +183,7 @@ Test 2: azure domain (confidence 0.9)
 
 ## 📝 **FILES MODIFIED**
 
-**File**: `/Users/naythandawe/git/maia/claude/hooks/swarm_auto_loader.py`
+**File**: `/Users/YOUR_USERNAME/git/maia/claude/hooks/swarm_auto_loader.py`
 
 **Changes**:
 1. Lines 189-212: Handoff chain prioritization logic

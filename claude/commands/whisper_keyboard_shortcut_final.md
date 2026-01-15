@@ -110,15 +110,15 @@ If Option+Escape conflicts with another app, edit `~/.skhdrc`:
 ### Option 1: Ctrl+Option+Space
 ```bash
 # Comment out current shortcut (add # at start of line):
-# alt - escape : /usr/bin/python3 /Users/naythandawe/git/maia/claude/tools/whisper_dictation_server.py
+# alt - escape : /usr/bin/python3 /Users/YOUR_USERNAME/git/maia/claude/tools/whisper_dictation_server.py
 
 # Uncomment this line (remove # at start):
-ctrl + alt - space : /usr/bin/python3 /Users/naythandawe/git/maia/claude/tools/whisper_dictation_server.py
+ctrl + alt - space : /usr/bin/python3 /Users/YOUR_USERNAME/git/maia/claude/tools/whisper_dictation_server.py
 ```
 
 ### Option 2: Shift+Option+D
 ```bash
-shift + alt - d : /usr/bin/python3 /Users/naythandawe/git/maia/claude/tools/whisper_dictation_server.py
+shift + alt - d : /usr/bin/python3 /Users/YOUR_USERNAME/git/maia/claude/tools/whisper_dictation_server.py
 ```
 
 ### After changing shortcut:
@@ -156,7 +156,7 @@ tail -f /tmp/skhd_$USER.out.log
 **Check 4**: Test shortcut manually
 ```bash
 # This should trigger recording:
-/usr/bin/python3 /Users/naythandawe/git/maia/claude/tools/whisper_dictation_server.py
+/usr/bin/python3 /Users/YOUR_USERNAME/git/maia/claude/tools/whisper_dictation_server.py
 ```
 
 If manual command works but shortcut doesn't = accessibility permission issue.

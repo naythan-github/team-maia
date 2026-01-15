@@ -313,7 +313,7 @@ python3 claude/tools/sre/disaster_recovery_system.py backup
 
 ### Restore (Manual)
 ```bash
-BACKUP_DIR="$HOME/Library/CloudStorage/OneDrive-ORROPTYLTD/MaiaBackups/<backup_id>"
+BACKUP_DIR="$HOME/Library/CloudStorage/OneDrive-YOUR_ORG/MaiaBackups/<backup_id>"
 RESTORE_DIR="/tmp/maia_restore_test"
 
 mkdir -p "$RESTORE_DIR" && cd "$RESTORE_DIR"

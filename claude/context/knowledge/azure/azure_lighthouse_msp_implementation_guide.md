@@ -970,7 +970,7 @@ az provider show --namespace Microsoft.ManagedServices --query "registrationStat
 - **Agent**: Azure Solutions Architect Agent
 - **Sources**: Microsoft Learn, Azure documentation, MSP best practices (2024-2025)
 - **Review Cycle**: Quarterly (Azure Lighthouse features evolve regularly)
-- **Location**: `/Users/naythandawe/git/maia/claude/context/knowledge/azure/azure_lighthouse_msp_implementation_guide.md`
+- **Location**: `/Users/YOUR_USERNAME/git/maia/claude/context/knowledge/azure/azure_lighthouse_msp_implementation_guide.md`
 
 ---
 

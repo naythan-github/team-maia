@@ -66,7 +66,7 @@ class ContributionReviewer:
 
     # Personal data patterns
     PERSONAL_PATTERNS = [
-        r'naythandawe',
+        r'YOUR_USERNAME',
         r'naythan',
         r'/Users/naythan',
         r'/home/naythan',
