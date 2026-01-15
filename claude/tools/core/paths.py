@@ -29,25 +29,125 @@ from pathlib import Path
 from typing import Optional
 
 
+# Module-level cache for MAIA_ROOT
+_maia_root_cache: Optional[Path] = None
+
+
 def get_maia_root() -> Path:
     """
-    Get Maia root directory - works on any machine.
+    Detect MAIA_ROOT dynamically from multiple sources.
 
-    Resolution order:
-    1. MAIA_ROOT environment variable (explicit override)
-    2. Derive from this file's location (automatic)
+    Priority order:
+    1. MAIA_ROOT environment variable (highest priority)
+    2. Walk up from CWD looking for .git + claude/ directory
+    3. Fallback to script location (backward compat)
 
     Returns:
-        Path to Maia root directory
-    """
-    # Option 1: Environment variable (explicit)
-    if "MAIA_ROOT" in os.environ:
-        return Path(os.environ["MAIA_ROOT"]).resolve()
+        Path to maia repository root
 
-    # Option 2: Derive from this file's location
+    Raises:
+        ValueError: If no valid maia repo found or validation fails
+
+    Performance:
+        Result is cached per session, <100ms on first call, <1ms cached
+
+    Examples:
+        >>> # With environment variable
+        >>> os.environ['MAIA_ROOT'] = '/Users/username/team-maia'
+        >>> get_maia_root()
+        PosixPath('/Users/username/team-maia')
+
+        >>> # Auto-detection from CWD
+        >>> os.chdir('/Users/username/maia/claude/tools')
+        >>> get_maia_root()
+        PosixPath('/Users/username/maia')
+    """
+    global _maia_root_cache
+
+    # Return cached result (performance optimization)
+    if _maia_root_cache is not None:
+        return _maia_root_cache
+
+    # 1. Check environment variable (highest priority)
+    if 'MAIA_ROOT' in os.environ:
+        root = Path(os.environ['MAIA_ROOT'])
+        if _is_valid_maia_repo(root):
+            _maia_root_cache = root
+            return root
+        else:
+            raise ValueError(f"MAIA_ROOT env var points to invalid repo: {root}")
+
+    # 2. Walk up from current working directory
+    cwd = Path.cwd()
+    for parent in [cwd, *cwd.parents]:
+        if _is_valid_maia_repo(parent):
+            _maia_root_cache = parent
+            return parent
+
+    # 3. Fallback to script location (backward compat)
     # This file is at: claude/tools/core/paths.py
     # Maia root is 4 levels up
-    return Path(__file__).parent.parent.parent.parent.resolve()
+    script_root = Path(__file__).parent.parent.parent.parent.resolve()
+    if _is_valid_maia_repo(script_root):
+        _maia_root_cache = script_root
+        return script_root
+
+    raise ValueError("No valid Maia repository found in env, CWD, or script location")
+
+
+def _is_valid_maia_repo(path: Path) -> bool:
+    """
+    Validate that path is a valid Maia repository.
+
+    Checks:
+    - Path exists and is a directory
+    - .git directory exists
+    - claude/ directory exists
+    - Path is readable
+
+    Args:
+        path: Path to check
+
+    Returns:
+        True if valid Maia repo, False otherwise
+
+    Examples:
+        >>> _is_valid_maia_repo(Path('/Users/username/maia'))
+        True
+        >>> _is_valid_maia_repo(Path('/tmp'))
+        False
+    """
+    try:
+        return (
+            path.exists() and
+            path.is_dir() and
+            (path / '.git').exists() and
+            (path / 'claude').exists() and
+            (path / 'claude').is_dir()
+        )
+    except (OSError, PermissionError):
+        return False
+
+
+def clear_maia_root_cache():
+    """
+    Clear cached MAIA_ROOT (for testing and repo switching).
+
+    Use this when:
+    - Running tests that change MAIA_ROOT
+    - Switching between repositories
+    - Debugging path resolution
+
+    Examples:
+        >>> # Test with different repos
+        >>> os.environ['MAIA_ROOT'] = '/Users/username/maia'
+        >>> get_maia_root()  # Cached: /Users/username/maia
+        >>> clear_maia_root_cache()
+        >>> os.environ['MAIA_ROOT'] = '/Users/username/team-maia'
+        >>> get_maia_root()  # Now: /Users/username/team-maia
+    """
+    global _maia_root_cache
+    _maia_root_cache = None
 
 
 # Global constant for import
