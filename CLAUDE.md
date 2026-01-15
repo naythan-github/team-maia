@@ -124,6 +124,119 @@ maia/
 | 21 | **Completeness Review** | Pause after tests pass: verify docs updated, integration complete, holistic review (P6.5) | `tdd_development_protocol.md` v2.5 |
 | 22 | **Compaction-Ready** | Checkpoint progress at phase boundaries; if token warning, complete atomic op + save state | `tdd_development_protocol.md` v2.5 |
 | 23 | **Agent Handoffs** | Agents collaborate via Collaborations metadata; transfer_to_X() for handoffs | `agent_handoff_developer_guide.md` |
+| 24 | **Multi-Repo Validation** | Sessions track repo context; git ops auto-validate directory+remote match; use `/switch-repo` for safe context switching | `repo_validator.py`, `switch-repo.md` |
+
+---
+
+## Multi-Repository Context Awareness (Principle #24 Detail)
+
+**Problem Solved**: SPRINT-001-REPO-SYNC prevents accidental cross-repository git operations when working with multiple maia clones (personal + work).
+
+### How It Works
+
+**Session Tracking** (since v1.5):
+- Every session captures repository metadata on creation:
+  - `working_directory`: Absolute path to MAIA_ROOT
+  - `git_remote_url`: Git remote origin URL
+  - `git_branch`: Current git branch
+- Stored in `~/.maia/sessions/swarm_session_{CONTEXT_ID}.json`
+
+**Automatic Validation**:
+- Before any git operation (commit, push), `save_state.py` validates:
+  1. Current directory matches session directory
+  2. Current git remote matches session remote
+  3. Current branch matches session branch (warning only)
+- **Blocks cross-repo operations** with clear error messages
+- **Backward compatible** - legacy sessions without repo field work unrestricted
+
+### Validation Scenarios
+
+| Scenario | Session Repo | Current Repo | Result |
+|----------|-------------|--------------|--------|
+| Same repo, same branch | team-maia/main | team-maia/main | ✅ Pass |
+| Same repo, different branch | team-maia/main | team-maia/feature-x | ⚠️ Pass with warning |
+| Different directory | team-maia | maia | ❌ Block with error |
+| Different remote URL | work-github/team-maia | personal-github/maia | ❌ Block with error |
+| Legacy session (no repo field) | (none) | any | ✅ Pass (unrestricted) |
+
+### Developer Workflow
+
+**Starting Work**:
+```bash
+cd ~/team-maia                    # Navigate to work repo
+/init sre_principal_engineer_agent  # Creates session with repo context
+# Session captures: working_directory, git_remote_url, git_branch
+```
+
+**Safe Operations** (same repo):
+```bash
+save state                        # ✅ Validates + commits to team-maia
+```
+
+**Blocked Operations** (wrong repo):
+```bash
+cd ~/maia                         # Switch to personal repo
+save state                        # ❌ ERROR: Repository mismatch detected
+# Error shows: Expected team-maia, found maia
+```
+
+**Switching Repositories**:
+```bash
+/switch-repo                      # Runs workflow:
+# 1. /close-session (save changes + learning)
+# 2. Clear MAIA_ROOT cache
+# 3. Guide to cd ~/other-repo
+# 4. Prompt for /init to start fresh session
+```
+
+**Force Override** (intentional cross-repo):
+```python
+from claude.tools.sre.save_state import SaveState
+save_state = SaveState()
+result = save_state.validate_repository(force=True)  # ⚠️ Bypasses validation
+# Use only when deliberately working across repos
+```
+
+### Error Messages
+
+**Directory Mismatch**:
+```
+❌ Repository validation failed: Directory mismatch
+   Session expects: /Users/username/team-maia
+   Currently in:    /Users/username/maia
+
+💡 Fix: Use /switch-repo to safely switch repositories
+```
+
+**Remote URL Mismatch**:
+```
+❌ Repository validation failed: Remote URL mismatch
+   Session expects: https://github.com/work-github/team-maia.git
+   Current remote:  https://github.com/personal-github/maia.git
+
+💡 Fix: Use /switch-repo to safely switch repositories
+```
+
+**Branch Warning** (non-blocking):
+```
+⚠️  Warning: Branch mismatch (continuing anyway)
+   Session expects: main
+   Current branch:  feature-x
+```
+
+### Technical Implementation
+
+**Files**:
+- `claude/tools/sre/repo_validator.py` - Core validation logic
+- `claude/hooks/swarm_auto_loader.py` - Session metadata capture (v1.5)
+- `claude/tools/sre/save_state.py` - Integration with git operations
+- `claude/commands/switch-repo.md` - Safe switching workflow
+
+**Tests**:
+- `tests/test_repo_validator.py` - Unit tests (6 tests)
+- `tests/test_session_repo_metadata.py` - Session capture tests (4 tests)
+- `tests/test_save_state_validation.py` - Integration tests (6 tests)
+- `tests/integration/test_multi_repo_workflow.py` - E2E tests (6 tests)
 
 ---
 
@@ -181,6 +294,7 @@ maia/
 | Azure Environment Discovery | `claude/context/protocols/azure_environment_discovery.md` - Multi-tenant Azure discovery protocol |
 | Handoff System | `claude/tools/orchestration/` - handoff_generator.py, handoff_executor.py, swarm_integration.py |
 | Handoff Events | `claude/data/handoff_events.jsonl` - Event log for handoff tracking |
+| Repository Validator | `claude/tools/sre/repo_validator.py` - Multi-repo context validation (SPRINT-001-REPO-SYNC) |
 
 ---
 
@@ -202,6 +316,7 @@ maia/
 |---------|---------|
 | `/init` | Initialize with UFC + agent |
 | `/close-session` | End session + learning |
+| `/switch-repo` | Safe repository switching (close session + cache clear + guide) |
 | `save state` | Commit + sync + push |
 | `/memory search <query>` | Search past sessions |
 | Enable handoffs | Set `handoffs_enabled: true` in `claude/data/user_preferences.json` |
