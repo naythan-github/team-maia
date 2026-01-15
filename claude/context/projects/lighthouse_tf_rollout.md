@@ -1,9 +1,11 @@
 # Azure Lighthouse Terraform Rollout - MCP Customer Migration
 
 **Sprint ID**: SPRINT-LIGHTHOUSE-TF-001
-**Status**: READY TO START
+**Status**: INFRASTRUCTURE COMPLETE - Configuration Pending
 **Created**: 2026-01-15
+**Updated**: 2026-01-15
 **Priority**: HIGH (foundation for AMA migration)
+**Progress**: Phase 1-2 Complete, Phase 3-6 Pending
 
 ---
 
@@ -87,19 +89,19 @@ azurerm_lighthouse_assignment    # Applies offer to customer subscription
 
 ## Implementation Phases
 
-### Phase 1: Terraform Foundation
+### Phase 1: Terraform Foundation ✅ COMPLETE
 
-- [ ] Set up Terraform repo (`orro-lighthouse`)
-- [ ] Configure Azure Storage backend for state
-- [ ] Create module structure
-- [ ] Define Orro tenant variables (tenant ID, security group IDs)
+- [x] Set up Terraform repo (`orro-lighthouse`) - Location: `~/work_projects/orro-lighthouse`
+- [x] Configure Azure Storage backend for state - Template ready in backend.tf
+- [x] Create module structure - Complete with modules/lighthouse-offer/
+- [x] Define Orro tenant variables (tenant ID, security group IDs) - Tenant ID discovered, group IDs pending
 
-### Phase 2: Lighthouse Module
+### Phase 2: Lighthouse Module ✅ COMPLETE
 
-- [ ] Create `azurerm_lighthouse_definition` resource
-- [ ] Define role assignments (Contributor, Monitoring Contributor, Reader)
-- [ ] Create `azurerm_lighthouse_assignment` resource
-- [ ] Test on single customer subscription
+- [x] Create `azurerm_lighthouse_definition` resource
+- [x] Define role assignments (Contributor, Monitoring Contributor, Reader)
+- [x] Create `azurerm_lighthouse_assignment` resource
+- [ ] Test on single customer subscription - Pending customer data
 
 ### Phase 3: Customer Inventory
 
@@ -134,11 +136,11 @@ azurerm_lighthouse_assignment    # Applies offer to customer subscription
 
 | Item | Status | Value |
 |------|--------|-------|
-| Orro Managing Tenant ID | NEEDED | `<GUID>` |
-| Orro-AzureOps Security Group ID | NEEDED | `<GUID>` |
-| Orro-Monitoring Security Group ID | NEEDED | `<GUID>` |
-| Orro-ReadOnly Security Group ID | NEEDED | `<GUID>` |
-| Azure Storage Account for TF state | NEEDED | `<storage account>` |
+| Orro Managing Tenant ID | ✅ FOUND | `7e0c3f88-faec-4a28-86ad-33bfe7c4b326` |
+| Orro-AzureOps Security Group ID | PENDING | Recommendation: Use Orro CSG DevOps Team (3f6e871b-b82d-47e3-8f12-ae0bc54bcaec) |
+| Orro-Monitoring Security Group ID | PENDING | Needs creation or mapping to existing group |
+| Orro-ReadOnly Security Group ID | PENDING | Needs creation or mapping to existing group |
+| Azure Storage Account for TF state | OPTIONS | Existing: costoptimizersapmtw752k OR create: orrolighthousestate |
 | Customer subscription list | NEEDED | Export from Partner Center |
 
 ---
