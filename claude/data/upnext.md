@@ -4,7 +4,28 @@ Projects queued for implementation after approval.
 
 ---
 
-## 1. Unified Intelligence Framework
+## 1. /finish Skill Fix-Forward (HIGH PRIORITY)
+**Sprint ID**: SPRINT-FINISH-FIXFORWARD-001
+**Status**: READY TO EXECUTE
+**Plan**: `claude/data/project_status/active/FINISH_SKILL_FIX_FORWARD.md`
+**Estimated Effort**: 15-45 minutes
+
+### Summary
+Fix-forward issues from `/finish` skill implementation:
+- Commit all sprint changes (`save state`)
+- Fix capability check to exclude `claude/commands/*.md`
+- Fix SessionManager attribute name in learning check
+- (Optional) Create stub tests for pre-existing tools
+
+### To Start
+```
+/init sre
+```
+Then paste the restart prompt below.
+
+---
+
+## 2. Unified Intelligence Framework
 **Sprint ID**: SPRINT-INTEL-FRAMEWORK-001
 **Status**: PENDING APPROVAL
 **Plan**: `claude/context/plans/unified_intelligence_framework_sprint.md`
