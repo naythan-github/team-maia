@@ -14,11 +14,15 @@ import pytest
 MAIA_ROOT = Path(__file__).parent.parent.absolute()
 sys.path.insert(0, str(MAIA_ROOT))
 
+from unittest import mock
+
 from claude.hooks.swarm_auto_loader import (
     get_context_id,
     get_session_file_path,
+    get_sessions_dir,
     cleanup_stale_sessions,
-    is_process_alive
+    is_process_alive,
+    verify_claude_process,
 )
 
 
@@ -35,22 +39,31 @@ class TestSessionDiscoveryFix:
         session_path = get_session_file_path()
         context_id = get_context_id()
 
-        expected_path = Path(f"/tmp/maia_active_swarm_session_{context_id}.json")
+        # Phase 230: Sessions now in ~/.maia/sessions/ with swarm_session_ prefix
+        sessions_dir = get_sessions_dir()
+        expected_path = sessions_dir / f"swarm_session_{context_id}.json"
         assert session_path == expected_path, \
             f"Session path should use context ID {context_id}, got: {session_path}"
 
     def test_cleanup_removes_legacy_session_formats(self, tmp_path):
-        """Cleanup should remove legacy non-numeric context IDs (e.g., sre_001)."""
-        # Create test files in /tmp (actual location used by system)
-        legacy_session = Path("/tmp/maia_active_swarm_session_test_legacy.json")
-        numeric_session = Path("/tmp/maia_active_swarm_session_99999.json")
+        """Cleanup should remove OLD legacy non-numeric context IDs (e.g., sre_001)."""
+        import time
+        import os
 
-        # Create legacy session
+        # Phase 230: Sessions now in ~/.maia/sessions/ with swarm_session_ prefix
+        sessions_dir = get_sessions_dir()
+        legacy_session = sessions_dir / "swarm_session_test_legacy.json"
+        numeric_session = sessions_dir / "swarm_session_99999.json"
+
+        # Create legacy session (OLD - should be removed)
         legacy_session.write_text(json.dumps({
             "current_agent": "test_agent",
             "context_id": "test_legacy",
             "version": "1.0"
         }))
+        # SPRINT-003 P2: Legacy sessions now also check age (to preserve learning data)
+        old_time = time.time() - (25 * 3600)  # 25 hours ago
+        os.utime(legacy_session, (old_time, old_time))
 
         # Create numeric session (should be preserved if fresh)
         numeric_session.write_text(json.dumps({
@@ -62,8 +75,8 @@ class TestSessionDiscoveryFix:
         # Run cleanup
         cleanup_stale_sessions(max_age_hours=24)
 
-        # Verify legacy removed, numeric preserved
-        assert not legacy_session.exists(), "Legacy session (non-numeric context ID) should be removed"
+        # Verify OLD legacy removed, fresh numeric preserved
+        assert not legacy_session.exists(), "OLD legacy session (non-numeric context ID) should be removed"
         assert numeric_session.exists(), "Numeric session should be preserved if fresh"
 
         # Cleanup test files
@@ -75,9 +88,12 @@ class TestSessionDiscoveryFix:
         import time
         import os
 
+        # Phase 230: Sessions now in ~/.maia/sessions/ with swarm_session_ prefix
+        sessions_dir = get_sessions_dir()
+
         # Create old session with dead process PID
         dead_pid = 88888  # Highly unlikely to exist
-        old_session = Path(f"/tmp/maia_active_swarm_session_{dead_pid}.json")
+        old_session = sessions_dir / f"swarm_session_{dead_pid}.json"
         old_session.write_text(json.dumps({
             "current_agent": "test_agent",
             "version": "1.1"
@@ -93,14 +109,22 @@ class TestSessionDiscoveryFix:
         # Verify old session removed (process not running + old)
         assert not old_session.exists(), "Old numeric session with dead process should be removed"
 
-    def test_cleanup_preserves_active_process_sessions(self):
+    @mock.patch('claude.hooks.swarm_auto_loader.verify_claude_process')
+    def test_cleanup_preserves_active_process_sessions(self, mock_verify):
         """Cleanup should NEVER delete sessions for running processes, even if old."""
         import time
         import os
 
+        # Phase 230: Sessions now in ~/.maia/sessions/ with swarm_session_ prefix
+        sessions_dir = get_sessions_dir()
+
         # Get current process PID (we know this process is running)
         current_pid = os.getpid()
-        test_session = Path(f"/tmp/maia_active_swarm_session_{current_pid}.json")
+        test_session = sessions_dir / f"swarm_session_{current_pid}.json"
+
+        # SPRINT-003 P3: verify_claude_process checks if PID is Claude process
+        # For testing, mock it to return True for our test PID
+        mock_verify.return_value = True
 
         # Create session file
         test_session.write_text(json.dumps({
@@ -138,14 +162,17 @@ class TestSessionDiscoveryFix:
 
     def test_correct_session_discovery_pattern(self):
         """Document correct session discovery pattern for future context loading."""
+        # Phase 230: Sessions now in ~/.maia/sessions/ with swarm_session_ prefix
+        sessions_dir = get_sessions_dir()
+
         # ❌ INCORRECT: Using glob pattern (returns alphabetically-first file)
-        # sessions = list(Path("/tmp").glob("maia_active_swarm_session_*.json"))
+        # sessions = list(sessions_dir.glob("swarm_session_*.json"))
         # if sessions:
         #     session_file = sessions[0]  # WRONG: Not context-specific!
 
         # ✅ CORRECT: Get context ID first, then check specific file
         context_id = get_context_id()
-        session_file = Path(f"/tmp/maia_active_swarm_session_{context_id}.json")
+        session_file = sessions_dir / f"swarm_session_{context_id}.json"
 
         if session_file.exists():
             # Load this context's session
@@ -170,7 +197,8 @@ class TestMultiContextIsolation:
 
         # If multiple Claude Code windows open, they would have different PIDs
         # and thus different session files (prevented by design)
-        assert session_path.name.startswith("maia_active_swarm_session_"), \
+        # Phase 230: New naming convention is swarm_session_
+        assert session_path.name.startswith("swarm_session_"), \
             "Session file should follow naming convention"
         assert session_path.name.endswith(".json"), \
             "Session file should be JSON"

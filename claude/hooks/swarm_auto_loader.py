@@ -214,18 +214,164 @@ def is_process_alive(pid: int) -> bool:
     """
     Check if a process is still running.
 
+    SPRINT-003-SESSION-CLEANUP P1: Fixed exception handling.
+    - PermissionError (EPERM): Process exists but owned by another user → True
+    - ProcessLookupError (ESRCH): Process doesn't exist → False
+    - Safety: Reject pid <= 0 (special meanings in kill())
+
     Args:
-        pid: Process ID to check
+        pid: Process ID to check (must be positive)
 
     Returns:
         True if process exists, False otherwise
     """
+    # Safety check: reject non-positive PIDs
+    # pid=0 sends to all processes in group, pid=-1 sends to all processes
+    if pid <= 0:
+        return False
+
     try:
         # Send signal 0 (null signal) - doesn't kill process, just checks existence
         os.kill(pid, 0)
         return True
-    except (OSError, ValueError):
+    except PermissionError:
+        # EPERM: Process exists but we don't have permission to signal it
+        # This is common when process is owned by another user
+        return True
+    except ProcessLookupError:
+        # ESRCH: No such process - definitely dead
         return False
+    except (OSError, ValueError):
+        # Other errors: assume dead for safety
+        return False
+
+
+def verify_claude_process(pid: int) -> bool:
+    """
+    Verify PID belongs to a Claude Code process, not an unrelated process.
+
+    SPRINT-003-SESSION-CLEANUP P3: Prevents PID reuse false positives.
+    After reboot, a different process might get the same PID as a crashed
+    Claude session. This function verifies the process is actually Claude.
+
+    Args:
+        pid: Process ID to verify
+
+    Returns:
+        True if process is Claude (or can't verify - conservative)
+        False if process is definitely not Claude or not running
+    """
+    if not is_process_alive(pid):
+        return False
+
+    try:
+        # Use ps to get process command name
+        result = subprocess.run(
+            ['ps', '-p', str(pid), '-o', 'comm='],
+            capture_output=True,
+            text=True,
+            timeout=0.5
+        )
+        if result.returncode == 0:
+            comm = result.stdout.strip().lower()
+            # Check if process name indicates Claude Code
+            return 'claude' in comm or 'native-binary' in comm
+    except (subprocess.TimeoutExpired, subprocess.SubprocessError, OSError):
+        pass
+
+    # Conservative: assume alive if we can't verify
+    # Better to keep a potentially stale session than delete an active one
+    return True
+
+
+def update_session_heartbeat() -> bool:
+    """
+    Update heartbeat timestamp in current session file.
+
+    SPRINT-003-SESSION-CLEANUP P5: Heartbeat mechanism for robust staleness detection.
+    Called periodically (e.g., every tool invocation) to indicate session is alive.
+
+    Returns:
+        True if heartbeat was updated, False otherwise (graceful degradation)
+    """
+    try:
+        session_file = get_session_file_path()
+        if not session_file.exists():
+            return False
+
+        with open(session_file, 'r') as f:
+            session_data = json.load(f)
+
+        # Update heartbeat timestamp
+        session_data["last_heartbeat"] = datetime.utcnow().isoformat() + 'Z'
+
+        # Atomic write
+        tmp_file = session_file.with_suffix(".tmp")
+        with open(tmp_file, 'w') as f:
+            json.dump(session_data, f, indent=2)
+        tmp_file.replace(session_file)
+
+        return True
+
+    except (json.JSONDecodeError, IOError, OSError):
+        return False  # Graceful degradation
+
+
+def is_session_stale_by_heartbeat(
+    session_file: Path,
+    max_missed_heartbeats: int = 3
+) -> bool:
+    """
+    Check if a session is stale based on heartbeat timestamp.
+
+    SPRINT-003-SESSION-CLEANUP P5: More robust than time-based cleanup.
+    - Sessions with heartbeat: stale if missed > max_missed_heartbeats intervals
+    - Sessions without heartbeat: falls back to 4-hour mtime check
+
+    Args:
+        session_file: Path to session file
+        max_missed_heartbeats: Number of missed heartbeats before considered stale (default: 3)
+
+    Returns:
+        True if session is stale, False if still active
+    """
+    try:
+        with open(session_file, 'r') as f:
+            session_data = json.load(f)
+
+        # Check for heartbeat field
+        if "last_heartbeat" in session_data:
+            heartbeat_str = session_data["last_heartbeat"]
+            interval = session_data.get("heartbeat_interval_seconds", 300)
+
+            # Parse heartbeat timestamp
+            # Handle both 'Z' suffix and '+00:00' suffix
+            heartbeat_str = heartbeat_str.replace('Z', '+00:00')
+            last_heartbeat = datetime.fromisoformat(heartbeat_str)
+
+            # Make current time offset-aware for comparison
+            from datetime import timezone
+            now = datetime.now(timezone.utc)
+
+            # Ensure last_heartbeat is timezone-aware
+            if last_heartbeat.tzinfo is None:
+                last_heartbeat = last_heartbeat.replace(tzinfo=timezone.utc)
+
+            # Calculate max allowed age
+            max_age_seconds = interval * max_missed_heartbeats
+            age_seconds = (now - last_heartbeat).total_seconds()
+
+            return age_seconds > max_age_seconds
+
+    except (json.JSONDecodeError, IOError, OSError, ValueError, KeyError):
+        pass  # Fall through to mtime check
+
+    # Fallback: use file modification time with 4-hour threshold
+    try:
+        file_age_seconds = time.time() - session_file.stat().st_mtime
+        return file_age_seconds > (4 * 3600)  # 4 hours
+    except OSError:
+        return True  # If can't stat file, consider it stale
 
 
 def cleanup_stale_sessions(max_age_hours: int = 24):
@@ -236,10 +382,12 @@ def cleanup_stale_sessions(max_age_hours: int = 24):
     Phase 134.5: Also remove legacy non-numeric context IDs (e.g., sre_001)
     Phase 134.5.1: Check if process still running before deleting (multi-session safety)
     Phase 230: Multi-user architecture - clean up from ~/.maia/sessions/ and legacy /tmp/
+    SPRINT-003-SESSION-CLEANUP P2: Use _cleanup_session to preserve learning data.
+    SPRINT-003-SESSION-CLEANUP P3: Use verify_claude_process to detect PID reuse.
     Runs on every startup (fast: glob + stat).
 
     Safety: Will NOT delete session if:
-    - Process (PID) is still running, OR
+    - Process (PID) is still running AND is a Claude process, OR
     - Session file modified within max_age_hours
 
     Args:
@@ -257,21 +405,28 @@ def cleanup_stale_sessions(max_age_hours: int = 24):
                 # Check if legacy format (non-numeric)
                 is_legacy = not context_id.isdigit()
 
-                # Legacy sessions: Always remove (not PID-based, can't verify if active)
+                # Legacy sessions: Remove if old enough (preserve learning data)
                 if is_legacy:
-                    session_file.unlink()
+                    if session_file.stat().st_mtime < cutoff_time:
+                        _cleanup_session(session_file)  # P2: Preserve learning data
                     return
 
                 # Numeric context ID (PID): Check if process still running
                 pid = int(context_id)
-                process_alive = is_process_alive(pid)
+                # P3: verify_claude_process checks both alive AND is Claude
+                is_claude_alive = verify_claude_process(pid)
 
-                # Only delete if BOTH conditions met:
-                # 1. Process no longer running AND
-                # 2. Session file older than max_age_hours
-                if not process_alive and session_file.stat().st_mtime < cutoff_time:
-                    session_file.unlink()
-        except (OSError, ValueError):
+                # If Claude process is alive, never clean (active session)
+                if is_claude_alive:
+                    return
+
+                # P5: Process is dead - check if session is stale
+                # Priority: heartbeat > mtime
+                is_stale = is_session_stale_by_heartbeat(session_file, max_missed_heartbeats=3)
+
+                if is_stale:
+                    _cleanup_session(session_file)  # P2: Preserve learning data
+        except (OSError, ValueError, FileNotFoundError):
             pass  # Graceful degradation (file may be locked or deleted)
 
     try:
@@ -1078,7 +1233,10 @@ def create_session_state(
             "ltm_context": ltm_context,
             "user_preferences": ltm_context.get("preferences", []) if ltm_context else [],
             # SPRINT-001-REPO-SYNC: Repository metadata for cross-repo detection
-            "repository": repository_metadata
+            "repository": repository_metadata,
+            # SPRINT-003-SESSION-CLEANUP P5: Heartbeat mechanism for robust staleness detection
+            "last_heartbeat": datetime.utcnow().isoformat() + 'Z',
+            "heartbeat_interval_seconds": 300  # 5 minutes default
         }
 
         # Phase 232: Start PAI v2 learning session BEFORE writing (to capture session_id)
@@ -2157,8 +2315,9 @@ def main():
         Non-zero: Not used (all failures degrade gracefully)
     """
     # Phase 134.3: Cleanup stale sessions + migrate legacy session
+    # SPRINT-003-SESSION-CLEANUP P4: Reduced from 24h to 4h for faster crash recovery
     migrate_legacy_session()
-    cleanup_stale_sessions(max_age_hours=24)
+    cleanup_stale_sessions(max_age_hours=4)
 
     # Validate arguments
     if len(sys.argv) < 2:

@@ -27,6 +27,8 @@ import time
 MAIA_ROOT = Path(__file__).parent.parent.absolute()
 sys.path.insert(0, str(MAIA_ROOT))
 
+from claude.hooks.swarm_auto_loader import get_sessions_dir
+
 SWARM_AUTO_LOADER = MAIA_ROOT / "claude/hooks/swarm_auto_loader.py"
 
 
@@ -152,8 +154,9 @@ class TestMultiContextIsolation(unittest.TestCase):
             timeout=2
         )
 
-        # Check results
-        context_sessions = list(Path("/tmp").glob("maia_active_swarm_session_context_*.json"))
+        # Phase 230: Sessions now migrate to ~/.maia/sessions/ with swarm_session_ prefix
+        sessions_dir = get_sessions_dir()
+        context_sessions = list(sessions_dir.glob("swarm_session_*.json"))
 
         # Should have at least one context-specific session
         self.assertGreaterEqual(len(context_sessions), 1,
