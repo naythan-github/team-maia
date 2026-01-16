@@ -126,6 +126,7 @@ maia/
 | 22 | **Compaction-Ready** | Checkpoint progress at phase boundaries; if token warning, complete atomic op + save state | `tdd_development_protocol.md` v2.5 |
 | 23 | **Agent Handoffs** | Agents collaborate via Collaborations metadata; transfer_to_X() for handoffs | `agent_handoff_developer_guide.md` |
 | 24 | **Multi-Repo Validation** | Sessions track repo context; git ops auto-validate directory+remote match; use `/switch-repo` for safe context switching | `repo_validator.py`, `switch-repo.md` |
+| 26 | **Subagent Orchestration** | Use Task + agent injection for heavy work, track in session | `subagent_prompt_builder.py` |
 
 ---
 
@@ -284,6 +285,53 @@ sqlite3 ~/.maia/memory/memory.db "SELECT prompt_text FROM session_prompts ORDER 
 
 ---
 
+## Subagent Orchestration (Principle #26 Detail)
+
+**SPRINT-003-SWARM-TASK-ORCHESTRATION**: Task tool subagents with agent context injection.
+
+### When to Spawn Subagents
+
+| Pattern | Action | Example |
+|---------|--------|---------|
+| "How does X work?" | SPAWN | Exploration query |
+| "Find all X" | SPAWN | Multi-file search |
+| "Analyze X" | SPAWN | Deep analysis |
+| Sprint mode active | SPAWN | Offload heavy work |
+| "Edit file X" | DIRECT | Known specific file |
+| "Run command X" | DIRECT | Single command |
+
+### Usage
+
+```python
+from claude.tools.orchestration.subagent_prompt_builder import SubagentPromptBuilder
+from claude.tools.orchestration.spawn_decision import SpawnDecisionEngine
+
+# Check if should spawn
+engine = SpawnDecisionEngine()
+decision = engine.analyze(query, session_context)
+
+if decision.should_spawn:
+    # Build prompt with agent injection
+    builder = SubagentPromptBuilder()
+    prompt = builder.build(decision.recommended_agent, task)
+    # Use Task tool with prompt.prompt and prompt.model_recommendation
+```
+
+### Execution Tracking
+
+All subagent executions recorded in session state via `SubagentTracker`.
+
+### Handoff Detection
+
+After subagent completes, check for handoffs:
+```python
+from claude.tools.orchestration.subagent_handoff import SubagentHandoffDetector
+detector = SubagentHandoffDetector()
+handoff = detector.analyze(result, current_agent)
+```
+
+---
+
 ## Execution State Machine (Principle #5 Detail)
 
 ### DISCOVERY MODE (Default for new topics)
@@ -339,6 +387,10 @@ sqlite3 ~/.maia/memory/memory.db "SELECT prompt_text FROM session_prompts ORDER 
 | Handoff System | `claude/tools/orchestration/` - handoff_generator.py, handoff_executor.py, swarm_integration.py |
 | Handoff Events | `claude/data/handoff_events.jsonl` - Event log for handoff tracking |
 | Repository Validator | `claude/tools/sre/repo_validator.py` - Multi-repo context validation (SPRINT-001-REPO-SYNC) |
+| Subagent Builder | `claude/tools/orchestration/subagent_prompt_builder.py` |
+| Spawn Decision | `claude/tools/orchestration/spawn_decision.py` |
+| Subagent Tracker | `claude/tools/orchestration/subagent_tracker.py` |
+| Handoff Detector | `claude/tools/orchestration/subagent_handoff.py` |
 
 ---
 
