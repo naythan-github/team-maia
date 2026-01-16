@@ -76,7 +76,6 @@ class SubagentHandoffDetector:
         Returns:
             HandoffRecommendation with handoff decision and metadata
         """
-        text = subagent_result.lower()
         detected_patterns: List[str] = []
 
         # Check for explicit handoff patterns first (high confidence)
